@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Outputs (generated files)
+noise_fgvc_clip_baseline/outputs/
+
+# Data
+train/
+test/
