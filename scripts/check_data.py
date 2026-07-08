@@ -1,3 +1,4 @@
+import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 #!/usr/bin/env python3
 """
 Data checking and statistics script.
@@ -22,9 +23,8 @@ from PIL import Image, ImageFile
 from tqdm import tqdm
 
 # Add parent directory to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.utils import load_config, ensure_dir
+from common.utils import load_config, ensure_dir
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

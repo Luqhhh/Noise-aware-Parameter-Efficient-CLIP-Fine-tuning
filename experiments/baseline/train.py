@@ -24,9 +24,9 @@ from torch.utils.data import DataLoader
 from torch.amp import autocast, GradScaler
 from tqdm import tqdm
 
-from .dataset import TrainImageDataset
+from common.dataset import TrainImageDataset
 from .model import build_model
-from .utils import (
+from common.utils import (
     load_config,
     set_seed,
     setup_logging,

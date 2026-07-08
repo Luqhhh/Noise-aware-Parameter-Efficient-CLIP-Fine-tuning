@@ -4,7 +4,7 @@ __pycache__/
 *.pyo
 
 # Outputs (generated files)
-noise_fgvc_clip_baseline/outputs/
+outputs/
 
 # Data
 train/

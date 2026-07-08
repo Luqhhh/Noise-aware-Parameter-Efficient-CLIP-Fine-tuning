@@ -20,9 +20,9 @@ from torch.utils.data import DataLoader
 from torch.amp import autocast
 from tqdm import tqdm
 
-from .dataset import TestImageDataset
+from common.dataset import TestImageDataset
 from .model import build_model
-from .utils import load_config, set_seed, setup_logging, ensure_dir
+from common.utils import load_config, set_seed, setup_logging, ensure_dir
 
 logger = logging.getLogger(__name__)
 

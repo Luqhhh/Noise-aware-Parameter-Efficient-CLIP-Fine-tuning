@@ -1,3 +1,4 @@
+import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 #!/usr/bin/env python3
 """
 Train/Validation Split Script.
@@ -26,10 +27,8 @@ from typing import Dict, List, Set, Tuple
 
 import pandas as pd
 
-# Add parent directory to path so we can import from src
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.utils import load_config, set_seed, ensure_dir
+from common.utils import load_config, set_seed, ensure_dir
 
 
 logger = logging.getLogger(__name__)

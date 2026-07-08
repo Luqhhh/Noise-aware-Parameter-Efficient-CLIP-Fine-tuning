@@ -17,9 +17,9 @@ from torch.utils.data import DataLoader
 from torch.amp import autocast
 from tqdm import tqdm
 
-from .dataset import TrainImageDataset
+from common.dataset import TrainImageDataset
 from .model import build_model
-from .utils import load_config, set_seed, setup_logging
+from common.utils import load_config, set_seed, setup_logging
 
 logger = logging.getLogger(__name__)
 
