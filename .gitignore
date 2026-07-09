@@ -9,3 +9,6 @@ outputs/
 # Data
 train/
 test/
+
+# Config (local paths)
+configs/baseline.yaml

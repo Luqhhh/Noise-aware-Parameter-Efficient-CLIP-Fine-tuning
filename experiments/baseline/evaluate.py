@@ -13,13 +13,14 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 from torch.amp import autocast
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from common.dataset import TrainImageDataset
-from .model import build_model
 from common.utils import load_config, set_seed, setup_logging
+
+from .model import build_model
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ def evaluate(
         labels = labels.to(device, non_blocking=True)
 
         if use_amp:
-            with autocast('cuda'):
+            with autocast(device_type=device.type, enabled=use_amp):
                 logits = model(images)
                 loss = criterion(logits, labels)
         else:
@@ -89,10 +90,12 @@ def evaluate(
         correct += (preds == labels).sum().item()
         total += batch_size
 
-        pbar.set_postfix({
-            "loss": f"{loss.item():.4f}",
-            "acc": f"{correct / total:.4f}",
-        })
+        pbar.set_postfix(
+            {
+                "loss": f"{loss.item():.4f}",
+                "acc": f"{correct / total:.4f}",
+            }
+        )
 
     avg_loss = total_loss / total
     accuracy = correct / total
@@ -115,7 +118,9 @@ def main():
     set_seed(config["data"]["seed"])
 
     # Device
-    device = torch.device(config["train"]["device"] if torch.cuda.is_available() else "cpu")
+    device = torch.device(
+        config["train"]["device"] if torch.cuda.is_available() else "cpu"
+    )
 
     # Setup logging
     log_dir = Path(config["output"]["log_dir"])
@@ -163,12 +168,17 @@ def main():
         pin_memory=True,
     )
 
-    logger.info(f"Validation set: {len(val_dataset)} samples, {len(val_loader)} batches")
+    logger.info(
+        f"Validation set: {len(val_dataset)} samples, {len(val_loader)} batches"
+    )
 
     # Evaluate
     criterion = nn.CrossEntropyLoss()
     results = evaluate(
-        model, val_loader, criterion, device,
+        model,
+        val_loader,
+        criterion,
+        device,
         use_amp=config["train"].get("amp", False),
     )
 
@@ -177,7 +187,9 @@ def main():
     logger.info("Evaluation Results:")
     logger.info(f"  Total samples:    {results['total_samples']}")
     logger.info(f"  Correct samples:  {results['correct_samples']}")
-    logger.info(f"  Top-1 Accuracy:   {results['accuracy']:.4f} ({results['accuracy']*100:.2f}%)")
+    logger.info(
+        f"  Top-1 Accuracy:   {results['accuracy']:.4f} ({results['accuracy']*100:.2f}%)"
+    )
     logger.info(f"  Loss:             {results['loss']:.4f}")
     logger.info("=" * 50)
 

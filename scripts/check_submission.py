@@ -1,4 +1,7 @@
-import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 #!/usr/bin/env python3
 """
 Submission file checker.
@@ -73,9 +76,7 @@ def get_test_image_names(test_dir: Path) -> Set[str]:
     return names
 
 
-def check_csv(
-    csv_path: Path, test_names: Set[str]
-) -> Tuple[bool, List[str]]:
+def check_csv(csv_path: Path, test_names: Set[str]) -> Tuple[bool, List[str]]:
     """Validate the pred_results.csv file.
 
     Returns:
@@ -85,9 +86,7 @@ def check_csv(
 
     # Check 1: File name
     if csv_path.name != "pred_results.csv":
-        errors.append(
-            f"❌ File name is '{csv_path.name}', expected 'pred_results.csv'"
-        )
+        errors.append(f"❌ File name is '{csv_path.name}', expected 'pred_results.csv'")
     else:
         errors.append("✅ File name: pred_results.csv")
 
@@ -162,7 +161,8 @@ def check_csv(
 
     # Check 8: Label range
     out_of_range = [
-        l for l in labels_in_csv
+        l
+        for l in labels_in_csv
         if re.match(r"^\d{4}$", l) and (int(l) < 0 or int(l) > 499)
     ]
     if out_of_range:
@@ -174,7 +174,7 @@ def check_csv(
         errors.append("✅ All labels in range [0000, 0499]")
 
     # Summary
-    all_ok = all(not e.startswith("❌") for e in errors[1:])  # Skip file name check
+    all_ok = all(not e.startswith("❌") for e in errors)  # Include file name check
 
     return all_ok, errors
 
@@ -200,11 +200,11 @@ def check_zip(zip_path: Path) -> Tuple[bool, List[str]]:
         elif "pred_results.csv" in names and len(names) == 1:
             errors.append(f"⚠️  ZIP contains pred_results.csv but with path: {names}")
         elif "pred_results.csv" in names:
-            errors.append(
-                f"❌ ZIP contains extra files: {names}"
-            )
+            errors.append(f"❌ ZIP contains extra files: {names}")
         else:
-            errors.append(f"❌ ZIP does not contain pred_results.csv. Contents: {names}")
+            errors.append(
+                f"❌ ZIP does not contain pred_results.csv. Contents: {names}"
+            )
 
     return all(not e.startswith("❌") for e in errors), errors
 

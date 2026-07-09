@@ -9,10 +9,10 @@ Both classes handle corrupted images gracefully and support the sample_weight
 interface for future noise-robust training extensions.
 """
 
-import warnings
 import logging
+import warnings
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Callable
+from typing import Callable, Dict, List, Optional, Tuple
 
 import torch
 from PIL import Image, ImageFile
@@ -118,8 +118,10 @@ class TrainImageDataset(Dataset):
             # Build from directory structure
             self._load_from_directory(class_to_idx)
 
-        logger.info(f"TrainImageDataset: {len(self.samples)} samples, "
-                     f"{len(self.class_to_idx)} classes")
+        logger.info(
+            f"TrainImageDataset: {len(self.samples)} samples, "
+            f"{len(self.class_to_idx)} classes"
+        )
 
     def _load_from_csv(
         self, split_csv: str, class_to_idx: Optional[Dict[str, int]] = None
@@ -163,9 +165,7 @@ class TrainImageDataset(Dataset):
         if class_to_idx is not None:
             self.class_to_idx = class_to_idx
         else:
-            self.class_to_idx = {
-                d.name: i for i, d in enumerate(class_dirs)
-            }
+            self.class_to_idx = {d.name: i for i, d in enumerate(class_dirs)}
 
         self.idx_to_class = {v: k for k, v in self.class_to_idx.items()}
 
@@ -206,9 +206,7 @@ class TrainImageDataset(Dataset):
 
         if image is None:
             # Return a blank image so training doesn't crash
-            logger.warning(
-                f"Returning blank image for {img_path} (index {idx})"
-            )
+            logger.warning(f"Returning blank image for {img_path} (index {idx})")
             # Create a properly-sized blank tensor
             # CLIP transforms produce 3x224x224 tensors
             image = torch.zeros(3, 224, 224)
@@ -218,7 +216,9 @@ class TrainImageDataset(Dataset):
         else:
             return image, label
 
-    def get_sample_weights(self, weight_dict: Optional[Dict[str, float]] = None) -> torch.Tensor:
+    def get_sample_weights(
+        self, weight_dict: Optional[Dict[str, float]] = None
+    ) -> torch.Tensor:
         """Placeholder for sample-level weighting (for future noise-robust methods).
 
         Args:
@@ -289,9 +289,7 @@ class TestImageDataset(Dataset):
         image = _safe_load_image(img_path, self.transform)
 
         if image is None:
-            logger.warning(
-                f"Returning blank image for {img_path} (index {idx})"
-            )
+            logger.warning(f"Returning blank image for {img_path} (index {idx})")
             image = torch.zeros(3, 224, 224)
 
         return image, image_name, str(img_path)

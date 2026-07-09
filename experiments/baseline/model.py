@@ -80,7 +80,9 @@ class CLIPLinearClassifier(nn.Module):
         # Handle CLIP returning different shapes depending on version
         if features.dim() > 2:
             # Some CLIP versions return spatial features; pool them
-            features = features.mean(dim=[2, 3]) if features.dim() == 4 else features[:, 0]
+            features = (
+                features.mean(dim=[2, 3]) if features.dim() == 4 else features[:, 0]
+            )
 
         features = features.float()
         features = F.normalize(features, p=2, dim=-1)
@@ -105,7 +107,9 @@ class CLIPLinearClassifier(nn.Module):
         return filter(lambda p: p.requires_grad, self.parameters())
 
 
-def build_model(config: dict, device: torch.device) -> Tuple[CLIPLinearClassifier, callable]:
+def build_model(
+    config: dict, device: torch.device
+) -> Tuple[CLIPLinearClassifier, callable]:
     """Build the CLIPLinearClassifier model and return the CLIP preprocessing function.
 
     Args:

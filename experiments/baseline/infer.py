@@ -16,13 +16,14 @@ from pathlib import Path
 
 import pandas as pd
 import torch
-from torch.utils.data import DataLoader
 from torch.amp import autocast
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from common.dataset import TestImageDataset
+from common.utils import ensure_dir, load_config, set_seed, setup_logging
+
 from .model import build_model
-from common.utils import load_config, set_seed, setup_logging, ensure_dir
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,7 @@ def run_inference(
     loader: DataLoader,
     device: torch.device,
     use_amp: bool = False,
+    idx_to_class: dict = None,
 ) -> list:
     """Run inference on the test set.
 
@@ -60,6 +62,7 @@ def run_inference(
         loader: DataLoader for test data.
         device: torch device.
         use_amp: Whether to use AMP autocast.
+        idx_to_class: Mapping from index string to class name string.
 
     Returns:
         List of dicts with keys: image_name, pred_idx, pred_label.
@@ -73,7 +76,7 @@ def run_inference(
         images = images.to(device, non_blocking=True)
 
         if use_amp:
-            with autocast('cuda'):
+            with autocast(device_type=device.type, enabled=use_amp):
                 logits = model(images)
         else:
             logits = model(images)
@@ -81,11 +84,13 @@ def run_inference(
         pred_indices = logits.argmax(dim=1).cpu().numpy()
 
         for img_name, pred_idx in zip(image_names, pred_indices):
-            predictions.append({
-                "image_name": img_name,
-                "pred_idx": int(pred_idx),
-                "pred_label": f"{int(pred_idx):04d}",
-            })
+            predictions.append(
+                {
+                    "image_name": img_name,
+                    "pred_idx": int(pred_idx),
+                    "pred_label": str(idx_to_class[str(int(pred_idx))]).zfill(4),
+                }
+            )
 
     return predictions
 
@@ -100,7 +105,9 @@ def main():
     set_seed(config["data"]["seed"])
 
     # Device
-    device = torch.device(config["train"]["device"] if torch.cuda.is_available() else "cpu")
+    device = torch.device(
+        config["train"]["device"] if torch.cuda.is_available() else "cpu"
+    )
 
     # Setup logging
     log_dir = ensure_dir(config["output"]["log_dir"])
@@ -144,8 +151,11 @@ def main():
 
     # Run inference
     predictions = run_inference(
-        model, test_loader, device,
+        model,
+        test_loader,
+        device,
         use_amp=config["train"].get("amp", False),
+        idx_to_class=idx_to_class,
     )
 
     # Save raw predictions
@@ -159,7 +169,9 @@ def main():
 
     # Quick sanity check
     unique_preds = df["pred_idx"].nunique()
-    logger.info(f"Unique predicted classes: {unique_preds} / {config['model']['num_classes']}")
+    logger.info(
+        f"Unique predicted classes: {unique_preds} / {config['model']['num_classes']}"
+    )
 
     # Check that all pred_labels are 4-digit strings
     label_lengths = df["pred_label"].str.len().value_counts().to_dict()

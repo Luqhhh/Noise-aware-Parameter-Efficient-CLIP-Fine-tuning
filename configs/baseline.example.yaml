@@ -7,8 +7,8 @@ data:
   - .webp
   seed: 42
   split_dir: outputs/baseline/splits
-  test_dir: /home/lux1/noise/test
-  train_dir: /home/lux1/noise/train
+  test_dir: data/preliminary/test
+  train_dir: data/preliminary/train
   val_ratio: 0.1
 eval:
   batch_size: 256

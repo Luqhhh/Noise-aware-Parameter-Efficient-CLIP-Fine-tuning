@@ -1,4 +1,7 @@
-import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 #!/usr/bin/env python3
 """
 Data checking and statistics script.
@@ -22,9 +25,10 @@ import numpy as np
 from PIL import Image, ImageFile
 from tqdm import tqdm
 
+from common.utils import ensure_dir, load_config
+
 # Add parent directory to path
 
-from common.utils import load_config, ensure_dir
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -58,7 +62,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--log_dir",
         type=str,
-        default="outputs/logs",
+        default=None,
         help="Directory to save data_stats.json.",
     )
     return parser.parse_args()
@@ -184,6 +188,7 @@ def analyze_test_dir(test_dir: Path) -> Dict:
     corrupted_list = []
 
     import random
+
     random.seed(42)
     sample_images = random.sample(images, sample_size)
 
@@ -197,8 +202,9 @@ def analyze_test_dir(test_dir: Path) -> Dict:
     if corrupted > 0:
         corr_rate = corrupted / sample_size
         estimated = int(corr_rate * total)
-        logger.info(f"Sample corruption rate: {corr_rate:.4f} "
-                     f"(estimated {estimated} total)")
+        logger.info(
+            f"Sample corruption rate: {corr_rate:.4f} " f"(estimated {estimated} total)"
+        )
 
     # Check filename extensions
     extensions_found = {}
@@ -247,8 +253,10 @@ def main():
         log_dir = args.log_dir
 
     if train_dir is None and test_dir is None:
-        raise ValueError("At least one of --train_dir or --test_dir must be provided "
-                         "(or use --config).")
+        raise ValueError(
+            "At least one of --train_dir or --test_dir must be provided "
+            "(or use --config)."
+        )
 
     log_dir = ensure_dir(log_dir)
 
@@ -268,16 +276,30 @@ def main():
             logger.info("Training Data Statistics:")
             logger.info(f"  Number of classes:          {train_stats['num_classes']}")
             logger.info(f"  Total images:               {train_stats['total_images']}")
-            logger.info(f"  Corrupted images:           {train_stats['corrupted_images']}")
-            logger.info(f"  Min samples per class:      {train_stats['min_samples_per_class']}")
-            logger.info(f"  Max samples per class:      {train_stats['max_samples_per_class']}")
-            logger.info(f"  Mean samples per class:     {train_stats['mean_samples_per_class']:.1f}")
-            logger.info(f"  Std samples per class:      {train_stats['std_samples_per_class']:.1f}")
-            logger.info(f"  Median samples per class:   {train_stats['median_samples_per_class']:.1f}")
+            logger.info(
+                f"  Corrupted images:           {train_stats['corrupted_images']}"
+            )
+            logger.info(
+                f"  Min samples per class:      {train_stats['min_samples_per_class']}"
+            )
+            logger.info(
+                f"  Max samples per class:      {train_stats['max_samples_per_class']}"
+            )
+            logger.info(
+                f"  Mean samples per class:     {train_stats['mean_samples_per_class']:.1f}"
+            )
+            logger.info(
+                f"  Std samples per class:      {train_stats['std_samples_per_class']:.1f}"
+            )
+            logger.info(
+                f"  Median samples per class:   {train_stats['median_samples_per_class']:.1f}"
+            )
 
             zero_classes = train_stats.get("classes_with_zero_images", [])
             if zero_classes:
-                logger.warning(f"  WARNING: {len(zero_classes)} classes have ZERO images!")
+                logger.warning(
+                    f"  WARNING: {len(zero_classes)} classes have ZERO images!"
+                )
                 logger.warning(f"  Empty classes: {zero_classes[:10]}")
 
     # Analyze test data

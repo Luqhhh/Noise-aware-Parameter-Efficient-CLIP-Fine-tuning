@@ -1,4 +1,7 @@
-import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 #!/usr/bin/env python3
 """
 Train/Validation Split Script.
@@ -13,8 +16,8 @@ Outputs:
     outputs/splits/idx_to_class.json   - {index: class_name}
 
 Usage:
-    python scripts/split_train_val.py --config configs/baseline.yaml
-    python scripts/split_train_val.py --train_dir /path/to/train --val_ratio 0.1 --seed 42
+    python scripts/split_data.py --config configs/baseline.yaml
+    python scripts/split_data.py --train_dir /path/to/train --val_ratio 0.1 --seed 42
 """
 
 import argparse
@@ -27,9 +30,7 @@ from typing import Dict, List, Set, Tuple
 
 import pandas as pd
 
-
-from common.utils import load_config, set_seed, ensure_dir
-
+from common.utils import ensure_dir, load_config, set_seed
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ def parse_args() -> argparse.Namespace:
         type=str,
         default=None,
         help="Path to YAML config file. If provided, reads data.train_dir, data.val_ratio, "
-             "data.seed, and data.split_dir from the config.",
+        "data.seed, and data.split_dir from the config.",
     )
     parser.add_argument(
         "--train_dir",
@@ -145,7 +146,9 @@ def split_class_images(
     return train_paths, val_paths
 
 
-def build_class_mapping(class_dirs: List[Path]) -> Tuple[Dict[str, int], Dict[int, str]]:
+def build_class_mapping(
+    class_dirs: List[Path],
+) -> Tuple[Dict[str, int], Dict[int, str]]:
     """Build class name to index mapping (sorted by class name).
 
     Args:
@@ -230,18 +233,22 @@ def main():
         train_imgs, val_imgs = split_class_images(images, val_ratio)
 
         for img_path in train_imgs:
-            train_entries.append({
-                "image_path": str(img_path.resolve()),
-                "label": label,
-                "class_name": class_name,
-            })
+            train_entries.append(
+                {
+                    "image_path": str(img_path.resolve()),
+                    "label": label,
+                    "class_name": class_name,
+                }
+            )
 
         for img_path in val_imgs:
-            val_entries.append({
-                "image_path": str(img_path.resolve()),
-                "label": label,
-                "class_name": class_name,
-            })
+            val_entries.append(
+                {
+                    "image_path": str(img_path.resolve()),
+                    "label": label,
+                    "class_name": class_name,
+                }
+            )
 
         class_stats[class_name] = {
             "total": len(images),
@@ -268,14 +275,23 @@ def main():
 
     with open(idx_to_class_path, "w") as f:
         # Convert int keys to str for JSON (JSON only supports string keys)
-        json.dump({str(k): v for k, v in idx_to_class.items()}, f, indent=2, ensure_ascii=False)
+        json.dump(
+            {str(k): v for k, v in idx_to_class.items()},
+            f,
+            indent=2,
+            ensure_ascii=False,
+        )
 
     # Summary
     logger.info("=" * 60)
     logger.info(f"Split complete!")
     logger.info(f"  Total samples:   {len(train_entries) + len(val_entries)}")
-    logger.info(f"  Train samples:   {len(train_entries)} ({len(train_entries)/(len(train_entries)+len(val_entries))*100:.1f}%)")
-    logger.info(f"  Val samples:     {len(val_entries)} ({len(val_entries)/(len(train_entries)+len(val_entries))*100:.1f}%)")
+    logger.info(
+        f"  Train samples:   {len(train_entries)} ({len(train_entries)/(len(train_entries)+len(val_entries))*100:.1f}%)"
+    )
+    logger.info(
+        f"  Val samples:     {len(val_entries)} ({len(val_entries)/(len(train_entries)+len(val_entries))*100:.1f}%)"
+    )
     logger.info(f"  Classes:         {len(class_dirs)}")
     logger.info(f"  Output files:")
     logger.info(f"    {train_csv}")
@@ -285,14 +301,17 @@ def main():
 
     # Check for classes with very few samples
     small_classes = [
-        (name, stats) for name, stats in class_stats.items()
-        if stats["total"] < 5
+        (name, stats) for name, stats in class_stats.items() if stats["total"] < 5
     ]
     if small_classes:
-        logger.warning(f"Classes with fewer than 5 samples ({len(small_classes)} classes):")
+        logger.warning(
+            f"Classes with fewer than 5 samples ({len(small_classes)} classes):"
+        )
         for name, stats in small_classes[:10]:
-            logger.warning(f"  {name}: total={stats['total']}, "
-                           f"train={stats['train']}, val={stats['val']}")
+            logger.warning(
+                f"  {name}: total={stats['total']}, "
+                f"train={stats['train']}, val={stats['val']}"
+            )
 
 
 if __name__ == "__main__":

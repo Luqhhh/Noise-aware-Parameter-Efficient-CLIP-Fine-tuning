@@ -15,26 +15,21 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
-from torch.amp import autocast, GradScaler
 from tqdm import tqdm
 
 from common.dataset import TrainImageDataset
+from common.utils import (count_parameters, ensure_dir, format_time,
+                          load_config, save_config_snapshot, set_seed,
+                          setup_logging)
+
 from .model import build_model
-from common.utils import (
-    load_config,
-    set_seed,
-    setup_logging,
-    save_config_snapshot,
-    count_parameters,
-    format_time,
-    ensure_dir,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +112,9 @@ def _build_dataloaders(
         drop_last=False,
     )
 
-    logger.info(f"Train loader: {len(train_dataset)} samples, {len(train_loader)} batches")
+    logger.info(
+        f"Train loader: {len(train_dataset)} samples, {len(train_loader)} batches"
+    )
     logger.info(f"Val loader:   {len(val_dataset)} samples, {len(val_loader)} batches")
 
     return train_loader, val_loader, train_dataset, val_dataset
@@ -200,7 +197,7 @@ def train_one_epoch(
         optimizer.zero_grad()
 
         if use_amp:
-            with autocast('cuda'):
+            with autocast(device_type=device.type, enabled=use_amp):
                 logits = model(images)
                 loss = criterion(logits, labels)
 
@@ -208,9 +205,7 @@ def train_one_epoch(
 
             if max_grad_norm > 0:
                 scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(
-                    model.parameters(), max_grad_norm
-                )
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
 
             scaler.step(optimizer)
             scaler.update()
@@ -220,9 +215,7 @@ def train_one_epoch(
             loss.backward()
 
             if max_grad_norm > 0:
-                torch.nn.utils.clip_grad_norm_(
-                    model.parameters(), max_grad_norm
-                )
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
 
             optimizer.step()
 
@@ -240,11 +233,13 @@ def train_one_epoch(
 
         # Update progress bar
         current_lr = optimizer.param_groups[0]["lr"]
-        pbar.set_postfix({
-            "loss": f"{loss.item():.4f}",
-            "acc": f"{correct / total:.4f}",
-            "lr": f"{current_lr:.2e}",
-        })
+        pbar.set_postfix(
+            {
+                "loss": f"{loss.item():.4f}",
+                "acc": f"{correct / total:.4f}",
+                "lr": f"{current_lr:.2e}",
+            }
+        )
 
     avg_loss = total_loss / total
     accuracy = correct / total
@@ -279,7 +274,7 @@ def validate(
         labels = labels.to(device, non_blocking=True)
 
         if use_amp:
-            with autocast('cuda'):
+            with autocast(device_type=device.type, enabled=use_amp):
                 logits = model(images)
                 loss = criterion(logits, labels)
         else:
@@ -292,10 +287,12 @@ def validate(
         correct += (preds == labels).sum().item()
         total += batch_size
 
-        pbar.set_postfix({
-            "loss": f"{loss.item():.4f}",
-            "acc": f"{correct / total:.4f}",
-        })
+        pbar.set_postfix(
+            {
+                "loss": f"{loss.item():.4f}",
+                "acc": f"{correct / total:.4f}",
+            }
+        )
 
     avg_loss = total_loss / total
     accuracy = correct / total
@@ -376,7 +373,9 @@ def main():
     train_logger = setup_logging(str(log_dir), name="train")
 
     # Setup device
-    device = torch.device(config["train"]["device"] if torch.cuda.is_available() else "cpu")
+    device = torch.device(
+        config["train"]["device"] if torch.cuda.is_available() else "cpu"
+    )
     train_logger.info(f"Using device: {device}")
     train_logger.info(f"Configuration: {args.config}")
     train_logger.info(f"Random seed: {seed}")
@@ -386,11 +385,11 @@ def main():
     if not _check_splits_exist(split_dir):
         train_logger.error(
             f"Train/val splits not found in {split_dir}.\n"
-            f"Please run: python scripts/split_train_val.py --config {args.config}"
+            f"Please run: python scripts/split_data.py --config {args.config}"
         )
         raise FileNotFoundError(
             f"Splits not found in {split_dir}. "
-            f"Run: python scripts/split_train_val.py --config {args.config}"
+            f"Run: python scripts/split_data.py --config {args.config}"
         )
 
     # Load class mapping
@@ -416,8 +415,10 @@ def main():
     warmup_steps = train_cfg["warmup_epochs"] * len(train_loader)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer, scheduler = _build_optimizer_and_scheduler(model, config, num_training_steps)
-    scaler = GradScaler('cuda', enabled=train_cfg.get("amp", False))
+    optimizer, scheduler = _build_optimizer_and_scheduler(
+        model, config, num_training_steps
+    )
+    scaler = GradScaler(device=device.type, enabled=train_cfg.get("amp", False))
 
     # Resume if requested
     start_epoch = 1
@@ -431,8 +432,10 @@ def main():
         start_epoch = resume_info["epoch"] + 1
         global_step = resume_info["global_step"]
         best_val_acc = resume_info["best_val_acc"]
-        train_logger.info(f"Resumed from epoch {resume_info['epoch']}, "
-                     f"best val acc: {best_val_acc:.4f}")
+        train_logger.info(
+            f"Resumed from epoch {resume_info['epoch']}, "
+            f"best val acc: {best_val_acc:.4f}"
+        )
 
     # Save config snapshot
     save_dir = ensure_dir(train_cfg["save_dir"])
@@ -443,8 +446,12 @@ def main():
     log_header = not log_file.exists() or args.resume is None
 
     # Training loop
-    train_logger.info(f"Starting training: {epochs} epochs, {len(train_loader)} batches/epoch")
-    train_logger.info(f"Warmup steps: {warmup_steps}, Total steps: {num_training_steps}")
+    train_logger.info(
+        f"Starting training: {epochs} epochs, {len(train_loader)} batches/epoch"
+    )
+    train_logger.info(
+        f"Warmup steps: {warmup_steps}, Total steps: {num_training_steps}"
+    )
     train_logger.info(f"AMP: {train_cfg.get('amp', False)}")
     train_logger.info("=" * 60)
 
@@ -455,8 +462,17 @@ def main():
 
         # Train
         train_loss, train_acc, global_step = train_one_epoch(
-            model, train_loader, optimizer, criterion, scheduler,
-            scaler, device, epoch, config, warmup_steps, global_step,
+            model,
+            train_loader,
+            optimizer,
+            criterion,
+            scheduler,
+            scaler,
+            device,
+            epoch,
+            config,
+            warmup_steps,
+            global_step,
         )
 
         # Validate
@@ -479,8 +495,10 @@ def main():
             if log_header:
                 f.write("epoch,train_loss,train_acc,val_loss,val_acc,lr,epoch_time\n")
                 log_header = False
-            f.write(f"{epoch},{train_loss:.6f},{train_acc:.6f},"
-                     f"{val_loss:.6f},{val_acc:.6f},{current_lr:.8f},{epoch_time:.2f}\n")
+            f.write(
+                f"{epoch},{train_loss:.6f},{train_acc:.6f},"
+                f"{val_loss:.6f},{val_acc:.6f},{current_lr:.8f},{epoch_time:.2f}\n"
+            )
 
         # Save checkpoints
         is_best = val_acc > best_val_acc
@@ -489,15 +507,27 @@ def main():
             train_logger.info(f"  >> New best model! Val Acc: {best_val_acc:.4f}")
 
         save_checkpoint(
-            model, optimizer, scheduler, scaler,
-            epoch, global_step, best_val_acc, config,
+            model,
+            optimizer,
+            scheduler,
+            scaler,
+            epoch,
+            global_step,
+            best_val_acc,
+            config,
             str(save_dir / "last.pt"),
         )
 
         if is_best:
             save_checkpoint(
-                model, optimizer, scheduler, scaler,
-                epoch, global_step, best_val_acc, config,
+                model,
+                optimizer,
+                scheduler,
+                scaler,
+                epoch,
+                global_step,
+                best_val_acc,
+                config,
                 str(save_dir / "best.pt"),
             )
 

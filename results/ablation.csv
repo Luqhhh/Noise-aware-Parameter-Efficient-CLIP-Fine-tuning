@@ -1,0 +1,2 @@
+exp_id,method,backbone,head,freeze_clip,lr,batch_size,epochs,val_acc,online_acc,ckpt_path,notes
+exp001,frozen_linear,ViT-B/32,linear,true,1e-3,128,20,0.6138,,outputs/baseline/checkpoints/best.pt,first baseline
