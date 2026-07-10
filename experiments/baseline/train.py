@@ -22,6 +22,7 @@ Usage:
 import argparse
 import json
 import logging
+import subprocess
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -43,6 +44,16 @@ from common.utils import (count_parameters, ensure_dir, format_time,
                           setup_logging)
 
 logger = logging.getLogger(__name__)
+
+
+def get_git_commit():
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+        ).strip()
+    except Exception:
+        return None
 
 
 def parse_args() -> argparse.Namespace:
@@ -217,7 +228,7 @@ def _check_splits_exist(split_dir: str) -> bool:
 
 
 def _build_optimizer_and_scheduler(
-    model: nn.Module, config: Dict[str, Any], num_training_steps: int
+    model: nn.Module, config: Dict[str, Any], cosine_steps: int
 ) -> tuple:
     """Build optimizer and learning rate scheduler.
 
@@ -240,10 +251,14 @@ def _build_optimizer_and_scheduler(
             weight_decay=train_cfg["weight_decay"],
         )
 
-    # Cosine annealing scheduler
+    # Save per-group initial_lr before any warmup/scheduler modification
+    for group in optimizer.param_groups:
+        group.setdefault("initial_lr", group["lr"])
+
+    # Cosine annealing scheduler: T_max is the number of steps after warmup
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
-        T_max=num_training_steps,
+        T_max=cosine_steps,
         eta_min=train_cfg["lr"] * 0.01,
     )
 
@@ -254,13 +269,13 @@ def _warmup_lr(
     optimizer: torch.optim.Optimizer,
     warmup_steps: int,
     current_step: int,
-    base_lr: float,
 ) -> None:
-    """Apply linear warmup to learning rate."""
-    if current_step < warmup_steps:
-        lr_scale = (current_step + 1) / warmup_steps
-        for param_group in optimizer.param_groups:
-            param_group["lr"] = base_lr * lr_scale
+    """Apply linear warmup using per-group initial_lr."""
+    if current_step >= warmup_steps:
+        return
+    scale = (current_step + 1) / max(warmup_steps, 1)
+    for group in optimizer.param_groups:
+        group["lr"] = group["initial_lr"] * scale
 
 
 def _unpack_batch(
@@ -323,7 +338,6 @@ def train_one_epoch(
     train_cfg = config["train"]
     use_amp = train_cfg.get("amp", False)
     max_grad_norm = train_cfg.get("max_grad_norm", 1.0)
-    base_lr = train_cfg["lr"]
 
     total_loss = 0.0
     correct = 0
@@ -336,7 +350,7 @@ def train_one_epoch(
 
         # Warmup
         if global_step < warmup_steps:
-            _warmup_lr(optimizer, warmup_steps, global_step, base_lr)
+            _warmup_lr(optimizer, warmup_steps, global_step)
 
         optimizer.zero_grad()
 
@@ -835,12 +849,13 @@ def main():
         epochs = train_cfg["epochs"]
         train_logger.info(f"Using config epochs: {epochs} ({mode} mode)")
 
-    num_training_steps = epochs * len(train_loader)
     warmup_steps = train_cfg["warmup_epochs"] * len(train_loader)
+    total_steps = epochs * len(train_loader)
+    cosine_steps = max(total_steps - warmup_steps, 1)
 
     criterion = nn.CrossEntropyLoss()
     optimizer, scheduler = _build_optimizer_and_scheduler(
-        model, config, num_training_steps
+        model, config, cosine_steps
     )
     scaler = GradScaler(device=device.type, enabled=train_cfg.get("amp", False))
 
@@ -875,7 +890,7 @@ def main():
         f"Starting training: {epochs} epochs, {len(train_loader)} batches/epoch"
     )
     train_logger.info(
-        f"Warmup steps: {warmup_steps}, Total steps: {num_training_steps}"
+        f"Warmup steps: {warmup_steps}, Total steps: {total_steps}, Cosine steps: {cosine_steps}"
     )
     train_logger.info(f"AMP: {train_cfg.get('amp', False)}")
     train_logger.info("=" * 60)
@@ -998,6 +1013,7 @@ def main():
         eval_results = {
             "experiment_id": experiment_id,
             "mode": mode,
+            "config_path": args.config,
             "split_seed": config["data"].get("split_seed"),
             "train_seed": train_seed,
             "best_val_acc": float(best_val_acc),
@@ -1005,6 +1021,13 @@ def main():
             "trained_epochs": epochs,
             "head_type": model.head_type,
             "augmentation_preset": aug_preset,
+            "use_cached_features": use_cached,
+            "learning_rate": config["train"]["lr"],
+            "weight_decay": config["train"]["weight_decay"],
+            "batch_size": config["train"]["batch_size"],
+            "freeze_clip": config["model"].get("freeze_clip", True),
+            "clip_model_name": config["model"]["clip_model_name"],
+            "git_commit": get_git_commit(),
         }
         eval_path = save_dir / "eval_results.json"
         with open(eval_path, "w") as f:
