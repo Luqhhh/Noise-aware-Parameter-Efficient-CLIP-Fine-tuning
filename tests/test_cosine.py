@@ -35,9 +35,9 @@ def test_cosine_fixed_scale():
     )
     assert not isinstance(model.logit_scale, torch.nn.Parameter)
     assert model.logit_scale.item() == 10.0
-    # clamp_scale should be no-op
-    s = model.clamp_scale()
-    assert s.item() == 10.0
+    # clamp_scale should be no-op (returns None, value unchanged)
+    model.clamp_scale()
+    assert model.logit_scale.item() == 10.0
 
 
 def test_cosine_learnable_scale():
@@ -59,13 +59,13 @@ def test_cosine_clamp():
     # Manually set scale to extreme values
     with torch.no_grad():
         model.logit_scale.fill_(200.0)
-    clamped = model.clamp_scale()
-    assert clamped.item() == 100.0
+    model.clamp_scale()
+    assert model.logit_scale.item() == 100.0
 
     with torch.no_grad():
         model.logit_scale.fill_(0.1)
-    clamped = model.clamp_scale()
-    assert clamped.item() == 1.0
+    model.clamp_scale()
+    assert model.logit_scale.item() == 1.0
 
 
 def test_cosine_init_scale_validation():

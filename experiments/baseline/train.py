@@ -263,6 +263,44 @@ def _warmup_lr(
             param_group["lr"] = base_lr * lr_scale
 
 
+def _unpack_batch(
+    batch_data,
+    device: torch.device,
+):
+    """Return inputs, labels, is_cached."""
+    if len(batch_data) == 3:
+        images, labels, _paths = batch_data
+        inputs = images.to(device, non_blocking=True)
+        is_cached = False
+    elif len(batch_data) == 2:
+        features, labels = batch_data
+        inputs = features.to(device, non_blocking=True)
+        is_cached = True
+    else:
+        raise ValueError(
+            f"Unexpected batch tuple length: {len(batch_data)}"
+        )
+
+    labels = labels.to(device, non_blocking=True)
+    return inputs, labels, is_cached
+
+
+def _forward_inputs(
+    model: nn.Module,
+    inputs: torch.Tensor,
+    is_cached: bool,
+) -> torch.Tensor:
+    if is_cached:
+        if not hasattr(model, "forward_features"):
+            raise TypeError(
+                f"{type(model).__name__} does not implement "
+                "forward_features() required by cached training."
+            )
+        return model.forward_features(inputs)
+
+    return model(inputs)
+
+
 def train_one_epoch(
     model: nn.Module,
     loader: DataLoader,
@@ -294,18 +332,7 @@ def train_one_epoch(
     pbar = tqdm(loader, desc=f"Epoch {epoch:3d} [Train]", dynamic_ncols=True)
 
     for batch_idx, batch_data in enumerate(pbar):
-        # Handle both online (image, label, path) and cached (feature, label) datasets
-        if len(batch_data) == 3:
-            images, labels, _paths = batch_data
-            images = images.to(device, non_blocking=True)
-        elif len(batch_data) == 2:
-            features, labels = batch_data
-            # Use features directly as model input (cached path)
-            images = features.to(device, non_blocking=True)
-        else:
-            raise ValueError(f"Unexpected batch size: {len(batch_data)}")
-
-        labels = labels.to(device, non_blocking=True)
+        inputs, labels, is_cached = _unpack_batch(batch_data, device)
 
         # Warmup
         if global_step < warmup_steps:
@@ -315,7 +342,7 @@ def train_one_epoch(
 
         if use_amp:
             with autocast(device_type=device.type, enabled=use_amp):
-                logits = model(images)
+                logits = _forward_inputs(model, inputs, is_cached)
                 loss = criterion(logits, labels)
 
             scaler.scale(loss).backward()
@@ -327,7 +354,7 @@ def train_one_epoch(
             scaler.step(optimizer)
             scaler.update()
         else:
-            logits = model(images)
+            logits = _forward_inputs(model, inputs, is_cached)
             loss = criterion(logits, labels)
             loss.backward()
 
@@ -345,7 +372,7 @@ def train_one_epoch(
             scheduler.step()
 
         # Statistics
-        batch_size = images.size(0)
+        batch_size = inputs.size(0)
         total_loss += loss.item() * batch_size
         preds = logits.argmax(dim=1)
         correct += (preds == labels).sum().item()
@@ -391,26 +418,17 @@ def validate(
     pbar = tqdm(loader, desc=" " * 16 + "[Val]  ", dynamic_ncols=True)
 
     for batch_data in pbar:
-        if len(batch_data) == 3:
-            images, labels, _paths = batch_data
-            images = images.to(device, non_blocking=True)
-        elif len(batch_data) == 2:
-            features, labels = batch_data
-            images = features.to(device, non_blocking=True)
-        else:
-            raise ValueError(f"Unexpected batch size: {len(batch_data)}")
-
-        labels = labels.to(device, non_blocking=True)
+        inputs, labels, is_cached = _unpack_batch(batch_data, device)
 
         if use_amp:
             with autocast(device_type=device.type, enabled=use_amp):
-                logits = model(images)
+                logits = _forward_inputs(model, inputs, is_cached)
                 loss = criterion(logits, labels)
         else:
-            logits = model(images)
+            logits = _forward_inputs(model, inputs, is_cached)
             loss = criterion(logits, labels)
 
-        batch_size = images.size(0)
+        batch_size = inputs.size(0)
         total_loss += loss.item() * batch_size
         preds = logits.argmax(dim=1)
         correct += (preds == labels).sum().item()
@@ -653,47 +671,21 @@ def main():
     # Dataset and DataLoader construction
     split_dir = config["data"]["split_dir"]
 
-    if mode == "final_fit":
-        # final_fit: no split, use full dataset, no validation
-        train_logger.info("final_fit mode: loading full dataset (no val split).")
-        train_dataset = TrainImageDataset(
-            data_root=config["data"]["train_dir"],
-            split_csv=None,
-            class_to_idx=class_to_idx,
-            transform=train_transform,
-            return_path=True,
-        )
-
-        train_seed_val = config["data"].get("train_seed", config["data"].get("seed", 42))
-        g = torch.Generator()
-        g.manual_seed(train_seed_val)
-
-        train_loader = DataLoader(
-            train_dataset,
-            batch_size=config["train"]["batch_size"],
-            shuffle=True,
-            num_workers=config["train"]["num_workers"],
-            pin_memory=True,
-            drop_last=False,
-            worker_init_fn=seed_worker,
-            generator=g,
-        )
-        val_loader = None
-        train_logger.info(
-            f"Train loader (final_fit): {len(train_dataset)} samples, "
-            f"{len(train_loader)} batches"
-        )
-    elif use_cached:
+    if use_cached:
         # Use cached features instead of online encoding
         train_logger.info("Using cached features for training.")
         cache_dir = config["cache"]["cache_dir"]
-        split_csv_path = str(Path(split_dir) / "train.csv")
+        train_split_csv = (
+            None
+            if mode == "final_fit"
+            else str(Path(split_dir) / "train.csv")
+        )
         class_to_idx_path = str(Path(class_mapping_path) / "class_to_idx.json")
         verification = config["cache"].get("verification", "full")
 
         train_dataset = CachedFeatureDataset(
             cache_dir=cache_dir,
-            split_csv=split_csv_path,
+            split_csv=train_split_csv,
             class_to_idx_path=class_to_idx_path,
             dataset_root=config["data"]["train_dir"],
             verification=verification,
@@ -714,7 +706,7 @@ def main():
         )
 
         # Build val loader online (validation always uses online images)
-        val_loader, _ = None, None
+        val_loader = None
         if mode == "dev":
             val_csv = str(Path(split_dir) / "val.csv")
             val_dataset = TrainImageDataset(
@@ -739,7 +731,6 @@ def main():
                 f"{len(val_loader)} batches"
             )
         elif mode == "confirm":
-            # Check that splits exist
             if not _check_splits_exist(split_dir):
                 train_logger.error(
                     f"Train/val splits not found in {split_dir}.\n"
@@ -775,6 +766,36 @@ def main():
 
         train_logger.info(
             f"Train loader (cached): {len(train_dataset)} samples, "
+            f"{len(train_loader)} batches"
+        )
+    elif mode == "final_fit":
+        # final_fit: no split, use full dataset, no validation
+        train_logger.info("final_fit mode: loading full dataset (no val split).")
+        train_dataset = TrainImageDataset(
+            data_root=config["data"]["train_dir"],
+            split_csv=None,
+            class_to_idx=class_to_idx,
+            transform=train_transform,
+            return_path=True,
+        )
+
+        train_seed_val = config["data"].get("train_seed", config["data"].get("seed", 42))
+        g = torch.Generator()
+        g.manual_seed(train_seed_val)
+
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=config["train"]["batch_size"],
+            shuffle=True,
+            num_workers=config["train"]["num_workers"],
+            pin_memory=True,
+            drop_last=False,
+            worker_init_fn=seed_worker,
+            generator=g,
+        )
+        val_loader = None
+        train_logger.info(
+            f"Train loader (final_fit): {len(train_dataset)} samples, "
             f"{len(train_loader)} batches"
         )
     else:

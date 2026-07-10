@@ -64,7 +64,7 @@ class CosineClassifier(nn.Module):
 
         # Cosine classifier weight (class prototypes) -- no bias
         weight = torch.randn(num_classes, feature_dim)
-        weight = F.normalize(weight, dim=1) * init_scale
+        weight = F.normalize(weight, dim=1)
         self.weight = nn.Parameter(weight)
 
         # Logit scale (temperature)
@@ -90,23 +90,46 @@ class CosineClassifier(nn.Module):
         features = F.normalize(features, p=2, dim=-1)
         return features
 
+    def forward_features(self, features: torch.Tensor) -> torch.Tensor:
+        """Classify pre-computed CLIP features.
+
+        Args:
+            features: Tensor of shape [B, feature_dim].
+
+        Returns:
+            Logits of shape [B, num_classes].
+        """
+        if features.ndim != 2:
+            raise ValueError(
+                f"Expected cached features with shape [B, D], "
+                f"got {tuple(features.shape)}"
+            )
+        if features.shape[-1] != self.feature_dim:
+            raise ValueError(
+                f"Expected feature_dim={self.feature_dim}, "
+                f"got {features.shape[-1]}"
+            )
+
+        features = F.normalize(features.float(), p=2, dim=-1)
+        weight_norm = F.normalize(self.weight.float(), p=2, dim=1)
+
+        # forward 中只读取裁剪值；参数原地裁剪仍在 optimizer.step() 后执行。
+        scale = self.logit_scale.clamp(min=1.0, max=100.0)
+        return scale * features @ weight_norm.t()
+
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         """Forward pass: encode, normalize, compute cosine similarity, scale.
 
         Returns logits of shape (B, num_classes).
         """
         features = self.encode_image(images)
-        # Normalize weight on each forward pass
-        weight_norm = F.normalize(self.weight, dim=1)
-        logits = features @ weight_norm.T * self.clamp_scale()
-        return logits
+        return self.forward_features(features)
 
-    def clamp_scale(self):
+    @torch.no_grad()
+    def clamp_scale(self) -> None:
         """Clamp logit_scale to [1.0, 100.0]. No-op when learnable_scale=False."""
         if self.learnable_scale:
-            with torch.no_grad():
-                self.logit_scale.clamp_(min=1.0, max=100.0)
-        return self.logit_scale
+            self.logit_scale.clamp_(min=1.0, max=100.0)
 
     def get_param_groups(self, lr, weight_decay):
         """Return optimizer param groups.

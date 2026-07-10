@@ -101,6 +101,29 @@ class CLIPLinearClassifier(nn.Module):
 
         return features
 
+    def forward_features(self, features: torch.Tensor) -> torch.Tensor:
+        """Classify pre-computed CLIP features.
+
+        Args:
+            features: Tensor of shape [B, feature_dim].
+
+        Returns:
+            Logits of shape [B, num_classes].
+        """
+        if features.ndim != 2:
+            raise ValueError(
+                f"Expected cached features with shape [B, D], "
+                f"got {tuple(features.shape)}"
+            )
+        if features.shape[-1] != self.feature_dim:
+            raise ValueError(
+                f"Expected feature_dim={self.feature_dim}, "
+                f"got {features.shape[-1]}"
+            )
+
+        features = F.normalize(features.float(), p=2, dim=-1)
+        return self.classifier(features)
+
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         """Forward pass: encode images and classify.
 
@@ -111,8 +134,7 @@ class CLIPLinearClassifier(nn.Module):
             Logits tensor of shape (B, num_classes).
         """
         features = self.encode_image(images)
-        logits = self.classifier(features)
-        return logits
+        return self.forward_features(features)
 
     def get_trainable_parameters(self):
         """Return only the trainable parameters (classifier head)."""

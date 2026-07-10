@@ -472,6 +472,10 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
 
     def _load_split(self, split_csv):
         """Load split CSV and select corresponding cached features."""
+        if split_csv is None:
+            self.sample_indices = list(range(len(self.all_paths)))
+            return
+
         import pandas as pd
         df = pd.read_csv(split_csv)
         self.sample_indices = []
