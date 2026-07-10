@@ -18,16 +18,13 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-
-import numpy as np
 import torch
-from torch.utils.data import DataLoader
+from PIL import Image
 from tqdm import tqdm
 
 from .class_mapping import load_or_generate_mapping
 from .clip_utils import encode_frozen_clip_features, load_openai_clip
-from .dataset import IMAGE_EXTENSIONS, _find_images_in_dir
+from .dataset import _find_images_in_dir
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +129,8 @@ class FeatureCacheBuilder:
             "expected_num_classes",
             config.get("model", {}).get("num_classes", 500),
         )
+        if "expected_num_classes" not in data_cfg and "num_classes" not in config.get("model", {}):
+            logger.warning("expected_num_classes not configured, defaulting to 500")
 
     def build(self):
         """Run the full cache build pipeline."""
@@ -181,7 +180,7 @@ class FeatureCacheBuilder:
             json.dump(idx_to_class, f, indent=2, ensure_ascii=False)
 
         # Step 8: Write manifest
-        manifest = self._build_manifest(dataset_size, quick_fp, full_fp)
+        manifest = self._build_manifest(dataset_size, quick_fp, full_fp, class_to_idx)
         with open(self.cache_dir / "manifest.json", "w") as f:
             json.dump(manifest, f, indent=2, ensure_ascii=False)
 
@@ -221,8 +220,6 @@ class FeatureCacheBuilder:
 
             for p in batch_paths:
                 try:
-                    from PIL import Image
-
                     img = Image.open(p).convert("RGB")
                     img = preprocess(img)
                     batch_images.append(img)
@@ -245,9 +242,8 @@ class FeatureCacheBuilder:
         logger.info(f"Encoded features: shape={result.shape}, dtype={result.dtype}")
         return result
 
-    def _build_manifest(self, dataset_size, quick_fp, full_fp):
+    def _build_manifest(self, dataset_size, quick_fp, full_fp, class_to_idx):
         """Build the manifest dictionary."""
-        import platform
         import sys
 
         import torch as _torch
@@ -256,10 +252,7 @@ class FeatureCacheBuilder:
         clip_info = _get_clip_info()
 
         class_mapping_hash = hashlib.sha256(
-            json.dumps(
-                json.loads((self.cache_dir / "class_to_idx.json").read_text()),
-                sort_keys=True,
-            ).encode()
+            json.dumps(class_to_idx, sort_keys=True).encode()
         ).hexdigest()
 
         return {
