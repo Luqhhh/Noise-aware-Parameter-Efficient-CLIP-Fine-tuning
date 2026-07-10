@@ -15,6 +15,7 @@
 - **Dev/confirm/final-fit**: search on split_42, verify top-2 on 3407+2026, final-fit on full data
 - **Canonical class mapping**: generated once from full training directory at `data/preliminary/metadata/`, used by ALL stages
 - **`drop_last=False` everywhere**
+- **Production code uses explicit exceptions, not `assert`**: `python -O` strips assertions. All submission coverage checks, cache integrity validation, class mapping verification, and safety guards must use `ValueError` / `RuntimeError` / explicit `if`+`raise`. `assert` is acceptable only in unit tests.
 
 ---
 
@@ -37,8 +38,12 @@
 
 **Candidate pool**: C0/C1/C2 are explanatory internal ablations only — they do NOT enter the top-2 candidate pool and are NOT used to reselect E1 or E5 configurations. E1 always uses init_scale=10, learnable_scale=True. E5 inherits E1's Cosine config. C0/C1/C2 are reported independently in results.
 
-**Cached features guard**: Feature caching is ONLY valid for augmentation=a0 AND freeze_clip=True. The following experiments can use cached features: B0, E0, E1, C0, C1, C2. The following CANNOT: E2, E3, E4, E5 (random augmentation must be re-applied each epoch). Hard enforcement:
+**Cached features guard**: Feature caching is ONLY valid for augmentation=a0 AND freeze_clip=True. **B0 regression**: B0 MUST use the original online encoding path (`--use-cached-features` is forbidden for B0). The original baseline used online CLIP encoding; changing to cached features would invalidate the regression comparison. B0-cache-equivalence can be tested separately as an engineering check (same checkpoint, same samples, compare online vs cached features) but is NOT a substitute for B0 results.
+
+The following experiments CAN use cached features: E0, E1, C0, C1, C2. The following CANNOT: B0 (regression requires online), E2, E3, E4, E5 (random augmentation must be re-applied each epoch). Hard enforcement:
 ```python
+if experiment_id == "B0" and use_cached_features:
+    raise ValueError("B0 regression must use the original online encoding path")
 if use_cached_features and augmentation_preset != "a0":
     raise ValueError("Cached features only valid for deterministic A0 preprocessing")
 if use_cached_features and not freeze_clip:
@@ -136,25 +141,52 @@ data:
 
 ### Method-specific Epoch Freezing
 
-Each method independently records its best_epoch on dev split:
 ```
-B0: best_epoch =  8 on split_42 → frozen (for regression verification only)
-E0: best_epoch =  8 on split_42 → frozen, used on confirm splits
-E1: best_epoch = 13 on split_42 → frozen, used on confirm splits
-E2: best_epoch = 10 on split_42 → frozen
-...
+B0:
+  - Trains with original 20-epoch + best_val checkpoint protocol
+  - Records observed_best_epoch (e.g. 8), used only for regression comparison
+  - Does NOT enter confirm stage; has no frozen_epoch concept
+
+E0–E5, C0–C2:
+  - Each records dev_best_epoch on split_42
+  - dev_best_epoch becomes frozen_train_epochs for confirm and final_fit
+  - Confirm splits use each method's own frozen_train_epochs, no tuning
 ```
 
-Confirm splits use each method's own frozen epoch. No epoch tuning on confirm.
-Final-fit uses the selected method's frozen epoch.
+**Checkpoint epoch fields**:
+```python
+# B0:
+{
+    "observed_best_epoch": 8,
+    "epoch_selection_policy": "original_best_val",
+    "trained_epochs": 20,
+}
+
+# E0–E5, C0–C2:
+{
+    "dev_best_epoch": 13,
+    "frozen_train_epochs": 13,
+    "epoch_selection_policy": "dev_best_epoch_frozen_before_confirm",
+    "trained_epochs": 13,
+}
+```
 
 ### Candidate & Epoch Selection Rules
 
 **Method selection**:
 1. Compare top-2 candidates on confirm splits by mean paired delta vs E0 (tuned linear)
-2. If |Δ_c1 − Δ_c2| < 0.1pp → select structurally simpler method
-3. If any candidate degrades >0.2pp on any confirm split vs E0 → eliminated
+2. If any candidate degrades >0.2pp on any confirm split vs E0 → eliminated
+3. If |Δ_c1 − Δ_c2| < 0.1pp → apply deterministic tiebreaker (see below)
 4. Test-set submission scores are NOT used
+
+**Tiebreaker** (pre-defined, deterministic — applied when mean Δ difference < 0.1pp):
+1. Fewer trainable parameters at inference time
+2. If tied: fewer data augmentation components in training
+3. If tied: higher confirmation worst-split delta
+4. If tied: lower confirmation delta std (sample std, ddof=1)
+5. If still tied: lexicographic order of experiment ID
+
+This is evaluated BEFORE seeing results — not interpreted post-hoc.
 
 **Epoch selection** (per-method, frozen before confirm):
 1. Each method records `best_epoch = argmax(val_acc)` on dev split (seed=42)
@@ -234,6 +266,10 @@ cache/semifinal/clip_vit_b32_openai/
   "clip_source_path": "/path/to/clip/installation",
   "pillow_version": "x.y.z",
   "python_version": "3.x.y",
+  "feature_encode_amp": false,
+  "autocast_dtype": null,
+  "encode_device_type": "cuda",
+  "clip_parameter_dtype": "float16",
   "image_resolution": 224,
   "interpolation": "bicubic",
   "clip_mean": [0.48145466, 0.4578275, 0.40821073],
@@ -267,7 +303,17 @@ class CachedFeatureDataset(Dataset):
         # 7. Per-sample label consistency check
 ```
 
-**Version fields**: incompatible fields (backbone, pretrained_source, etc.) mismatch → `ValueError`. Environment version fields (torch, torchvision, clip, pillow) mismatch → warning only (patch version differences shouldn't invalidate valid caches).
+**Version fields**: incompatible fields mismatch → `ValueError`; environment version fields mismatch → warning only.
+
+**Hard compatibility fields** (any mismatch → reject):
+```
+backbone, pretrained_source, feature_dim, normalized, dtype, preprocess,
+feature_encode_amp, autocast_dtype
+```
+
+**Simpler strategy (recommended)**: always encode frozen CLIP features with `use_amp=False`. Classifier head training can still use AMP. This guarantees cache/online feature identity regardless of AMP configuration.
+
+**C0/C1/C2 constraints**: C0/C1/C2 reuse E1's tuned lr, weight_decay, scheduler, batch_size, train_seed, and max_epochs from the 9-trial main search. Only `learnable_scale` and `init_scale` vary. They independently record their own dev best_epoch (different scale/temperature mechanisms may converge at different rates) but must NOT re-tune lr/wd.
 
 ### Transform Construction
 
@@ -381,7 +427,7 @@ for name, class_name in submission_rows:
 | AC-1.8 | 缓存路径无重复 |
 | AC-1.9 | 缓存模式加速（性能目标） |
 | AC-1.10 | 更改 backbone/pretrained_source/feature_dim/normalized/preprocess → 拒绝训练 |
-| AC-1.11 | **缓存模式 guard**：preset != a0 或 freeze_clip=False 时启用 `--use-cached-features` → ValueError，程序拒绝运行 |
+| AC-1.11 | **缓存模式 guard**：B0 启用缓存 → ValueError；preset != a0 或 freeze_clip=False 时启用缓存 → ValueError |
 
 ### AC-2: 种子与多划分
 
@@ -410,6 +456,7 @@ for name, class_name in submission_rows:
 | AC-3.7 | **E0 vs E1 等预算**：各 9 trials；C0/C1/C2 独立报告 |
 | AC-3.8 | 在线/缓存模式正常训练 |
 | AC-3.9 | 推理合法：csv.writer，无 header，通过 check_submission.py |
+| AC-3.10 | **C0/C1/C2 固定 E1 训练超参**：C0/C1/C2 的 resolved config 除 `learnable_scale`/`init_scale`/`best_epoch` 外与 E1 完全一致（lr, wd, scheduler, batch_size, train_seed, max_epochs） |
 
 ### AC-4: 数据增强
 
