@@ -16,9 +16,11 @@ import hashlib
 import json
 import logging
 import os
+import sys
 import time
 from pathlib import Path
 import torch
+import torchvision
 from PIL import Image
 from tqdm import tqdm
 
@@ -27,6 +29,8 @@ from .clip_utils import encode_frozen_clip_features, load_openai_clip
 from .dataset import _find_images_in_dir
 
 logger = logging.getLogger(__name__)
+
+_MISSING = object()  # Sentinel for "key not present" in EXPECTED_HARD_VALUES
 
 
 def _get_package_version(pkg_name):
@@ -244,11 +248,6 @@ class FeatureCacheBuilder:
 
     def _build_manifest(self, dataset_size, quick_fp, full_fp, class_to_idx):
         """Build the manifest dictionary."""
-        import sys
-
-        import torch as _torch
-        import torchvision as _tv
-
         clip_info = _get_clip_info()
 
         class_mapping_hash = hashlib.sha256(
@@ -268,8 +267,8 @@ class FeatureCacheBuilder:
             "class_mapping_hash": class_mapping_hash,
             "dataset_quick_fingerprint": quick_fp,
             "dataset_full_fingerprint": full_fp,
-            "torch_version": _torch.__version__,
-            "torchvision_version": _tv.__version__,
+            "torch_version": torch.__version__,
+            "torchvision_version": torchvision.__version__,
             "clip_package": clip_info["clip_package"],
             "clip_version": clip_info["clip_version"],
             "clip_commit": clip_info["clip_commit"],
@@ -357,6 +356,10 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
         self._validate_tensors()
 
         # 7. Load class mapping and verify hash
+        if not Path(class_to_idx_path).exists():
+            raise FileNotFoundError(
+                f"class_to_idx_path not found: {class_to_idx_path}"
+            )
         with open(class_to_idx_path, "r") as f:
             self.class_to_idx = json.load(f)
         self._validate_class_mapping_hash()
@@ -372,9 +375,9 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
     def _validate_hard_fields(self):
         """Check that hard compatibility fields match expected values."""
         for field in self.HARD_FIELDS:
-            expected = self.EXPECTED_HARD_VALUES.get(field)
+            expected = self.EXPECTED_HARD_VALUES.get(field, _MISSING)
             actual = self.manifest.get(field)
-            if expected is not None and actual != expected:
+            if expected is not _MISSING and actual != expected:
                 raise ValueError(
                     f"Cache manifest field '{field}' mismatch: "
                     f"expected {expected!r}, got {actual!r}. "
@@ -383,13 +386,9 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
 
     def _check_version_fields(self):
         """Warn if environment version fields differ from cache."""
-        import sys
-        import torch as _torch
-        import torchvision as _tv
-
         version_checks = {
-            "torch_version": _torch.__version__,
-            "torchvision_version": _tv.__version__,
+            "torch_version": torch.__version__,
+            "torchvision_version": torchvision.__version__,
             "python_version": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
         }
         for field, current in version_checks.items():
@@ -494,6 +493,8 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
             if rel_path in path_to_idx:
                 cache_idx = path_to_idx[rel_path]
             elif img_path.name in path_to_idx:
+                # Defense-in-depth: bare filename lookup as a final fallback
+                # even though cached paths always contain directory prefixes.
                 cache_idx = path_to_idx[img_path.name]
             else:
                 raise ValueError(
