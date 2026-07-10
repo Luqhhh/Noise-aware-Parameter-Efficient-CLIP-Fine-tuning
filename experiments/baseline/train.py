@@ -36,6 +36,7 @@ from tqdm import tqdm
 from common.cache import CachedFeatureDataset
 from common.class_mapping import load_or_generate_mapping
 from common.dataset import TrainImageDataset, seed_worker
+from common.runtime_config import resolve_runtime_args
 from common.transforms import build_train_transform, VALID_PRESETS
 from common.utils import (count_parameters, ensure_dir, format_time,
                           load_config, save_config_snapshot, set_train_seed,
@@ -70,7 +71,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--mode",
         type=str,
-        default="dev",
+        default=None,
         choices=["dev", "confirm", "final_fit"],
         help="Training mode: dev (train+val, best epoch), "
              "confirm (frozen epoch count, eval), "
@@ -79,8 +80,8 @@ def parse_args() -> argparse.Namespace:
     # Feature caching
     parser.add_argument(
         "--use-cached-features",
-        action="store_true",
-        default=False,
+        action=argparse.BooleanOptionalAction,
+        default=None,
         help="Use pre-computed CLIP features from cache (E0/E1 experiments).",
     )
     # Epoch freezing for confirm/final_fit
@@ -94,7 +95,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--augmentation-preset",
         type=str,
-        default="a0",
+        default=None,
         choices=sorted(VALID_PRESETS),
         help="Augmentation preset: a0 (none/deterministic), a1, a2, a3.",
     )
@@ -558,11 +559,14 @@ def main():
     # Load config
     config = load_config(args.config)
 
-    # Determine effective mode and experiment identity
+    # Resolve runtime args: explicit CLI > YAML > hard default
+    args = resolve_runtime_args(args, config)
+
     mode = args.mode
     experiment_id = args.experiment_id
     use_cached = args.use_cached_features
     aug_preset = args.augmentation_preset
+    head_type = args.head_type
 
     # Set random seed for training (does NOT enable cudnn.deterministic)
     train_seed = config["data"].get("train_seed", config["data"].get("seed", 42))
@@ -580,21 +584,29 @@ def main():
     train_logger.info(f"Configuration: {args.config}")
     train_logger.info(f"Train seed: {train_seed}")
 
-    # Log mode and experiment identity
-    train_logger.info(f"Experiment ID: {experiment_id}")
-    train_logger.info(f"Training mode: {mode}")
-    train_logger.info(f"Augmentation preset: {aug_preset}")
-    train_logger.info(f"Use cached features: {use_cached}")
+    # Validate resolved runtime values
+    if aug_preset not in VALID_PRESETS:
+        raise ValueError(
+            f"Unknown augmentation preset: {aug_preset}. "
+            f"Expected one of {sorted(VALID_PRESETS)}"
+        )
+    if mode not in {"dev", "confirm", "final_fit"}:
+        raise ValueError(f"Unsupported training mode: {mode}")
+    if head_type not in {"linear", "cosine"}:
+        raise ValueError(f"Unsupported head type: {head_type}")
+
+    train_logger.info(
+        "Resolved runtime: "
+        f"experiment_id={experiment_id}, "
+        f"mode={mode}, "
+        f"head_type={head_type}, "
+        f"augmentation={aug_preset}, "
+        f"cached={use_cached}"
+    )
 
     # Guard enforcement
     freeze_clip = config["model"].get("freeze_clip", True)
     _enforce_guards(experiment_id, use_cached, aug_preset, freeze_clip)
-
-    # Determine head type: CLI arg overrides config
-    head_type = args.head_type
-    if head_type is None:
-        head_type = config.get("experiment", {}).get("head_type", "linear")
-    train_logger.info(f"Head type: {head_type}")
 
     # Build model based on head type
     if head_type == "cosine":
