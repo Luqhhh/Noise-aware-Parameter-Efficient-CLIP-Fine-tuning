@@ -150,9 +150,6 @@ def build_cosine_model(config: dict, device: torch.device) -> Tuple[CosineClassi
     """
     clip_model, preprocess = load_openai_clip(device)
 
-    # Convert visual encoder to float32
-    clip_model.visual = clip_model.visual.float()
-
     model_cfg = config["model"]
     model = CosineClassifier(
         clip_model=clip_model,
