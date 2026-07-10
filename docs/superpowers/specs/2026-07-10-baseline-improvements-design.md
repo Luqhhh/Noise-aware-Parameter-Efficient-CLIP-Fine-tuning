@@ -22,26 +22,56 @@
 
 | ID | Configuration | Purpose |
 |----|-------------|---------|
-| **B0** | Original Linear+A0, original hyperparameters (lr=1e-3, wd=1e-4) | Verify code refactor didn't change baseline |
+| **B0** | Original Linear+A0, FULL original training protocol (lr=1e-3, wd=1e-4, epochs=20, AdamW, CosineAnnealingLR, warmup=1, AMP, best.pt checkpoint) | Verify code refactor didn't change baseline |
 | **E0** | Linear+A0, best of 9-trial lr×wd search | Tuned linear baseline for fair head comparison |
 | **E1** | Cosine+A0, best of 9-trial lr×wd search (init_scale=10, learnable_scale=True fixed) | Test cosine head vs tuned linear |
 | **E2** | Linear+A1, use E0's tuned lr/wd | Test RandomResizedCrop+Flip |
 | **E3** | Linear+A2, use E0's tuned lr/wd | Test +ColorJitter |
 | **E4** | Linear+A3, use E0's tuned lr/wd | Test +RandomErasing |
 | **E5** | Cosine + best augmentation, Cosine config from E1 | Test head×augmentation combination |
-| **C0** | Cosine+A0, fixed scale=10 | Cosine scale internal ablation |
-| **C1** | Cosine+A0, learnable scale init=10 | Cosine scale internal ablation |
-| **C2** | Cosine+A0, learnable scale init=20 | Cosine scale internal ablation |
+| **C0** | Cosine+A0, fixed scale=10 | Cosine scale internal ablation (NOT in candidate pool) |
+| **C1** | Cosine+A0, learnable scale init=10 | Cosine scale internal ablation (NOT in candidate pool) |
+| **C2** | Cosine+A0, learnable scale init=20 | Cosine scale internal ablation (NOT in candidate pool) |
 
 **Key rule**: E2/E3/E4 use the SAME lr/wd/scheduler/batch_size as E0 — only augmentation preset changes. Each method independently freezes its own best_epoch on dev split.
 
+**Candidate pool**: C0/C1/C2 are explanatory internal ablations only — they do NOT enter the top-2 candidate pool and are NOT used to reselect E1 or E5 configurations. E1 always uses init_scale=10, learnable_scale=True. E5 inherits E1's Cosine config. C0/C1/C2 are reported independently in results.
+
+**Cached features guard**: Feature caching is ONLY valid for augmentation=a0 AND freeze_clip=True. The following experiments can use cached features: B0, E0, E1, C0, C1, C2. The following CANNOT: E2, E3, E4, E5 (random augmentation must be re-applied each epoch). Hard enforcement:
+```python
+if use_cached_features and augmentation_preset != "a0":
+    raise ValueError("Cached features only valid for deterministic A0 preprocessing")
+if use_cached_features and not freeze_clip:
+    raise ValueError("Cached features require freeze_clip=True")
+```
+
 **Progress tracking**:
 ```
-B0 (original baseline)
+B0 (original baseline, full original training protocol)
   → E0 (tuned baseline)              ← engineering + hyperparameter gain
     → E1 (cosine head)                ← head improvement
     → E2/E3/E4 (augmentation)         ← augmentation improvement
       → E5 (head × augmentation)      ← combined gain
+```
+
+**B0 regression protocol**: B0 MUST reproduce the complete original training protocol, not just lr/wd. This includes: optimizer=AdamW, scheduler=CosineAnnealingLR, epochs=20, warmup_epochs=1, batch_size=128, AMP enabled, max_grad_norm=1.0, checkpoint_policy=best_val, split_seed=42, train_seed=42. B0 does NOT adopt any new tuning rules (no 9-trial search, no per-method epoch freezing). Its sole purpose is answering: "Did infrastructure refactoring change the original baseline?"
+
+B0 regression fixture should save the resolved config:
+```json
+{
+  "optimizer": "AdamW",
+  "lr": 0.001,
+  "weight_decay": 0.0001,
+  "batch_size": 128,
+  "epochs": 20,
+  "scheduler": "CosineAnnealingLR",
+  "warmup_epochs": 1,
+  "amp": true,
+  "max_grad_norm": 1.0,
+  "checkpoint_policy": "best_val",
+  "split_seed": 42,
+  "train_seed": 42
+}
 ```
 
 **Confirm-stage paired delta**: `Δ_i = Acc_candidate,i − Acc_E0,i` (relative to tuned linear baseline).
@@ -78,7 +108,7 @@ for name in class_names:
     if len(name) != 4 or not name.isdigit():
         raise ValueError(f"Invalid class directory name: {name!r}")
 
-expected = config["data"]["expected_num_classes"]  # 500 preliminary, 1500 semifinal
+expected = config["data"]["expected_num_classes"]  # 500 preliminary, 1500 second_round, 1000 semifinal
 if len(class_names) != expected:
     raise ValueError(f"Expected {expected} classes, found {len(class_names)}")
 
@@ -172,7 +202,14 @@ def encode_frozen_clip_features(clip_model, images, device, use_amp=False):
 
 ### Feature Caching
 
-**Output**: `cache/{stage}/clip_vit_b32_openai/` (stage-separated: `preliminary/`, `semifinal/`, etc.)
+**Output**: `cache/{stage}/clip_vit_b32_openai/`
+
+Stage-separated cache directories:
+```
+cache/preliminary/clip_vit_b32_openai/
+cache/second_round/clip_vit_b32_openai/
+cache/semifinal/clip_vit_b32_openai/
+```
 
 **`manifest.json`**:
 ```json
@@ -192,8 +229,9 @@ def encode_frozen_clip_features(clip_model, images, device, use_amp=False):
   "torch_version": "2.x.y",
   "torchvision_version": "0.x.y",
   "clip_package": "openai-clip",
-  "clip_version": "1.x.y",
-  "clip_commit": "<git commit or null>",
+  "clip_version": null,
+  "clip_commit": "<git commit if available, or null>",
+  "clip_source_path": "/path/to/clip/installation",
   "pillow_version": "x.y.z",
   "python_version": "3.x.y",
   "image_resolution": 224,
@@ -204,13 +242,13 @@ def encode_frozen_clip_features(clip_model, images, device, use_amp=False):
 }
 ```
 
-**Dual fingerprint**: `quick` compares (path, class_name, file_size) without reading file contents; `full` includes content SHA256. Both are pre-computed at cache creation time and stored in manifest.
+**Dual fingerprint**: `quick` traverses directories and reads file metadata (path, class_name, file_size via stat()) without reading image content; `full` additionally reads all file bytes and computes content SHA256. Both are pre-computed at cache creation time and stored in manifest.
 
 **Cache verification modes**:
 ```yaml
 cache:
-  verification: full   # full: compare dataset_full_fingerprint
-                       # quick: compare dataset_quick_fingerprint (no file I/O)
+  verification: full   # full: recompute content SHA256, compare dataset_full_fingerprint
+                       # quick: recompute from file metadata only, compare dataset_quick_fingerprint
 ```
 
 **`CachedFeatureDataset`**:
@@ -343,6 +381,7 @@ for name, class_name in submission_rows:
 | AC-1.8 | 缓存路径无重复 |
 | AC-1.9 | 缓存模式加速（性能目标） |
 | AC-1.10 | 更改 backbone/pretrained_source/feature_dim/normalized/preprocess → 拒绝训练 |
+| AC-1.11 | **缓存模式 guard**：preset != a0 或 freeze_clip=False 时启用 `--use-cached-features` → ValueError，程序拒绝运行 |
 
 ### AC-2: 种子与多划分
 
@@ -397,3 +436,4 @@ for name, class_name in submission_rows:
 | AC-5.8 | 每个方法 epoch 独立冻结；confirm/final-fit 不改变 |
 | AC-5.9 | 消融公平性：E0/E1 等预算；C0-C2 独立；E2-E4 固定 E0 超参 |
 | AC-5.10 | 测试集覆盖：先检查 basename 唯一性；行数=唯一文件名数=测试图片数；集合完全相等；无重复无缺失无额外 |
+| AC-5.11 | **B0 完整训练协议匹配**：B0 的 resolved config（optimizer, scheduler, epochs, batch_size, warmup, AMP, max_grad_norm, checkpoint_policy）与重构前 baseline reference 一致；B0 不采用新增调优规则（无 9-trial search，无 per-method epoch freezing） |
