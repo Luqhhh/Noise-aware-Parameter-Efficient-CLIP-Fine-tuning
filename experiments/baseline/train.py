@@ -734,6 +734,11 @@ def main():
                 f"--frozen-epochs is required for {mode} mode. "
                 f"Specify the number of training epochs."
             )
+        if args.source_dev_best_epoch is None:
+            raise ValueError(
+                f"--source-dev-best-epoch is required for {mode} mode. "
+                f"Specify the dev best epoch to carry forward."
+            )
         epochs = args.frozen_epochs
         train_logger.info(f"Using frozen epochs: {epochs} ({mode} mode)")
     else:

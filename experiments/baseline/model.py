@@ -137,14 +137,13 @@ def build_model(
         - model: CLIPLinearClassifier instance.
         - preprocess_fn: CLIP preprocessing function (torchvision transform).
     """
-    clip_model_name = config["model"]["clip_model_name"]
+    logger.info(f"Loading CLIP model: {config['model']['clip_model_name']}")
+    clip_model, preprocess = load_openai_clip(device, model_name=config["model"]["clip_model_name"])
+    clip_model.visual = clip_model.visual.float()
+
     num_classes = config["model"]["num_classes"]
     feature_dim = config["model"].get("feature_dim", 512)
     freeze_clip = config["model"].get("freeze_clip", True)
-
-    logger.info(f"Loading CLIP model: {clip_model_name}")
-    clip_model, preprocess = load_openai_clip(device)
-    clip_model.visual = clip_model.visual.float()
 
     model = CLIPLinearClassifier(
         clip_model=clip_model,

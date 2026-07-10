@@ -139,7 +139,7 @@ def main():
     class_mapping_path = config["data"].get(
         "class_mapping_path", config["data"]["split_dir"]
     )
-    class_to_idx, idx_to_class = load_or_generate_mapping(
+    class_to_idx, _ = load_or_generate_mapping(
         metadata_dir=class_mapping_path,
         train_dir=config["data"]["train_dir"],
         expected_num_classes=config["model"]["num_classes"],
