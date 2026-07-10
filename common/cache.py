@@ -291,3 +291,228 @@ class FeatureCacheBuilder:
             "clip_std": [0.26862954, 0.26130258, 0.27577711],
             "created_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         }
+
+
+class CachedFeatureDataset(torch.utils.data.Dataset):
+    """Dataset that loads pre-computed CLIP features from cache.
+
+    Instead of loading and encoding images online, this dataset reads frozen
+    CLIP features directly from disk. Only valid for A0 (deterministic) +
+    freeze_clip=True experiments.
+
+    Performs comprehensive validation on init:
+      1. Manifest hard-field validation (backbone, pretrained_source, etc.) → ValueError
+      2. Version field comparison → warning
+      3. Fingerprint verification (quick or full)
+      4. class_mapping_hash check
+      5. Tensor validation (shape, dtype, finite)
+      6. Per-sample label consistency
+    """
+
+    HARD_FIELDS = {
+        "backbone", "pretrained_source", "feature_dim", "normalized",
+        "dtype", "preprocess", "feature_encode_amp", "autocast_dtype",
+    }
+
+    EXPECTED_HARD_VALUES = {
+        "backbone": "ViT-B/32",
+        "pretrained_source": "openai",
+        "feature_dim": 512,
+        "normalized": True,
+        "dtype": "float32",
+        "preprocess": "clip_deterministic",
+        "feature_encode_amp": False,
+        "autocast_dtype": None,
+    }
+
+    def __init__(self, cache_dir, split_csv, class_to_idx_path,
+                 dataset_root, verification="full"):
+        self.cache_dir = Path(cache_dir)
+        self.dataset_root = Path(dataset_root)
+
+        # 1. Load manifest
+        manifest_path = self.cache_dir / "manifest.json"
+        if not manifest_path.exists():
+            raise FileNotFoundError(f"Cache manifest not found: {manifest_path}")
+        with open(manifest_path, "r") as f:
+            self.manifest = json.load(f)
+
+        # 2. Validate hard fields
+        self._validate_hard_fields()
+
+        # 3. Warn on version differences
+        self._check_version_fields()
+
+        # 4. Verify fingerprint
+        self._verify_fingerprint(verification)
+
+        # 5. Load features and metadata
+        self.features = torch.load(self.cache_dir / "features.pt")
+        with open(self.cache_dir / "image_paths.json", "r") as f:
+            self.all_paths = json.load(f)
+        with open(self.cache_dir / "labels.json", "r") as f:
+            self.all_labels = json.load(f)
+
+        # 6. Tensor validation
+        self._validate_tensors()
+
+        # 7. Load class mapping and verify hash
+        with open(class_to_idx_path, "r") as f:
+            self.class_to_idx = json.load(f)
+        self._validate_class_mapping_hash()
+
+        # 8. Filter by split CSV and check per-sample labels
+        self._load_split(split_csv)
+
+        logger.info(
+            f"CachedFeatureDataset: {len(self.sample_indices)} samples "
+            f"from split {split_csv}"
+        )
+
+    def _validate_hard_fields(self):
+        """Check that hard compatibility fields match expected values."""
+        for field in self.HARD_FIELDS:
+            expected = self.EXPECTED_HARD_VALUES.get(field)
+            actual = self.manifest.get(field)
+            if expected is not None and actual != expected:
+                raise ValueError(
+                    f"Cache manifest field '{field}' mismatch: "
+                    f"expected {expected!r}, got {actual!r}. "
+                    f"Rebuild cache with: python scripts/cache_features.py"
+                )
+
+    def _check_version_fields(self):
+        """Warn if environment version fields differ from cache."""
+        import sys
+        import torch as _torch
+        import torchvision as _tv
+
+        version_checks = {
+            "torch_version": _torch.__version__,
+            "torchvision_version": _tv.__version__,
+            "python_version": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+        }
+        for field, current in version_checks.items():
+            cached = self.manifest.get(field)
+            if cached and cached != current:
+                logger.warning(
+                    f"Cache was built with {field}={cached}, "
+                    f"current environment has {field}={current}"
+                )
+
+    def _verify_fingerprint(self, verification):
+        """Verify dataset fingerprint against the current dataset_root."""
+        if verification not in ("full", "quick"):
+            raise ValueError(f"verification must be 'full' or 'quick', got {verification!r}")
+
+        fingerprint_key = f"dataset_{verification}_fingerprint"
+        cached_fp = self.manifest.get(fingerprint_key)
+        if cached_fp is None:
+            raise ValueError(f"Manifest missing fingerprint field: {fingerprint_key}")
+
+        logger.info(f"Computing {verification} fingerprint for verification...")
+        if verification == "full":
+            current_fp = compute_full_fingerprint(self.dataset_root)
+        else:
+            current_fp = compute_quick_fingerprint(self.dataset_root)
+
+        if current_fp != cached_fp:
+            raise ValueError(
+                f"{verification.capitalize()} fingerprint mismatch! "
+                f"Cache: {cached_fp[:16]}..., Current: {current_fp[:16]}... "
+                f"The dataset has changed since the cache was built. "
+                f"Rebuild cache with: python scripts/cache_features.py"
+            )
+        logger.info(f"{verification.capitalize()} fingerprint verified.")
+
+    def _validate_tensors(self):
+        """Validate feature tensor integrity."""
+        if not isinstance(self.features, torch.Tensor):
+            raise ValueError(f"Features must be a torch.Tensor, got {type(self.features)}")
+        if self.features.ndim != 2:
+            raise ValueError(f"Features must be 2D (N, D), got shape {self.features.shape}")
+        if self.features.shape[0] != len(self.all_paths):
+            raise ValueError(
+                f"Feature count ({self.features.shape[0]}) != path count ({len(self.all_paths)})"
+            )
+        if self.features.shape[1] != self.manifest["feature_dim"]:
+            raise ValueError(
+                f"Feature dim ({self.features.shape[1]}) != manifest ({self.manifest['feature_dim']})"
+            )
+        if self.features.dtype != torch.float32:
+            raise ValueError(f"Features must be float32, got {self.features.dtype}")
+        if not torch.isfinite(self.features).all():
+            raise ValueError("Features contain NaN or Inf values")
+
+        # Check for duplicate paths
+        if len(set(self.all_paths)) != len(self.all_paths):
+            raise ValueError("Duplicate image paths found in cache")
+
+        logger.info(
+            f"Features validated: {self.features.shape}, "
+            f"dtype={self.features.dtype}, finite=True"
+        )
+
+    def _validate_class_mapping_hash(self):
+        """Verify class_mapping_hash matches the cached mapping."""
+        cached_hash = self.manifest.get("class_mapping_hash")
+        if cached_hash is None:
+            return  # Old cache without hash — warn but don't fail
+
+        canonical_str = json.dumps(
+            {k: self.class_to_idx[k] for k in sorted(self.class_to_idx.keys())},
+            sort_keys=True,
+        )
+        current_hash = hashlib.sha256(canonical_str.encode()).hexdigest()
+        if current_hash != cached_hash:
+            raise ValueError(
+                f"class_mapping_hash mismatch! "
+                f"The class mapping has changed since the cache was built. "
+                f"Rebuild cache with: python scripts/cache_features.py"
+            )
+
+    def _load_split(self, split_csv):
+        """Load split CSV and select corresponding cached features."""
+        import pandas as pd
+        df = pd.read_csv(split_csv)
+        self.sample_indices = []
+
+        path_to_idx = {p: i for i, p in enumerate(self.all_paths)}
+
+        for _, row in df.iterrows():
+            img_path = Path(row["image_path"])
+            if img_path.is_absolute():
+                try:
+                    rel_path = str(img_path.relative_to(self.dataset_root))
+                except ValueError:
+                    # Path not under dataset_root — try using just the filename
+                    rel_path = str(img_path)
+            else:
+                rel_path = str(img_path)
+
+            # Try both the relative path and just the filename
+            if rel_path in path_to_idx:
+                cache_idx = path_to_idx[rel_path]
+            elif img_path.name in path_to_idx:
+                cache_idx = path_to_idx[img_path.name]
+            else:
+                raise ValueError(
+                    f"Image path from split CSV not found in cache: {rel_path}"
+                )
+
+            # Per-sample label consistency check
+            csv_label = int(row["label"])
+            cache_label = self.all_labels[cache_idx]
+            if csv_label != cache_label:
+                raise ValueError(
+                    f"Label mismatch for {rel_path}: CSV={csv_label}, cache={cache_label}"
+                )
+
+            self.sample_indices.append(cache_idx)
+
+    def __len__(self):
+        return len(self.sample_indices)
+
+    def __getitem__(self, idx):
+        cache_idx = self.sample_indices[idx]
+        return self.features[cache_idx], self.all_labels[cache_idx]
