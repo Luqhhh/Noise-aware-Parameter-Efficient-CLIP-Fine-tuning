@@ -10,10 +10,12 @@ interface for future noise-robust training extensions.
 """
 
 import logging
+import random
 import warnings
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
+import numpy as np
 import torch
 from PIL import Image, ImageFile
 from torch.utils.data import Dataset
@@ -25,6 +27,17 @@ logger = logging.getLogger(__name__)
 
 # Supported image file extensions
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
+
+
+def seed_worker(worker_id: int) -> None:
+    """Seed each DataLoader worker for deterministic augmentation.
+
+    Uses the initial seed from torch.utils.data.get_worker_info().
+    Caller must set a torch.Generator on the DataLoader.
+    """
+    worker_seed = torch.initial_seed() % 2**32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
 
 
 def _find_images_in_dir(

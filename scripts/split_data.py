@@ -64,7 +64,15 @@ def parse_args() -> argparse.Namespace:
         "--seed",
         type=int,
         default=None,
-        help="Random seed (overrides config).",
+        help="Random seed for the split (overrides config data.split_seed).",
+    )
+    parser.add_argument(
+        "--split-seeds",
+        type=str,
+        default=None,
+        help="Comma-separated list of seeds for multi-split generation. "
+        "Overrides --seed. Each seed produces splits in "
+        "split_dir/seed_{N}/.",
     )
     parser.add_argument(
         "--split_dir",
@@ -168,54 +176,25 @@ def build_class_mapping(
     return class_to_idx, idx_to_class
 
 
-def main():
-    args = parse_args()
+def _generate_single_split(
+    train_dir: Path, split_dir: Path, val_ratio: float, seed: int
+) -> None:
+    """Generate a single train/val split for the given seed.
 
-    # Logging setup
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s | %(levelname)s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-
-    # Determine parameters: CLI args take precedence over config
-    train_dir = args.train_dir
-    val_ratio = args.val_ratio
-    seed = args.seed
-    split_dir = args.split_dir
-
-    if args.config:
-        config = load_config(args.config)
-        data_cfg = config["data"]
-        if train_dir is None:
-            train_dir = data_cfg["train_dir"]
-        if val_ratio is None:
-            val_ratio = data_cfg.get("val_ratio", 0.1)
-        if seed is None:
-            seed = data_cfg.get("seed", 42)
-        if split_dir is None:
-            split_dir = data_cfg.get("split_dir", "outputs/splits")
-    else:
-        if train_dir is None:
-            raise ValueError("Either --config or --train_dir must be provided.")
-        val_ratio = val_ratio if val_ratio is not None else 0.1
-        seed = seed if seed is not None else 42
-        split_dir = split_dir if split_dir is not None else "outputs/splits"
-
-    # Set seed for reproducibility
+    Args:
+        train_dir: Path to training data root.
+        split_dir: Output directory for split files.
+        val_ratio: Fraction of data for validation.
+        seed: Random seed for this split.
+    """
     set_seed(seed)
 
-    train_dir = Path(train_dir)
     split_dir = ensure_dir(split_dir)
 
-    logger.info(f"Training directory: {train_dir}")
-    logger.info(f"Validation ratio:  {val_ratio}")
-    logger.info(f"Random seed:       {seed}")
-    logger.info(f"Output directory:  {split_dir}")
+    logger.info(f"Generating split with seed={seed} -> {split_dir}")
 
     # Find class directories
     class_dirs = find_class_directories(train_dir)
-    logger.info(f"Found {len(class_dirs)} class directories")
 
     # Build class mapping (sorted by name)
     class_to_idx, idx_to_class = build_class_mapping(class_dirs)
@@ -274,7 +253,6 @@ def main():
         json.dump(class_to_idx, f, indent=2, ensure_ascii=False)
 
     with open(idx_to_class_path, "w") as f:
-        # Convert int keys to str for JSON (JSON only supports string keys)
         json.dump(
             {str(k): v for k, v in idx_to_class.items()},
             f,
@@ -283,21 +261,8 @@ def main():
         )
 
     # Summary
-    logger.info("=" * 60)
-    logger.info(f"Split complete!")
-    logger.info(f"  Total samples:   {len(train_entries) + len(val_entries)}")
-    logger.info(
-        f"  Train samples:   {len(train_entries)} ({len(train_entries)/(len(train_entries)+len(val_entries))*100:.1f}%)"
-    )
-    logger.info(
-        f"  Val samples:     {len(val_entries)} ({len(val_entries)/(len(train_entries)+len(val_entries))*100:.1f}%)"
-    )
-    logger.info(f"  Classes:         {len(class_dirs)}")
-    logger.info(f"  Output files:")
-    logger.info(f"    {train_csv}")
-    logger.info(f"    {val_csv}")
-    logger.info(f"    {class_to_idx_path}")
-    logger.info(f"    {idx_to_class_path}")
+    logger.info(f"  Seed {seed}: {len(train_entries)} train, {len(val_entries)} val, "
+                f"{len(class_dirs)} classes")
 
     # Check for classes with very few samples
     small_classes = [
@@ -312,6 +277,72 @@ def main():
                 f"  {name}: total={stats['total']}, "
                 f"train={stats['train']}, val={stats['val']}"
             )
+
+
+def main():
+    args = parse_args()
+
+    # Logging setup
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+    # Determine parameters: CLI args take precedence over config
+    train_dir = args.train_dir
+    val_ratio = args.val_ratio
+    seed = args.seed
+    split_seeds_str = args.split_seeds
+    split_dir = args.split_dir
+
+    if args.config:
+        config = load_config(args.config)
+        data_cfg = config["data"]
+        if train_dir is None:
+            train_dir = data_cfg["train_dir"]
+        if val_ratio is None:
+            val_ratio = data_cfg.get("val_ratio", 0.1)
+        if seed is None and split_seeds_str is None:
+            seed = data_cfg.get("split_seed", data_cfg.get("seed", 42))
+        if split_dir is None:
+            split_dir = data_cfg.get("split_dir", "outputs/splits")
+    else:
+        if train_dir is None:
+            raise ValueError("Either --config or --train_dir must be provided.")
+        val_ratio = val_ratio if val_ratio is not None else 0.1
+        seed = seed if seed is not None else 42
+        split_dir = split_dir if split_dir is not None else "outputs/splits"
+
+    train_dir = Path(train_dir)
+    base_split_dir = Path(split_dir)
+
+    # Determine seeds
+    if split_seeds_str is not None:
+        seeds = [int(s.strip()) for s in split_seeds_str.split(",") if s.strip()]
+        if not seeds:
+            raise ValueError("--split-seeds must contain at least one seed")
+        logger.info(f"Multi-split mode: generating splits for seeds {seeds}")
+        logger.info(f"Training directory: {train_dir}")
+        logger.info(f"Validation ratio:   {val_ratio}")
+        logger.info(f"Base output dir:    {base_split_dir}")
+
+        for s in seeds:
+            seed_split_dir = base_split_dir / f"seed_{s}"
+            _generate_single_split(train_dir, seed_split_dir, val_ratio, s)
+
+        logger.info("=" * 60)
+        logger.info(f"Multi-split complete! Generated {len(seeds)} splits.")
+    else:
+        # Single seed mode
+        logger.info(f"Training directory: {train_dir}")
+        logger.info(f"Validation ratio:   {val_ratio}")
+        logger.info(f"Random seed:        {seed}")
+        logger.info(f"Output directory:   {base_split_dir}")
+        _generate_single_split(train_dir, base_split_dir, val_ratio, seed)
+
+        logger.info("=" * 60)
+        logger.info("Split complete!")
 
 
 if __name__ == "__main__":

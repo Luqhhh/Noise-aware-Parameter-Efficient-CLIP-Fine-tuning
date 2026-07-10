@@ -1,13 +1,22 @@
 """
 Training script for the CLIP Linear Classifier baseline.
 
-Trains only the linear classification head on top of frozen CLIP ViT-B/32 features.
-Supports AMP mixed-precision training, CosineAnnealingLR scheduling, warmup,
-checkpointing, resume, and CSV logging.
+Supports three modes:
+  dev       - Train/val split, track best epoch, save best.pt and eval_results.json
+  confirm   - Train for --frozen-epochs on full split, evaluate on val split
+  final_fit - Train for --frozen-epochs on the FULL dataset (no val split)
+
+Additional features:
+  - Feature caching via --use-cached-features (E0/E1 experiments)
+  - Augmentation presets (a0/a1/a2/a3) via --augmentation-preset
+  - Guard enforcement for invalid combinations (B0+cached, etc.)
+  - Rich checkpoint metadata for downstream reproducibility
 
 Usage:
-    python -m src.train --config configs/baseline.yaml
-    python -m src.train --config configs/baseline.yaml --resume outputs/checkpoints/last.pt
+    python -m experiments.baseline.train --config configs/baseline.yaml
+    python -m experiments.baseline.train --config configs/baseline.yaml \\
+        --mode confirm --experiment-id E0 --use-cached-features \\
+        --source-dev-best-epoch 5 --frozen-epochs 10
 """
 
 import argparse
@@ -15,7 +24,7 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import numpy as np
 import torch
@@ -24,12 +33,13 @@ from torch.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from common.dataset import TrainImageDataset
+from common.cache import CachedFeatureDataset
+from common.class_mapping import load_or_generate_mapping
+from common.dataset import TrainImageDataset, seed_worker
+from common.transforms import build_train_transform, VALID_PRESETS
 from common.utils import (count_parameters, ensure_dir, format_time,
-                          load_config, save_config_snapshot, set_seed,
+                          load_config, save_config_snapshot, set_train_seed,
                           setup_logging)
-
-from .model import build_model
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +60,152 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Path to checkpoint to resume from (e.g., outputs/checkpoints/last.pt).",
     )
+    # Mode and experiment identity
+    parser.add_argument(
+        "--experiment-id",
+        type=str,
+        default=None,
+        help="Experiment identifier (e.g., B0, E0) for guard enforcement.",
+    )
+    parser.add_argument(
+        "--mode",
+        type=str,
+        default="dev",
+        choices=["dev", "confirm", "final_fit"],
+        help="Training mode: dev (train+val, best epoch), "
+             "confirm (frozen epoch count, eval), "
+             "final_fit (frozen epoch count, full dataset, no val).",
+    )
+    # Feature caching
+    parser.add_argument(
+        "--use-cached-features",
+        action="store_true",
+        default=False,
+        help="Use pre-computed CLIP features from cache (E0/E1 experiments).",
+    )
+    # Epoch freezing for confirm/final_fit
+    parser.add_argument(
+        "--frozen-epochs",
+        type=int,
+        default=None,
+        help="Number of frozen training epochs (for confirm/final_fit modes).",
+    )
+    # Augmentation preset
+    parser.add_argument(
+        "--augmentation-preset",
+        type=str,
+        default="a0",
+        choices=sorted(VALID_PRESETS),
+        help="Augmentation preset: a0 (none/deterministic), a1, a2, a3.",
+    )
+    # Source dev best epoch (carried forward from dev stage)
+    parser.add_argument(
+        "--source-dev-best-epoch",
+        type=int,
+        default=None,
+        help="Best epoch from the dev stage, carried forward to confirm/final_fit.",
+    )
+    # Head type
+    parser.add_argument(
+        "--head-type",
+        type=str,
+        default=None,
+        choices=["linear", "cosine"],
+        help="Classifier head type: linear (default) or cosine. "
+             "Overrides experiment.head_type in config if provided.",
+    )
+    # Cosine head options (overrides config model section)
+    parser.add_argument(
+        "--cos-init-scale",
+        type=float,
+        default=None,
+        help="Initial logit scale for cosine head (overrides model.cos_init_scale).",
+    )
+    parser.add_argument(
+        "--cos-learnable-scale",
+        type=str,
+        default=None,
+        choices=["true", "false"],
+        help="Whether logit scale is learnable for cosine head "
+             "(overrides model.cos_learnable_scale).",
+    )
     return parser.parse_args()
+
+
+def _enforce_guards(
+    experiment_id: Optional[str],
+    use_cached_features: bool,
+    augmentation_preset: str,
+    freeze_clip: bool,
+) -> None:
+    """Hard enforcement of feature caching rules.
+
+    Raises:
+        ValueError: If any guard rule is violated.
+    """
+    if experiment_id == "B0" and use_cached_features:
+        raise ValueError(
+            "B0 regression must use the original online encoding path. "
+            "Remove --use-cached-features for B0."
+        )
+    if use_cached_features and augmentation_preset != "a0":
+        raise ValueError(
+            "Cached features only valid for deterministic A0 preprocessing. "
+            "Use --augmentation-preset a0 with --use-cached-features."
+        )
+    if use_cached_features and not freeze_clip:
+        raise ValueError(
+            "Cached features require freeze_clip=True. "
+            "Set model.freeze_clip=true in config."
+        )
+
+
+def _build_checkpoint_metadata(
+    model: nn.Module,
+    config: Dict[str, Any],
+    mode: str,
+    args: argparse.Namespace,
+    best_epoch: Optional[int] = None,
+) -> Dict[str, Any]:
+    """Build the unified checkpoint metadata dictionary.
+
+    Args:
+        model: The trained model (with .head_type, .class_to_idx_, .idx_to_class_).
+        config: Full configuration dictionary.
+        mode: Training mode (dev/confirm/final_fit).
+        args: Parsed CLI arguments.
+        best_epoch: Best validation epoch (dev mode only).
+
+    Returns:
+        Dictionary of checkpoint metadata fields.
+    """
+    meta: Dict[str, Any] = {
+        "class_to_idx": getattr(model, "class_to_idx_", None),
+        "idx_to_class": getattr(model, "idx_to_class_", None),
+        "head_type": getattr(model, "head_type", "linear"),
+        "augmentation_preset": args.augmentation_preset,
+        "training_mode": mode,
+        "split_seed": config["data"].get("split_seed", None),
+    }
+
+    if mode == "dev":
+        meta.update({
+            "dev_best_epoch": best_epoch,
+            "frozen_train_epochs": best_epoch,
+            "trained_epochs": config["train"]["epochs"],
+            "epoch_selection_policy": "dev_best_epoch_frozen_before_confirm",
+            "epoch_selection_split": config["data"].get("split_seed", 42),
+        })
+    elif mode in ("confirm", "final_fit"):
+        meta.update({
+            "source_dev_best_epoch": args.source_dev_best_epoch,
+            "frozen_train_epochs": args.frozen_epochs,
+            "trained_epochs": args.frozen_epochs,
+            "epoch_selection_policy": "dev_best_epoch_frozen_before_confirm",
+            "epoch_selection_split": config["data"].get("split_seed", 42),
+        })
+
+    return meta
 
 
 def _check_splits_exist(split_dir: str) -> bool:
@@ -60,78 +215,29 @@ def _check_splits_exist(split_dir: str) -> bool:
     return all((split_dir / f).exists() for f in required)
 
 
-def _build_dataloaders(
-    config: Dict[str, Any], preprocess: callable, class_to_idx: Dict[str, int]
-) -> tuple:
-    """Build train and validation DataLoaders."""
-    train_cfg = config["train"]
-    data_cfg = config["data"]
-
-    # Deterministic transforms for validation (no augmentation needed for feature extraction)
-    # Use the same CLIP preprocess for both train and val
-    # For future extension: train could use augmentation, val uses deterministic
-    train_transform = preprocess
-    val_transform = preprocess
-
-    # Build datasets from CSV splits
-    split_dir = data_cfg["split_dir"]
-    train_csv = str(Path(split_dir) / "train.csv")
-    val_csv = str(Path(split_dir) / "val.csv")
-
-    train_dataset = TrainImageDataset(
-        data_root=data_cfg["train_dir"],
-        split_csv=train_csv,
-        class_to_idx=class_to_idx,
-        transform=train_transform,
-        return_path=True,
-    )
-
-    val_dataset = TrainImageDataset(
-        data_root=data_cfg["train_dir"],
-        split_csv=val_csv,
-        class_to_idx=class_to_idx,
-        transform=val_transform,
-        return_path=True,
-    )
-
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=train_cfg["batch_size"],
-        shuffle=True,
-        num_workers=train_cfg["num_workers"],
-        pin_memory=True,
-        drop_last=True,
-    )
-
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=config["eval"]["batch_size"],
-        shuffle=False,
-        num_workers=train_cfg["num_workers"],
-        pin_memory=True,
-        drop_last=False,
-    )
-
-    logger.info(
-        f"Train loader: {len(train_dataset)} samples, {len(train_loader)} batches"
-    )
-    logger.info(f"Val loader:   {len(val_dataset)} samples, {len(val_loader)} batches")
-
-    return train_loader, val_loader, train_dataset, val_dataset
-
-
 def _build_optimizer_and_scheduler(
     model: nn.Module, config: Dict[str, Any], num_training_steps: int
 ) -> tuple:
-    """Build optimizer and learning rate scheduler."""
+    """Build optimizer and learning rate scheduler.
+
+    Supports both linear and cosine heads:
+      - Linear: uses model.get_trainable_parameters() with uniform LR + WD.
+      - Cosine: uses model.get_param_groups(lr, wd) for separate scale handling.
+    """
     train_cfg = config["train"]
 
-    # Only optimize classifier parameters
-    optimizer = torch.optim.AdamW(
-        model.get_trainable_parameters(),
-        lr=train_cfg["lr"],
-        weight_decay=train_cfg["weight_decay"],
-    )
+    # Use model.get_param_groups() if available (cosine head handles scale separately),
+    # otherwise use get_trainable_parameters() (linear head with uniform config).
+    if hasattr(model, "get_param_groups"):
+        optimizer = torch.optim.AdamW(
+            model.get_param_groups(train_cfg["lr"], train_cfg["weight_decay"]),
+        )
+    else:
+        optimizer = torch.optim.AdamW(
+            model.get_trainable_parameters(),
+            lr=train_cfg["lr"],
+            weight_decay=train_cfg["weight_decay"],
+        )
 
     # Cosine annealing scheduler
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
@@ -186,8 +292,18 @@ def train_one_epoch(
 
     pbar = tqdm(loader, desc=f"Epoch {epoch:3d} [Train]", dynamic_ncols=True)
 
-    for batch_idx, (images, labels, _paths) in enumerate(pbar):
-        images = images.to(device, non_blocking=True)
+    for batch_idx, batch_data in enumerate(pbar):
+        # Handle both online (image, label, path) and cached (feature, label) datasets
+        if len(batch_data) == 3:
+            images, labels, _paths = batch_data
+            images = images.to(device, non_blocking=True)
+        elif len(batch_data) == 2:
+            features, labels = batch_data
+            # Use features directly as model input (cached path)
+            images = features.to(device, non_blocking=True)
+        else:
+            raise ValueError(f"Unexpected batch size: {len(batch_data)}")
+
         labels = labels.to(device, non_blocking=True)
 
         # Warmup
@@ -218,6 +334,10 @@ def train_one_epoch(
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
 
             optimizer.step()
+
+        # Cosine head: clamp logit_scale after each optimizer step
+        if hasattr(model, "clamp_scale"):
+            model.clamp_scale()
 
         # Only step scheduler after warmup
         if global_step >= warmup_steps:
@@ -269,8 +389,16 @@ def validate(
 
     pbar = tqdm(loader, desc=" " * 16 + "[Val]  ", dynamic_ncols=True)
 
-    for images, labels, _paths in pbar:
-        images = images.to(device, non_blocking=True)
+    for batch_data in pbar:
+        if len(batch_data) == 3:
+            images, labels, _paths = batch_data
+            images = images.to(device, non_blocking=True)
+        elif len(batch_data) == 2:
+            features, labels = batch_data
+            images = features.to(device, non_blocking=True)
+        else:
+            raise ValueError(f"Unexpected batch size: {len(batch_data)}")
+
         labels = labels.to(device, non_blocking=True)
 
         if use_amp:
@@ -310,9 +438,10 @@ def save_checkpoint(
     best_val_acc: float,
     config: Dict[str, Any],
     filepath: str,
+    extra_meta: Optional[Dict[str, Any]] = None,
 ) -> None:
-    """Save a training checkpoint."""
-    checkpoint = {
+    """Save a training checkpoint with optional extra metadata."""
+    checkpoint: Dict[str, Any] = {
         "epoch": epoch,
         "global_step": global_step,
         "model_state_dict": model.state_dict(),
@@ -322,6 +451,8 @@ def save_checkpoint(
         "best_val_acc": best_val_acc,
         "config": config,
     }
+    if extra_meta:
+        checkpoint.update(extra_meta)
     torch.save(checkpoint, filepath)
     logger.info(f"Checkpoint saved to {filepath}")
 
@@ -358,15 +489,84 @@ def load_checkpoint(
     }
 
 
+def _build_dataloaders_online(
+    config: Dict[str, Any],
+    train_transform: callable,
+    val_transform: callable,
+    class_to_idx: Dict[str, int],
+    split_dir: str,
+) -> tuple:
+    """Build train and validation DataLoaders from online images."""
+    train_cfg = config["train"]
+    train_csv = str(Path(split_dir) / "train.csv")
+    val_csv = str(Path(split_dir) / "val.csv")
+
+    train_dataset = TrainImageDataset(
+        data_root=config["data"]["train_dir"],
+        split_csv=train_csv,
+        class_to_idx=class_to_idx,
+        transform=train_transform,
+        return_path=True,
+    )
+
+    val_dataset = TrainImageDataset(
+        data_root=config["data"]["train_dir"],
+        split_csv=val_csv,
+        class_to_idx=class_to_idx,
+        transform=val_transform,
+        return_path=True,
+    )
+
+    # Use a dedicated Generator for deterministic DataLoader shuffling
+    train_seed = config["data"].get("train_seed", config["data"].get("seed", 42))
+    g = torch.Generator()
+    g.manual_seed(train_seed)
+
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=train_cfg["batch_size"],
+        shuffle=True,
+        num_workers=train_cfg["num_workers"],
+        pin_memory=True,
+        drop_last=False,
+        worker_init_fn=seed_worker,
+        generator=g,
+    )
+
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=config["eval"]["batch_size"],
+        shuffle=False,
+        num_workers=train_cfg["num_workers"],
+        pin_memory=True,
+        drop_last=False,
+        worker_init_fn=seed_worker,
+        generator=g,
+    )
+
+    logger.info(
+        f"Train loader: {len(train_dataset)} samples, {len(train_loader)} batches"
+    )
+    logger.info(f"Val loader:   {len(val_dataset)} samples, {len(val_loader)} batches")
+
+    return train_loader, val_loader
+
+
 def main():
     args = parse_args()
 
     # Load config
     config = load_config(args.config)
 
-    # Set random seed
-    seed = config["data"]["seed"]
-    set_seed(seed)
+    # Determine effective mode and experiment identity
+    mode = args.mode
+    experiment_id = args.experiment_id
+    use_cached = args.use_cached_features
+    aug_preset = args.augmentation_preset
+
+    # Set random seed for training (does NOT enable cudnn.deterministic)
+    train_seed = config["data"].get("train_seed", config["data"].get("seed", 42))
+    set_train_seed(train_seed)
 
     # Setup logging first
     log_dir = ensure_dir(config["output"]["log_dir"])
@@ -378,39 +578,230 @@ def main():
     )
     train_logger.info(f"Using device: {device}")
     train_logger.info(f"Configuration: {args.config}")
-    train_logger.info(f"Random seed: {seed}")
+    train_logger.info(f"Train seed: {train_seed}")
 
-    # Check that splits exist
-    split_dir = config["data"]["split_dir"]
-    if not _check_splits_exist(split_dir):
-        train_logger.error(
-            f"Train/val splits not found in {split_dir}.\n"
-            f"Please run: python scripts/split_data.py --config {args.config}"
-        )
-        raise FileNotFoundError(
-            f"Splits not found in {split_dir}. "
-            f"Run: python scripts/split_data.py --config {args.config}"
-        )
+    # Log mode and experiment identity
+    train_logger.info(f"Experiment ID: {experiment_id}")
+    train_logger.info(f"Training mode: {mode}")
+    train_logger.info(f"Augmentation preset: {aug_preset}")
+    train_logger.info(f"Use cached features: {use_cached}")
 
-    # Load class mapping
-    with open(Path(split_dir) / "class_to_idx.json", "r") as f:
-        class_to_idx = json.load(f)
+    # Guard enforcement
+    freeze_clip = config["model"].get("freeze_clip", True)
+    _enforce_guards(experiment_id, use_cached, aug_preset, freeze_clip)
 
-    # Build model
-    model, preprocess = build_model(config, device)
+    # Determine head type: CLI arg overrides config
+    head_type = args.head_type
+    if head_type is None:
+        head_type = config.get("experiment", {}).get("head_type", "linear")
+    train_logger.info(f"Head type: {head_type}")
+
+    # Build model based on head type
+    if head_type == "cosine":
+        from experiments.cosine.model import build_cosine_model
+
+        # CLI args override config values for cosine head options
+        if args.cos_init_scale is not None:
+            config["model"]["cos_init_scale"] = args.cos_init_scale
+        if args.cos_learnable_scale is not None:
+            config["model"]["cos_learnable_scale"] = (
+                args.cos_learnable_scale.lower() == "true"
+            )
+
+        model, preprocess = build_cosine_model(config, device)
+    else:
+        from .model import build_model
+        model, preprocess = build_model(config, device)
 
     total_params, trainable_params = count_parameters(model)
     train_logger.info(f"Total parameters:     {total_params:,}")
     train_logger.info(f"Trainable parameters: {trainable_params:,}")
 
-    # Build dataloaders
-    train_loader, val_loader, train_dataset, val_dataset = _build_dataloaders(
-        config, preprocess, class_to_idx
+    # Canonical class mapping via common.class_mapping
+    class_mapping_path = config["data"].get("class_mapping_path", config["data"]["split_dir"])
+    expected_num_classes = config["model"]["num_classes"]
+    class_to_idx, idx_to_class = load_or_generate_mapping(
+        metadata_dir=class_mapping_path,
+        train_dir=config["data"]["train_dir"],
+        expected_num_classes=expected_num_classes,
     )
+
+    # Store mapping on model for checkpoint metadata
+    model.class_to_idx_ = class_to_idx
+    model.idx_to_class_ = idx_to_class
+
+    # Build train transform with augmentation preset
+    if aug_preset != "a0" and not use_cached:
+        train_transform = build_train_transform(aug_preset, preprocess)
+    else:
+        train_transform = preprocess
+
+    val_transform = preprocess
+
+    # Dataset and DataLoader construction
+    split_dir = config["data"]["split_dir"]
+
+    if mode == "final_fit":
+        # final_fit: no split, use full dataset, no validation
+        train_logger.info("final_fit mode: loading full dataset (no val split).")
+        train_dataset = TrainImageDataset(
+            data_root=config["data"]["train_dir"],
+            split_csv=None,
+            class_to_idx=class_to_idx,
+            transform=train_transform,
+            return_path=True,
+        )
+
+        train_seed_val = config["data"].get("train_seed", config["data"].get("seed", 42))
+        g = torch.Generator()
+        g.manual_seed(train_seed_val)
+
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=config["train"]["batch_size"],
+            shuffle=True,
+            num_workers=config["train"]["num_workers"],
+            pin_memory=True,
+            drop_last=False,
+            worker_init_fn=seed_worker,
+            generator=g,
+        )
+        val_loader = None
+        train_logger.info(
+            f"Train loader (final_fit): {len(train_dataset)} samples, "
+            f"{len(train_loader)} batches"
+        )
+    elif use_cached:
+        # Use cached features instead of online encoding
+        train_logger.info("Using cached features for training.")
+        cache_dir = config["cache"]["cache_dir"]
+        split_csv_path = str(Path(split_dir) / "train.csv")
+        class_to_idx_path = str(Path(class_mapping_path) / "class_to_idx.json")
+        verification = config["cache"].get("verification", "full")
+
+        train_dataset = CachedFeatureDataset(
+            cache_dir=cache_dir,
+            split_csv=split_csv_path,
+            class_to_idx_path=class_to_idx_path,
+            dataset_root=config["data"]["train_dir"],
+            verification=verification,
+        )
+
+        train_seed_val = config["data"].get("train_seed", config["data"].get("seed", 42))
+        g = torch.Generator()
+        g.manual_seed(train_seed_val)
+
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=config["train"]["batch_size"],
+            shuffle=True,
+            num_workers=0,  # Cached features: no need for image loading workers
+            pin_memory=True,
+            drop_last=False,
+            generator=g,
+        )
+
+        # Build val loader online (validation always uses online images)
+        val_loader, _ = None, None
+        if mode == "dev":
+            val_csv = str(Path(split_dir) / "val.csv")
+            val_dataset = TrainImageDataset(
+                data_root=config["data"]["train_dir"],
+                split_csv=val_csv,
+                class_to_idx=class_to_idx,
+                transform=val_transform,
+                return_path=True,
+            )
+            val_loader = DataLoader(
+                val_dataset,
+                batch_size=config["eval"]["batch_size"],
+                shuffle=False,
+                num_workers=config["train"]["num_workers"],
+                pin_memory=True,
+                drop_last=False,
+                worker_init_fn=seed_worker,
+                generator=g,
+            )
+            train_logger.info(
+                f"Val loader (online): {len(val_dataset)} samples, "
+                f"{len(val_loader)} batches"
+            )
+        elif mode == "confirm":
+            # Check that splits exist
+            if not _check_splits_exist(split_dir):
+                train_logger.error(
+                    f"Train/val splits not found in {split_dir}.\n"
+                    f"Please run: python scripts/split_data.py --config {args.config}"
+                )
+                raise FileNotFoundError(
+                    f"Splits not found in {split_dir}. "
+                    f"Run: python scripts/split_data.py --config {args.config}"
+                )
+
+            val_csv = str(Path(split_dir) / "val.csv")
+            val_dataset = TrainImageDataset(
+                data_root=config["data"]["train_dir"],
+                split_csv=val_csv,
+                class_to_idx=class_to_idx,
+                transform=val_transform,
+                return_path=True,
+            )
+            val_loader = DataLoader(
+                val_dataset,
+                batch_size=config["eval"]["batch_size"],
+                shuffle=False,
+                num_workers=config["train"]["num_workers"],
+                pin_memory=True,
+                drop_last=False,
+                worker_init_fn=seed_worker,
+                generator=g,
+            )
+            train_logger.info(
+                f"Val loader (online): {len(val_dataset)} samples, "
+                f"{len(val_loader)} batches"
+            )
+
+        train_logger.info(
+            f"Train loader (cached): {len(train_dataset)} samples, "
+            f"{len(train_loader)} batches"
+        )
+    else:
+        # Standard online training (B0, dev mode by default)
+        if not _check_splits_exist(split_dir):
+            train_logger.error(
+                f"Train/val splits not found in {split_dir}.\n"
+                f"Please run: python scripts/split_data.py --config {args.config}"
+            )
+            raise FileNotFoundError(
+                f"Splits not found in {split_dir}. "
+                f"Run: python scripts/split_data.py --config {args.config}"
+            )
+
+        train_loader, val_loader = _build_dataloaders_online(
+            config, train_transform, val_transform, class_to_idx, split_dir
+        )
 
     # Training setup
     train_cfg = config["train"]
-    epochs = train_cfg["epochs"]
+
+    # Determine epoch count based on mode
+    if mode in ("confirm", "final_fit"):
+        if args.frozen_epochs is None:
+            raise ValueError(
+                f"--frozen-epochs is required for {mode} mode. "
+                f"Specify the number of training epochs."
+            )
+        if args.source_dev_best_epoch is None:
+            raise ValueError(
+                f"--source-dev-best-epoch is required for {mode} mode. "
+                f"Specify the dev best epoch to carry forward."
+            )
+        epochs = args.frozen_epochs
+        train_logger.info(f"Using frozen epochs: {epochs} ({mode} mode)")
+    else:
+        epochs = train_cfg["epochs"]
+        train_logger.info(f"Using config epochs: {epochs} ({mode} mode)")
+
     num_training_steps = epochs * len(train_loader)
     warmup_steps = train_cfg["warmup_epochs"] * len(train_loader)
 
@@ -424,6 +815,7 @@ def main():
     start_epoch = 1
     global_step = 0
     best_val_acc = 0.0
+    dev_best_epoch = None
 
     if args.resume:
         resume_info = load_checkpoint(
@@ -475,36 +867,64 @@ def main():
             global_step,
         )
 
-        # Validate
-        val_loss, val_acc = validate(model, val_loader, criterion, device, config)
+        # Validate (skip if no val_loader, e.g., final_fit)
+        val_loss = None
+        val_acc = None
+        if val_loader is not None:
+            val_loss, val_acc = validate(
+                model, val_loader, criterion, device, config
+            )
 
         epoch_time = time.time() - epoch_start
         current_lr = optimizer.param_groups[0]["lr"]
 
         # Log
-        log_msg = (
-            f"Epoch {epoch:3d}/{epochs} | "
-            f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
-            f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f} | "
-            f"LR: {current_lr:.2e} | Time: {format_time(epoch_time)}"
-        )
+        if val_acc is not None:
+            log_msg = (
+                f"Epoch {epoch:3d}/{epochs} | "
+                f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
+                f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f} | "
+                f"LR: {current_lr:.2e} | Time: {format_time(epoch_time)}"
+            )
+        else:
+            log_msg = (
+                f"Epoch {epoch:3d}/{epochs} | "
+                f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
+                f"LR: {current_lr:.2e} | Time: {format_time(epoch_time)} [no val]"
+            )
         train_logger.info(log_msg)
 
         # Save to CSV
         with open(log_file, "a") as f:
             if log_header:
-                f.write("epoch,train_loss,train_acc,val_loss,val_acc,lr,epoch_time\n")
+                if val_acc is not None:
+                    f.write("epoch,train_loss,train_acc,val_loss,val_acc,lr,epoch_time\n")
+                else:
+                    f.write("epoch,train_loss,train_acc,lr,epoch_time\n")
                 log_header = False
-            f.write(
-                f"{epoch},{train_loss:.6f},{train_acc:.6f},"
-                f"{val_loss:.6f},{val_acc:.6f},{current_lr:.8f},{epoch_time:.2f}\n"
-            )
+            if val_acc is not None:
+                f.write(
+                    f"{epoch},{train_loss:.6f},{train_acc:.6f},"
+                    f"{val_loss:.6f},{val_acc:.6f},{current_lr:.8f},{epoch_time:.2f}\n"
+                )
+            else:
+                f.write(
+                    f"{epoch},{train_loss:.6f},{train_acc:.6f},"
+                    f"{current_lr:.8f},{epoch_time:.2f}\n"
+                )
 
-        # Save checkpoints
-        is_best = val_acc > best_val_acc
-        if is_best:
+        # Track best epoch and save checkpoints (dev mode only for tracking)
+        is_best = False
+        if val_acc is not None and val_acc > best_val_acc:
             best_val_acc = val_acc
+            dev_best_epoch = epoch
+            is_best = True
             train_logger.info(f"  >> New best model! Val Acc: {best_val_acc:.4f}")
+
+        # Build checkpoint metadata for this save
+        extra_meta = _build_checkpoint_metadata(
+            model, config, mode, args, best_epoch=dev_best_epoch
+        )
 
         save_checkpoint(
             model,
@@ -516,6 +936,7 @@ def main():
             best_val_acc,
             config,
             str(save_dir / "last.pt"),
+            extra_meta=extra_meta,
         )
 
         if is_best:
@@ -529,6 +950,7 @@ def main():
                 best_val_acc,
                 config,
                 str(save_dir / "best.pt"),
+                extra_meta=extra_meta,
             )
 
     total_time = time.time() - train_start_time
@@ -537,6 +959,24 @@ def main():
     train_logger.info(f"Best validation accuracy: {best_val_acc:.4f}")
     train_logger.info(f"Best model saved to: {save_dir / 'best.pt'}")
     train_logger.info(f"Training log saved to: {log_file}")
+
+    # Save eval_results.json for dev/confirm modes
+    if mode in ("dev", "confirm"):
+        eval_results = {
+            "experiment_id": experiment_id,
+            "mode": mode,
+            "split_seed": config["data"].get("split_seed"),
+            "train_seed": train_seed,
+            "best_val_acc": float(best_val_acc),
+            "dev_best_epoch": dev_best_epoch,
+            "trained_epochs": epochs,
+            "head_type": model.head_type,
+            "augmentation_preset": aug_preset,
+        }
+        eval_path = save_dir / "eval_results.json"
+        with open(eval_path, "w") as f:
+            json.dump(eval_results, f, indent=2)
+        train_logger.info(f"Eval results saved to: {eval_path}")
 
 
 if __name__ == "__main__":

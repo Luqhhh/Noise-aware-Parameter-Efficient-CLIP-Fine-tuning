@@ -1,42 +1,36 @@
 """
-Cosine classifier model: CLIP ViT-B/32 with a cosine-similarity classification head.
+Cosine classifier -- replaces the linear head with a cosine-similarity-based
+classification layer. No bias term. Input features and class prototypes are
+both L2-normalized before computing logits.
 
-Architecture:
-    CLIP ViT-B/32 (frozen) -> L2 Normalize -> Linear(512, 500) with no bias,
-    optionally scaled by a learnable logit_scale parameter.
-
-The cosine head normalizes both features and classifier weights, computing
-logits = scale * (w * x). This removes magnitude differences between features
-and can improve calibration.
-
-Usage:
-    from experiments.cosine.model import build_model
-    model, preprocess = build_model(config, device)
+Supports:
+  - Fixed scale: logit_scale is a buffer, not optimized
+  - Learnable scale: logit_scale is a nn.Parameter, optimized separately
+  - Clamping: scale clamped to [1.0, 100.0] after each optimizer step (learnable only)
 """
 
 import logging
-from typing import Optional, Tuple
+from typing import Tuple
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from common.clip_utils import load_openai_clip
+
 logger = logging.getLogger(__name__)
 
 
 class CosineClassifier(nn.Module):
-    """CLIP ViT-B/32 + cosine similarity classification head.
-
-    The classifier has no bias and normalizes both inputs and weights,
-    producing logits = scale * cosine_similarity(features, weight).
+    """CLIP ViT-B/32 encoder + cosine classification head.
 
     Args:
-        clip_model: The CLIP model (from clip.load).
+        clip_model: CLIP model from load_openai_clip.
         num_classes: Number of output classes.
-        feature_dim: Dimensionality of CLIP image features (512 for ViT-B/32).
+        feature_dim: CLIP feature dimensionality (512 for ViT-B/32).
         freeze_clip: Whether to freeze the CLIP backbone.
-        init_scale: Initial value for the learnable logit_scale parameter.
-        learnable_scale: Whether logit_scale is learnable.
+        init_scale: Initial value for the logit scale (temperature-like).
+        learnable_scale: If True, logit_scale is a trainable parameter.
     """
 
     def __init__(
@@ -50,18 +44,17 @@ class CosineClassifier(nn.Module):
     ):
         super().__init__()
 
+        if init_scale <= 0:
+            raise ValueError(f"init_scale must be positive, got {init_scale}")
+        if init_scale > 100:
+            raise ValueError(f"init_scale must be <= 100, got {init_scale}")
+
         self.visual = clip_model.visual
         self.feature_dim = feature_dim
         self.num_classes = num_classes
         self.freeze_clip = freeze_clip
-        self.init_scale = init_scale
         self.learnable_scale = learnable_scale
-
-        # Validate init_scale
-        if init_scale <= 0:
-            raise ValueError(
-                f"init_scale must be positive, got {init_scale}"
-            )
+        self.head_type = "cosine"
 
         # Freeze CLIP backbone
         if freeze_clip:
@@ -69,33 +62,19 @@ class CosineClassifier(nn.Module):
                 param.requires_grad = False
             logger.info("CLIP image encoder frozen.")
 
-        # Cosine classifier: Linear with no bias
-        self.classifier = nn.Linear(feature_dim, num_classes, bias=False)
+        # Cosine classifier weight (class prototypes) -- no bias
+        weight = torch.randn(num_classes, feature_dim)
+        weight = F.normalize(weight, dim=1) * init_scale
+        self.weight = nn.Parameter(weight)
 
-        # Initialize weights uniformly
-        nn.init.xavier_uniform_(self.classifier.weight)
-
-        # Logit scale parameter (temperature)
-        self.logit_scale = nn.Parameter(
-            torch.tensor(init_scale),
-            requires_grad=learnable_scale,
-        )
-
-        logger.info(
-            f"CosineClassifier: init_scale={init_scale}, "
-            f"learnable_scale={learnable_scale}, "
-            f"bias=False"
-        )
+        # Logit scale (temperature)
+        if learnable_scale:
+            self.logit_scale = nn.Parameter(torch.tensor(float(init_scale)))
+        else:
+            self.register_buffer("logit_scale", torch.tensor(float(init_scale)))
 
     def encode_image(self, images: torch.Tensor) -> torch.Tensor:
-        """Extract L2-normalized image features.
-
-        Args:
-            images: Input image batch (B, 3, H, W).
-
-        Returns:
-            L2-normalized features (B, feature_dim).
-        """
+        """Extract and L2-normalize image features."""
         conv1_dtype = self.visual.conv1.weight.dtype
         images = images.to(dtype=conv1_dtype)
 
@@ -103,118 +82,87 @@ class CosineClassifier(nn.Module):
             features = self.visual(images)
 
         if features.dim() > 2:
-            if features.dim() == 4:
-                features = features.mean(dim=[2, 3])
-            else:
-                features = features[:, 0]
+            features = (
+                features.mean(dim=[2, 3]) if features.dim() == 4 else features[:, 0]
+            )
 
-        features = features.float()
+        # Features are already float32 from the float()-converted visual encoder
         features = F.normalize(features, p=2, dim=-1)
         return features
 
-    def clamp_scale(self, min_val: float = 1.0, max_val: float = 100.0) -> None:
-        """Clamp logit_scale to prevent extreme values.
-
-        Args:
-            min_val: Minimum allowed scale value.
-            max_val: Maximum allowed scale value.
-        """
-        if not self.learnable_scale:
-            return
-        with torch.no_grad():
-            self.logit_scale.clamp_(min_val, max_val)
-
     def forward(self, images: torch.Tensor) -> torch.Tensor:
-        """Forward pass with cosine similarity classification.
+        """Forward pass: encode, normalize, compute cosine similarity, scale.
 
-        logits = logit_scale * (normalized(features) @ normalized(weight).T)
-
-        Args:
-            images: Input image batch (B, 3, H, W).
-
-        Returns:
-            Logits tensor (B, num_classes).
+        Returns logits of shape (B, num_classes).
         """
         features = self.encode_image(images)
-
-        # Normalize classifier weights
-        w_norm = F.normalize(self.classifier.weight, p=2, dim=1)
-
-        # Cosine similarity: (B, D) @ (D, C) -> (B, C)
-        logits = features @ w_norm.T
-
-        # Scale
-        scale = self.logit_scale.clamp(min=1.0, max=100.0)
-        logits = logits * scale
-
+        # Normalize weight on each forward pass
+        weight_norm = F.normalize(self.weight, dim=1)
+        logits = features @ weight_norm.T * self.clamp_scale()
         return logits
 
-    def get_trainable_parameters(self):
-        """Return trainable parameters.
+    def clamp_scale(self):
+        """Clamp logit_scale to [1.0, 100.0]. No-op when learnable_scale=False."""
+        if self.learnable_scale:
+            with torch.no_grad():
+                self.logit_scale.clamp_(min=1.0, max=100.0)
+        return self.logit_scale
 
-        If learnable_scale is False, logit_scale is excluded from the
-        parameter groups (frozen).
+    def get_param_groups(self, lr, weight_decay):
+        """Return optimizer param groups.
+
+        When learnable_scale=True: logit_scale gets lr*0.1, no weight decay.
+        When learnable_scale=False: only weight is optimized.
         """
-        for name, param in self.named_parameters():
-            if param.requires_grad:
-                yield param
+        groups = [
+            {
+                "params": [self.weight],
+                "lr": lr,
+                "weight_decay": weight_decay,
+            },
+        ]
+        if self.learnable_scale:
+            groups.append({
+                "params": [self.logit_scale],
+                "lr": lr * 0.1,
+                "weight_decay": 0.0,
+            })
+        return groups
+
+    def train(self, mode: bool = True):
+        """Override train() to keep CLIP backbone in eval mode when frozen."""
+        super().train(mode)
+        if self.freeze_clip:
+            self.visual.eval()
+        return self
 
 
-def build_model(
-    config: dict,
-    device: torch.device,
-) -> Tuple[CosineClassifier, callable]:
-    """Build the CosineClassifier model.
-
-    Config expects:
-        model.clip_model_name: "ViT-B/32"
-        model.num_classes: int
-        model.feature_dim: int (default 512)
-        model.freeze_clip: bool (default True)
-        model.init_scale: float (default 10.0)
-        model.learnable_scale: bool (default True)
+def build_cosine_model(config: dict, device: torch.device) -> Tuple[CosineClassifier, callable]:
+    """Build CosineClassifier and return CLIP preprocessing function.
 
     Args:
-        config: Configuration dictionary.
+        config: Must contain model.cos_init_scale, model.cos_learnable_scale,
+                model.num_classes, model.feature_dim, model.freeze_clip.
         device: torch device.
 
     Returns:
         Tuple of (model, preprocess_fn).
     """
-    try:
-        import clip
-    except ImportError:
-        raise ImportError(
-            "The 'clip' package is required. Install it with:\n"
-            "  pip install git+https://github.com/openai/CLIP.git"
-        )
+    clip_model, preprocess = load_openai_clip(device)
 
-    clip_model_name = config["model"]["clip_model_name"]
-    num_classes = config["model"]["num_classes"]
-    feature_dim = config["model"].get("feature_dim", 512)
-    freeze_clip = config["model"].get("freeze_clip", True)
-    init_scale = config["model"].get("init_scale", 10.0)
-    learnable_scale = config["model"].get("learnable_scale", True)
-
-    logger.info(f"Loading CLIP model: {clip_model_name}")
-    clip_model, preprocess = clip.load(clip_model_name, device=device)
-    clip_model.visual = clip_model.visual.float()
-
+    model_cfg = config["model"]
     model = CosineClassifier(
         clip_model=clip_model,
-        num_classes=num_classes,
-        feature_dim=feature_dim,
-        freeze_clip=freeze_clip,
-        init_scale=init_scale,
-        learnable_scale=learnable_scale,
+        num_classes=model_cfg.get("num_classes", 500),
+        feature_dim=model_cfg.get("feature_dim", 512),
+        freeze_clip=model_cfg.get("freeze_clip", True),
+        init_scale=model_cfg.get("cos_init_scale", 10.0),
+        learnable_scale=model_cfg.get("cos_learnable_scale", True),
     )
-
     model = model.to(device)
 
     total = sum(p.numel() for p in model.parameters())
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    logger.info(
-        f"Cosine model built: {total:,} total params, {trainable:,} trainable params"
-    )
+    logger.info(f"CosineClassifier: {total:,} params, {trainable:,} trainable")
 
     return model, preprocess

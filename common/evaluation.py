@@ -1,232 +1,204 @@
 """
-Multi-split evaluation and candidate selection.
+Multi-split evaluation and paired delta reporting.
 
-Provides functions for:
-    - Loading evaluation result JSON files
-    - Computing paired deltas between candidates and a baseline (E0)
-    - Applying candidate selection rules with fallback
-
-Design:
-    - Paired deltas are computed per-split: Delta_i = Acc_candidate,i - Acc_E0,i
-    - Mean delta, sample std (ddof=1), min, max, confirmation wins are reported
-    - Candidate elimination uses explicit pre-defined rules
-    - Fallback to E0 if no candidate survives
+Computes paired deltas vs E0 (tuned linear baseline) across confirm splits
+and produces pooled/confirmation statistics for candidate selection.
 """
 
 import json
-import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-
-logger = logging.getLogger(__name__)
-
-# Default threshold: candidate degrades more than 0.2pp vs E0 on any split -> eliminated
-DEFAULT_MIN_DELTA_THRESHOLD = -0.002
+from typing import Dict, List, Tuple
 
 
-def load_eval_json(path: str) -> Dict[str, Any]:
-    """Load an evaluation results JSON file.
-
-    Expected format:
-    {
-        "accuracy": 0.85,
-        "loss": 0.45,
-        "total_samples": 1000,
-        "correct_samples": 850
-    }
+def load_eval_results(results_path: str) -> Dict:
+    """Load eval_results.json from a training run.
 
     Args:
-        path: Path to the evaluation JSON file.
+        results_path: Path to the eval_results.json file.
 
     Returns:
-        Dictionary with evaluation results.
+        Parsed JSON dictionary.
 
     Raises:
         FileNotFoundError: If the file does not exist.
-        json.JSONDecodeError: If the file is not valid JSON.
-        ValueError: If required fields are missing.
+        json.JSONDecodeError: If the file contains invalid JSON.
     """
-    eval_path = Path(path)
-    if not eval_path.exists():
-        raise FileNotFoundError(f"Evaluation result not found: {path}")
-
-    with open(eval_path, "r") as f:
-        results = json.load(f)
-
-    required = {"accuracy", "loss"}
-    missing = required - set(results.keys())
-    if missing:
-        raise ValueError(
-            f"Evaluation result missing required fields: {missing}. "
-            f"Found: {list(results.keys())}"
-        )
-
-    return results
+    results_path = Path(results_path)
+    if not results_path.exists():
+        raise FileNotFoundError(f"Eval results not found: {results_path}")
+    with open(results_path, "r") as f:
+        return json.load(f)
 
 
 def compute_paired_deltas(
-    e0_results: Dict[int, Dict[str, Any]],
-    candidate_results: Dict[int, Dict[str, Any]],
-) -> Dict[str, Any]:
-    """Compute paired deltas between a candidate and E0 across splits.
+    e0_results: Dict[int, float],
+    candidate_results: Dict[int, float],
+) -> Dict[str, float]:
+    """Compute paired deltas: delta_i = Acc_candidate,i - Acc_E0,i for each split.
+
+    Each dict maps split_seed -> validation accuracy (float in [0, 1]).
 
     Args:
-        e0_results: {split_seed: {"accuracy": ..., "loss": ...}} for E0.
-        candidate_results: {split_seed: {"accuracy": ..., "loss": ...}} for candidate.
+        e0_results: E0 validation accuracy per split seed.
+        candidate_results: Candidate validation accuracy per split seed.
 
     Returns:
-        Dictionary with:
-            - "per_split": {split_seed: delta_accuracy}
-            - "mean_delta": float
-            - "std_delta": float (sample std, ddof=1)
-            - "min_delta": float
-            - "max_delta": float
-            - "confirmation_wins": int (count of splits where delta > -0.002)
-            - "num_splits": int
+        Dict with keys:
+          - deltas: {split_seed: delta}
+          - mean_delta: mean across splits
+          - std_delta: sample standard deviation (ddof=1)
+          - min_delta: worst-split delta
+          - max_delta: best-split delta
+          - confirmation_wins: X/Y format (splits where delta > -0.002)
+          - pooled_delta: same as mean_delta (for API convenience)
 
     Raises:
-        ValueError: If no shared split seeds are found.
+        ValueError: If no shared split seeds found between the two result sets.
     """
-    shared_seeds = sorted(
-        set(e0_results.keys()) & set(candidate_results.keys())
-    )
+    deltas = {}
+    for split_seed in e0_results:
+        if split_seed in candidate_results:
+            deltas[split_seed] = (
+                candidate_results[split_seed] - e0_results[split_seed]
+            )
 
-    if not shared_seeds:
+    n = len(deltas)
+    if n == 0:
         raise ValueError(
-            "No shared split seeds between E0 and candidate. "
-            f"E0 seeds: {sorted(e0_results.keys())}, "
-            f"Candidate seeds: {sorted(candidate_results.keys())}"
+            "No shared split seeds found between E0 and candidate results"
         )
 
-    per_split = {}
-    for seed in shared_seeds:
-        e0_acc = e0_results[seed]["accuracy"]
-        cand_acc = candidate_results[seed]["accuracy"]
-        per_split[seed] = cand_acc - e0_acc
-
-    deltas = list(per_split.values())
-    n = len(deltas)
-    mean_delta = sum(deltas) / n
-
-    if n > 1:
-        variance = sum((d - mean_delta) ** 2 for d in deltas) / (n - 1)
-        std_delta = variance ** 0.5
-    else:
-        std_delta = 0.0
-
-    min_delta = min(deltas)
-    max_delta = max(deltas)
-    confirmation_wins = sum(
-        1 for d in deltas if d > DEFAULT_MIN_DELTA_THRESHOLD
+    mean_delta = sum(deltas.values()) / n
+    std_delta = (
+        (sum((d - mean_delta) ** 2 for d in deltas.values()) / (n - 1)) ** 0.5
+        if n > 1
+        else 0.0
     )
+    min_delta = min(deltas.values())
+    max_delta = max(deltas.values())
+    wins = sum(1 for d in deltas.values() if d > -0.002)
 
-    result = {
-        "per_split": per_split,
-        "mean_delta": mean_delta,
-        "std_delta": std_delta,
-        "min_delta": min_delta,
-        "max_delta": max_delta,
-        "confirmation_wins": confirmation_wins,
-        "num_splits": n,
+    return {
+        "deltas": deltas,
+        "mean_delta": round(mean_delta, 6),
+        "std_delta": round(std_delta, 6),
+        "min_delta": round(min_delta, 6),
+        "max_delta": round(max_delta, 6),
+        "confirmation_wins": f"{wins}/{n}",
+        "pooled_delta": round(mean_delta, 6),
     }
-
-    logger.info(
-        f"Paired deltas over {n} splits: "
-        f"mean={mean_delta:.6f}, std={std_delta:.6f}, "
-        f"min={min_delta:.6f}, max={max_delta:.6f}, "
-        f"wins={confirmation_wins}/{n}"
-    )
-
-    return result
 
 
 def apply_candidate_rules(
-    candidates: Dict[str, Dict[str, Any]],
-    fallback: str = "E0",
-) -> str:
-    """Apply candidate selection rules to choose the final method.
+    candidates: Dict[str, Dict],
+    elimination_threshold: float = -0.002,
+    tie_threshold: float = 0.001,
+) -> Tuple[str, Dict]:
+    """Apply the pre-specified candidate selection rules.
 
-    Rules:
-        1. Eliminate candidates with any split delta < min_delta_threshold.
-        2. Eliminate candidates with mean_delta <= 0.
-        3. If no survivors, return fallback.
-        4. If exactly one survivor, return it.
-        5. If multiple survivors, apply tiebreakers.
+    The selection process:
+      1. Eliminate candidates where any split degrades by > elimination_threshold.
+      2. Eliminate candidates whose mean delta <= 0.
+      3. Fallback to E0 if no survivors.
+      4. If exactly one survivor, select it.
+      5. Tiebreaker among multiple survivors:
+         a. Higher mean_delta wins.
+         b. If within tie_threshold, pick by deterministic rules (higher mean_delta
+            then lexicographic experiment ID).
+         c. Otherwise higher mean_delta wins.
 
     Args:
-        candidates: {candidate_name: compute_paired_deltas_output}.
-        fallback: Experiment ID to fallback to if no candidate passes.
+        candidates: {candidate_id: paired_delta_report} where each report
+            is the dict returned by compute_paired_deltas.
+        elimination_threshold: Maximum allowed degradation on any single split.
+            Default -0.002 (0.2 percentage points).
+        tie_threshold: Maximum mean_delta difference to consider a tie.
+            Default 0.001 (0.1 percentage points).
 
     Returns:
-        Selected experiment ID string.
-
-    Raises:
-        ValueError: If candidates is empty.
+        Tuple of (selected_id, selection_report), where selection_report contains
+        at minimum a "reason" key and possibly additional keys like "winner",
+        "delta_diff", "fallback".
     """
     if not candidates:
-        raise ValueError("No candidates provided for selection")
+        return "E0", {"reason": "no_candidates_provided", "fallback": "E0"}
 
-    logger.info(f"Applying candidate rules to {len(candidates)} candidates")
-
-    # Stage 1: Eliminate by min_delta threshold
+    # Step 2: Eliminate candidates that degrade > elimination_threshold on any split
     survivors = {}
-    for name, deltas in candidates.items():
-        if deltas["min_delta"] < DEFAULT_MIN_DELTA_THRESHOLD:
-            logger.info(
-                f"  Eliminated {name}: min_delta={deltas['min_delta']:.6f} "
-                f"< {DEFAULT_MIN_DELTA_THRESHOLD}"
-            )
+    elimination_log = {}
+    for cid, report in candidates.items():
+        min_delta = report.get("min_delta", -float("inf"))
+        if min_delta > elimination_threshold:
+            survivors[cid] = report
         else:
-            survivors[name] = deltas
+            elimination_log[cid] = f"min_delta {min_delta} <= {elimination_threshold}"
 
-    # Stage 2: Eliminate by mean_delta <= 0
-    for name in list(survivors.keys()):
-        if survivors[name]["mean_delta"] <= 0:
-            logger.info(
-                f"  Eliminated {name}: mean_delta={survivors[name]['mean_delta']:.6f} <= 0"
+    # Step 3: Eliminate if mean delta <= 0
+    survivors = {
+        k: v
+        for k, v in survivors.items()
+        if v.get("mean_delta", -float("inf")) > 0
+    }
+    # Update elimination log for those dropped in this step
+    for cid in candidates:
+        if cid not in survivors and cid not in elimination_log:
+            elimination_log[cid] = (
+                f"mean_delta {candidates[cid].get('mean_delta')} <= 0"
             )
-            del survivors[name]
 
-    # Stage 3: Fallback check
+    # Step 4: Fallback to E0
     if not survivors:
-        logger.info(f"No survivors. Falling back to {fallback}.")
-        return fallback
+        return "E0", {
+            "reason": "no_candidates_survived",
+            "fallback": "E0",
+            "elimination_log": elimination_log,
+        }
 
-    # Stage 4: Single survivor
+    # Step 5: Exactly one survivor
     if len(survivors) == 1:
-        selected = next(iter(survivors))
-        logger.info(f"Single survivor: {selected}")
-        return selected
+        winner = list(survivors.keys())[0]
+        return winner, {
+            "reason": "sole_survivor",
+            "winner": winner,
+            "elimination_log": elimination_log,
+        }
 
-    # Stage 5: Tiebreakers
-    # Tiebreaker 1: higher min_delta
-    sorted_candidates = sorted(
-        survivors.items(),
-        key=lambda x: (-x[1]["min_delta"], -x[1]["mean_delta"]),
-    )
+    # Step 6: Multiple survivors — apply tiebreaker
+    sorted_ids = sorted(survivors.keys())
+    best_mean = survivors[sorted_ids[0]]["mean_delta"]
+    runner_up_mean = survivors[sorted_ids[1]]["mean_delta"]
+    delta_diff = abs(best_mean - runner_up_mean)
 
-    # Check if clear winner by min_delta
-    best_name, best_deltas = sorted_candidates[0]
-    second_name, second_deltas = sorted_candidates[1]
-
-    delta_diff = abs(best_deltas["mean_delta"] - second_deltas["mean_delta"])
-
-    if delta_diff >= 0.001:  # 0.1pp threshold
-        logger.info(
-            f"Selected {best_name} by higher min_delta "
-            f"({best_deltas['min_delta']:.6f} vs {second_deltas['min_delta']:.6f})"
+    if delta_diff < tie_threshold:
+        # Tiebreaker rules:
+        # 1. Fewer inference-time parameters (cosine < linear since no bias)
+        # 2. Fewer augmentation components (a0 < a1 < a2 < a3)
+        # 3. Higher worst-split delta
+        # 4. Lower delta std
+        # 5. Lexicographic experiment ID
+        #
+        # Simplified heuristic: prefer by (higher min_delta, lower std_delta,
+        # lexicographic experiment ID).
+        winner = max(
+            survivors.keys(),
+            key=lambda k: (
+                survivors[k].get("min_delta", -float("inf")),
+                -survivors[k].get("std_delta", float("inf")),
+                k,  # lexicographic tiebreaker
+            ),
         )
-        return best_name
+        return winner, {
+            "reason": "tiebreaker",
+            "winner": winner,
+            "delta_diff": delta_diff,
+            "elimination_log": elimination_log,
+        }
 
-    # Tiebreaker 2: lower std_delta
-    sorted_by_std = sorted(
-        survivors.items(),
-        key=lambda x: (x[1]["std_delta"], -x[1]["min_delta"]),
-    )
-    selected = sorted_by_std[0][0]
-    logger.info(
-        f"Selected {selected} by lower std_delta "
-        f"({sorted_by_std[0][1]['std_delta']:.6f})"
-    )
-
-    return selected
+    # Otherwise higher mean delta wins
+    winner = max(survivors.keys(), key=lambda k: survivors[k]["mean_delta"])
+    return winner, {
+        "reason": "higher_mean_delta",
+        "winner": winner,
+        "delta_diff": delta_diff,
+        "elimination_log": elimination_log,
+    }

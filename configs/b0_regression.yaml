@@ -1,27 +1,47 @@
+# B0 Regression Config
+# B0 uses the original hyperparameters (lr=1e-3, wd=1e-4, epochs=20, AdamW,
+# CosineAnnealingLR, warmup=1, AMP, batch_size=128, max_grad_norm=1.0).
+# B0 MUST use online encoding (not cached features).
+# B0 does NOT adopt per-method epoch freezing or the 9-trial hyper search.
+
+experiment:
+  id: B0
+  mode: dev
+  head_type: linear
+  augmentation_preset: a0
+
 data:
+  stage: preliminary
   image_extensions:
   - .jpg
   - .jpeg
   - .png
   - .bmp
   - .webp
-  seed: 42
   split_seed: 42
   train_seed: 42
   split_dir: outputs/baseline/splits
   test_dir: data/preliminary/test
   train_dir: data/preliminary/train
   val_ratio: 0.1
-eval:
-  batch_size: 256
+  expected_num_classes: 500
+  class_mapping_path: data/preliminary/metadata
+  use_full_training_set: false
+
 model:
   clip_model_name: ViT-B/32
   feature_dim: 512
   freeze_clip: true
   num_classes: 500
+  use_cached_features: false
+
+eval:
+  batch_size: 256
+
 output:
   log_dir: outputs/baseline/logs
   submission_dir: outputs/baseline/submissions
+
 train:
   amp: true
   batch_size: 128
