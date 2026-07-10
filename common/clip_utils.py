@@ -51,6 +51,7 @@ def load_openai_clip(device, model_name=ALLOWED_MODEL_NAME,
         )
 
     model, preprocess = clip.load(ALLOWED_MODEL_NAME, device=device, jit=False)
+    model.visual = model.visual.float()  # convert fp16 conv1 to fp32 to avoid dtype mismatch
     return model, preprocess
 
 
