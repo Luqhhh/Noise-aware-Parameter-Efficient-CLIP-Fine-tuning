@@ -8,11 +8,10 @@ Lifecycle:
   - exists but inconsistent -> ValueError (needs --regenerate-class-mapping)
 """
 
-import hashlib
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -68,14 +67,6 @@ def generate_canonical_mapping(train_dir, expected_num_classes):
     )
     return class_to_idx, idx_to_class
 
-
-def _compute_class_mapping_hash(mapping):
-    """Compute a deterministic SHA256 hash of the mapping for cache validation."""
-    canonical = json.dumps(
-        {k: mapping[k] for k in sorted(mapping.keys())},
-        sort_keys=True,
-    )
-    return hashlib.sha256(canonical.encode()).hexdigest()
 
 
 def load_or_generate_mapping(

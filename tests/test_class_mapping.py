@@ -1,5 +1,4 @@
 """Test canonical class mapping."""
-import json
 import pytest
 import tempfile
 from pathlib import Path
