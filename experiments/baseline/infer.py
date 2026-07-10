@@ -4,9 +4,12 @@ Inference script: generate predictions on the test set.
 Loads a trained checkpoint, runs inference on all test images, and produces
 a raw prediction file (pred_raw.csv) with columns: image_name, pred_idx, pred_label.
 
+The idx_to_class mapping is loaded from the checkpoint metadata (not from split_dir),
+ensuring the mapping used at inference time matches what was used during training.
+
 Usage:
-    python -m src.infer --config configs/baseline.yaml \
-        --ckpt outputs/checkpoints/best.pt
+    python -m experiments.baseline.infer --config configs/baseline.yaml \
+        --ckpt outputs/baseline/checkpoints/best.pt
 """
 
 import argparse
@@ -117,11 +120,6 @@ def main():
     logger.info(f"Checkpoint: {args.ckpt}")
     logger.info(f"Device: {device}")
 
-    # Load idx_to_class mapping for pred_label formatting
-    split_dir = Path(config["data"]["split_dir"])
-    with open(split_dir / "idx_to_class.json", "r") as f:
-        idx_to_class = json.load(f)
-
     # Build model
     model, preprocess = build_model(config, device)
 
@@ -132,6 +130,26 @@ def main():
     logger.info(f"Checkpoint best val acc: {checkpoint.get('best_val_acc', 'N/A')}")
 
     model = model.to(device)
+
+    # Load idx_to_class from checkpoint metadata (preferred) or fall back to split_dir
+    idx_to_class = checkpoint.get("idx_to_class")
+    if idx_to_class is None:
+        logger.warning(
+            "Checkpoint does not contain idx_to_class metadata. "
+            "Falling back to split_dir."
+        )
+        split_dir = Path(config["data"]["split_dir"])
+        with open(split_dir / "idx_to_class.json", "r") as f:
+            idx_to_class = json.load(f)
+    else:
+        logger.info("Loaded idx_to_class mapping from checkpoint metadata.")
+
+    # Verify the loaded mapping
+    if not isinstance(idx_to_class, dict):
+        raise ValueError(
+            f"idx_to_class must be a dict, got {type(idx_to_class)}"
+        )
+    logger.info(f"idx_to_class mapping has {len(idx_to_class)} entries.")
 
     # Build test dataset
     test_dataset = TestImageDataset(

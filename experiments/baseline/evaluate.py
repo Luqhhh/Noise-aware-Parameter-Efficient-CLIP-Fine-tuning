@@ -1,9 +1,12 @@
 """
 Evaluation script: evaluate a trained checkpoint on the validation set.
 
+Loads the class mapping from common.class_mapping (canonical) and saves
+evaluation results as JSON alongside the checkpoint.
+
 Usage:
-    python -m src.evaluate --config configs/baseline.yaml \
-        --ckpt outputs/checkpoints/best.pt
+    python -m experiments.baseline.evaluate --config configs/baseline.yaml \
+        --ckpt outputs/baseline/checkpoints/best.pt
 """
 
 import argparse
@@ -17,6 +20,7 @@ from torch.amp import autocast
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from common.class_mapping import load_or_generate_mapping
 from common.dataset import TrainImageDataset
 from common.utils import load_config, set_seed, setup_logging
 
@@ -131,10 +135,15 @@ def main():
     logger.info(f"Checkpoint: {args.ckpt}")
     logger.info(f"Device: {device}")
 
-    # Load class mapping
-    split_dir = Path(config["data"]["split_dir"])
-    with open(split_dir / "class_to_idx.json", "r") as f:
-        class_to_idx = json.load(f)
+    # Load class mapping from canonical source (common.class_mapping)
+    class_mapping_path = config["data"].get(
+        "class_mapping_path", config["data"]["split_dir"]
+    )
+    class_to_idx, idx_to_class = load_or_generate_mapping(
+        metadata_dir=class_mapping_path,
+        train_dir=config["data"]["train_dir"],
+        expected_num_classes=config["model"]["num_classes"],
+    )
 
     # Build model
     model, preprocess = build_model(config, device)
@@ -148,6 +157,7 @@ def main():
     model = model.to(device)
 
     # Load validation dataset
+    split_dir = Path(config["data"]["split_dir"])
     val_csv = split_dir / "val.csv"
     if not val_csv.exists():
         raise FileNotFoundError(f"Validation split not found: {val_csv}")
@@ -192,6 +202,20 @@ def main():
     )
     logger.info(f"  Loss:             {results['loss']:.4f}")
     logger.info("=" * 50)
+
+    # Save evaluation results as JSON alongside the checkpoint
+    ckpt_path = Path(args.ckpt)
+    eval_results_path = ckpt_path.parent / f"eval_results_{ckpt_path.stem}.json"
+    eval_results = {
+        "checkpoint": str(ckpt_path),
+        "accuracy": float(results["accuracy"]),
+        "loss": float(results["loss"]),
+        "total_samples": results["total_samples"],
+        "correct_samples": results["correct_samples"],
+    }
+    with open(eval_results_path, "w") as f:
+        json.dump(eval_results, f, indent=2)
+    logger.info(f"Eval results saved to: {eval_results_path}")
 
     return results
 

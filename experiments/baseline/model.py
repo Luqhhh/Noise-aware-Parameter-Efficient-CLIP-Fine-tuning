@@ -2,11 +2,13 @@
 Model definition: CLIP ViT-B/32 with a linear classification head.
 
 Architecture:
-    CLIP ViT-B/32 (frozen) → L2 Normalize → Linear(512, num_classes)
+    CLIP ViT-B/32 (frozen) -> L2 Normalize -> Linear(512, num_classes)
 
 The CLIP image encoder is frozen; only the linear classifier is trained.
 This design allows for a simple, fast baseline that can later be extended
 with LoRA, adapters, or other parameter-efficient fine-tuning methods.
+
+The model is built from common/clip_utils.py which centralizes CLIP loading.
 """
 
 import logging
@@ -15,6 +17,8 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+from common.clip_utils import load_openai_clip
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +50,7 @@ class CLIPLinearClassifier(nn.Module):
         self.feature_dim = feature_dim
         self.num_classes = num_classes
         self.freeze_clip = freeze_clip
+        self.head_type = "linear"  # For checkpoint metadata
 
         # Freeze CLIP backbone
         if freeze_clip:
@@ -59,6 +64,13 @@ class CLIPLinearClassifier(nn.Module):
         # Initialize the linear layer
         nn.init.xavier_uniform_(self.classifier.weight)
         nn.init.zeros_(self.classifier.bias)
+
+    def train(self, mode: bool = True):
+        """Override train() to keep CLIP backbone in eval when frozen."""
+        super().train(mode)
+        if self.freeze_clip:
+            self.visual.eval()
+        return self
 
     def encode_image(self, images: torch.Tensor) -> torch.Tensor:
         """Extract image features using the CLIP visual encoder.
@@ -125,24 +137,13 @@ def build_model(
         - model: CLIPLinearClassifier instance.
         - preprocess_fn: CLIP preprocessing function (torchvision transform).
     """
-    try:
-        import clip
-    except ImportError:
-        raise ImportError(
-            "The 'clip' package is required. Install it with:\n"
-            "  pip install git+https://github.com/openai/CLIP.git"
-        )
-
     clip_model_name = config["model"]["clip_model_name"]
     num_classes = config["model"]["num_classes"]
     feature_dim = config["model"].get("feature_dim", 512)
     freeze_clip = config["model"].get("freeze_clip", True)
 
     logger.info(f"Loading CLIP model: {clip_model_name}")
-    clip_model, preprocess = clip.load(clip_model_name, device=device)
-
-    # Convert visual encoder to float32 for consistent dtype handling.
-    # CLIP loads some layers in fp16 on CUDA which causes dtype mismatches.
+    clip_model, preprocess = load_openai_clip(device)
     clip_model.visual = clip_model.visual.float()
 
     model = CLIPLinearClassifier(
