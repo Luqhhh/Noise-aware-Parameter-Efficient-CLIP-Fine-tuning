@@ -3,13 +3,18 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Outputs (generated files)
-outputs/
+# Large binary checkpoints (track all other output files)
+outputs/**/*.pt
 
-# Data
+# Generated feature cache (large binary)
+cache/
+
+# Data (not in repo, provided by user)
 train/
 test/
 
 # Config (local paths)
 configs/baseline.yaml
+
+# Worktrees
 .claude/worktrees/

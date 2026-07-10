@@ -1,0 +1,11 @@
+2026-07-08 21:47:36 | INFO | Config: configs/baseline.yaml
+2026-07-08 21:47:36 | INFO | Checkpoint: outputs/checkpoints/best.pt
+2026-07-08 21:47:36 | INFO | Device: cuda
+2026-07-08 21:47:40 | INFO | Loaded checkpoint from epoch 20
+2026-07-08 21:47:40 | INFO | Checkpoint best val acc: 0.6137801502570186
+2026-07-08 21:47:40 | INFO | Test set: 24967 images, 98 batches
+2026-07-08 21:48:00 | INFO | Raw predictions saved to: outputs/submissions/pred_raw.csv
+2026-07-08 21:48:00 | INFO | Total predictions: 24967
+2026-07-08 21:48:00 | INFO | Unique predicted classes: 495 / 500
+2026-07-08 21:48:00 | INFO | Prediction label lengths: {4: 24967}
+2026-07-08 21:48:00 | INFO | Inference complete.

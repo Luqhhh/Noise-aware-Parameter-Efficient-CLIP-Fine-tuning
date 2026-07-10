@@ -1,0 +1,18 @@
+2026-07-08 22:23:53 | INFO | Using device: cuda
+2026-07-08 22:23:53 | INFO | Configuration: configs/baseline.yaml
+2026-07-08 22:23:53 | INFO | Random seed: 42
+2026-07-08 22:23:57 | INFO | Total parameters:     88,105,716
+2026-07-08 22:23:57 | INFO | Trainable parameters: 256,500
+2026-07-08 22:24:00 | INFO | Starting training: 2 epochs, 727 batches/epoch
+2026-07-08 22:24:00 | INFO | Warmup steps: 727, Total steps: 1454
+2026-07-08 22:24:00 | INFO | AMP: True
+2026-07-08 22:24:00 | INFO | ============================================================
+2026-07-08 22:26:22 | INFO | Epoch   1/2 | Train Loss: 6.0019 | Train Acc: 0.1472 | Val Loss: 5.5871 | Val Acc: 0.3373 | LR: 1.00e-03 | Time: 2m 21s
+2026-07-08 22:26:22 | INFO |   >> New best model! Val Acc: 0.3373
+2026-07-08 22:28:54 | INFO | Epoch   2/2 | Train Loss: 5.1129 | Train Acc: 0.4008 | Val Loss: 4.7550 | Val Acc: 0.4628 | LR: 5.05e-04 | Time: 2m 30s
+2026-07-08 22:28:54 | INFO |   >> New best model! Val Acc: 0.4628
+2026-07-08 22:28:55 | INFO | ============================================================
+2026-07-08 22:28:55 | INFO | Training complete! Total time: 4m 55s
+2026-07-08 22:28:55 | INFO | Best validation accuracy: 0.4628
+2026-07-08 22:28:55 | INFO | Best model saved to: outputs/baseline/checkpoints/best.pt
+2026-07-08 22:28:55 | INFO | Training log saved to: outputs/baseline/logs/train_log.csv

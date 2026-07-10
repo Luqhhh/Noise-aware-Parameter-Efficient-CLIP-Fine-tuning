@@ -1,0 +1,35 @@
+data:
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  seed: 42
+  split_dir: outputs/splits
+  test_dir: /home/lux1/noise/test
+  train_dir: /home/lux1/noise/train
+  val_ratio: 0.1
+eval:
+  batch_size: 256
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+output:
+  log_dir: outputs/logs
+  submission_dir: outputs/submissions
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 2
+  image_size: 224
+  lr: 0.001
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/checkpoints
+  scheduler: cosine
+  warmup_epochs: 1
+  weight_decay: 0.0001

@@ -1,0 +1,14 @@
+{
+  "optimizer": "AdamW",
+  "lr": 0.001,
+  "weight_decay": 0.0001,
+  "batch_size": 128,
+  "epochs": 20,
+  "scheduler": "CosineAnnealingLR",
+  "warmup_epochs": 1,
+  "amp": true,
+  "max_grad_norm": 1.0,
+  "checkpoint_policy": "best_val",
+  "split_seed": 42,
+  "train_seed": 42
+}

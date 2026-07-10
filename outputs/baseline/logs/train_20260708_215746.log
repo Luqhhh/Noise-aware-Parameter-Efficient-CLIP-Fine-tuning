@@ -1,0 +1,13 @@
+2026-07-08 21:57:47 | INFO | Using device: cuda
+2026-07-08 21:57:47 | INFO | Configuration: configs/baseline.yaml
+2026-07-08 21:57:47 | INFO | Random seed: 42
+2026-07-08 21:57:51 | INFO | Total parameters:     88,105,716
+2026-07-08 21:57:51 | INFO | Trainable parameters: 256,500
+2026-07-08 21:57:53 | INFO | Starting training: 20 epochs, 727 batches/epoch
+2026-07-08 21:57:53 | INFO | Warmup steps: 727, Total steps: 14540
+2026-07-08 21:57:53 | INFO | AMP: True
+2026-07-08 21:57:53 | INFO | ============================================================
+2026-07-08 22:00:07 | INFO | Epoch   1/20 | Train Loss: 6.0019 | Train Acc: 0.1472 | Val Loss: 5.5871 | Val Acc: 0.3373 | LR: 1.00e-03 | Time: 2m 14s
+2026-07-08 22:00:07 | INFO |   >> New best model! Val Acc: 0.3373
+2026-07-08 22:02:51 | INFO | Epoch   2/20 | Train Loss: 5.0714 | Train Acc: 0.3992 | Val Loss: 4.6025 | Val Acc: 0.4621 | LR: 9.94e-04 | Time: 2m 42s
+2026-07-08 22:02:51 | INFO |   >> New best model! Val Acc: 0.4621

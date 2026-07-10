@@ -1,0 +1,13 @@
+2026-07-08 20:54:56 | INFO | Config: configs/baseline.yaml
+2026-07-08 20:54:56 | INFO | Checkpoint: outputs/checkpoints/best.pt
+2026-07-08 20:54:56 | INFO | Device: cuda
+2026-07-08 20:55:00 | INFO | Loaded checkpoint from epoch 2
+2026-07-08 20:55:00 | INFO | Checkpoint best val acc: 0.46283115856069595
+2026-07-08 20:55:01 | INFO | Validation set: 10116 samples, 40 batches
+2026-07-08 20:55:17 | INFO | ==================================================
+2026-07-08 20:55:17 | INFO | Evaluation Results:
+2026-07-08 20:55:17 | INFO |   Total samples:    10116
+2026-07-08 20:55:17 | INFO |   Correct samples:  4682
+2026-07-08 20:55:17 | INFO |   Top-1 Accuracy:   0.4628 (46.28%)
+2026-07-08 20:55:17 | INFO |   Loss:             4.7550
+2026-07-08 20:55:17 | INFO | ==================================================
