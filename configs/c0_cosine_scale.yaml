@@ -19,11 +19,11 @@ data:
   split_seed: 42
   train_seed: 42
   split_dir: outputs/c0/splits
-  test_dir: data/preliminary/test
-  train_dir: data/preliminary/train
+  test_dir: test
+  train_dir: train
   val_ratio: 0.1
   expected_num_classes: 500
-  class_mapping_path: data/preliminary/metadata
+  class_mapping_path: outputs/metadata
   use_full_training_set: false
 
 model:
