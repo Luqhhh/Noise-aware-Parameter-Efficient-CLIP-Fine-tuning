@@ -6,6 +6,8 @@ data:
   - .bmp
   - .webp
   seed: 42
+  split_seed: 42
+  train_seed: 42
   split_dir: outputs/baseline/splits
   test_dir: data/preliminary/test
   train_dir: data/preliminary/train

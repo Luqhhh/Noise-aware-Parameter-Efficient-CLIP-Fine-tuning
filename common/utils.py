@@ -59,6 +59,25 @@ def set_seed(seed: int) -> None:
     os.environ["PYTHONHASHSEED"] = str(seed)
 
 
+def set_train_seed(seed: int) -> None:
+    """Set random seeds for training reproducibility.
+
+    Unlike set_seed (used for split generation), this does NOT set
+    cudnn.deterministic=True because it significantly slows training.
+    It sets the core seeds that ensure DataLoader shuffles and model
+    initialization are reproducible.
+
+    Args:
+        seed: Integer seed value.
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
+
+
 def setup_logging(log_dir: str, name: str = "train") -> logging.Logger:
     """Set up logging to both console and file.
 

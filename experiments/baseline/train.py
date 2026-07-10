@@ -24,9 +24,9 @@ from torch.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from common.dataset import TrainImageDataset
+from common.dataset import TrainImageDataset, seed_worker
 from common.utils import (count_parameters, ensure_dir, format_time,
-                          load_config, save_config_snapshot, set_seed,
+                          load_config, save_config_snapshot, set_train_seed,
                           setup_logging)
 
 from .model import build_model
@@ -94,13 +94,20 @@ def _build_dataloaders(
         return_path=True,
     )
 
+    # Use a dedicated Generator for deterministic DataLoader shuffling
+    train_seed = config["data"].get("train_seed", config["data"].get("seed", 42))
+    g = torch.Generator()
+    g.manual_seed(train_seed)
+
     train_loader = DataLoader(
         train_dataset,
         batch_size=train_cfg["batch_size"],
         shuffle=True,
         num_workers=train_cfg["num_workers"],
         pin_memory=True,
-        drop_last=True,
+        drop_last=False,           # Changed from True — keep all samples
+        worker_init_fn=seed_worker,
+        generator=g,
     )
 
     val_loader = DataLoader(
@@ -110,6 +117,8 @@ def _build_dataloaders(
         num_workers=train_cfg["num_workers"],
         pin_memory=True,
         drop_last=False,
+        worker_init_fn=seed_worker,
+        generator=g,
     )
 
     logger.info(
@@ -364,9 +373,9 @@ def main():
     # Load config
     config = load_config(args.config)
 
-    # Set random seed
-    seed = config["data"]["seed"]
-    set_seed(seed)
+    # Set random seed for training (does NOT enable cudnn.deterministic)
+    train_seed = config["data"].get("train_seed", config["data"].get("seed", 42))
+    set_train_seed(train_seed)
 
     # Setup logging first
     log_dir = ensure_dir(config["output"]["log_dir"])
@@ -378,7 +387,7 @@ def main():
     )
     train_logger.info(f"Using device: {device}")
     train_logger.info(f"Configuration: {args.config}")
-    train_logger.info(f"Random seed: {seed}")
+    train_logger.info(f"Train seed: {train_seed}")
 
     # Check that splits exist
     split_dir = config["data"]["split_dir"]

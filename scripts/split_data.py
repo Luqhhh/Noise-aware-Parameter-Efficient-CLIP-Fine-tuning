@@ -64,7 +64,7 @@ def parse_args() -> argparse.Namespace:
         "--seed",
         type=int,
         default=None,
-        help="Random seed (overrides config).",
+        help="Random seed for the split (overrides config data.split_seed).",
     )
     parser.add_argument(
         "--split_dir",
@@ -192,7 +192,7 @@ def main():
         if val_ratio is None:
             val_ratio = data_cfg.get("val_ratio", 0.1)
         if seed is None:
-            seed = data_cfg.get("seed", 42)
+            seed = data_cfg.get("split_seed", data_cfg.get("seed", 42))
         if split_dir is None:
             split_dir = data_cfg.get("split_dir", "outputs/splits")
     else:
