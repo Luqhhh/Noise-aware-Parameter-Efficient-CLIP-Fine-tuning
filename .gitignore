@@ -12,3 +12,4 @@ test/
 
 # Config (local paths)
 configs/baseline.yaml
+.claude/worktrees/
