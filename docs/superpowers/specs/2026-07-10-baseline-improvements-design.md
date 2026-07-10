@@ -38,6 +38,8 @@
 
 **Candidate pool**: C0/C1/C2 are explanatory internal ablations only — they do NOT enter the top-2 candidate pool and are NOT used to reselect E1 or E5 configurations. E1 always uses init_scale=10, learnable_scale=True. E5 inherits E1's Cosine config. C0/C1/C2 are reported independently in results.
 
+**Cached features batch size constraint**: Cached mode MUST NOT silently increase batch size for E0/E1 main experiments. E0–E5 all use the same logical `train.batch_size` (e.g. 128). Cached mode reduces CLIP encoding cost but does NOT change the optimization protocol (steps per epoch, gradient noise, LR schedule). If a larger batch size is desired for fast pre-screening, mark those runs as `engineering_sweep` — they are not part of the main E0–E5 comparison.
+
 **Cached features guard**: Feature caching is ONLY valid for augmentation=a0 AND freeze_clip=True. **B0 regression**: B0 MUST use the original online encoding path (`--use-cached-features` is forbidden for B0). The original baseline used online CLIP encoding; changing to cached features would invalidate the regression comparison. B0-cache-equivalence can be tested separately as an engineering check (same checkpoint, same samples, compare online vs cached features) but is NOT a substitute for B0 results.
 
 The following experiments CAN use cached features: E0, E1, C0, C1, C2. The following CANNOT: B0 (regression requires online), E2, E3, E4, E5 (random augmentation must be re-applied each epoch). Hard enforcement:
@@ -91,7 +93,7 @@ B0 is reported separately as a one-time regression check.
 Step 0: Save B0 regression fixture; reproduce with original hyperparameters
 Step 1: Seed separation + canonical class mapping + isolated output dirs
 Step 2: Cache deterministic CLIP features on FULL training set (dual fingerprint + class mapping)
-Step 3: Dev split (seed=42): B0 → E0 (9-trial lr×wd) → E1 (9-trial lr×wd) — equal-budget
+Step 3: Dev split (seed=42): run E0 and E1 equal-budget searches; compare against B0 result from Step 0
 Step 4: Dev split (seed=42): E2/E3/E4 using E0's tuned lr/wd; each freezes its own best_epoch
 Step 5: Dev split (seed=42): E5 + C0/C1/C2; select top-2 candidates
 Step 6: Confirm splits (seed=3407,2026): E0 + candidate-1 + candidate-2 per split; paired deltas vs E0
@@ -153,40 +155,62 @@ E0–E5, C0–C2:
   - Confirm splits use each method's own frozen_train_epochs, no tuning
 ```
 
-**Checkpoint epoch fields**:
+**Checkpoint epoch fields** (unified across all modes):
 ```python
-# B0:
+# B0 (original protocol, dev only):
 {
     "observed_best_epoch": 8,
-    "epoch_selection_policy": "original_best_val",
     "trained_epochs": 20,
+    "epoch_selection_policy": "original_best_val",
 }
 
-# E0–E5, C0–C2:
+# E0–E5, C0–C2 — dev mode:
 {
-    "dev_best_epoch": 13,
-    "frozen_train_epochs": 13,
+    "dev_best_epoch": 13,              # actually observed this epoch
+    "frozen_train_epochs": 13,         # what confirm/final-fit will use
+    "trained_epochs": 20,              # how many epochs this run trained
     "epoch_selection_policy": "dev_best_epoch_frozen_before_confirm",
+    "epoch_selection_split": 42,
+}
+
+# E0–E5 — confirm mode (source_dev_best_epoch carries forward the dev value):
+{
+    "source_dev_best_epoch": 13,       # epoch selected during dev
+    "frozen_train_epochs": 13,         # same value, carried forward
+    "trained_epochs": 13,              # trained exactly this many
+    "epoch_selection_policy": "dev_best_epoch_frozen_before_confirm",
+    "epoch_selection_split": 42,
+}
+
+# Final-fit mode:
+{
+    "source_dev_best_epoch": 13,       # epoch selected during dev
+    "frozen_train_epochs": 13,
     "trained_epochs": 13,
+    "epoch_selection_policy": "dev_best_epoch_frozen_before_confirm",
+    "epoch_selection_split": 42,
 }
 ```
+
+`dev_best_epoch` is only actually computed in dev mode. `source_dev_best_epoch` carries that value forward through confirm and final-fit. `trained_epochs` is always the actual number of epochs this checkpoint was trained for.
 
 ### Candidate & Epoch Selection Rules
 
 **Method selection**:
-1. Compare top-2 candidates on confirm splits by mean paired delta vs E0 (tuned linear)
+1. Compute each candidate's paired delta vs E0 on confirm splits
 2. If any candidate degrades >0.2pp on any confirm split vs E0 → eliminated
-3. If |Δ_c1 − Δ_c2| < 0.1pp → apply deterministic tiebreaker (see below)
-4. Test-set submission scores are NOT used
+3. If mean paired delta ≤ 0 → candidate not eligible for final selection
+4. If NO candidates remain after steps 2–3 → final method falls back to E0 (tuned linear)
+5. If exactly ONE candidate remains → selected
+6. If both remain and |Δ_c1 − Δ_c2| < 0.1pp → apply deterministic tiebreaker (see below)
+7. Test-set submission scores are NOT used
 
 **Tiebreaker** (pre-defined, deterministic — applied when mean Δ difference < 0.1pp):
-1. Fewer trainable parameters at inference time
+1. Fewer additional inference-time parameters or modules
 2. If tied: fewer data augmentation components in training
 3. If tied: higher confirmation worst-split delta
 4. If tied: lower confirmation delta std (sample std, ddof=1)
 5. If still tied: lexicographic order of experiment ID
-
-This is evaluated BEFORE seeing results — not interpreted post-hoc.
 
 **Epoch selection** (per-method, frozen before confirm):
 1. Each method records `best_epoch = argmax(val_acc)` on dev split (seed=42)
@@ -388,25 +412,43 @@ train:
 
 `csv.writer`, no header, `img.jpg,0001`. Zip contains only `pred_results.csv`.
 
-**Pre-submission checks**:
+**Pre-submission checks** (explicit exceptions, NOT assert):
 ```python
-# 1. Test file name uniqueness
 test_names = [p.name for p in test_image_paths]
-assert len(test_names) == len(set(test_names)), \
-    "Test set contains duplicate basenames"
 
-# 2. Coverage
+if len(test_names) != len(set(test_names)):
+    raise ValueError("Test set contains duplicate basenames")
+
 expected_names = set(test_names)
 predicted_names = [row[0] for row in submission_rows]
-assert len(predicted_names) == len(expected_names)
-assert len(predicted_names) == len(set(predicted_names))
-assert set(predicted_names) == expected_names
 
-# 3. Class name validation per row
-for name, class_name in submission_rows:
-    assert class_name == class_name.strip()
-    assert len(class_name) == 4
-    assert class_name.isdigit()
+if len(predicted_names) != len(expected_names):
+    raise ValueError(
+        f"Prediction count mismatch: "
+        f"got {len(predicted_names)}, expected {len(expected_names)}"
+    )
+
+if len(predicted_names) != len(set(predicted_names)):
+    raise ValueError("Submission contains duplicate image names")
+
+predicted_set = set(predicted_names)
+if predicted_set != expected_names:
+    missing = sorted(expected_names - predicted_set)
+    extra = sorted(predicted_set - expected_names)
+    raise ValueError(
+        f"Submission coverage mismatch: "
+        f"missing={len(missing)}, extra={len(extra)}"
+    )
+
+for image_name, class_name in submission_rows:
+    if class_name != class_name.strip():
+        raise ValueError(
+            f"Class name contains whitespace: {class_name!r}"
+        )
+    if len(class_name) != 4 or not class_name.isdigit():
+        raise ValueError(
+            f"Invalid class name for {image_name}: {class_name!r}"
+        )
 ```
 
 ---
@@ -479,8 +521,10 @@ for name, class_name in submission_rows:
 | AC-5.4 | `num_classes: auto` 从规范映射推断 |
 | AC-5.5 | `load_openai_clip()` 硬校验：非 ViT-B/32 或非 openai → ValueError |
 | AC-5.6 | 提交合规：csv.writer，无 header，`img.jpg,0001`；zip 仅含 pred_results.csv |
-| AC-5.7 | checkpoint 含完整推理元数据；infer 从 checkpoint 读映射；epoch 字段语义清晰（trained_epochs/dev_best_epoch/epoch_selection_split/epoch_selection_policy） |
+| AC-5.7 | checkpoint 含完整推理元数据（class_to_idx, idx_to_class, head_type, augmentation_preset, trained_epochs, source_dev_best_epoch, frozen_train_epochs, epoch_selection_split, epoch_selection_policy）；infer 从 checkpoint 读映射 |
 | AC-5.8 | 每个方法 epoch 独立冻结；confirm/final-fit 不改变 |
 | AC-5.9 | 消融公平性：E0/E1 等预算；C0-C2 独立；E2-E4 固定 E0 超参 |
-| AC-5.10 | 测试集覆盖：先检查 basename 唯一性；行数=唯一文件名数=测试图片数；集合完全相等；无重复无缺失无额外 |
+| AC-5.10 | 测试集覆盖：先检查 basename 唯一性；行数=唯一文件名数=测试图片数；集合完全相等；无重复无缺失无额外；所有校验使用显式异常 |
 | AC-5.11 | **B0 完整训练协议匹配**：B0 的 resolved config（optimizer, scheduler, epochs, batch_size, warmup, AMP, max_grad_norm, checkpoint_policy）与重构前 baseline reference 一致；B0 不采用新增调优规则（无 9-trial search，无 per-method epoch freezing） |
+| AC-5.12 | **E0–E5 统一 batch size**：缓存模式不得因显存富余擅自扩大 batch size；主实验用同一 `train.batch_size`；大 batch 快速预筛选标记为 `engineering_sweep`，不参与主比较 |
+| AC-5.13 | **候选回退规则**：所有候选均未通过确认条件时，最终方法回退为 E0 |
