@@ -6,12 +6,9 @@ transform with augmentation presets (A0-A3). The CLIP preprocess is NOT
 loaded inside this module — it's passed in from the caller.
 """
 
-import logging
 from typing import Callable, Set
 
 import torchvision.transforms as T
-
-logger = logging.getLogger(__name__)
 
 VALID_PRESETS: Set[str] = {"a0", "a1", "a2", "a3"}
 
