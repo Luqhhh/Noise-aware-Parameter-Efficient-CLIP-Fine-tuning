@@ -26,14 +26,12 @@ from tqdm import tqdm
 from common.dataset import TestImageDataset
 from common.utils import ensure_dir, load_config, set_seed, setup_logging
 
-from .model import build_model
-
 logger = logging.getLogger(__name__)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run inference on test set using a trained CLIP Linear Classifier."
+        description="Run inference on test set using a trained classifier."
     )
     parser.add_argument(
         "--config",
@@ -46,6 +44,28 @@ def parse_args() -> argparse.Namespace:
         type=str,
         required=True,
         help="Path to the model checkpoint (.pt file).",
+    )
+    parser.add_argument(
+        "--head-type",
+        type=str,
+        default=None,
+        choices=["linear", "cosine"],
+        help="Classifier head type: linear (default) or cosine. "
+             "Overrides experiment.head_type in config if provided.",
+    )
+    parser.add_argument(
+        "--cos-init-scale",
+        type=float,
+        default=None,
+        help="Initial logit scale for cosine head (overrides model.cos_init_scale).",
+    )
+    parser.add_argument(
+        "--cos-learnable-scale",
+        type=str,
+        default=None,
+        choices=["true", "false"],
+        help="Whether logit scale is learnable for cosine head "
+             "(overrides model.cos_learnable_scale).",
     )
     return parser.parse_args()
 
@@ -120,8 +140,27 @@ def main():
     logger.info(f"Checkpoint: {args.ckpt}")
     logger.info(f"Device: {device}")
 
-    # Build model
-    model, preprocess = build_model(config, device)
+    # Determine head type: CLI arg overrides config
+    head_type = args.head_type
+    if head_type is None:
+        head_type = config.get("experiment", {}).get("head_type", "linear")
+    logger.info(f"Head type: {head_type}")
+
+    # Build model based on head type
+    if head_type == "cosine":
+        from experiments.cosine.model import build_cosine_model
+
+        if args.cos_init_scale is not None:
+            config["model"]["cos_init_scale"] = args.cos_init_scale
+        if args.cos_learnable_scale is not None:
+            config["model"]["cos_learnable_scale"] = (
+                args.cos_learnable_scale.lower() == "true"
+            )
+
+        model, preprocess = build_cosine_model(config, device)
+    else:
+        from .model import build_model
+        model, preprocess = build_model(config, device)
 
     # Load checkpoint (only model weights needed for inference)
     checkpoint = torch.load(args.ckpt, map_location=device)

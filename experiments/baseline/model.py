@@ -96,7 +96,7 @@ class CLIPLinearClassifier(nn.Module):
                 features.mean(dim=[2, 3]) if features.dim() == 4 else features[:, 0]
             )
 
-        features = features.float()
+        # Features are already float32 from the float()-converted visual encoder
         features = F.normalize(features, p=2, dim=-1)
 
         return features
@@ -139,7 +139,8 @@ def build_model(
     """
     logger.info(f"Loading CLIP model: {config['model']['clip_model_name']}")
     clip_model, preprocess = load_openai_clip(device, model_name=config["model"]["clip_model_name"])
-    clip_model.visual = clip_model.visual.float()
+    # load_openai_clip already converts the full model to float32,
+    # so clip_model.visual is already float32 — no redundant .float() needed.
 
     num_classes = config["model"]["num_classes"]
     feature_dim = config["model"].get("feature_dim", 512)

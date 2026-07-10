@@ -6,7 +6,7 @@ experiment:
   id: E5
   mode: dev
   head_type: cosine
-  augmentation_preset: best_aug
+  augmentation_preset: a3  # placeholder — update after ablation selection
 
 data:
   stage: preliminary

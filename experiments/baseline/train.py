@@ -41,8 +41,6 @@ from common.utils import (count_parameters, ensure_dir, format_time,
                           load_config, save_config_snapshot, set_train_seed,
                           setup_logging)
 
-from .model import build_model
-
 logger = logging.getLogger(__name__)
 
 
@@ -106,6 +104,30 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=None,
         help="Best epoch from the dev stage, carried forward to confirm/final_fit.",
+    )
+    # Head type
+    parser.add_argument(
+        "--head-type",
+        type=str,
+        default=None,
+        choices=["linear", "cosine"],
+        help="Classifier head type: linear (default) or cosine. "
+             "Overrides experiment.head_type in config if provided.",
+    )
+    # Cosine head options (overrides config model section)
+    parser.add_argument(
+        "--cos-init-scale",
+        type=float,
+        default=None,
+        help="Initial logit scale for cosine head (overrides model.cos_init_scale).",
+    )
+    parser.add_argument(
+        "--cos-learnable-scale",
+        type=str,
+        default=None,
+        choices=["true", "false"],
+        help="Whether logit scale is learnable for cosine head "
+             "(overrides model.cos_learnable_scale).",
     )
     return parser.parse_args()
 
@@ -196,15 +218,26 @@ def _check_splits_exist(split_dir: str) -> bool:
 def _build_optimizer_and_scheduler(
     model: nn.Module, config: Dict[str, Any], num_training_steps: int
 ) -> tuple:
-    """Build optimizer and learning rate scheduler."""
+    """Build optimizer and learning rate scheduler.
+
+    Supports both linear and cosine heads:
+      - Linear: uses model.get_trainable_parameters() with uniform LR + WD.
+      - Cosine: uses model.get_param_groups(lr, wd) for separate scale handling.
+    """
     train_cfg = config["train"]
 
-    # Only optimize classifier parameters
-    optimizer = torch.optim.AdamW(
-        model.get_trainable_parameters(),
-        lr=train_cfg["lr"],
-        weight_decay=train_cfg["weight_decay"],
-    )
+    # Use model.get_param_groups() if available (cosine head handles scale separately),
+    # otherwise use get_trainable_parameters() (linear head with uniform config).
+    if hasattr(model, "get_param_groups"):
+        optimizer = torch.optim.AdamW(
+            model.get_param_groups(train_cfg["lr"], train_cfg["weight_decay"]),
+        )
+    else:
+        optimizer = torch.optim.AdamW(
+            model.get_trainable_parameters(),
+            lr=train_cfg["lr"],
+            weight_decay=train_cfg["weight_decay"],
+        )
 
     # Cosine annealing scheduler
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
@@ -301,6 +334,10 @@ def train_one_epoch(
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
 
             optimizer.step()
+
+        # Cosine head: clamp logit_scale after each optimizer step
+        if hasattr(model, "clamp_scale"):
+            model.clamp_scale()
 
         # Only step scheduler after warmup
         if global_step >= warmup_steps:
@@ -553,8 +590,28 @@ def main():
     freeze_clip = config["model"].get("freeze_clip", True)
     _enforce_guards(experiment_id, use_cached, aug_preset, freeze_clip)
 
-    # Build model first (to get CLIP preprocess)
-    model, preprocess = build_model(config, device)
+    # Determine head type: CLI arg overrides config
+    head_type = args.head_type
+    if head_type is None:
+        head_type = config.get("experiment", {}).get("head_type", "linear")
+    train_logger.info(f"Head type: {head_type}")
+
+    # Build model based on head type
+    if head_type == "cosine":
+        from experiments.cosine.model import build_cosine_model
+
+        # CLI args override config values for cosine head options
+        if args.cos_init_scale is not None:
+            config["model"]["cos_init_scale"] = args.cos_init_scale
+        if args.cos_learnable_scale is not None:
+            config["model"]["cos_learnable_scale"] = (
+                args.cos_learnable_scale.lower() == "true"
+            )
+
+        model, preprocess = build_cosine_model(config, device)
+    else:
+        from .model import build_model
+        model, preprocess = build_model(config, device)
 
     total_params, trainable_params = count_parameters(model)
     train_logger.info(f"Total parameters:     {total_params:,}")

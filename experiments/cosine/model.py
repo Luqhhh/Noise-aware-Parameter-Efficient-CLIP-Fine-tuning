@@ -86,7 +86,7 @@ class CosineClassifier(nn.Module):
                 features.mean(dim=[2, 3]) if features.dim() == 4 else features[:, 0]
             )
 
-        features = features.float()
+        # Features are already float32 from the float()-converted visual encoder
         features = F.normalize(features, p=2, dim=-1)
         return features
 
