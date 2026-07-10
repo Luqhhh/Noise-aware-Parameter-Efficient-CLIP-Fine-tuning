@@ -1,0 +1,55 @@
+# E4 Config: Linear + A3 (strongest augmentation), online encoding
+# E4 cannot use cached features due to non-A0 augmentation.
+# Inherits E0's lr/wd after hyperparameter search.
+
+experiment:
+  id: E4
+  mode: dev
+  head_type: linear
+  augmentation_preset: a3
+
+data:
+  stage: preliminary
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/e4/splits
+  test_dir: data/preliminary/test
+  train_dir: data/preliminary/train
+  val_ratio: 0.1
+  expected_num_classes: 500
+  class_mapping_path: data/preliminary/metadata
+  use_full_training_set: false
+
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+  use_cached_features: false
+
+eval:
+  batch_size: 256
+
+output:
+  log_dir: outputs/e4/logs
+  submission_dir: outputs/e4/submissions
+
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 20
+  image_size: 224
+  lr: 0.001
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/e4/checkpoints
+  scheduler: cosine
+  warmup_epochs: 1
+  weight_decay: 0.0001

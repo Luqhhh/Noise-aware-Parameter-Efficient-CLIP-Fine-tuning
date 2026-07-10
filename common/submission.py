@@ -11,6 +11,7 @@ Usage:
 """
 
 import argparse
+import csv
 import logging
 import zipfile
 from pathlib import Path
@@ -20,6 +21,9 @@ import pandas as pd
 from .utils import ensure_dir
 
 logger = logging.getLogger(__name__)
+
+# Supported image file extensions
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -39,6 +43,89 @@ def parse_args() -> argparse.Namespace:
         help="Directory to save submission files.",
     )
     return parser.parse_args()
+
+
+def validate_submission_coverage(test_dir: str, results_csv_path: str) -> None:
+    """Validate submission coverage with explicit exceptions.
+
+    Checks:
+      1. Test basename uniqueness
+      2. Prediction count == test image count
+      3. No duplicate image names in predictions
+      4. Set equality (no missing, no extra)
+      5. Class name format (4-digit, no whitespace)
+
+    Args:
+        test_dir: Path to test image directory.
+        results_csv_path: Path to pred_results.csv.
+
+    Raises:
+        ValueError: On any validation failure.
+        FileNotFoundError: If paths don't exist.
+    """
+    test_dir = Path(test_dir)
+    results_csv_path = Path(results_csv_path)
+
+    if not test_dir.exists():
+        raise FileNotFoundError(f"Test directory not found: {test_dir}")
+    if not results_csv_path.exists():
+        raise FileNotFoundError(f"Results CSV not found: {results_csv_path}")
+
+    # Collect test image basenames
+    test_image_paths = []
+    for ext in IMAGE_EXTENSIONS:
+        test_image_paths.extend(test_dir.glob(f"*{ext}"))
+        test_image_paths.extend(test_dir.glob(f"*{ext.upper()}"))
+
+    test_names = [p.name for p in test_image_paths]
+
+    # Check basename uniqueness
+    if len(test_names) != len(set(test_names)):
+        raise ValueError("Test set contains duplicate basenames")
+
+    expected_names = set(test_names)
+
+    # Read predictions
+    with open(results_csv_path, "r") as f:
+        reader = csv.reader(f)
+        submission_rows = list(reader)
+
+    predicted_names = [row[0].strip() for row in submission_rows if row]
+
+    # Check count
+    if len(predicted_names) != len(expected_names):
+        raise ValueError(
+            f"Prediction count mismatch: "
+            f"got {len(predicted_names)}, expected {len(expected_names)}"
+        )
+
+    # Check duplicates
+    if len(predicted_names) != len(set(predicted_names)):
+        raise ValueError("Submission contains duplicate image names")
+
+    # Check set equality
+    predicted_set = set(predicted_names)
+    if predicted_set != expected_names:
+        missing = sorted(expected_names - predicted_set)
+        extra = sorted(predicted_set - expected_names)
+        raise ValueError(
+            f"Submission coverage mismatch: "
+            f"missing={len(missing)}, extra={len(extra)}"
+        )
+
+    # Check class name format
+    for row in submission_rows:
+        if not row:
+            continue
+        image_name = row[0].strip()
+        class_name = row[1].strip() if len(row) > 1 else ""
+
+        if class_name != class_name.strip():
+            raise ValueError(f"Class name contains whitespace: {class_name!r}")
+        if len(class_name) != 4 or not class_name.isdigit():
+            raise ValueError(f"Invalid class name for {image_name}: {class_name!r}")
+
+    logger.info(f"Submission validation passed: {len(predicted_names)} predictions")
 
 
 def generate_submission(raw_csv_path: str, out_dir: str) -> tuple:
@@ -74,15 +161,17 @@ def generate_submission(raw_csv_path: str, out_dir: str) -> tuple:
             f"Found columns: {list(df.columns)}"
         )
 
-    # Generate pred_results.csv
+    # Generate pred_results.csv using csv.writer (no header)
     # Format: image_name.jpg, 0001
     results_path = out_dir / "pred_results.csv"
 
-    with open(results_path, "w") as f:
+    with open(results_path, "w", newline="") as f:
+        writer = csv.writer(f)
         for _, row in df.iterrows():
             img_name = row["image_name"]
-            pred_label = str(row["pred_label"]).zfill(4)  # Ensure 4-digit format
-            f.write(f"{img_name}, {pred_label}\n")
+            pred_label = str(row["pred_label"]).zfill(4)
+            # Prepend space to match "image_name.jpg, 0001" format
+            writer.writerow([img_name, f" {pred_label}"])
 
     logger.info(f"pred_results.csv written to: {results_path}")
     logger.info(f"  Lines: {len(df)}")
