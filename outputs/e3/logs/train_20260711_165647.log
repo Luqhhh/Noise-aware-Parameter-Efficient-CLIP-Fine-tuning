@@ -53,3 +53,7 @@
 2026-07-11 17:55:15 | INFO |   >> New best model! Val Acc: 0.6706
 2026-07-11 17:58:00 | INFO | Epoch  22/50 | Train Loss: 1.4575 | Train Acc: 0.6826 | Val Loss: 1.4922 | Val Acc: 0.6736 | LR: 1.85e-03 | Time: 2m 43s
 2026-07-11 17:58:00 | INFO |   >> New best model! Val Acc: 0.6736
+2026-07-11 18:00:46 | INFO | Epoch  23/50 | Train Loss: 1.4437 | Train Acc: 0.6860 | Val Loss: 1.4855 | Val Acc: 0.6736 | LR: 1.75e-03 | Time: 2m 45s
+2026-07-11 18:00:46 | INFO |   >> No improvement for 1/10 epochs
+2026-07-11 18:03:31 | INFO | Epoch  24/50 | Train Loss: 1.4347 | Train Acc: 0.6880 | Val Loss: 1.4794 | Val Acc: 0.6725 | LR: 1.66e-03 | Time: 2m 44s
+2026-07-11 18:03:31 | INFO |   >> No improvement for 2/10 epochs
