@@ -7,7 +7,7 @@ experiment:
   id: F2_LAST1_BLOCK
   mode: dev
   head_type: linear
-  augmentation_preset: a1  # Updated after B2 augmentation selection
+  augmentation_preset: a0  # B2 discovery: A0 beats all augmentations
 
 data:
   stage: preliminary

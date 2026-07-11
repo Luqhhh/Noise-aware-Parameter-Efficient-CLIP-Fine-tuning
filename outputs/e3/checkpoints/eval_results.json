@@ -1,0 +1,15 @@
+{
+  "experiment_id": "E3",
+  "mode": "dev",
+  "augmentation_preset": "a2",
+  "head_type": "linear",
+  "use_cached_features": false,
+  "best_val_acc": 0.673586,
+  "dev_best_epoch": 22,
+  "trained_epochs": 24,
+  "learning_rate": 0.003,
+  "weight_decay": 0.0001,
+  "early_stop_patience": 10,
+  "early_stopped": false,
+  "note": "Killed at epoch 24. A2 ColorJitter harmful vs A1 (69.15%) and A0 (69.86%)."
+}
