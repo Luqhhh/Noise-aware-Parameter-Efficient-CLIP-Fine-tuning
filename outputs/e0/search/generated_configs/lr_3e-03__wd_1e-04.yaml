@@ -1,0 +1,63 @@
+experiment:
+  id: E0
+  mode: dev
+  head_type: linear
+  augmentation_preset: a0
+data:
+  stage: preliminary
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/e0/splits
+  test_dir: test
+  train_dir: train
+  val_ratio: 0.1
+  expected_num_classes: 500
+  class_mapping_path: outputs/metadata
+  use_full_training_set: false
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+  use_cached_features: true
+cache:
+  cache_dir: cache/preliminary/clip_vit_b32_openai
+  verification: full
+hyper_search:
+  lr_values:
+  - 0.0001
+  - 0.0005
+  - 0.001
+  - 0.003
+  - 0.005
+  wd_values:
+  - 1.0e-05
+  - 0.0001
+  - 0.001
+eval:
+  batch_size: 256
+output:
+  log_dir: outputs/e0/search/lr_3e-03__wd_1e-04/logs
+  submission_dir: outputs/e0/search/lr_3e-03__wd_1e-04/submissions
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 50
+  image_size: 224
+  lr: 0.003
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/e0/search/lr_3e-03__wd_1e-04/checkpoints
+  scheduler: cosine
+  warmup_epochs: 1
+  weight_decay: 0.0001
+  early_stop_patience: 10
+runtime:
+  search_trial: lr_3e-03__wd_1e-04

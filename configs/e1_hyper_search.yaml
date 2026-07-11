@@ -38,10 +38,10 @@ cache:
   cache_dir: cache/preliminary/clip_vit_b32_openai
   verification: full
 
-# Hyperparameter search grid (3 lr x 3 wd = 9 trials)
+# Hyperparameter search grid (lr scan with fixed wd)
 hyper_search:
-  lr_values: [0.0001, 0.0005, 0.001]
-  wd_values: [0.00001, 0.0001, 0.001]
+  lr_values: [0.0001, 0.0005, 0.001, 0.003, 0.005]
+  wd_values: [0.0001]
 
 eval:
   batch_size: 256
@@ -54,7 +54,7 @@ train:
   amp: true
   batch_size: 128
   device: cuda
-  epochs: 20
+  epochs: 50
   image_size: 224
   lr: 0.001
   max_grad_norm: 1.0
@@ -63,3 +63,4 @@ train:
   scheduler: cosine
   warmup_epochs: 1
   weight_decay: 0.0001
+  early_stop_patience: 10

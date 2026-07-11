@@ -44,12 +44,13 @@ train:
   amp: true
   batch_size: 128
   device: cuda
-  epochs: 20
+  epochs: 50
   image_size: 224
-  lr: 0.001
+  lr: 0.003
   max_grad_norm: 1.0
   num_workers: 8
   save_dir: outputs/e2/checkpoints
   scheduler: cosine
   warmup_epochs: 1
   weight_decay: 0.0001
+  early_stop_patience: 10

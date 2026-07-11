@@ -133,17 +133,18 @@ def test_full_pipeline_smoke(tiny_config):
             f"""
 import json, sys
 sys.path.insert(0, '{REPO_ROOT}')
-from common.class_mapping import generate_class_mapping, save_class_mapping
+import os
+from common.class_mapping import generate_canonical_mapping
 
-class_to_idx, idx_to_class = generate_class_mapping(
+class_to_idx, idx_to_class = generate_canonical_mapping(
     train_dir='{train_dir}',
     expected_num_classes=5,
 )
-save_class_mapping(
-    output_dir='{split_dir}',
-    class_to_idx=class_to_idx,
-    idx_to_class=idx_to_class,
-)
+os.makedirs('{split_dir}', exist_ok=True)
+with open('{split_dir}/class_to_idx.json', 'w') as f:
+    json.dump(class_to_idx, f, indent=2)
+with open('{split_dir}/idx_to_class.json', 'w') as f:
+    json.dump(idx_to_class, f, indent=2)
 print("Class mapping generated:", json.dumps(class_to_idx))
 """,
         ],

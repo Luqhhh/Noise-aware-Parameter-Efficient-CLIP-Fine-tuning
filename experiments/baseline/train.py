@@ -836,6 +836,11 @@ def main():
     )
     scaler = GradScaler(device=device.type, enabled=train_cfg.get("amp", False))
 
+    # Early stopping config
+    early_stop_patience = train_cfg.get("early_stop_patience", 0)
+    early_stop_counter = 0
+    early_stopped = False
+
     # Resume if requested
     start_epoch = 1
     global_step = 0
@@ -944,7 +949,13 @@ def main():
             best_val_acc = val_acc
             dev_best_epoch = epoch
             is_best = True
+            early_stop_counter = 0
             train_logger.info(f"  >> New best model! Val Acc: {best_val_acc:.4f}")
+        elif val_acc is not None and early_stop_patience > 0:
+            early_stop_counter += 1
+            train_logger.info(
+                f"  >> No improvement for {early_stop_counter}/{early_stop_patience} epochs"
+            )
 
         # Build checkpoint metadata for this save
         extra_meta = _build_checkpoint_metadata(
@@ -978,6 +989,16 @@ def main():
                 extra_meta=extra_meta,
             )
 
+        # Early stopping check
+        if early_stop_patience > 0 and early_stop_counter >= early_stop_patience:
+            train_logger.info(
+                f"Early stopping triggered at epoch {epoch} "
+                f"(no improvement for {early_stop_patience} epochs). "
+                f"Best val acc: {best_val_acc:.4f} at epoch {dev_best_epoch}."
+            )
+            early_stopped = True
+            break
+
     total_time = time.time() - train_start_time
     train_logger.info("=" * 60)
     train_logger.info(f"Training complete! Total time: {format_time(total_time)}")
@@ -1005,6 +1026,9 @@ def main():
             "freeze_clip": config["model"].get("freeze_clip", True),
             "clip_model_name": config["model"]["clip_model_name"],
             "git_commit": get_git_commit(),
+            "early_stop_patience": early_stop_patience,
+            "early_stopped": early_stopped,
+            "stopped_at_epoch": epoch if early_stopped else None,
         }
         eval_path = save_dir / "eval_results.json"
         with open(eval_path, "w") as f:

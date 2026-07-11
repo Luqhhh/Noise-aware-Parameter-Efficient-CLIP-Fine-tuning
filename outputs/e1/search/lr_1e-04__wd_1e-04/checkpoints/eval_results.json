@@ -1,0 +1,22 @@
+{
+  "experiment_id": "E1",
+  "mode": "dev",
+  "config_path": "outputs/e1/search/generated_configs/lr_1e-04__wd_1e-04.yaml",
+  "split_seed": 42,
+  "train_seed": 42,
+  "best_val_acc": 0.580367734282325,
+  "dev_best_epoch": 39,
+  "trained_epochs": 50,
+  "head_type": "cosine",
+  "augmentation_preset": "a0",
+  "use_cached_features": true,
+  "learning_rate": 0.0001,
+  "weight_decay": 0.0001,
+  "batch_size": 128,
+  "freeze_clip": true,
+  "clip_model_name": "ViT-B/32",
+  "git_commit": "b81b1e1c1320dc2b018389432cc5a8e698208f72",
+  "early_stop_patience": 10,
+  "early_stopped": true,
+  "stopped_at_epoch": 49
+}
