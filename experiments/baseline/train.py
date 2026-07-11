@@ -670,7 +670,7 @@ def _run_init_checkpoint_audit(
     Raises:
         SplitAuditError: If any integrity rule is violated.
     """
-    from common.split_audit import run_split_audit
+    from common.split_audit import SplitAuditError, run_split_audit
 
     # Determine parent experiment id from checkpoint path
     # Convention: outputs/<parent_exp>/.../best.pt  → parent_exp
@@ -704,12 +704,13 @@ def _run_init_checkpoint_audit(
             parent_split_dir = str(parent_exp_dir / "splits")
 
     if not parent_split_dir:
-        train_logger.warning(
-            "Cannot determine parent split directory from checkpoint. "
-            "Skipping split lineage audit. "
-            "Ensure child uses the correct master split manually."
+        raise SplitAuditError(
+            "Cannot determine parent split directory from checkpoint "
+            f"'{init_ckpt_path}'. The split lineage audit is a mandatory "
+            "integrity check — refusing to train without it. "
+            "Ensure the parent checkpoint's config includes data.split_dir, "
+            "or that the parent experiment directory contains train.csv."
         )
-        return
 
     child_split_dir = Path(config["data"]["split_dir"])
 
@@ -1069,6 +1070,12 @@ def main():
 
             parent_expected_acc = checkpoint.get("best_val_acc", None)
 
+            # Store for eval_results.json
+            epoch0_val_acc = float(val_acc_0)
+            epoch0_val_loss = float(val_loss_0)
+            epoch0_parent_acc = float(parent_expected_acc) if parent_expected_acc is not None else None
+            epoch0_delta = float(abs(val_acc_0 - parent_expected_acc)) if parent_expected_acc is not None else None
+
             train_logger.info(
                 "Epoch 0   | Val Loss: %.4f | Val Acc: %.4f",
                 val_loss_0, val_acc_0,
@@ -1106,6 +1113,10 @@ def main():
     global_step = 0
     best_val_acc = 0.0
     dev_best_epoch = None
+    epoch0_val_acc = None
+    epoch0_val_loss = None
+    epoch0_parent_acc = None
+    epoch0_delta = None
 
     if args.resume:
         resume_info = load_checkpoint(
@@ -1314,6 +1325,10 @@ def main():
             "early_stopped": early_stopped,
             "stopped_at_epoch": epoch if early_stopped else None,
             "init_checkpoint": args.init_checkpoint,
+            "epoch0_val_acc": epoch0_val_acc,
+            "epoch0_val_loss": epoch0_val_loss,
+            "parent_best_val_acc": epoch0_parent_acc,
+            "epoch0_delta": epoch0_delta,
         }
         eval_path = save_dir / "eval_results.json"
         with open(eval_path, "w") as f:
