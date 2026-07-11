@@ -1,0 +1,23 @@
+{
+  "experiment_id": "D3_DEDUP",
+  "mode": "dev",
+  "config_path": "configs/d3_dedup.yaml",
+  "split_seed": 42,
+  "train_seed": 42,
+  "best_val_acc": 0.7052663377303393,
+  "dev_best_epoch": 46,
+  "trained_epochs": 50,
+  "head_type": "linear",
+  "augmentation_preset": "a0",
+  "use_cached_features": true,
+  "learning_rate": 0.005,
+  "weight_decay": 0.0001,
+  "batch_size": 128,
+  "freeze_clip": true,
+  "clip_model_name": "ViT-B/32",
+  "git_commit": "0c1436ccfcf5d51f9a7d88326042ead528dbab20",
+  "early_stop_patience": 10,
+  "early_stopped": false,
+  "stopped_at_epoch": null,
+  "init_checkpoint": null
+}

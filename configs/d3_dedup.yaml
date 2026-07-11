@@ -15,7 +15,7 @@ data:
   train_seed: 42
   split_dir: outputs/d3/splits
   test_dir: test
-  train_dir: train
+  train_dir: train_dedup
   val_ratio: 0.1
   expected_num_classes: 500
   class_mapping_path: outputs/metadata

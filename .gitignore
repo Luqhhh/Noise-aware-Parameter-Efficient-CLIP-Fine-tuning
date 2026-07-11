@@ -11,6 +11,7 @@ cache/
 
 # Data (not in repo, provided by user)
 train/
+train_dedup/
 test/
 
 # Config (local paths)

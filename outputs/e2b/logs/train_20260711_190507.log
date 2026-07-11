@@ -27,3 +27,49 @@
 2026-07-11 19:24:14 | INFO |   >> New best model! Val Acc: 0.6808
 2026-07-11 19:28:09 | INFO | Epoch  14/50 | Train Loss: 1.2225 | Train Acc: 0.7316 | Val Loss: 1.4270 | Val Acc: 0.6798 | head_lr: 4.19e-03 | bb_lr: 0.00e+00 | Time: 3m 53s
 2026-07-11 19:28:09 | INFO |   >> No improvement for 1/10 epochs
+2026-07-11 19:32:11 | INFO | Epoch  15/50 | Train Loss: 1.1980 | Train Acc: 0.7370 | Val Loss: 1.4179 | Val Acc: 0.6835 | head_lr: 4.07e-03 | bb_lr: 0.00e+00 | Time: 4m 0s
+2026-07-11 19:32:11 | INFO |   >> New best model! Val Acc: 0.6835
+2026-07-11 19:36:02 | INFO | Epoch  16/50 | Train Loss: 1.1795 | Train Acc: 0.7406 | Val Loss: 1.4051 | Val Acc: 0.6825 | head_lr: 3.94e-03 | bb_lr: 0.00e+00 | Time: 3m 49s
+2026-07-11 19:36:02 | INFO |   >> No improvement for 1/10 epochs
+2026-07-11 19:39:54 | INFO | Epoch  17/50 | Train Loss: 1.1608 | Train Acc: 0.7439 | Val Loss: 1.3984 | Val Acc: 0.6870 | head_lr: 3.81e-03 | bb_lr: 0.00e+00 | Time: 3m 51s
+2026-07-11 19:39:54 | INFO |   >> New best model! Val Acc: 0.6870
+2026-07-11 19:43:39 | INFO | Epoch  18/50 | Train Loss: 1.1454 | Train Acc: 0.7468 | Val Loss: 1.3917 | Val Acc: 0.6854 | head_lr: 3.67e-03 | bb_lr: 0.00e+00 | Time: 3m 42s
+2026-07-11 19:43:39 | INFO |   >> No improvement for 1/10 epochs
+2026-07-11 19:47:22 | INFO | Epoch  19/50 | Train Loss: 1.1319 | Train Acc: 0.7498 | Val Loss: 1.3854 | Val Acc: 0.6899 | head_lr: 3.53e-03 | bb_lr: 0.00e+00 | Time: 3m 42s
+2026-07-11 19:47:22 | INFO |   >> New best model! Val Acc: 0.6899
+2026-07-11 19:51:16 | INFO | Epoch  20/50 | Train Loss: 1.1152 | Train Acc: 0.7521 | Val Loss: 1.3820 | Val Acc: 0.6875 | head_lr: 3.38e-03 | bb_lr: 0.00e+00 | Time: 3m 52s
+2026-07-11 19:51:16 | INFO |   >> No improvement for 1/10 epochs
+2026-07-11 19:55:06 | INFO | Epoch  21/50 | Train Loss: 1.1026 | Train Acc: 0.7556 | Val Loss: 1.3753 | Val Acc: 0.6918 | head_lr: 3.23e-03 | bb_lr: 0.00e+00 | Time: 3m 49s
+2026-07-11 19:55:06 | INFO |   >> New best model! Val Acc: 0.6918
+2026-07-11 19:58:56 | INFO | Epoch  22/50 | Train Loss: 1.0913 | Train Acc: 0.7579 | Val Loss: 1.3711 | Val Acc: 0.6902 | head_lr: 3.08e-03 | bb_lr: 0.00e+00 | Time: 3m 50s
+2026-07-11 19:58:57 | INFO |   >> No improvement for 1/10 epochs
+2026-07-11 20:02:57 | INFO | Epoch  23/50 | Train Loss: 1.0774 | Train Acc: 0.7605 | Val Loss: 1.3671 | Val Acc: 0.6916 | head_lr: 2.92e-03 | bb_lr: 0.00e+00 | Time: 3m 59s
+2026-07-11 20:02:57 | INFO |   >> No improvement for 2/10 epochs
+2026-07-11 20:06:53 | INFO | Epoch  24/50 | Train Loss: 1.0702 | Train Acc: 0.7619 | Val Loss: 1.3658 | Val Acc: 0.6918 | head_lr: 2.76e-03 | bb_lr: 0.00e+00 | Time: 3m 54s
+2026-07-11 20:06:53 | INFO |   >> No improvement for 3/10 epochs
+2026-07-11 20:10:50 | INFO | Epoch  25/50 | Train Loss: 1.0577 | Train Acc: 0.7641 | Val Loss: 1.3620 | Val Acc: 0.6938 | head_lr: 2.60e-03 | bb_lr: 0.00e+00 | Time: 3m 56s
+2026-07-11 20:10:50 | INFO |   >> New best model! Val Acc: 0.6938
+2026-07-11 20:14:45 | INFO | Epoch  26/50 | Train Loss: 1.0511 | Train Acc: 0.7652 | Val Loss: 1.3588 | Val Acc: 0.6937 | head_lr: 2.45e-03 | bb_lr: 0.00e+00 | Time: 3m 53s
+2026-07-11 20:14:45 | INFO |   >> No improvement for 1/10 epochs
+2026-07-11 20:18:41 | INFO | Epoch  27/50 | Train Loss: 1.0427 | Train Acc: 0.7678 | Val Loss: 1.3568 | Val Acc: 0.6933 | head_lr: 2.29e-03 | bb_lr: 0.00e+00 | Time: 3m 54s
+2026-07-11 20:18:41 | INFO |   >> No improvement for 2/10 epochs
+2026-07-11 20:22:19 | INFO | Epoch  28/50 | Train Loss: 1.0322 | Train Acc: 0.7692 | Val Loss: 1.3542 | Val Acc: 0.6927 | head_lr: 2.13e-03 | bb_lr: 0.00e+00 | Time: 3m 36s
+2026-07-11 20:22:19 | INFO |   >> No improvement for 3/10 epochs
+2026-07-11 20:26:07 | INFO | Epoch  29/50 | Train Loss: 1.0277 | Train Acc: 0.7696 | Val Loss: 1.3529 | Val Acc: 0.6937 | head_lr: 1.97e-03 | bb_lr: 0.00e+00 | Time: 3m 47s
+2026-07-11 20:26:07 | INFO |   >> No improvement for 4/10 epochs
+2026-07-11 20:29:45 | INFO | Epoch  30/50 | Train Loss: 1.0215 | Train Acc: 0.7722 | Val Loss: 1.3517 | Val Acc: 0.6933 | head_lr: 1.82e-03 | bb_lr: 0.00e+00 | Time: 3m 37s
+2026-07-11 20:29:45 | INFO |   >> No improvement for 5/10 epochs
+2026-07-11 20:33:24 | INFO | Epoch  31/50 | Train Loss: 1.0149 | Train Acc: 0.7726 | Val Loss: 1.3494 | Val Acc: 0.6953 | head_lr: 1.67e-03 | bb_lr: 0.00e+00 | Time: 3m 38s
+2026-07-11 20:33:24 | INFO |   >> New best model! Val Acc: 0.6953
+2026-07-11 20:37:05 | INFO | Epoch  32/50 | Train Loss: 1.0111 | Train Acc: 0.7735 | Val Loss: 1.3480 | Val Acc: 0.6945 | head_lr: 1.52e-03 | bb_lr: 0.00e+00 | Time: 3m 39s
+2026-07-11 20:37:05 | INFO |   >> No improvement for 1/10 epochs
+2026-07-11 20:40:55 | INFO | Epoch  33/50 | Train Loss: 1.0049 | Train Acc: 0.7753 | Val Loss: 1.3469 | Val Acc: 0.6963 | head_lr: 1.38e-03 | bb_lr: 0.00e+00 | Time: 3m 49s
+2026-07-11 20:40:55 | INFO |   >> New best model! Val Acc: 0.6963
+2026-07-11 20:44:35 | INFO | Epoch  34/50 | Train Loss: 0.9992 | Train Acc: 0.7769 | Val Loss: 1.3465 | Val Acc: 0.6958 | head_lr: 1.24e-03 | bb_lr: 0.00e+00 | Time: 3m 37s
+2026-07-11 20:44:35 | INFO |   >> No improvement for 1/10 epochs
+2026-07-11 20:48:20 | INFO | Epoch  35/50 | Train Loss: 0.9956 | Train Acc: 0.7759 | Val Loss: 1.3454 | Val Acc: 0.6962 | head_lr: 1.11e-03 | bb_lr: 0.00e+00 | Time: 3m 44s
+2026-07-11 20:48:20 | INFO |   >> No improvement for 2/10 epochs
+2026-07-11 20:52:05 | INFO | Epoch  36/50 | Train Loss: 0.9936 | Train Acc: 0.7779 | Val Loss: 1.3442 | Val Acc: 0.6965 | head_lr: 9.82e-04 | bb_lr: 0.00e+00 | Time: 3m 44s
+2026-07-11 20:52:05 | INFO |   >> New best model! Val Acc: 0.6965
+2026-07-11 20:55:51 | INFO | Epoch  37/50 | Train Loss: 0.9898 | Train Acc: 0.7783 | Val Loss: 1.3432 | Val Acc: 0.6960 | head_lr: 8.61e-04 | bb_lr: 0.00e+00 | Time: 3m 44s
+2026-07-11 20:55:51 | INFO |   >> No improvement for 1/10 epochs
