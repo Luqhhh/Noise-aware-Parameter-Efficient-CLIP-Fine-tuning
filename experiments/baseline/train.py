@@ -22,6 +22,7 @@ Usage:
 import argparse
 import json
 import logging
+import math
 import subprocess
 import time
 from pathlib import Path
@@ -71,6 +72,14 @@ def parse_args() -> argparse.Namespace:
         type=str,
         default=None,
         help="Path to checkpoint to resume from (e.g., outputs/checkpoints/last.pt).",
+    )
+    parser.add_argument(
+        "--init-checkpoint",
+        type=str,
+        default=None,
+        help="Path to checkpoint for model weight initialization ONLY. "
+             "Does NOT restore optimizer, scheduler, or epoch state. "
+             "Use this (not --resume) for F0-F3 partial unfreeze experiments.",
     )
     # Mode and experiment identity
     parser.add_argument(
@@ -200,6 +209,9 @@ def _build_checkpoint_metadata(
         "split_seed": config["data"].get("split_seed", None),
     }
 
+    if args.init_checkpoint:
+        meta["init_checkpoint"] = args.init_checkpoint
+
     if mode == "dev":
         meta.update({
             "dev_best_epoch": best_epoch,
@@ -227,19 +239,48 @@ def _check_splits_exist(split_dir: str) -> bool:
     return all((split_dir / f).exists() for f in required)
 
 
+def _cosine_factor(
+    step: int,
+    total_steps: int,
+    min_lr_ratio: float,
+) -> float:
+    """Cosine decay factor preserving LR ratios across parameter groups.
+
+    Returns a factor in [min_lr_ratio, 1.0] following cosine annealing.
+    All parameter groups are scaled by the same factor at each step,
+    ensuring backbone_lr / head_lr stays constant throughout training.
+
+    Args:
+        step: Current step (0-indexed, after warmup).
+        total_steps: Total steps for cosine annealing.
+        min_lr_ratio: Minimum LR as fraction of initial LR.
+
+    Returns:
+        Float in [min_lr_ratio, 1.0].
+    """
+    progress = min(step / max(total_steps, 1), 1.0)
+    cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
+    return min_lr_ratio + (1.0 - min_lr_ratio) * cosine
+
+
 def _build_optimizer_and_scheduler(
     model: nn.Module, config: Dict[str, Any], cosine_steps: int
 ) -> tuple:
     """Build optimizer and learning rate scheduler.
 
-    Supports both linear and cosine heads:
-      - Linear: uses model.get_trainable_parameters() with uniform LR + WD.
-      - Cosine: uses model.get_param_groups(lr, wd) for separate scale handling.
+    Supports three modes:
+      - Linear head, frozen CLIP: uniform LR from train.lr.
+      - Linear head, partial unfreeze: discriminative LRs via get_param_groups.
+      - Cosine head: uses its own get_param_groups (with scale handling).
+
+    Scheduler uses proportional LambdaLR to preserve backbone_lr/head_lr ratio
+    across all parameter groups.
     """
     train_cfg = config["train"]
+    model_cfg = config.get("model", {})
 
-    # Use model.get_param_groups() if available (cosine head handles scale separately),
-    # otherwise use get_trainable_parameters() (linear head with uniform config).
+    # Use model.get_param_groups() if available (cosine head, or partial unfreeze),
+    # otherwise fall back to get_trainable_parameters() (frozen linear head).
     if hasattr(model, "get_param_groups"):
         optimizer = torch.optim.AdamW(
             model.get_param_groups(train_cfg["lr"], train_cfg["weight_decay"]),
@@ -255,11 +296,16 @@ def _build_optimizer_and_scheduler(
     for group in optimizer.param_groups:
         group.setdefault("initial_lr", group["lr"])
 
-    # Cosine annealing scheduler: T_max is the number of steps after warmup
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    # LambdaLR with proportional cosine decay preserves LR ratios
+    min_lr_ratio = train_cfg.get("min_lr_ratio", 0.01)
+    lr_lambda = lambda step: _cosine_factor(
+        step=step,
+        total_steps=cosine_steps,
+        min_lr_ratio=min_lr_ratio,
+    )
+    scheduler = torch.optim.lr_scheduler.LambdaLR(
         optimizer,
-        T_max=cosine_steps,
-        eta_min=train_cfg["lr"] * 0.01,
+        lr_lambda=[lr_lambda] * len(optimizer.param_groups),
     )
 
     return optimizer, scheduler
@@ -332,7 +378,8 @@ def train_one_epoch(
     """Train for one epoch.
 
     Returns:
-        Tuple of (avg_loss, accuracy, global_step).
+        Tuple of (avg_loss, accuracy, global_step, head_grad_norm,
+                  backbone_grad_norm).
     """
     model.train()
     train_cfg = config["train"]
@@ -342,6 +389,8 @@ def train_one_epoch(
     total_loss = 0.0
     correct = 0
     total = 0
+    head_grad_sum = 0.0
+    backbone_grad_sum = 0.0
 
     pbar = tqdm(loader, desc=f"Epoch {epoch:3d} [Train]", dynamic_ncols=True)
 
@@ -377,6 +426,23 @@ def train_one_epoch(
 
             optimizer.step()
 
+        # Compute per-group gradient norms (before optimizer step is too late
+        # since step already happened; compute after clipping, before step would
+        # be ideal but we compute post-step for logging purposes)
+        for group in optimizer.param_groups:
+            gn_sq = sum(
+                p.grad.norm().item() ** 2
+                for p in group["params"]
+                if p.grad is not None
+            )
+            gn = gn_sq ** 0.5
+            if group.get("name") == "head":
+                head_grad_sum += gn
+            elif group.get("name") == "backbone":
+                backbone_grad_sum += gn
+            else:
+                head_grad_sum += gn  # Default group → head
+
         # Cosine head: clamp logit_scale after each optimizer step
         if hasattr(model, "clamp_scale"):
             model.clamp_scale()
@@ -405,8 +471,11 @@ def train_one_epoch(
 
     avg_loss = total_loss / total
     accuracy = correct / total
+    n_batches = max(len(loader), 1)
+    head_grad_norm = head_grad_sum / n_batches
+    backbone_grad_norm = backbone_grad_sum / n_batches
 
-    return avg_loss, accuracy, global_step
+    return avg_loss, accuracy, global_step, head_grad_norm, backbone_grad_norm
 
 
 @torch.no_grad()
@@ -836,10 +905,78 @@ def main():
     )
     scaler = GradScaler(device=device.type, enabled=train_cfg.get("amp", False))
 
+    # Diagnostic: log optimizer parameter group configuration
+    train_logger.info("Optimizer parameter groups:")
+    total_opt_params = 0
+    for group in optimizer.param_groups:
+        n = sum(p.numel() for p in group["params"])
+        total_opt_params += n
+        train_logger.info(
+            f"  {group.get('name', 'default'):12s}: "
+            f"{n:>10,} params, "
+            f"lr={group['lr']:.2e}, "
+            f"wd={group['weight_decay']:.2e}"
+        )
+    train_logger.info(
+        f"  {'TOTAL':12s}: {total_opt_params:>10,} optimizer params"
+    )
+
+    # Per-component trainable param breakdown
+    head_trainable = sum(
+        p.numel() for p in model.classifier.parameters() if p.requires_grad
+    )
+    visual_trainable = sum(
+        p.numel() for p in model.visual.parameters() if p.requires_grad
+    )
+    train_logger.info(f"  Trainable head params:    {head_trainable:>10,}")
+    train_logger.info(f"  Trainable visual params:  {visual_trainable:>10,}")
+
     # Early stopping config
     early_stop_patience = train_cfg.get("early_stop_patience", 0)
     early_stop_counter = 0
     early_stopped = False
+
+    # --resume and --init-checkpoint are mutually exclusive
+    if args.resume and args.init_checkpoint:
+        raise ValueError(
+            "--resume and --init-checkpoint are mutually exclusive. "
+            "Use --init-checkpoint to load model weights for a new "
+            "training run; use --resume to continue a crashed run."
+        )
+
+    # Initialize model weights from checkpoint (no optimizer/scheduler/epoch)
+    if args.init_checkpoint:
+        init_ckpt_path = args.init_checkpoint
+        train_logger.info(
+            f"Initializing model weights from: {init_ckpt_path}"
+        )
+        checkpoint = torch.load(init_ckpt_path, map_location=device)
+        model_state = checkpoint.get("model_state_dict", checkpoint)
+
+        missing_keys, unexpected_keys = model.load_state_dict(
+            model_state, strict=False
+        )
+
+        if missing_keys:
+            train_logger.warning(f"Missing keys ({len(missing_keys)}): {missing_keys}")
+        if unexpected_keys:
+            train_logger.warning(
+                f"Unexpected keys ({len(unexpected_keys)}): {unexpected_keys}"
+            )
+
+        if not missing_keys and not unexpected_keys:
+            train_logger.info(
+                "Model weights loaded with exact key match."
+            )
+        else:
+            train_logger.warning(
+                f"Model weight load had {len(missing_keys)} missing, "
+                f"{len(unexpected_keys)} unexpected keys."
+            )
+
+        # Do NOT load optimizer state — fresh training from epoch 1
+        # Do NOT load scheduler state
+        # Do NOT restore epoch
 
     # Resume if requested
     start_epoch = 1
@@ -883,7 +1020,7 @@ def main():
         epoch_start = time.time()
 
         # Train
-        train_loss, train_acc, global_step = train_one_epoch(
+        train_loss, train_acc, global_step, head_grad_norm, backbone_grad_norm = train_one_epoch(
             model,
             train_loader,
             optimizer,
@@ -909,18 +1046,29 @@ def main():
         current_lr = optimizer.param_groups[0]["lr"]
 
         # Log
+        head_lr_val = optimizer.param_groups[0]["lr"]
+        backbone_lr_val = (
+            optimizer.param_groups[1]["lr"]
+            if len(optimizer.param_groups) > 1
+            else 0.0
+        )
+
         if val_acc is not None:
             log_msg = (
                 f"Epoch {epoch:3d}/{epochs} | "
                 f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
                 f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f} | "
-                f"LR: {current_lr:.2e} | Time: {format_time(epoch_time)}"
+                f"head_lr: {head_lr_val:.2e} | "
+                f"bb_lr: {backbone_lr_val:.2e} | "
+                f"Time: {format_time(epoch_time)}"
             )
         else:
             log_msg = (
                 f"Epoch {epoch:3d}/{epochs} | "
                 f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
-                f"LR: {current_lr:.2e} | Time: {format_time(epoch_time)} [no val]"
+                f"head_lr: {head_lr_val:.2e} | "
+                f"bb_lr: {backbone_lr_val:.2e} | "
+                f"Time: {format_time(epoch_time)} [no val]"
             )
         train_logger.info(log_msg)
 
@@ -928,19 +1076,32 @@ def main():
         with open(log_file, "a") as f:
             if log_header:
                 if val_acc is not None:
-                    f.write("epoch,train_loss,train_acc,val_loss,val_acc,lr,epoch_time\n")
+                    f.write(
+                        "epoch,train_loss,train_acc,val_loss,val_acc,"
+                        "head_lr,backbone_lr,head_grad_norm,backbone_grad_norm,"
+                        "epoch_time\n"
+                    )
                 else:
-                    f.write("epoch,train_loss,train_acc,lr,epoch_time\n")
+                    f.write(
+                        "epoch,train_loss,train_acc,"
+                        "head_lr,backbone_lr,head_grad_norm,backbone_grad_norm,"
+                        "epoch_time\n"
+                    )
                 log_header = False
             if val_acc is not None:
                 f.write(
                     f"{epoch},{train_loss:.6f},{train_acc:.6f},"
-                    f"{val_loss:.6f},{val_acc:.6f},{current_lr:.8f},{epoch_time:.2f}\n"
+                    f"{val_loss:.6f},{val_acc:.6f},"
+                    f"{head_lr_val:.8f},{backbone_lr_val:.8f},"
+                    f"{head_grad_norm:.6f},{backbone_grad_norm:.6f},"
+                    f"{epoch_time:.2f}\n"
                 )
             else:
                 f.write(
                     f"{epoch},{train_loss:.6f},{train_acc:.6f},"
-                    f"{current_lr:.8f},{epoch_time:.2f}\n"
+                    f"{head_lr_val:.8f},{backbone_lr_val:.8f},"
+                    f"{head_grad_norm:.6f},{backbone_grad_norm:.6f},"
+                    f"{epoch_time:.2f}\n"
                 )
 
         # Track best epoch and save checkpoints (dev mode only for tracking)
@@ -1029,6 +1190,7 @@ def main():
             "early_stop_patience": early_stop_patience,
             "early_stopped": early_stopped,
             "stopped_at_epoch": epoch if early_stopped else None,
+            "init_checkpoint": args.init_checkpoint,
         }
         eval_path = save_dir / "eval_results.json"
         with open(eval_path, "w") as f:

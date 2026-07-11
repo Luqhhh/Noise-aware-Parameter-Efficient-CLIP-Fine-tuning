@@ -26,15 +26,23 @@ logger = logging.getLogger(__name__)
 class CLIPLinearClassifier(nn.Module):
     """CLIP ViT-B/32 image encoder + linear classification head.
 
-    The CLIP backbone is frozen by default. Image features are L2-normalized
-    before being passed to the linear classifier, following the common practice
-    of using cosine-similarity-based classification with CLIP features.
+    The CLIP backbone can be fully frozen or partially unfrozen (last N
+    transformer blocks, ln_post, visual.proj). All visual parameters are
+    ALWAYS frozen first, then selectively unfrozen per config.
 
     Args:
         clip_model: The CLIP model (from `clip.load`).
         num_classes: Number of output classes (500 for this competition).
         feature_dim: Dimensionality of CLIP image features (512 for ViT-B/32).
         freeze_clip: Whether to freeze the CLIP backbone parameters.
+        unfreeze_last_n_blocks: Number of transformer blocks to unfreeze
+            (from the end). Only used when freeze_clip=False.
+        train_ln_post: Whether to unfreeze visual.ln_post.
+            Only used when freeze_clip=False.
+        train_visual_proj: Whether to unfreeze visual.proj.
+            Only used when freeze_clip=False.
+        backbone_lr: Learning rate for unfrozen visual parameters.
+        backbone_weight_decay: Weight decay for unfrozen visual parameters.
     """
 
     def __init__(
@@ -43,6 +51,11 @@ class CLIPLinearClassifier(nn.Module):
         num_classes: int = 500,
         feature_dim: int = 512,
         freeze_clip: bool = True,
+        unfreeze_last_n_blocks: int = 0,
+        train_ln_post: bool = False,
+        train_visual_proj: bool = False,
+        backbone_lr: float = 1e-5,
+        backbone_weight_decay: float = 0.01,
     ):
         super().__init__()
 
@@ -52,24 +65,105 @@ class CLIPLinearClassifier(nn.Module):
         self.freeze_clip = freeze_clip
         self.head_type = "linear"  # For checkpoint metadata
 
-        # Freeze CLIP backbone
-        if freeze_clip:
-            for param in self.visual.parameters():
-                param.requires_grad = False
-            logger.info("CLIP image encoder frozen.")
+        # Discriminative LR config (used by train.py optimizer)
+        self.backbone_lr = backbone_lr
+        self.backbone_weight_decay = backbone_weight_decay
+        self.unfreeze_last_n_blocks = unfreeze_last_n_blocks
+        self.train_ln_post = train_ln_post
+        self.train_visual_proj = train_visual_proj
 
-        # Linear classification head
+        # ALWAYS freeze all visual parameters first.
+        # Selective unfreezing happens below when freeze_clip=False.
+        for param in self.visual.parameters():
+            param.requires_grad = False
+
+        if not freeze_clip:
+            self.configure_visual_trainability(
+                unfreeze_last_n_blocks=unfreeze_last_n_blocks,
+                train_ln_post=train_ln_post,
+                train_visual_proj=train_visual_proj,
+            )
+        else:
+            logger.info("CLIP image encoder fully frozen.")
+
+        # Linear classification head (always trainable)
         self.classifier = nn.Linear(feature_dim, num_classes)
 
         # Initialize the linear layer
         nn.init.xavier_uniform_(self.classifier.weight)
         nn.init.zeros_(self.classifier.bias)
 
+    def configure_visual_trainability(
+        self,
+        unfreeze_last_n_blocks: int,
+        train_ln_post: bool,
+        train_visual_proj: bool,
+    ) -> None:
+        """Selectively unfreeze CLIP visual encoder components.
+
+        Must be called AFTER all visual parameters are frozen.
+        Only the specified components get requires_grad=True.
+
+        Args:
+            unfreeze_last_n_blocks: Number of transformer blocks to unfreeze
+                counting from the end (0 = none).
+            train_ln_post: Unfreeze visual.ln_post (LayerNorm after blocks).
+            train_visual_proj: Unfreeze visual.proj (output projection).
+
+        Raises:
+            ValueError: If unfreeze_last_n_blocks is out of range.
+        """
+        blocks = self.visual.transformer.resblocks
+        num_blocks = len(blocks)
+
+        if not 0 <= unfreeze_last_n_blocks <= num_blocks:
+            raise ValueError(
+                f"unfreeze_last_n_blocks must be in [0, {num_blocks}], "
+                f"got {unfreeze_last_n_blocks}"
+            )
+
+        if unfreeze_last_n_blocks > 0:
+            for block in blocks[-unfreeze_last_n_blocks:]:
+                for param in block.parameters():
+                    param.requires_grad = True
+            logger.info(
+                f"Unfrozen last {unfreeze_last_n_blocks}/{num_blocks} "
+                f"transformer blocks."
+            )
+
+        if train_ln_post:
+            for param in self.visual.ln_post.parameters():
+                param.requires_grad = True
+            logger.info("Unfrozen visual.ln_post.")
+
+        if train_visual_proj:
+            self.visual.proj.requires_grad = True
+            logger.info("Unfrozen visual.proj.")
+
     def train(self, mode: bool = True):
-        """Override train() to keep CLIP backbone in eval when frozen."""
+        """Override train() — partially unfrozen visual stays in eval for
+        frozen parts. Frozen blocks/layers stay in eval regardless of mode.
+
+        OpenAI CLIP ViT uses LayerNorm (not BatchNorm), so running stats
+        are not a concern.
+        """
         super().train(mode)
+
         if self.freeze_clip:
             self.visual.eval()
+            return self
+
+        # Partially unfrozen: start from eval, selectively set train
+        self.visual.eval()
+
+        n = self.unfreeze_last_n_blocks
+        if n > 0:
+            for block in self.visual.transformer.resblocks[-n:]:
+                block.train(mode)
+
+        if self.train_ln_post:
+            self.visual.ln_post.train(mode)
+
         return self
 
     def encode_image(self, images: torch.Tensor) -> torch.Tensor:
@@ -137,8 +231,58 @@ class CLIPLinearClassifier(nn.Module):
         return self.forward_features(features)
 
     def get_trainable_parameters(self):
-        """Return only the trainable parameters (classifier head)."""
+        """Return only the trainable parameters (classifier head).
+
+        Kept for backward compatibility (cached training path).
+        """
         return filter(lambda p: p.requires_grad, self.parameters())
+
+    def get_param_groups(
+        self,
+        head_lr: float,
+        head_weight_decay: float,
+    ) -> list:
+        """Return parameter groups with separate LRs for head and backbone.
+
+        When freeze_clip=True, only the head group is returned.
+        When freeze_clip=False, backbone parameters get backbone_lr and
+        backbone_weight_decay (set at __init__ from config).
+
+        Args:
+            head_lr: Learning rate for the classifier head.
+            head_weight_decay: Weight decay for the classifier head.
+
+        Returns:
+            List of dicts, each with keys:
+                name, params, lr, weight_decay.
+        """
+        head_params = [
+            p for p in self.classifier.parameters()
+            if p.requires_grad
+        ]
+        backbone_params = [
+            p for p in self.visual.parameters()
+            if p.requires_grad
+        ]
+
+        groups = [
+            {
+                "name": "head",
+                "params": head_params,
+                "lr": head_lr,
+                "weight_decay": head_weight_decay,
+            }
+        ]
+
+        if backbone_params:
+            groups.append({
+                "name": "backbone",
+                "params": backbone_params,
+                "lr": self.backbone_lr,
+                "weight_decay": self.backbone_weight_decay,
+            })
+
+        return groups
 
 
 def build_model(
@@ -152,6 +296,11 @@ def build_model(
             - model.num_classes (e.g., 500)
             - model.feature_dim (e.g., 512)
             - model.freeze_clip (bool)
+            - model.unfreeze_last_n_blocks (int, default 0)
+            - model.train_ln_post (bool, default False)
+            - model.train_visual_proj (bool, default False)
+            - train.backbone_lr (float, default 1e-5)
+            - train.backbone_weight_decay (float, default 0.01)
         device: torch device to load the model on.
 
     Returns:
@@ -160,25 +309,36 @@ def build_model(
         - preprocess_fn: CLIP preprocessing function (torchvision transform).
     """
     logger.info(f"Loading CLIP model: {config['model']['clip_model_name']}")
-    clip_model, preprocess = load_openai_clip(device, model_name=config["model"]["clip_model_name"])
-    # load_openai_clip already converts the full model to float32,
-    # so clip_model.visual is already float32 — no redundant .float() needed.
+    clip_model, preprocess = load_openai_clip(
+        device, model_name=config["model"]["clip_model_name"]
+    )
+    # load_openai_clip already converts the full model to float32
 
-    num_classes = config["model"]["num_classes"]
-    feature_dim = config["model"].get("feature_dim", 512)
-    freeze_clip = config["model"].get("freeze_clip", True)
+    model_cfg = config["model"]
+    train_cfg = config.get("train", {})
+
+    num_classes = model_cfg["num_classes"]
+    feature_dim = model_cfg.get("feature_dim", 512)
+    freeze_clip = model_cfg.get("freeze_clip", True)
 
     model = CLIPLinearClassifier(
         clip_model=clip_model,
         num_classes=num_classes,
         feature_dim=feature_dim,
         freeze_clip=freeze_clip,
+        unfreeze_last_n_blocks=model_cfg.get("unfreeze_last_n_blocks", 0),
+        train_ln_post=model_cfg.get("train_ln_post", False),
+        train_visual_proj=model_cfg.get("train_visual_proj", False),
+        backbone_lr=train_cfg.get("backbone_lr", 1e-5),
+        backbone_weight_decay=train_cfg.get("backbone_weight_decay", 0.01),
     )
 
     model = model.to(device)
 
     total, trainable = _count_params(model)
-    logger.info(f"Model built: {total:,} total params, {trainable:,} trainable params")
+    logger.info(
+        f"Model built: {total:,} total params, {trainable:,} trainable params"
+    )
 
     return model, preprocess
 

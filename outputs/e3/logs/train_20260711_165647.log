@@ -39,3 +39,17 @@
 2026-07-11 17:35:44 | INFO |   >> New best model! Val Acc: 0.6581
 2026-07-11 17:38:34 | INFO | Epoch  15/50 | Train Loss: 1.5860 | Train Acc: 0.6611 | Val Loss: 1.5664 | Val Acc: 0.6609 | LR: 2.44e-03 | Time: 2m 48s
 2026-07-11 17:38:34 | INFO |   >> New best model! Val Acc: 0.6609
+2026-07-11 17:41:18 | INFO | Epoch  16/50 | Train Loss: 1.5620 | Train Acc: 0.6661 | Val Loss: 1.5522 | Val Acc: 0.6620 | LR: 2.36e-03 | Time: 2m 43s
+2026-07-11 17:41:18 | INFO |   >> New best model! Val Acc: 0.6620
+2026-07-11 17:44:08 | INFO | Epoch  17/50 | Train Loss: 1.5412 | Train Acc: 0.6691 | Val Loss: 1.5388 | Val Acc: 0.6657 | LR: 2.28e-03 | Time: 2m 47s
+2026-07-11 17:44:08 | INFO |   >> New best model! Val Acc: 0.6657
+2026-07-11 17:46:57 | INFO | Epoch  18/50 | Train Loss: 1.5160 | Train Acc: 0.6727 | Val Loss: 1.5261 | Val Acc: 0.6674 | LR: 2.20e-03 | Time: 2m 47s
+2026-07-11 17:46:57 | INFO |   >> New best model! Val Acc: 0.6674
+2026-07-11 17:49:44 | INFO | Epoch  19/50 | Train Loss: 1.5013 | Train Acc: 0.6736 | Val Loss: 1.5154 | Val Acc: 0.6674 | LR: 2.12e-03 | Time: 2m 45s
+2026-07-11 17:49:44 | INFO |   >> No improvement for 1/10 epochs
+2026-07-11 17:52:26 | INFO | Epoch  20/50 | Train Loss: 1.4858 | Train Acc: 0.6771 | Val Loss: 1.5071 | Val Acc: 0.6688 | LR: 2.03e-03 | Time: 2m 40s
+2026-07-11 17:52:26 | INFO |   >> New best model! Val Acc: 0.6688
+2026-07-11 17:55:15 | INFO | Epoch  21/50 | Train Loss: 1.4747 | Train Acc: 0.6803 | Val Loss: 1.5009 | Val Acc: 0.6706 | LR: 1.94e-03 | Time: 2m 47s
+2026-07-11 17:55:15 | INFO |   >> New best model! Val Acc: 0.6706
+2026-07-11 17:58:00 | INFO | Epoch  22/50 | Train Loss: 1.4575 | Train Acc: 0.6826 | Val Loss: 1.4922 | Val Acc: 0.6736 | LR: 1.85e-03 | Time: 2m 43s
+2026-07-11 17:58:00 | INFO |   >> New best model! Val Acc: 0.6736

@@ -1,0 +1,63 @@
+# F2: Unfreeze last Transformer block + ln_post + visual.proj.
+# F2A: backbone_lr=1e-6  F2B: backbone_lr=3e-6  F2C: backbone_lr=1e-5
+# Run F2B first; only if stable, run F2A and F2C.
+# Init from best augmentation checkpoint via --init-checkpoint.
+
+experiment:
+  id: F2_LAST1_BLOCK
+  mode: dev
+  head_type: linear
+  augmentation_preset: a1  # Updated after B2 augmentation selection
+
+data:
+  stage: preliminary
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/f2/splits
+  test_dir: test
+  train_dir: train
+  val_ratio: 0.1
+  expected_num_classes: 500
+  class_mapping_path: outputs/metadata
+  use_full_training_set: false
+
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: false
+  num_classes: 500
+  use_cached_features: false
+  unfreeze_last_n_blocks: 1
+  train_ln_post: true
+  train_visual_proj: true
+
+eval:
+  batch_size: 256
+
+output:
+  log_dir: outputs/f2/logs
+  submission_dir: outputs/f2/submissions
+
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 50
+  image_size: 224
+  lr: 0.0003
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/f2/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001
+  backbone_lr: 0.000003
+  backbone_weight_decay: 0.01
+  min_lr_ratio: 0.01
+  early_stop_patience: 10
