@@ -3,8 +3,7 @@
   "clean_train_count": 91195,
   "removed_count": 1701,
   "removed_ratio": 0.0183,
-  "num_classes": 500,
   "val_untouched": true,
   "val_count": 10322,
-  "note": "train-only cleaning: master-val NEVER touched. Removal list from original D3 dedup cache intersected with master-train only."
+  "note": "train-only cleaning: master-val NEVER touched"
 }
