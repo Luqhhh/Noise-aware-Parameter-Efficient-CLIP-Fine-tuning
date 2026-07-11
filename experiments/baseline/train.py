@@ -1058,6 +1058,49 @@ def main():
         _run_init_checkpoint_audit(args, config, init_ckpt_path, checkpoint,
                                    train_logger)
 
+        # ── Epoch-0 validation gate ──────────────────────────────
+        if val_loader is not None:
+            train_logger.info("=" * 60)
+            train_logger.info("Epoch-0 validation gate: verifying loaded checkpoint")
+
+            val_loss_0, val_acc_0 = validate(
+                model, val_loader, criterion, device, config
+            )
+
+            parent_expected_acc = checkpoint.get("best_val_acc", None)
+
+            train_logger.info(
+                "Epoch 0   | Val Loss: %.4f | Val Acc: %.4f",
+                val_loss_0, val_acc_0,
+            )
+
+            if parent_expected_acc is not None:
+                delta = abs(val_acc_0 - parent_expected_acc)
+                if delta > 0.0005:  # 0.05pp threshold
+                    train_logger.error(
+                        "EPOCH-0 VALIDATION MISMATCH: "
+                        "loaded=%.4f, expected=%.4f, delta=%.6f (> 0.0005). "
+                        "Check model loading, transforms, class mapping.",
+                        val_acc_0, parent_expected_acc, delta,
+                    )
+                    raise RuntimeError(
+                        f"Epoch-0 validation mismatch: delta={delta:.6f} > 0.0005"
+                    )
+                train_logger.info(
+                    "Epoch-0 validation gate PASSED: delta=%.6f <= 0.0005",
+                    delta,
+                )
+            else:
+                train_logger.warning(
+                    "No best_val_acc in checkpoint metadata; "
+                    "skipping epoch-0 gate."
+                )
+            train_logger.info("=" * 60)
+        else:
+            train_logger.info(
+                "No val_loader available; skipping epoch-0 validation gate."
+            )
+
     # Resume if requested
     start_epoch = 1
     global_step = 0

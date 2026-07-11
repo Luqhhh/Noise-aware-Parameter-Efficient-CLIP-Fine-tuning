@@ -20,7 +20,7 @@ data:
   seed: 42
   split_seed: 42
   train_seed: 42
-  split_dir: outputs/master_splits/seed42
+  split_dir: outputs/d3_strict/seed42
   test_dir: test
   train_dir: train_dedup
   val_ratio: 0.1
