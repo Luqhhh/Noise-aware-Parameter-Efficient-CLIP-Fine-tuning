@@ -1,0 +1,12 @@
+{
+  "split_seed": 42,
+  "source_root": "/home/lux1/noise/train",
+  "source_file_count": 103218,
+  "train_count": 92896,
+  "val_count": 10322,
+  "num_classes": 500,
+  "train_csv_sha256": "389a1665de53861be7ee953d41e69af9699b5a6beb4d1d930450347d8f6d9434",
+  "val_csv_sha256": "d658d0a284e1f807b90404c140fb8118bc46a50f7b97b733b825fddd05b0a56b",
+  "created_by_git_commit": null,
+  "duplicate_grouping_enabled": false
+}

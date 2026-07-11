@@ -654,6 +654,82 @@ def _build_dataloaders_online(
     return train_loader, val_loader
 
 
+def _run_init_checkpoint_audit(
+    args: argparse.Namespace,
+    config: Dict[str, Any],
+    init_ckpt_path: str,
+    checkpoint: dict,
+    train_logger: logging.Logger,
+) -> None:
+    """Run parent-child split lineage audit for --init-checkpoint experiments.
+
+    Determines the parent's split directory from the checkpoint path and
+    compares it against the child's split directory.  Writes
+    ``split_lineage_audit.json`` into the child experiment output directory.
+
+    Raises:
+        SplitAuditError: If any integrity rule is violated.
+    """
+    from common.split_audit import run_split_audit
+
+    # Determine parent experiment id from checkpoint path
+    # Convention: outputs/<parent_exp>/.../best.pt  → parent_exp
+    ckpt_path = Path(init_ckpt_path)
+    # Walk up from the checkpoint to find experiment root
+    # Typical: outputs/<exp>/<seed>/checkpoints/best.pt
+    #         outputs/<exp>/checkpoints/best.pt
+    parent_exp = "unknown"
+    for ancestor in ckpt_path.parents:
+        if ancestor.parent and ancestor.parent.name == "outputs":
+            parent_exp = str(ancestor.relative_to(ancestor.parent.parent))
+            break
+    if parent_exp == "unknown":
+        parent_exp = ckpt_path.parent.parent.name
+
+    # Determine parent split directory
+    # Try: checkpoint contains metadata about its split
+    parent_split_dir = None
+    if "config" in checkpoint:
+        parent_cfg = checkpoint["config"]
+        parent_split_dir = parent_cfg.get("data", {}).get("split_dir")
+
+    if not parent_split_dir:
+        # Fallback: infer from checkpoint path structure
+        # outputs/<exp>/checkpoints/best.pt → outputs/<exp>/splits
+        # outputs/<exp>/seed42/checkpoints/best.pt → outputs/<exp>/seed42
+        parent_exp_dir = ckpt_path.parent.parent
+        if (parent_exp_dir / "train.csv").exists():
+            parent_split_dir = str(parent_exp_dir)
+        elif (parent_exp_dir / "splits" / "train.csv").exists():
+            parent_split_dir = str(parent_exp_dir / "splits")
+
+    if not parent_split_dir:
+        train_logger.warning(
+            "Cannot determine parent split directory from checkpoint. "
+            "Skipping split lineage audit. "
+            "Ensure child uses the correct master split manually."
+        )
+        return
+
+    child_split_dir = Path(config["data"]["split_dir"])
+
+    train_logger.info("Running split lineage audit...")
+    train_logger.info("  Parent: %s", parent_exp)
+    train_logger.info("  Parent split: %s", parent_split_dir)
+    train_logger.info("  Child split:  %s", child_split_dir)
+
+    run_split_audit(
+        parent_experiment_id=parent_exp,
+        parent_checkpoint_path=init_ckpt_path,
+        parent_train_csv=Path(parent_split_dir) / "train.csv",
+        parent_val_csv=Path(parent_split_dir) / "val.csv",
+        child_train_csv=child_split_dir / "train.csv",
+        child_val_csv=child_split_dir / "val.csv",
+        output_dir=Path(config["train"]["save_dir"]).parent,
+    )
+    train_logger.info("Split lineage audit: protocol_valid = True")
+
+
 def main():
     args = parse_args()
 
@@ -977,6 +1053,10 @@ def main():
         # Do NOT load optimizer state — fresh training from epoch 1
         # Do NOT load scheduler state
         # Do NOT restore epoch
+
+        # ── Parent-child split lineage audit ─────────────────────
+        _run_init_checkpoint_audit(args, config, init_ckpt_path, checkpoint,
+                                   train_logger)
 
     # Resume if requested
     start_epoch = 1

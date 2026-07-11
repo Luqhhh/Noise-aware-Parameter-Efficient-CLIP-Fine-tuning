@@ -1,0 +1,62 @@
+# F0-strict: Frozen continue control experiment.
+# Init from D3-strict best checkpoint. Train only the linear head.
+# Purpose: isolate "just more training" from "partial unfreeze" effect.
+# Parent-child split audit enforces same val as D3.
+
+experiment:
+  id: F0_STRICT
+  mode: dev
+  head_type: linear
+  augmentation_preset: a0
+
+data:
+  stage: preliminary
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  seed: 42
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/master_splits/seed42
+  test_dir: test
+  train_dir: train_dedup
+  val_ratio: 0.1
+  expected_num_classes: 500
+  class_mapping_path: outputs/master_splits/seed42
+  use_full_training_set: false
+
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+  use_cached_features: false
+  unfreeze_last_n_blocks: 0
+  train_ln_post: false
+  train_visual_proj: false
+
+eval:
+  batch_size: 256
+
+output:
+  log_dir: outputs/f0_strict/seed42/logs
+  submission_dir: outputs/f0_strict/seed42/submissions
+
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 50
+  image_size: 224
+  lr: 0.0003
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/f0_strict/seed42/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001
+  min_lr_ratio: 0.01
+  early_stop_patience: 10

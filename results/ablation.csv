@@ -1,17 +1,22 @@
-exp_id,description,head_type,freeze_clip,lr,bb_lr,dropout,aug,epochs,val_acc,notes
-B0,regression baseline,linear,true,1e-3,,0,a0,20,0.6139,original 20-epoch baseline reproduced
-E0_best,cached features + lr=5e-3,linear,true,5e-3,,0,a0,50,0.6986,best from 15-trial lr/wd sweep; frozen CLIP + cached features
-E0_3e-3,cached features + lr=3e-3,linear,true,3e-3,,0,a0,50,0.6923,2nd best from E0 sweep
-E2,A1 augmentation (RandCrop+Flip),linear,true,3e-3,,0,a1,42,0.6915,killed early at epoch 42
-E2b,A1 + lr=5e-3 (align with E0),linear,true,5e-3,,0,a1,23,0.6977,killed at epoch 23; A1≈A0 when lr matched
-E3,A2 augmentation (+ColorJitter),linear,true,3e-3,,0,a2,24,0.6736,killed; ColorJitter hurts fine-grained features
-D3,dedup (CLIP centroid arbitration),linear,true,5e-3,,0,a0,50,0.7053,1892 conflict images removed; +0.67pp vs E0
-D4A,dropout=0.3 on frozen head,linear,true,5e-3,,0.3,a0,50,0.7009,dropout slightly hurts frozen; 37/50 epochs
-D4B,dropout=0.5 on frozen head,linear,true,5e-3,,0.5,a0,50,0.6939,too much dropout hurts frozen head
-F1,unfreeze ln_post+proj (D3 init),linear,false,3e-4,1e-5,0,a0,50,0.8013,+9.60pp vs D3; overfit after epoch 3; early stop@13
-F1b,ln_post+proj + dropout 0.2 + low lr (D3 init),linear,false,1e-4,1e-5,0.2,a0,50,0.8013,same peak as F1 but no overfit (train 78% vs F1 82%); early stop@13
-F2,last block + ln_post+proj (F1 init),linear,false,1e-4,1e-5,0.2,a0,50,?,
-F2_d3,last block + ln_post+proj (D3 init),linear,false,1e-4,1e-5,0.2,a0,50,?,control: skip F1 intermediate step
-F2_hi_bb,last block + ln_post+proj + bb_lr=3e-5 (F1 init),linear,false,1e-4,3e-5,0.2,a0,50,?,bb_lr sensitivity test
-F2_no_drop,last block + ln_post+proj no dropout (F1 init),linear,false,1e-4,1e-5,0,a0,50,?,dropout ablation in partial-unfreeze context
-F0,frozen continue 50 extra epochs (E0 init),linear,true,3e-4,,,,a0,50,??,only 1 epoch completed (0.6984); killed
+exp_id,description,head_type,freeze_clip,lr,bb_lr,dropout,aug,epochs,val_acc,result_status,validation_protocol,parent_experiment,val_overlap_with_parent,notes
+B0,regression baseline,linear,true,1e-3,,0,a0,20,0.6139,historical_valid,independent_split,,,original 20-epoch baseline reproduced
+E0_best,cached features + lr=5e-3,linear,true,5e-3,,0,a0,50,0.6986,historical_valid,independent_split,,,best from 15-trial lr/wd sweep; frozen CLIP + cached features; val ≠ master split
+E0_3e-3,cached features + lr=3e-3,linear,true,3e-3,,0,a0,50,0.6923,historical_valid,independent_split,,,2nd best from E0 sweep
+E2,A1 augmentation (RandCrop+Flip),linear,true,3e-3,,0,a1,42,0.6915,historical_valid,independent_split,,,killed early at epoch 42
+E2b,A1 + lr=5e-3 (align with E0),linear,true,5e-3,,0,a1,23,0.6977,historical_valid,independent_split,,,killed at epoch 23; A1≈A0 when lr matched
+E3,A2 augmentation (+ColorJitter),linear,true,3e-3,,0,a2,24,0.6736,historical_valid,independent_split,,,killed; ColorJitter hurts fine-grained features
+D3,dedup (CLIP centroid arbitration),linear,true,5e-3,,0,a0,50,0.7053,pending_fair_comparison,independent_split,,,1892 conflict images removed; val ≠ E0 val; cannot directly compare to E0
+D4A,dropout=0.3 on frozen head,linear,true,5e-3,,0.3,a0,50,0.7009,historical_valid,independent_split,,,dropout slightly hurts frozen; 37/50 epochs
+D4B,dropout=0.5 on frozen head,linear,true,5e-3,,0.5,a0,50,0.6939,historical_valid,independent_split,,,too much dropout hurts frozen head
+D4C,dropout=0.1 on frozen head,linear,true,5e-3,,0.1,a0,,,incomplete,independent_split,,,not completed
+F0,frozen continue 50 extra epochs (E0 init),linear,true,3e-4,,,a0,1,0.6984,incomplete,independent_split,E0,?,only 1 epoch completed; killed; no valid comparison possible
+F1,unfreeze ln_post+proj (D3 init),linear,false,3e-4,1e-5,0,a0,50,0.8013,invalid_stage_leakage,per_experiment_split,D3,8902/10116 (88.0%),+9.60pp vs D3 BUT val overlap=88%; RESULT INVALID; early stop@13
+F1b,ln_post+proj + dropout 0.2 + low lr (D3 init),linear,false,1e-4,1e-5,0.2,a0,50,0.8013,invalid_stage_leakage,per_experiment_split,D3,8902/10116 (88.0%),same leak as F1; RESULT INVALID; early stop@13
+F2,last block + ln_post+proj (F1 init),linear,false,1e-4,1e-5,0.2,a0,,,,blocked_by_invalid_parent,per_experiment_split,F1,?,parent F1 has invalid results; paused
+F2_d3,last block + ln_post+proj (D3 init),linear,false,1e-4,1e-5,0.2,a0,,,,blocked_by_invalid_parent,per_experiment_split,D3,?,deferred until strict baselines established
+F2_hi_bb,last block + ln_post+proj + bb_lr=3e-5 (F1 init),linear,false,1e-4,3e-5,0.2,a0,,,,blocked_by_invalid_parent,per_experiment_split,F1,?,parent F1 has invalid results; paused
+F2_no_drop,last block + ln_post+proj no dropout (F1 init),linear,false,1e-4,1e-5,0,a0,,,,blocked_by_invalid_parent,per_experiment_split,F1,?,parent F1 has invalid results; paused
+E0_STRICT,baseline on unified master split,,true,5e-3,,0,a0,,,,pending,,,,not yet run
+D3_STRICT,dedup on unified master split (train-only clean),,true,5e-3,,0,a0,,,,pending,,,,not yet run
+F0_STRICT,frozen continue from D3-strict on master split,,true,3e-4,,0,a0,,,,pending,,,,not yet run
+F1_STRICT,ln_post+proj from D3-strict on master split,,false,3e-4,1e-5,0,a0,,,,pending,,,,not yet run
