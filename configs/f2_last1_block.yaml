@@ -1,13 +1,13 @@
 # F2: Unfreeze last Transformer block + ln_post + visual.proj.
-# F2A: backbone_lr=1e-6  F2B: backbone_lr=3e-6  F2C: backbone_lr=1e-5
-# Run F2B first; only if stable, run F2A and F2C.
-# Init from best augmentation checkpoint via --init-checkpoint.
+# Primary variant: init from F1 best, head_lr=1e-4, bb_lr=1e-5, dropout=0.2.
+# Builds on F1's learned ln_post+proj weights; adds transformer block capacity.
+# Init from F1 best checkpoint via --init-checkpoint.
 
 experiment:
   id: F2_LAST1_BLOCK
   mode: dev
   head_type: linear
-  augmentation_preset: a0  # B2 discovery: A0 beats all augmentations
+  augmentation_preset: a0
 
 data:
   stage: preliminary
@@ -17,6 +17,7 @@ data:
   - .png
   - .bmp
   - .webp
+  seed: 42
   split_seed: 42
   train_seed: 42
   split_dir: outputs/f2/splits
@@ -36,6 +37,7 @@ model:
   unfreeze_last_n_blocks: 1
   train_ln_post: true
   train_visual_proj: true
+  dropout: 0.2
 
 eval:
   batch_size: 256
@@ -50,14 +52,14 @@ train:
   device: cuda
   epochs: 50
   image_size: 224
-  lr: 0.0003
+  lr: 0.0001
   max_grad_norm: 1.0
   num_workers: 8
   save_dir: outputs/f2/checkpoints
   scheduler: cosine
   warmup_epochs: 2
   weight_decay: 0.0001
-  backbone_lr: 0.000003
+  backbone_lr: 0.00001
   backbone_weight_decay: 0.01
   min_lr_ratio: 0.01
   early_stop_patience: 10

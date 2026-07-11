@@ -1,0 +1,14 @@
+2026-07-11 23:18:18 | INFO | Config: configs/f1_ln_proj.yaml
+2026-07-11 23:18:18 | INFO | Checkpoint: outputs/f1/checkpoints/best.pt
+2026-07-11 23:18:18 | INFO | Device: cuda
+2026-07-11 23:18:18 | INFO | Head type: linear
+2026-07-11 23:18:23 | INFO | Loaded checkpoint from epoch 3
+2026-07-11 23:18:23 | INFO | Checkpoint best val acc: 0.8013048635824437
+2026-07-11 23:18:23 | INFO | Loaded idx_to_class mapping from checkpoint metadata.
+2026-07-11 23:18:23 | INFO | idx_to_class mapping has 500 entries.
+2026-07-11 23:18:23 | INFO | Test set: 24967 images, 98 batches
+2026-07-11 23:18:45 | INFO | Raw predictions saved to: outputs/f1/submissions/pred_raw.csv
+2026-07-11 23:18:45 | INFO | Total predictions: 24967
+2026-07-11 23:18:45 | INFO | Unique predicted classes: 500 / 500
+2026-07-11 23:18:45 | INFO | Prediction label lengths: {4: 24967}
+2026-07-11 23:18:45 | INFO | Inference complete.
