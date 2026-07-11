@@ -1,0 +1,2 @@
+epoch,train_loss,train_acc,val_loss,val_acc,head_lr,backbone_lr,head_grad_norm,backbone_grad_norm,epoch_time
+1,0.875915,0.810960,1.326609,0.698399,0.00015000,0.00000000,0.067725,0.000000,146.97
