@@ -43,6 +43,7 @@ class CLIPLinearClassifier(nn.Module):
             Only used when freeze_clip=False.
         backbone_lr: Learning rate for unfrozen visual parameters.
         backbone_weight_decay: Weight decay for unfrozen visual parameters.
+        dropout: Dropout probability before the classifier head (0 = disabled).
     """
 
     def __init__(
@@ -56,6 +57,7 @@ class CLIPLinearClassifier(nn.Module):
         train_visual_proj: bool = False,
         backbone_lr: float = 1e-5,
         backbone_weight_decay: float = 0.01,
+        dropout: float = 0.0,
     ):
         super().__init__()
 
@@ -85,6 +87,9 @@ class CLIPLinearClassifier(nn.Module):
             )
         else:
             logger.info("CLIP image encoder fully frozen.")
+
+        # Dropout for regularization (0 = disabled, behaves as identity)
+        self.dropout = nn.Dropout(dropout)
 
         # Linear classification head (always trainable)
         self.classifier = nn.Linear(feature_dim, num_classes)
@@ -216,6 +221,7 @@ class CLIPLinearClassifier(nn.Module):
             )
 
         features = F.normalize(features.float(), p=2, dim=-1)
+        features = self.dropout(features)
         return self.classifier(features)
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
@@ -331,6 +337,7 @@ def build_model(
         train_visual_proj=model_cfg.get("train_visual_proj", False),
         backbone_lr=train_cfg.get("backbone_lr", 1e-5),
         backbone_weight_decay=train_cfg.get("backbone_weight_decay", 0.01),
+        dropout=model_cfg.get("dropout", train_cfg.get("dropout", 0.0)),
     )
 
     model = model.to(device)

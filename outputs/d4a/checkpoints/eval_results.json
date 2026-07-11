@@ -1,0 +1,23 @@
+{
+  "experiment_id": "D4A_DROPOUT0.3",
+  "mode": "dev",
+  "config_path": "configs/d4a_dropout.yaml",
+  "split_seed": 42,
+  "train_seed": 42,
+  "best_val_acc": 0.700936461584936,
+  "dev_best_epoch": 37,
+  "trained_epochs": 50,
+  "head_type": "linear",
+  "augmentation_preset": "a0",
+  "use_cached_features": true,
+  "learning_rate": 0.005,
+  "weight_decay": 0.0001,
+  "batch_size": 128,
+  "freeze_clip": true,
+  "clip_model_name": "ViT-B/32",
+  "git_commit": "0e13745c34f799159133a891ef1fb4b9d7c13816",
+  "early_stop_patience": 10,
+  "early_stopped": true,
+  "stopped_at_epoch": 47,
+  "init_checkpoint": null
+}

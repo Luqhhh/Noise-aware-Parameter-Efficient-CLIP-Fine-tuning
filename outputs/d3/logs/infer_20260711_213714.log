@@ -1,0 +1,14 @@
+2026-07-11 21:37:14 | INFO | Config: configs/d3_dedup.yaml
+2026-07-11 21:37:14 | INFO | Checkpoint: outputs/d3/checkpoints/best.pt
+2026-07-11 21:37:14 | INFO | Device: cuda
+2026-07-11 21:37:14 | INFO | Head type: linear
+2026-07-11 21:37:17 | INFO | Loaded checkpoint from epoch 46
+2026-07-11 21:37:17 | INFO | Checkpoint best val acc: 0.7052663377303393
+2026-07-11 21:37:17 | INFO | Loaded idx_to_class mapping from checkpoint metadata.
+2026-07-11 21:37:17 | INFO | idx_to_class mapping has 500 entries.
+2026-07-11 21:37:18 | INFO | Test set: 24967 images, 98 batches
+2026-07-11 21:37:40 | INFO | Raw predictions saved to: outputs/d3/submissions/pred_raw.csv
+2026-07-11 21:37:40 | INFO | Total predictions: 24967
+2026-07-11 21:37:40 | INFO | Unique predicted classes: 500 / 500
+2026-07-11 21:37:40 | INFO | Prediction label lengths: {4: 24967}
+2026-07-11 21:37:40 | INFO | Inference complete.

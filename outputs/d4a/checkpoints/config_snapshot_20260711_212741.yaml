@@ -1,0 +1,57 @@
+cache:
+  cache_dir: cache/preliminary/clip_vit_b32_openai_dedup
+  verification: full
+data:
+  class_mapping_path: outputs/metadata
+  expected_num_classes: 500
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  split_dir: outputs/d3/splits
+  split_seed: 42
+  stage: preliminary
+  test_dir: test
+  train_dir: train_dedup
+  train_seed: 42
+  use_full_training_set: false
+  val_ratio: 0.1
+eval:
+  batch_size: 256
+experiment:
+  augmentation_preset: a0
+  head_type: linear
+  id: D4A_DROPOUT0.3
+  mode: dev
+model:
+  clip_model_name: ViT-B/32
+  dropout: 0.3
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+  use_cached_features: true
+output:
+  log_dir: outputs/d4a/logs
+  submission_dir: outputs/d4a/submissions
+runtime:
+  augmentation_preset: a0
+  experiment_id: D4A_DROPOUT0.3
+  head_type: linear
+  mode: dev
+  use_cached_features: true
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  early_stop_patience: 10
+  epochs: 50
+  image_size: 224
+  lr: 0.005
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/d4a/checkpoints
+  scheduler: cosine
+  warmup_epochs: 1
+  weight_decay: 0.0001

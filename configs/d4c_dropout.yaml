@@ -1,5 +1,5 @@
 experiment:
-  id: D3_DEDUP
+  id: D4C_DROPOUT0.7
   mode: dev
   head_type: linear
   augmentation_preset: a0
@@ -11,7 +11,6 @@ data:
   - .png
   - .bmp
   - .webp
-  seed: 42
   split_seed: 42
   train_seed: 42
   split_dir: outputs/d3/splits
@@ -27,14 +26,15 @@ model:
   freeze_clip: true
   num_classes: 500
   use_cached_features: true
+  dropout: 0.7
 cache:
   cache_dir: cache/preliminary/clip_vit_b32_openai_dedup
   verification: full
 eval:
   batch_size: 256
 output:
-  log_dir: outputs/d3/logs
-  submission_dir: outputs/d3/submissions
+  log_dir: outputs/d4c/logs
+  submission_dir: outputs/d4c/submissions
 train:
   amp: true
   batch_size: 128
@@ -44,7 +44,7 @@ train:
   lr: 0.005
   max_grad_norm: 1.0
   num_workers: 8
-  save_dir: outputs/d3/checkpoints
+  save_dir: outputs/d4c/checkpoints
   scheduler: cosine
   warmup_epochs: 1
   weight_decay: 0.0001
