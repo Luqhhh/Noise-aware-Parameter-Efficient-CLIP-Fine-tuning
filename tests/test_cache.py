@@ -164,3 +164,51 @@ def test_cached_dataset_successful_load():
         feat, label = dataset[5]
         assert feat.shape == (512,)
         assert label == 1
+
+
+def test_cached_dataset_accepts_windows_style_split_paths():
+    """Split CSV paths with backslashes should match POSIX cache paths."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+
+        dataset_root = tmp_path / "dataset"
+        for cls_dir_name in ["0000", "0001"]:
+            cls_dir = dataset_root / cls_dir_name
+            cls_dir.mkdir(parents=True)
+            for i in range(5):
+                (cls_dir / f"img_{i:04d}.jpg").write_bytes(b"dummy_image_data")
+
+        cache_dir, _, _, class_to_idx = make_dummy_cache_dir(tmpdir)
+        quick_fp = compute_quick_fingerprint(dataset_root)
+        canon_str = json.dumps(
+            {k: class_to_idx[k] for k in sorted(class_to_idx.keys())},
+            sort_keys=True,
+        )
+        class_mapping_hash = hashlib.sha256(canon_str.encode()).hexdigest()
+
+        with open(cache_dir / "manifest.json", "r") as f:
+            manifest = json.load(f)
+        manifest["dataset_quick_fingerprint"] = quick_fp
+        manifest["class_mapping_hash"] = class_mapping_hash
+        with open(cache_dir / "manifest.json", "w") as f:
+            json.dump(manifest, f, indent=2)
+
+        split_csv = tmp_path / "split_windows.csv"
+        pd.DataFrame(
+            [
+                {"image_path": r"0000\img_0000.jpg", "label": 0},
+                {"image_path": r"0001\img_0000.jpg", "label": 1},
+            ]
+        ).to_csv(split_csv, index=False)
+
+        dataset = CachedFeatureDataset(
+            cache_dir,
+            str(split_csv),
+            str(cache_dir / "class_to_idx.json"),
+            dataset_root,
+            verification="quick",
+        )
+
+        assert len(dataset) == 2
+        assert dataset[0][1] == 0
+        assert dataset[1][1] == 1

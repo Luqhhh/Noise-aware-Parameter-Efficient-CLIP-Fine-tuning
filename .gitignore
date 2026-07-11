@@ -15,6 +15,8 @@ test/
 
 # Config (local paths)
 configs/baseline.yaml
+configs/*.local.yaml
+.venv/
 
 # Worktrees
 .claude/worktrees/

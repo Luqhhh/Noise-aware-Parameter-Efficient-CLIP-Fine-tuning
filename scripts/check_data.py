@@ -110,11 +110,11 @@ def analyze_train_dir(train_dir: Path) -> Dict:
     # Phase 1: Fast count (no image opening)
     for class_dir in tqdm(class_dirs, desc="Counting train images"):
         class_name = class_dir.name
-        count = 0
-
-        for ext in IMAGE_EXTENSIONS:
-            count += len(list(class_dir.glob(f"*{ext}")))
-            count += len(list(class_dir.glob(f"*{ext.upper()}")))
+        count = sum(
+            1
+            for path in class_dir.iterdir()
+            if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS
+        )
 
         total_images += count
         class_counts[class_name] = count
@@ -123,26 +123,16 @@ def analyze_train_dir(train_dir: Path) -> Dict:
     logger.info("Sample corruption check (10 images per class)...")
     samples_checked = 0
     for class_dir in tqdm(class_dirs, desc="Checking corruption"):
-        checked = 0
-        for ext in IMAGE_EXTENSIONS:
-            if checked >= 10:
-                break
-            for img_path in class_dir.glob(f"*{ext}"):
-                if checked >= 10:
-                    break
-                if not check_image(img_path):
-                    corrupted_images += 1
-                    corrupted_list.append(str(img_path))
-                checked += 1
-                samples_checked += 1
-            for img_path in class_dir.glob(f"*{ext.upper()}"):
-                if checked >= 10:
-                    break
-                if not check_image(img_path):
-                    corrupted_images += 1
-                    corrupted_list.append(str(img_path))
-                checked += 1
-                samples_checked += 1
+        images = sorted(
+            path
+            for path in class_dir.iterdir()
+            if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS
+        )
+        for img_path in images[:10]:
+            if not check_image(img_path):
+                corrupted_images += 1
+                corrupted_list.append(str(img_path))
+            samples_checked += 1
 
     counts_array = np.array(list(class_counts.values()))
 
@@ -174,12 +164,11 @@ def analyze_test_dir(test_dir: Path) -> Dict:
         Dictionary with test data statistics.
     """
     # Count images quickly
-    images = []
-    for ext in IMAGE_EXTENSIONS:
-        images.extend(test_dir.glob(f"*{ext}"))
-        images.extend(test_dir.glob(f"*{ext.upper()}"))
-
-    images = sorted(images)
+    images = sorted(
+        path
+        for path in test_dir.iterdir()
+        if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS
+    )
     total = len(images)
 
     # Sample corruption check: 1000 random images

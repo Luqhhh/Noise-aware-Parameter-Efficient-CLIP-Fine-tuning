@@ -8,6 +8,17 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from common.dataset import _find_images_in_dir
+
+
+def test_image_scan_does_not_duplicate_lowercase_files(tmp_path):
+    """A lowercase image must be returned once on case-insensitive filesystems."""
+    image_dir = tmp_path / "images"
+    image_dir.mkdir()
+    (image_dir / "sample.jpg").write_bytes(b"not-an-image")
+
+    assert _find_images_in_dir(image_dir) == [image_dir / "sample.jpg"]
+
 
 def test_split_coverage():
     """Train + val should cover all samples (no overlap, no missing)."""

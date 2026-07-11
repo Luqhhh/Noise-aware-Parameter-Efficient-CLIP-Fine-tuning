@@ -1,5 +1,8 @@
 from argparse import Namespace
 from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from common.runtime_config import resolve_runtime_args
 from common.utils import load_config

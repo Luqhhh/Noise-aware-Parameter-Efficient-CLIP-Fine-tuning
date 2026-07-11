@@ -55,12 +55,12 @@ def _find_images_in_dir(
     if extensions is None:
         extensions = IMAGE_EXTENSIONS
 
-    images = []
-    for ext in extensions:
-        images.extend(directory.glob(f"*{ext}"))
-        images.extend(directory.glob(f"*{ext.upper()}"))
-
-    return sorted(images)
+    normalized_extensions = {ext.lower() for ext in extensions}
+    return sorted(
+        path
+        for path in directory.iterdir()
+        if path.is_file() and path.suffix.lower() in normalized_extensions
+    )
 
 
 def _safe_load_image(

@@ -18,10 +18,12 @@ import logging
 import os
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import torch
 import torchvision
 from PIL import Image
+from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
 from .class_mapping import load_or_generate_mapping
@@ -31,6 +33,17 @@ from .dataset import _find_images_in_dir
 logger = logging.getLogger(__name__)
 
 _MISSING = object()  # Sentinel for "key not present" in EXPECTED_HARD_VALUES
+_VERIFIED_FINGERPRINTS = {}
+
+
+def _relative_posix_path(path, root):
+    """Return a root-relative path with POSIX separators."""
+    return Path(path).relative_to(root).as_posix()
+
+
+def _to_posix_path(path):
+    """Normalize CSV/cache path strings for cross-platform matching."""
+    return str(path).replace("\\", "/")
 
 
 def _get_package_version(pkg_name):
@@ -52,26 +65,41 @@ def _get_clip_info():
     }
     try:
         import clip
-        import subprocess
+        import importlib.metadata
 
         info["clip_source_path"] = os.path.dirname(os.path.abspath(clip.__file__))
-        # Try to get git commit from clip installation
-        clip_dir = info["clip_source_path"]
         try:
-            result = subprocess.run(
-                ["git", "rev-parse", "HEAD"],
-                cwd=clip_dir,
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
-            if result.returncode == 0:
-                info["clip_commit"] = result.stdout.strip()
-        except Exception:
+            distribution = importlib.metadata.distribution("clip")
+            info["clip_version"] = distribution.version
+            direct_url_text = distribution.read_text("direct_url.json")
+            if direct_url_text:
+                direct_url = json.loads(direct_url_text)
+                info["clip_commit"] = direct_url.get("vcs_info", {}).get("commit_id")
+        except (importlib.metadata.PackageNotFoundError, ValueError, TypeError):
             pass
     except ImportError:
         pass
     return info
+
+
+class _CacheImageDataset(Dataset):
+    """Load and deterministically preprocess images for feature caching."""
+
+    def __init__(self, image_paths, preprocess):
+        self.image_paths = image_paths
+        self.preprocess = preprocess
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, index):
+        path = self.image_paths[index]
+        try:
+            with Image.open(path) as image:
+                return self.preprocess(image.convert("RGB"))
+        except Exception as exc:
+            logger.warning(f"Using a zero image for {path}: {exc}")
+            return torch.zeros(3, 224, 224)
 
 
 def compute_quick_fingerprint(dataset_root):
@@ -88,7 +116,7 @@ def compute_quick_fingerprint(dataset_root):
         class_name = class_dir.name
         images = _find_images_in_dir(class_dir)
         for img_path in images:
-            rel_path = str(img_path.relative_to(dataset_root))
+            rel_path = _relative_posix_path(img_path, dataset_root)
             file_size = img_path.stat().st_size
             entry = f"{rel_path}|{class_name}|{file_size}"
             hasher.update(entry.encode())
@@ -106,15 +134,22 @@ def compute_full_fingerprint(dataset_root):
     class_dirs = sorted([d for d in dataset_root.iterdir() if d.is_dir()])
     hasher = hashlib.sha256()
 
-    for class_dir in tqdm(class_dirs, desc="Full fingerprint"):
-        class_name = class_dir.name
-        images = _find_images_in_dir(class_dir)
-        for img_path in images:
-            rel_path = str(img_path.relative_to(dataset_root))
-            file_size = img_path.stat().st_size
-            content_hash = hashlib.sha256(img_path.read_bytes()).hexdigest()
-            entry = f"{rel_path}|{class_name}|{file_size}|{content_hash}"
-            hasher.update(entry.encode())
+    max_workers = min(16, max(4, (os.cpu_count() or 1) * 2))
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        for class_dir in tqdm(class_dirs, desc="Full fingerprint"):
+            class_name = class_dir.name
+            images = _find_images_in_dir(class_dir)
+
+            def build_entry(img_path):
+                rel_path = _relative_posix_path(img_path, dataset_root)
+                file_size = img_path.stat().st_size
+                content_hash = hashlib.sha256(img_path.read_bytes()).hexdigest()
+                return f"{rel_path}|{class_name}|{file_size}|{content_hash}".encode()
+
+            # executor.map preserves image ordering, so the resulting digest is
+            # identical to the original sequential implementation.
+            for entry in executor.map(build_entry, images):
+                hasher.update(entry)
 
     return hasher.hexdigest()
 
@@ -158,9 +193,32 @@ class FeatureCacheBuilder:
         quick_fp = compute_quick_fingerprint(self.train_dir)
         logger.info(f"Quick fingerprint: {quick_fp[:16]}...")
 
-        logger.info("Computing full fingerprint (this may take a while)...")
-        full_fp = compute_full_fingerprint(self.train_dir)
-        logger.info(f"Full fingerprint: {full_fp[:16]}...")
+        fingerprint_checkpoint = self.cache_dir / "fingerprints.json"
+        full_fp = None
+        if fingerprint_checkpoint.exists():
+            try:
+                with open(fingerprint_checkpoint, "r", encoding="utf-8") as f:
+                    saved_fingerprints = json.load(f)
+                if saved_fingerprints.get("dataset_quick_fingerprint") == quick_fp:
+                    full_fp = saved_fingerprints.get("dataset_full_fingerprint")
+                    if full_fp:
+                        logger.info(f"Reusing full fingerprint: {full_fp[:16]}...")
+            except (OSError, ValueError, TypeError) as exc:
+                logger.warning(f"Ignoring invalid fingerprint checkpoint: {exc}")
+
+        if full_fp is None:
+            logger.info("Computing full fingerprint (this may take a while)...")
+            full_fp = compute_full_fingerprint(self.train_dir)
+            logger.info(f"Full fingerprint: {full_fp[:16]}...")
+            with open(fingerprint_checkpoint, "w", encoding="utf-8") as f:
+                json.dump(
+                    {
+                        "dataset_quick_fingerprint": quick_fp,
+                        "dataset_full_fingerprint": full_fp,
+                    },
+                    f,
+                    indent=2,
+                )
 
         # Step 4: Load CLIP model
         clip_model, preprocess = load_openai_clip(self.device)
@@ -172,20 +230,20 @@ class FeatureCacheBuilder:
 
         # Step 6: Save features and labels
         torch.save(all_features, self.cache_dir / "features.pt")
-        with open(self.cache_dir / "image_paths.json", "w") as f:
+        with open(self.cache_dir / "image_paths.json", "w", encoding="utf-8") as f:
             json.dump(all_rel_paths, f, ensure_ascii=False)
-        with open(self.cache_dir / "labels.json", "w") as f:
+        with open(self.cache_dir / "labels.json", "w", encoding="utf-8") as f:
             json.dump(all_labels, f)
 
         # Step 7: Save canonical mapping
-        with open(self.cache_dir / "class_to_idx.json", "w") as f:
+        with open(self.cache_dir / "class_to_idx.json", "w", encoding="utf-8") as f:
             json.dump(class_to_idx, f, indent=2, ensure_ascii=False)
-        with open(self.cache_dir / "idx_to_class.json", "w") as f:
+        with open(self.cache_dir / "idx_to_class.json", "w", encoding="utf-8") as f:
             json.dump(idx_to_class, f, indent=2, ensure_ascii=False)
 
         # Step 8: Write manifest
         manifest = self._build_manifest(dataset_size, quick_fp, full_fp, class_to_idx)
-        with open(self.cache_dir / "manifest.json", "w") as f:
+        with open(self.cache_dir / "manifest.json", "w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Cache built: {dataset_size} features saved to {self.cache_dir}")
@@ -207,7 +265,7 @@ class FeatureCacheBuilder:
             for img_path in images:
                 all_images.append(img_path)
                 all_labels.append(label)
-                all_rel_paths.append(str(img_path.relative_to(self.train_dir)))
+                all_rel_paths.append(_relative_posix_path(img_path, self.train_dir))
 
         return all_images, all_labels, all_rel_paths
 
@@ -215,28 +273,37 @@ class FeatureCacheBuilder:
     def _encode_all(self, clip_model, preprocess, image_paths):
         """Encode all images through frozen CLIP."""
         batch_size = self.config["eval"].get("batch_size", 256)
+        cache_cfg = self.config.get("cache", {})
+        num_workers = max(
+            0,
+            int(
+                cache_cfg.get(
+                    "num_workers",
+                    self.config.get("train", {}).get("num_workers", 0),
+                )
+            ),
+        )
+        pin_memory = bool(cache_cfg.get("pin_memory", self.device.type == "cuda"))
         all_features = []
 
-        # Simple loop — process one batch at a time
-        for i in tqdm(range(0, len(image_paths), batch_size), desc="Encoding"):
-            batch_paths = image_paths[i : i + batch_size]
-            batch_images = []
+        loader_kwargs = {
+            "dataset": _CacheImageDataset(image_paths, preprocess),
+            "batch_size": batch_size,
+            "shuffle": False,
+            "num_workers": num_workers,
+            "pin_memory": pin_memory,
+            "persistent_workers": num_workers > 0,
+        }
+        if num_workers > 0:
+            loader_kwargs["prefetch_factor"] = 2
+        loader = DataLoader(**loader_kwargs)
+        logger.info(
+            f"Encoding with batch_size={batch_size}, num_workers={num_workers}, "
+            f"pin_memory={pin_memory}"
+        )
 
-            for p in batch_paths:
-                try:
-                    img = Image.open(p).convert("RGB")
-                    img = preprocess(img)
-                    batch_images.append(img)
-                except Exception as e:
-                    logger.warning(f"Skipping {p}: {e}")
-                    # Use a zero tensor as placeholder
-                    img = torch.zeros(3, 224, 224)
-                    batch_images.append(img)
-
-            if not batch_images:
-                continue
-
-            images = torch.stack(batch_images).to(self.device)
+        for images in tqdm(loader, desc="Encoding"):
+            images = images.to(self.device, non_blocking=pin_memory)
             features = encode_frozen_clip_features(
                 clip_model, images, self.device, use_amp=False
             )
@@ -327,13 +394,13 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
     def __init__(self, cache_dir, split_csv, class_to_idx_path,
                  dataset_root, verification="full"):
         self.cache_dir = Path(cache_dir)
-        self.dataset_root = Path(dataset_root)
+        self.dataset_root = Path(dataset_root).resolve()
 
         # 1. Load manifest
         manifest_path = self.cache_dir / "manifest.json"
         if not manifest_path.exists():
             raise FileNotFoundError(f"Cache manifest not found: {manifest_path}")
-        with open(manifest_path, "r") as f:
+        with open(manifest_path, "r", encoding="utf-8") as f:
             self.manifest = json.load(f)
 
         # 2. Validate hard fields
@@ -347,9 +414,9 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
 
         # 5. Load features and metadata
         self.features = torch.load(self.cache_dir / "features.pt")
-        with open(self.cache_dir / "image_paths.json", "r") as f:
+        with open(self.cache_dir / "image_paths.json", "r", encoding="utf-8") as f:
             self.all_paths = json.load(f)
-        with open(self.cache_dir / "labels.json", "r") as f:
+        with open(self.cache_dir / "labels.json", "r", encoding="utf-8") as f:
             self.all_labels = json.load(f)
 
         # 6. Tensor validation
@@ -360,7 +427,7 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
             raise FileNotFoundError(
                 f"class_to_idx_path not found: {class_to_idx_path}"
             )
-        with open(class_to_idx_path, "r") as f:
+        with open(class_to_idx_path, "r", encoding="utf-8") as f:
             self.class_to_idx = json.load(f)
         self._validate_class_mapping_hash()
 
@@ -409,11 +476,17 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
         if cached_fp is None:
             raise ValueError(f"Manifest missing fingerprint field: {fingerprint_key}")
 
-        logger.info(f"Computing {verification} fingerprint for verification...")
-        if verification == "full":
-            current_fp = compute_full_fingerprint(self.dataset_root)
+        cache_key = (str(self.dataset_root), verification)
+        current_fp = _VERIFIED_FINGERPRINTS.get(cache_key)
+        if current_fp is None:
+            logger.info(f"Computing {verification} fingerprint for verification...")
+            if verification == "full":
+                current_fp = compute_full_fingerprint(self.dataset_root)
+            else:
+                current_fp = compute_quick_fingerprint(self.dataset_root)
+            _VERIFIED_FINGERPRINTS[cache_key] = current_fp
         else:
-            current_fp = compute_quick_fingerprint(self.dataset_root)
+            logger.info(f"Reusing {verification} fingerprint verified in this process.")
 
         if current_fp != cached_fp:
             raise ValueError(
@@ -480,33 +553,43 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
         df = pd.read_csv(split_csv)
         self.sample_indices = []
 
-        path_to_idx = {p: i for i, p in enumerate(self.all_paths)}
+        path_to_idx = {_to_posix_path(p): i for i, p in enumerate(self.all_paths)}
+        basename_to_idx = {}
+        duplicate_basenames = set()
+        for path, index in path_to_idx.items():
+            basename = Path(path).name
+            if basename in basename_to_idx:
+                duplicate_basenames.add(basename)
+            else:
+                basename_to_idx[basename] = index
+        for basename in duplicate_basenames:
+            basename_to_idx.pop(basename, None)
 
-        for _, row in df.iterrows():
-            img_path = Path(row["image_path"])
+        for row in df.itertuples(index=False):
+            img_path = Path(row.image_path)
             if img_path.is_absolute():
                 try:
-                    rel_path = str(img_path.relative_to(self.dataset_root))
+                    rel_path = _relative_posix_path(img_path, self.dataset_root)
                 except ValueError:
-                    # Path not under dataset_root — try using just the filename
-                    rel_path = str(img_path)
+                    # Path not under dataset_root: keep it normalized for lookup.
+                    rel_path = _to_posix_path(img_path)
             else:
-                rel_path = str(img_path)
+                rel_path = _to_posix_path(img_path)
 
             # Try both the relative path and just the filename
             if rel_path in path_to_idx:
                 cache_idx = path_to_idx[rel_path]
-            elif img_path.name in path_to_idx:
+            elif img_path.name in basename_to_idx:
                 # Defense-in-depth: bare filename lookup as a final fallback
-                # even though cached paths always contain directory prefixes.
-                cache_idx = path_to_idx[img_path.name]
+                # only when the basename is unique across the full cache.
+                cache_idx = basename_to_idx[img_path.name]
             else:
                 raise ValueError(
                     f"Image path from split CSV not found in cache: {rel_path}"
                 )
 
             # Per-sample label consistency check
-            csv_label = int(row["label"])
+            csv_label = int(row.label)
             cache_label = self.all_labels[cache_idx]
             if csv_label != cache_label:
                 raise ValueError(

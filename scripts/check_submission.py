@@ -67,13 +67,11 @@ def parse_args() -> argparse.Namespace:
 
 def get_test_image_names(test_dir: Path) -> Set[str]:
     """Collect all image filenames from the test directory."""
-    names = set()
-    for ext in IMAGE_EXTENSIONS:
-        for img_path in test_dir.glob(f"*{ext}"):
-            names.add(img_path.name)
-        for img_path in test_dir.glob(f"*{ext.upper()}"):
-            names.add(img_path.name)
-    return names
+    return {
+        path.name
+        for path in test_dir.iterdir()
+        if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS
+    }
 
 
 def check_csv(csv_path: Path, test_names: Set[str]) -> Tuple[bool, List[str]]:

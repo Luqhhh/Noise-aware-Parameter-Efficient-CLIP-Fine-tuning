@@ -560,7 +560,7 @@ def _build_dataloaders_online(
         batch_size=train_cfg["batch_size"],
         shuffle=True,
         num_workers=train_cfg["num_workers"],
-        pin_memory=True,
+        pin_memory=train_cfg.get("pin_memory", True),
         drop_last=False,
         worker_init_fn=seed_worker,
         generator=g,
@@ -571,7 +571,7 @@ def _build_dataloaders_online(
         batch_size=config["eval"]["batch_size"],
         shuffle=False,
         num_workers=train_cfg["num_workers"],
-        pin_memory=True,
+        pin_memory=train_cfg.get("pin_memory", True),
         drop_last=False,
         worker_init_fn=seed_worker,
         generator=g,
@@ -684,6 +684,7 @@ def main():
 
     # Dataset and DataLoader construction
     split_dir = config["data"]["split_dir"]
+    loader_pin_memory = config["train"].get("pin_memory", True)
 
     if use_cached:
         # Use cached features instead of online encoding
@@ -714,38 +715,16 @@ def main():
             batch_size=config["train"]["batch_size"],
             shuffle=True,
             num_workers=0,  # Cached features: no need for image loading workers
-            pin_memory=True,
+            pin_memory=loader_pin_memory,
             drop_last=False,
             generator=g,
         )
 
-        # Build val loader online (validation always uses online images)
+        # A0 preprocessing and a frozen CLIP encoder make cached validation
+        # exactly equivalent to deterministic online feature extraction.
         val_loader = None
-        if mode == "dev":
-            val_csv = str(Path(split_dir) / "val.csv")
-            val_dataset = TrainImageDataset(
-                data_root=config["data"]["train_dir"],
-                split_csv=val_csv,
-                class_to_idx=class_to_idx,
-                transform=val_transform,
-                return_path=True,
-            )
-            val_loader = DataLoader(
-                val_dataset,
-                batch_size=config["eval"]["batch_size"],
-                shuffle=False,
-                num_workers=config["train"]["num_workers"],
-                pin_memory=True,
-                drop_last=False,
-                worker_init_fn=seed_worker,
-                generator=g,
-            )
-            train_logger.info(
-                f"Val loader (online): {len(val_dataset)} samples, "
-                f"{len(val_loader)} batches"
-            )
-        elif mode == "confirm":
-            if not _check_splits_exist(split_dir):
+        if mode in {"dev", "confirm"}:
+            if mode == "confirm" and not _check_splits_exist(split_dir):
                 train_logger.error(
                     f"Train/val splits not found in {split_dir}.\n"
                     f"Please run: python scripts/split_data.py --config {args.config}"
@@ -755,26 +734,24 @@ def main():
                     f"Run: python scripts/split_data.py --config {args.config}"
                 )
 
-            val_csv = str(Path(split_dir) / "val.csv")
-            val_dataset = TrainImageDataset(
-                data_root=config["data"]["train_dir"],
-                split_csv=val_csv,
-                class_to_idx=class_to_idx,
-                transform=val_transform,
-                return_path=True,
+            val_dataset = CachedFeatureDataset(
+                cache_dir=cache_dir,
+                split_csv=str(Path(split_dir) / "val.csv"),
+                class_to_idx_path=class_to_idx_path,
+                dataset_root=config["data"]["train_dir"],
+                verification=verification,
             )
             val_loader = DataLoader(
                 val_dataset,
                 batch_size=config["eval"]["batch_size"],
                 shuffle=False,
-                num_workers=config["train"]["num_workers"],
-                pin_memory=True,
+                num_workers=0,
+                pin_memory=loader_pin_memory,
                 drop_last=False,
-                worker_init_fn=seed_worker,
                 generator=g,
             )
             train_logger.info(
-                f"Val loader (online): {len(val_dataset)} samples, "
+                f"Val loader (cached): {len(val_dataset)} samples, "
                 f"{len(val_loader)} batches"
             )
 
@@ -802,7 +779,7 @@ def main():
             batch_size=config["train"]["batch_size"],
             shuffle=True,
             num_workers=config["train"]["num_workers"],
-            pin_memory=True,
+            pin_memory=loader_pin_memory,
             drop_last=False,
             worker_init_fn=seed_worker,
             generator=g,

@@ -12,11 +12,20 @@ import random
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import numpy as np
-import torch
 import yaml
+
+
+def _load_torch(required: bool = True):
+    try:
+        import torch
+        return torch
+    except ImportError:
+        if required:
+            raise
+        return None
 
 
 def load_config(config_path: str) -> Dict[str, Any]:
@@ -36,7 +45,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
-    with open(config_path, "r") as f:
+    with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
     return config
@@ -50,11 +59,13 @@ def set_seed(seed: int) -> None:
     """
     random.seed(seed)
     np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    torch = _load_torch(required=False)
+    if torch is not None:
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
     os.environ["PYTHONHASHSEED"] = str(seed)
 
@@ -72,6 +83,7 @@ def set_train_seed(seed: int) -> None:
     """
     random.seed(seed)
     np.random.seed(seed)
+    torch = _load_torch(required=True)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -135,11 +147,11 @@ def save_config_snapshot(config: Dict[str, Any], output_dir: str) -> None:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     snapshot_path = output_dir / f"config_snapshot_{timestamp}.yaml"
 
-    with open(snapshot_path, "w") as f:
+    with open(snapshot_path, "w", encoding="utf-8") as f:
         yaml.dump(config, f, default_flow_style=False, allow_unicode=True)
 
 
-def count_parameters(model: torch.nn.Module) -> tuple:
+def count_parameters(model: Any) -> tuple:
     """Count total and trainable parameters of a model.
 
     Args:

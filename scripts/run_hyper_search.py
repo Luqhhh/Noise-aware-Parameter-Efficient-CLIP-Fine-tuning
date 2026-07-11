@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import yaml
 
 from common.utils import load_config
@@ -61,11 +63,18 @@ def main():
     if base_config["model"].get("use_cached_features", False):
         cache_dir = Path(base_config["cache"]["cache_dir"])
         if not (cache_dir / "manifest.json").exists():
-            raise FileNotFoundError(
-                f"Feature cache not found: {cache_dir}\n"
-                f"Run: python scripts/cache_features.py "
-                f"--config {args.config}"
-            )
+            if args.dry_run:
+                print(
+                    "Feature cache not found; dry-run will still preview "
+                    f"trial commands. Build cache before real runs: "
+                    f"python scripts/cache_features.py --config {args.config}"
+                )
+            else:
+                raise FileNotFoundError(
+                    f"Feature cache not found: {cache_dir}\n"
+                    f"Run: python scripts/cache_features.py "
+                    f"--config {args.config}"
+                )
 
     split_dir = Path(base_config["data"]["split_dir"])
     required_split_files = [

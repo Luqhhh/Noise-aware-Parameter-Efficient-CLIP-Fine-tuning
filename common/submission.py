@@ -72,10 +72,11 @@ def validate_submission_coverage(test_dir: str, results_csv_path: str) -> None:
         raise FileNotFoundError(f"Results CSV not found: {results_csv_path}")
 
     # Collect test image basenames
-    test_image_paths = []
-    for ext in IMAGE_EXTENSIONS:
-        test_image_paths.extend(test_dir.glob(f"*{ext}"))
-        test_image_paths.extend(test_dir.glob(f"*{ext.upper()}"))
+    test_image_paths = sorted(
+        path
+        for path in test_dir.iterdir()
+        if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS
+    )
 
     test_names = [p.name for p in test_image_paths]
 

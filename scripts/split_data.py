@@ -105,11 +105,11 @@ def find_class_directories(train_dir: Path) -> List[Path]:
 
 def find_images_in_dir(directory: Path) -> List[Path]:
     """Find all image files in a directory."""
-    images = []
-    for ext in IMAGE_EXTENSIONS:
-        images.extend(directory.glob(f"*{ext}"))
-        images.extend(directory.glob(f"*{ext.upper()}"))
-    return sorted(images)
+    return sorted(
+        path
+        for path in directory.iterdir()
+        if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS
+    )
 
 
 def split_class_images(
