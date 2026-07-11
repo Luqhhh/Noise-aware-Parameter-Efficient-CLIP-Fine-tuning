@@ -56,7 +56,7 @@ train:
   device: cuda
   epochs: 50
   image_size: 224
-  lr: 0.001
+  lr: 0.005
   max_grad_norm: 1.0
   num_workers: 8
   save_dir: outputs/e1/checkpoints

@@ -14,8 +14,8 @@ data:
   split_seed: 42
   train_seed: 42
   split_dir: outputs/e0/splits
-  test_dir: 初赛数据集/test
-  train_dir: 初赛数据集/train
+  test_dir: test
+  train_dir: train
   val_ratio: 0.1
   expected_num_classes: 500
   class_mapping_path: outputs/metadata
@@ -28,14 +28,14 @@ model:
   use_cached_features: true
 cache:
   cache_dir: cache/preliminary/clip_vit_b32_openai
-  num_workers: 4
-  pin_memory: false
-  verification: quick
+  verification: full
 hyper_search:
   lr_values:
   - 0.0001
   - 0.0005
   - 0.001
+  - 0.003
+  - 0.005
   wd_values:
   - 1.0e-05
   - 0.0001
@@ -43,21 +43,21 @@ hyper_search:
 eval:
   batch_size: 256
 output:
-  log_dir: outputs\e0\search\lr_1e-03__wd_1e-04\logs
-  submission_dir: outputs\e0\search\lr_1e-03__wd_1e-04\submissions
+  log_dir: outputs/e0/search/lr_5e-03__wd_1e-04/logs
+  submission_dir: outputs/e0/search/lr_5e-03__wd_1e-04/submissions
 train:
   amp: true
   batch_size: 128
   device: cuda
-  epochs: 20
+  epochs: 50
   image_size: 224
-  lr: 0.001
+  lr: 0.005
   max_grad_norm: 1.0
   num_workers: 8
-  pin_memory: false
-  save_dir: outputs\e0\search\lr_1e-03__wd_1e-04\checkpoints
+  save_dir: outputs/e0/search/lr_5e-03__wd_1e-04/checkpoints
   scheduler: cosine
   warmup_epochs: 1
   weight_decay: 0.0001
+  early_stop_patience: 10
 runtime:
-  search_trial: lr_1e-03__wd_1e-04
+  search_trial: lr_5e-03__wd_1e-04

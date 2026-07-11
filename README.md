@@ -107,13 +107,13 @@ python -m experiments.baseline.train --config configs/b0_regression.yaml
 # 2. 构建特征缓存 — 编码全部训练集（一次性，~30min）
 python scripts/cache_features.py --config configs/e0_hyper_search.yaml
 
-# 3. E0 超参搜索 — Linear + A0，9 trials lr×wd
+# 3. E0 超参搜索 — Linear + A0，5 lr × 3 wd = 15 trials
 python scripts/run_hyper_search.py --config configs/e0_hyper_search.yaml
 
-# 4. E1 超参搜索 — Cosine + A0，9 trials lr×wd
+# 4. E1 超参搜索 — Cosine + A0，5 lr × 1 wd = 5 trials
 python scripts/run_hyper_search.py --config configs/e1_hyper_search.yaml
 
-# 5. 将 E0 最优 lr/wd 写入 E2/E3/E4 configs，然后：
+# 5. E2-E4 增强消融 — 已使用 E0 最优 lr=3e-3，50 epochs + 早停
 python -m experiments.baseline.train --config configs/e2_augmentation.yaml
 python -m experiments.baseline.train --config configs/e3_augmentation.yaml
 python -m experiments.baseline.train --config configs/e4_augmentation.yaml
@@ -147,11 +147,13 @@ python -m experiments.baseline.train --config configs/c2_cosine_scale.yaml
 |---|---|---|
 | 数据 | 预计算 `[B,512]` 特征 | 原始图片 `[B,3,224,224]` |
 | CLIP 编码 | 一次性构建缓存 | 每 epoch 每张图 |
-| 速度 | ~30s/epoch | ~2.5min/epoch |
+| 速度 | ~3s/epoch | ~140s/epoch |
 | 增强 | 仅 A0（特征固定） | 支持 A0-A3 |
 | 适用实验 | E0, E1, C0-C2 | B0, E2-E5 |
 
 缓存文件位于 `cache/preliminary/clip_vit_b32_openai/`（`.gitignore` 排除）。其他人 clone 后需自行构建或从合作者处拷贝。
+
+训练默认 50 epochs，支持早停（`train.early_stop_patience: 10`），连续 N 个 epoch 无提升自动终止，并在 `eval_results.json` 记录 `early_stopped` 和 `stopped_at_epoch`。
 
 ### 配置优先级
 
@@ -218,6 +220,21 @@ python scripts/run_acceptance.py
 | C0 | Cosine | A0 | Yes | No | scale 消融（fixed） |
 | C1 | Cosine | A0 | Yes | No | scale 消融（learnable, init=10） |
 | C2 | Cosine | A0 | Yes | No | scale 消融（learnable, init=20） |
+
+## 实验结果 (preliminary, seed=42, val_ratio=0.1)
+
+| ID | Head | 增强 | Best Val Acc | Best Epoch | 备注 |
+|----|------|------|-------------|------------|------|
+| E0 | Linear | A0 | **69.86%** | 36 | lr=5e-3 (早停 epoch 46) |
+| E1 | Cosine | A0 | **63.61%** | 46 | lr=5e-3 (50 epochs 完整) |
+| E2 | Linear | A1 | **69.15%** | 40 | lr=3e-3 (epoch 42 终止，未收敛) |
+| E3 | Linear | A2 | 待定 | — | 训练中 |
+| E4 | Linear | A3 | 待定 | — | 待运行 |
+
+**关键发现：**
+- Cosine Head (E1) 在所有 lr 下均不如 Linear Head (E0)，差距 ~6pp
+- 扩展 lr 搜索范围后 E0 涨幅显著：61.10% (lr=1e-3) → 69.86% (lr=5e-3)
+- Weight decay 对冻结 CLIP + 线性头无影响，后续搜索可固定为 1e-4
 
 ## Git 策略
 
