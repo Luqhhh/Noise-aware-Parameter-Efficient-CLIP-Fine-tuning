@@ -5,5 +5,5 @@
   "removed_ratio": 0.0183,
   "val_untouched": true,
   "val_count": 10322,
-  "note": "train-only cleaning: master-val NEVER touched"
+  "note": "train-only cleaning: paths point to train_dedup/"
 }

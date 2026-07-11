@@ -59,8 +59,10 @@ def main():
             if not img_path.is_file():
                 continue
             if img_path.suffix.lower() in IMAGE_EXTENSIONS:
+                # Store path relative to CWD (e.g. train/0000/image.jpg)
+                # TrainImageDataset resolves relative paths by prepending CWD.
                 records.append({
-                    "image_path": str(img_path.relative_to(train_dir)),
+                    "image_path": str(Path(args.train_dir) / class_dir.name / img_path.name),
                     "class_name": class_name,
                 })
 
