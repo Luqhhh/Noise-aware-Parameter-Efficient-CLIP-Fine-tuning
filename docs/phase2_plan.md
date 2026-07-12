@@ -25,9 +25,9 @@
 
 ```
 Track A：无训练平台导向优化
-    A1 2-view TTA
-    A2 class-prior logit adjustment
-    A3 TTA + prior adjustment
+    TA1 2-view TTA
+    TA2 class-prior logit adjustment
+    TA3 TTA + prior adjustment
 
 Track B：噪声鲁棒监督
     B1 Label Smoothing（ε=0.05，可扩展 0.03/0.10）
@@ -94,7 +94,7 @@ Platform：57.3397%
 
 ## 3. Track A：无需重训的快速平台导向实验
 
-### A0：准备统一 logits 缓存
+### TA0：准备统一 logits 缓存
 
 新增 `scripts/cache_val_test_logits.py`。
 
@@ -127,7 +127,7 @@ outputs/phase2/d3_logits/
 
 测试集必须输出 24967 条预测。图片读取失败时不能跳过。
 
-### A1：2-view horizontal-flip TTA
+### TA1：2-view horizontal-flip TTA
 
 新增推理模式：
 
@@ -156,7 +156,7 @@ $$\text{logits}_{tta} = \frac{\text{logits}_{original} + \text{logits}_{flip}}{2
 
 若均不满足，关闭 TTA 分支，不测试更多 crop 数。
 
-### A2：类别先验 logit adjustment
+### TA2：类别先验 logit adjustment
 
 **动机**：官方测试集类别均衡，而训练数据和模型预测可能存在类别偏置。
 
@@ -174,9 +174,9 @@ $$\tilde{z}_c = z_c - \tau \log(\pi_c + \epsilon)$$
 
 **保留条件**：macro 提升 >= 0.20pp 且 micro 下降 <= 0.10pp。
 
-### A3：组合最佳 TTA 和先验调整
+### TA3：组合最佳 TTA 和先验调整
 
-只有 A1、A2 都通过各自 gate 时执行。
+只有 TA1、TA2 都通过各自 gate 时执行。
 
 固定组合：best TTA logits + best tau adjustment。禁止重新搜索更多参数。
 
@@ -604,7 +604,7 @@ pytest -q
 
 ### Gate 1：Track A
 
-- A1/A2 都无本地收益 → 停止推理校准路线
+- TA1/TA2 都无本地收益 → 停止推理校准路线
 - 至少一个通过 → 生成完整提交并平台验证
 
 ### Gate 2：Loss（B1 / B2）
