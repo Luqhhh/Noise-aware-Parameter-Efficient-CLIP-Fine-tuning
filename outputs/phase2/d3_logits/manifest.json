@@ -1,0 +1,15 @@
+{
+  "checkpoint": "outputs/d3_strict/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "45cbfb1eed38eed7efcfb014063082c3067a70407b0d52a152633aeed675cda3",
+  "checkpoint_epoch": 49,
+  "checkpoint_best_val_acc": 0.7065723148507174,
+  "config": "/home/lux1/noise/configs/d3_strict.yaml",
+  "output_dir": "outputs/phase2/d3_logits",
+  "batch_size": 256,
+  "val_count": 10316,
+  "test_count": 24967,
+  "num_classes": 500,
+  "fallback_test_images": 0,
+  "device": "cuda",
+  "amp": true
+}

@@ -1,0 +1,26 @@
+2026-07-12 22:45:33 | INFO | Config: configs/d3_strict.yaml
+2026-07-12 22:45:33 | INFO | Checkpoint: outputs/d3_strict/seed42/checkpoints/best.pt
+2026-07-12 22:45:33 | INFO | TTA strategy: horizontal_flip
+2026-07-12 22:45:33 | INFO | Output dir: outputs/phase2/a1_tta_flip
+2026-07-12 22:45:33 | INFO | Seed: 42
+2026-07-12 22:45:33 | INFO | Device: cuda
+2026-07-12 22:45:36 | INFO | Loaded checkpoint from epoch 49
+2026-07-12 22:45:36 | INFO | Checkpoint best val acc: 0.7065723148507174
+2026-07-12 22:45:37 | INFO | Validation set: 10316 samples, 41 batches
+2026-07-12 22:45:58 | INFO | ==================================================
+2026-07-12 22:45:58 | INFO | TTA Evaluation Results:
+2026-07-12 22:45:58 | INFO |   Total samples:                10316
+2026-07-12 22:45:58 | INFO |   Baseline correct:             7289
+2026-07-12 22:45:58 | INFO |   TTA correct:                  7304
+2026-07-12 22:45:58 | INFO |   Baseline Top-1 (micro):       0.7066 (70.66%)
+2026-07-12 22:45:58 | INFO |   TTA Top-1 (micro):            0.7080 (70.80%)
+2026-07-12 22:45:58 | INFO |   Baseline Macro:               0.7061 (70.61%)
+2026-07-12 22:45:58 | INFO |   TTA Macro:                    0.7076 (70.76%)
+2026-07-12 22:45:58 | INFO |   Baseline Median:              0.7619 (76.19%)
+2026-07-12 22:45:58 | INFO |   TTA Median:                   0.7500 (75.00%)
+2026-07-12 22:45:58 | INFO |   Baseline Bottom-10%%:          0.3113 (31.13%)
+2026-07-12 22:45:58 | INFO |   TTA Bottom-10%%:               0.3066 (30.66%)
+2026-07-12 22:45:58 | INFO |   Prediction Change Rate:       0.0696 (6.96%)
+2026-07-12 22:45:58 | INFO | ==================================================
+2026-07-12 22:45:58 | INFO | Results saved to: outputs/phase2/a1_tta_flip/results.json
+2026-07-12 22:45:58 | INFO | Per-class delta CSV saved to: outputs/phase2/a1_tta_flip/per_class_delta.csv

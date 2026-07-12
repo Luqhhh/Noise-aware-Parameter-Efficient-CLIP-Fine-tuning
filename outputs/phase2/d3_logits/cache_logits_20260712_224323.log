@@ -1,0 +1,23 @@
+2026-07-12 22:43:23 | INFO | Config: configs/d3_strict.yaml
+2026-07-12 22:43:23 | INFO | Checkpoint: outputs/d3_strict/seed42/checkpoints/best.pt
+2026-07-12 22:43:23 | INFO | Output dir: outputs/phase2/d3_logits
+2026-07-12 22:43:23 | INFO | Device: cuda
+2026-07-12 22:43:28 | INFO | Loaded checkpoint from epoch 49
+2026-07-12 22:43:28 | INFO | Checkpoint best val acc: 0.7065723148507174
+2026-07-12 22:43:28 | INFO | Checkpoint SHA-256: 45cbfb1eed38eed7efcfb014063082c3067a70407b0d52a152633aeed675cda3
+2026-07-12 22:43:29 | INFO | Validation set: 10316 samples, 41 batches
+2026-07-12 22:43:47 | INFO | Val logits shape: torch.Size([10316, 500])
+2026-07-12 22:43:48 | INFO | Test set: 24967 images, 98 batches
+2026-07-12 22:44:05 | INFO | Test logits shape: torch.Size([24967, 500])
+2026-07-12 22:44:05 | INFO | Checking for zero-tensor fallback images in test set...
+2026-07-12 22:45:25 | INFO | No zero-tensor fallback images found in test set.
+2026-07-12 22:45:25 | INFO | Saved val_logits.pt (torch.Size([10316, 500])), val_labels.pt (torch.Size([10316])), val_paths.json
+2026-07-12 22:45:25 | INFO | Saved test_logits.pt (torch.Size([24967, 500])), test_names.json
+2026-07-12 22:45:25 | INFO | Saved manifest.json
+2026-07-12 22:45:25 | INFO | ==================================================
+2026-07-12 22:45:25 | INFO | Caching complete.
+2026-07-12 22:45:25 | INFO |   Validation logits: torch.Size([10316, 500])
+2026-07-12 22:45:25 | INFO |   Test logits:       torch.Size([24967, 500])
+2026-07-12 22:45:25 | INFO |   Fallback images:   0
+2026-07-12 22:45:25 | INFO |   Output directory:  outputs/phase2/d3_logits
+2026-07-12 22:45:25 | INFO | ==================================================
