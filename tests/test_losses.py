@@ -182,3 +182,103 @@ class TestBuildLoss:
     def test_build_loss_extra_params_raises(self):
         with pytest.raises(ValueError, match="CE loss takes no extra params"):
             build_loss({"loss": {"name": "cross_entropy", "foo": "bar"}})
+
+
+# ---------------------------------------------------------------------------
+# B0: Gradient regression — same logits → same gradient
+# ---------------------------------------------------------------------------
+
+
+class TestCEGradientRegression:
+    """B0 requirement: custom CE gradient must match torch CE (1e-8 tol)."""
+
+    def test_ce_gradient_identical_to_pytorch(self, logits_target):
+        logits, targets = logits_target
+
+        # Reference: torch CE
+        ref_logits = logits.clone().requires_grad_(True)
+        ref_loss = nn.CrossEntropyLoss()(ref_logits, targets)
+        ref_loss.backward()
+
+        # Custom: build_loss CE
+        custom_logits = logits.clone().requires_grad_(True)
+        custom_loss = build_loss({"loss": {"name": "cross_entropy"}})(custom_logits, targets)
+        custom_loss.backward()
+
+        assert torch.allclose(
+            custom_logits.grad, ref_logits.grad, atol=1e-8
+        ), (
+            f"Gradient mismatch: max diff = "
+            f"{(custom_logits.grad - ref_logits.grad).abs().max().item():.2e}"
+        )
+
+    def test_label_smoothing_eps0_gradient_equals_ce(self, logits_target):
+        """LS with epsilon=0 must produce identical gradients to CE."""
+        logits, targets = logits_target
+
+        ref_logits = logits.clone().requires_grad_(True)
+        nn.CrossEntropyLoss()(ref_logits, targets).backward()
+
+        ls_logits = logits.clone().requires_grad_(True)
+        LabelSmoothingLoss(epsilon=0.0)(ls_logits, targets).backward()
+
+        assert torch.allclose(
+            ls_logits.grad, ref_logits.grad, atol=1e-8
+        ), (
+            f"LS(eps=0) gradient mismatch: max diff = "
+            f"{(ls_logits.grad - ref_logits.grad).abs().max().item():.2e}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# B0: 1-epoch smoke test — end-to-end training step with custom loss
+# ---------------------------------------------------------------------------
+
+
+class TestOneEpochSmoke:
+    """Verify that build_loss CE trains identically to raw nn.CrossEntropyLoss
+    over a full optimizer step (forward + backward + update)."""
+
+    def test_one_step_loss_and_gradient_match(self):
+        """One optimizer step with identical init → same weights, same loss."""
+        torch.manual_seed(42)
+        n_classes = 10
+
+        # Two identical linear models
+        model_ref = nn.Linear(16, n_classes)
+        model_custom = nn.Linear(16, n_classes)
+        model_custom.load_state_dict(model_ref.state_dict())
+
+        # Identical optimizers
+        opt_ref = torch.optim.SGD(model_ref.parameters(), lr=0.01)
+        opt_custom = torch.optim.SGD(model_custom.parameters(), lr=0.01)
+
+        # Random batch
+        x = torch.randn(32, 16)
+        targets = torch.randint(0, n_classes, (32,))
+
+        # Reference step
+        opt_ref.zero_grad()
+        loss_ref = nn.CrossEntropyLoss()(model_ref(x), targets)
+        loss_ref.backward()
+        opt_ref.step()
+
+        # Custom CE step
+        opt_custom.zero_grad()
+        loss_custom = build_loss({"loss": {"name": "cross_entropy"}})(model_custom(x), targets)
+        loss_custom.backward()
+        opt_custom.step()
+
+        # Losses must match
+        assert torch.allclose(loss_ref, loss_custom, atol=1e-8), (
+            f"Loss mismatch: {loss_ref.item():.10f} vs {loss_custom.item():.10f}"
+        )
+
+        # Weights must match after one step
+        for (n_ref, p_ref), (n_cust, p_cust) in zip(
+            model_ref.named_parameters(), model_custom.named_parameters()
+        ):
+            assert torch.allclose(p_ref, p_cust, atol=1e-8), (
+                f"Weight mismatch for {n_ref}: "
+                f"max diff = {(p_ref - p_cust).abs().max().item():.2e}"
+            )
