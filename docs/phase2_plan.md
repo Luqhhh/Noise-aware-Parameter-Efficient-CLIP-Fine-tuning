@@ -154,7 +154,7 @@ $$\text{logits}_{tta} = \frac{\text{logits}_{original} + \text{logits}_{flip}}{2
 - macro >= D3 + 0.20pp
 - bottom-10% >= D3 + 1.00pp，且 micro 不下降超过 0.05pp
 
-若均不满足，关闭 TTA 分支，不测试更多 crop 数。
+实际结果：micro +0.145pp, macro +0.150pp（均 < 0.20pp gate），但用户决定保留 TTA 分支活跃，用于后续平台提交实验。
 
 ### TA2：类别先验 logit adjustment
 
@@ -604,7 +604,7 @@ pytest -q
 
 ### Gate 1：Track A
 
-- TA1/TA2 都无本地收益 → 停止推理校准路线
+- TA1/TA2 都无本地收益 → 停止推理校准路线（TA1 用户 override 保留）
 - 至少一个通过 → 生成完整提交并平台验证
 
 ### Gate 2：Loss（B1 / B2）
