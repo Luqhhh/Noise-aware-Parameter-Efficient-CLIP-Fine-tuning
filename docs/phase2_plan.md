@@ -30,9 +30,9 @@ Track A：无训练平台导向优化
     A3 TTA + prior adjustment
 
 Track B：噪声鲁棒监督
-    B1 Label Smoothing 0.05
-    B2 GCE q=0.7
-    B3 类别内 prototype confidence 连续加权
+    B1 Label Smoothing（ε=0.05，可扩展 0.03/0.10）
+    B2 GCE（q=0.7，可扩展 0.5/0.9/warmup）
+    B3 Prototype Confidence 样本加权（静态，可扩展 warmup/EMA hybrid）
 
 第一轮结果
     ↓
@@ -79,6 +79,16 @@ train_seed: 42
 - best.pt 重载后复评
 - 输出 micro / macro / bottom-10%
 - 记录 checkpoint、config、val.csv SHA-256
+
+当前基线指标：
+
+```
+Local micro：70.6572%
+Local macro：70.6100%
+Platform：57.3397%
+```
+
+所有候选都必须与 D3_STRICT 做 paired comparison。
 
 ---
 
@@ -130,16 +140,6 @@ $$\text{logits}_{tta} = \frac{\text{logits}_{original} + \text{logits}_{flip}}{2
 
 新增 `scripts/evaluate_tta.py`。
 
-命令：
-
-```bash
-python scripts/evaluate_tta.py \
-  --config configs/d3_strict.yaml \
-  --checkpoint outputs/d3_strict/seed42/checkpoints/best.pt \
-  --tta horizontal_flip \
-  --output-dir outputs/phase2/a1_tta_flip
-```
-
 输出：
 
 - baseline_micro / tta_micro
@@ -170,20 +170,9 @@ $$\tilde{z}_c = z_c - \tau \log(\pi_c + \epsilon)$$
 
 参数网格固定为：$\tau \in \{0, 0.25, 0.5, 0.75, 1.0\}$。
 
-命令：
-
-```bash
-python scripts/sweep_logit_adjustment.py \
-  --val-logits outputs/phase2/d3_logits/val_logits.pt \
-  --val-labels outputs/phase2/d3_logits/val_labels.pt \
-  --train-csv outputs/d3_strict/seed42/train.csv \
-  --taus 0 0.25 0.5 0.75 1.0 \
-  --output-dir outputs/phase2/a2_logit_adjustment
-```
-
 **选择标准**：第一排序 macro，第二 micro，第三 bottom-10%。
 
-**保留条件**：macro 提升 >= 0.20pp 且 micro 下降 <= 0.10pp。如果训练类别分布接近完全均衡，脚本仍要运行，但预计改动较小。
+**保留条件**：macro 提升 >= 0.20pp 且 micro 下降 <= 0.10pp。
 
 ### A3：组合最佳 TTA 和先验调整
 
@@ -195,78 +184,94 @@ python scripts/sweep_logit_adjustment.py \
 
 ---
 
-## 4. Track B：噪声鲁棒监督筛选
+## 4. Track B：噪声鲁棒监督
 
-### 4.1 新增统一 loss 接口
+### 4.0 基础设施
 
-新增 `common/losses.py`。
-
-支持：
-
-```yaml
-loss:
-  name: cross_entropy
-  reduction: mean
-```
-
-可选：`cross_entropy`、`label_smoothing`、`gce`。
-
-统一接口：
+新增 `common/losses.py`，统一 loss 接口：
 
 ```python
 def build_loss(config: dict) -> nn.Module:
     ...
 ```
 
-所有 loss 必须支持 `reduction="none"` 以便后续样本加权。
+支持 `cross_entropy`、`label_smoothing`、`gce`，均支持 `reduction="none"`。
 
-训练日志和 checkpoint metadata 增加 `loss_name` 和 `loss_parameters`。
+**B0 CE 回归测试**：确认 `loss.name=cross_entropy` 与现有 CE 计算完全一致。容差：同一 batch loss 误差 <= 1e-8，同一 logits gradient 误差 <= 1e-8。只有 B0 通过后，才能启动 B1/B2。
 
-### B0：CE 回归测试
+---
 
-不需要完整重跑 50 epochs。新增单元测试和 1 epoch smoke test，确认 `loss.name=cross_entropy` 与现有 CE 计算完全一致。
+### 4.1 B1：Label Smoothing 分支
 
-容差：同一 batch loss 误差 <= 1e-8，同一 logits gradient 误差 <= 1e-8。
+#### B1-1：Label Smoothing 0.05
 
-只有 B0 通过后，才能启动 B1/B2。
+标签从 one-hot $q_y=1, q_{c \ne y}=0$ 变为：
 
-### B1：Label Smoothing 0.05
+$$q_y = 1 - \epsilon, \qquad q_{c \ne y} = \frac{\epsilon}{C-1}$$
 
-配置 `configs/r1_d3_ls005.yaml`：
+其中 $\epsilon = 0.05$，$C = 500$。
+
+配置：
 
 ```yaml
 experiment:
-  id: R1_D3_LS005
+  id: B1_LS005
 
 loss:
   name: label_smoothing
   epsilon: 0.05
 ```
 
-其余全部继承 D3_STRICT。
+**作用**：减弱噪声标签导致的过度自信，缓解分类头训练后期置信度膨胀，软化细粒度相邻类别决策边界。
 
-命令：
+**重点观察**：micro / macro / validation loss / train accuracy / train-val gap / 平均最大 softmax probability。如果训练准确率下降但验证提升、validation loss 降低，说明平滑起正则化作用。
 
-```bash
-python -m experiments.baseline.train \
-  --config configs/r1_d3_ls005.yaml \
-  --experiment-id R1_D3_LS005 \
-  --mode dev
+#### B1-2：Label Smoothing 0.03
+
+仅在 B1-1 基本持平或小幅正收益、但训练准确率下降明显或困难类别准确率下降时执行。
+
+```yaml
+loss:
+  name: label_smoothing
+  epsilon: 0.03
 ```
 
-本阶段不运行 $\epsilon = 0.10$。只有 0.05 明确为正，下一轮才允许测试 0.10。
+#### B1-3：Label Smoothing 0.10
 
-### B2：Generalized Cross Entropy
+仅在 B1-1 的 micro、macro 均提升、train-val gap 仍然较大、训练后期仍有明显过拟合时执行。
+
+```yaml
+loss:
+  name: label_smoothing
+  epsilon: 0.10
+```
+
+不建议测试大于 0.10：500 类细粒度分类中，过强平滑容易削弱细微类别差异。
+
+#### B1 分支停止规则
+
+- B1-1 相对 D3 micro 下降 > 0.20pp → 停止整个 Label Smoothing 分支
+- B1-1 提升 < 0.10pp → 不进行 ε sweep
+- B1-1 提升 >= 0.30pp → 允许增加一个 ε 参数点
+- B1 最佳结果提升 >= 0.50pp → 进入多 seed 或平台验证
+
+---
+
+### 4.2 B2：GCE 鲁棒损失分支
+
+#### B2-1：GCE q=0.7
 
 定义：
 
-$$L_{GCE} = \frac{1 - p_y^q}{q}$$
+$$L_{\mathrm{GCE}} = \frac{1 - p_y^q}{q}$$
 
-配置 `configs/r2_d3_gce07.yaml`：
+普通 CE 对低 $p_y$ 样本产生很强梯度。若标签本身错误，这些样本会强迫模型记忆错误监督。GCE 降低极低标签概率样本的影响，更适合处理严重错标和长期高损失异常样本。
+
+配置：
 
 ```yaml
 experiment:
-  id: R2_D3_GCE07
+  id: B2_GCE07
 
 loss:
   name: gce
@@ -274,60 +279,80 @@ loss:
   probability_epsilon: 1.0e-7
 ```
 
-实现要求：
+**与 Label Smoothing 的区别**：LS 统一降低所有标签置信度；GCE 根据模型当前对标签的认可程度动态限制低可信标签的梯度。B1 偏整体正则化，B2 偏异常标签鲁棒性。
 
-```python
-probs = torch.softmax(logits, dim=1)
-py = probs.gather(1, labels[:, None]).squeeze(1)
-py = py.clamp_min(probability_epsilon)
-loss = (1.0 - py.pow(q)) / q
+#### B2-2：GCE q=0.5
+
+仅在 q=0.7 出现轻度欠拟合时执行（训练准确率明显低于 D3，验证接近 D3）。
+
+```yaml
+loss:
+  name: gce
+  q: 0.5
 ```
 
-第一轮只测试 $q = 0.7$，不得立即做 q sweep。
+更接近 CE，学习能力更强，鲁棒性稍弱。
 
-### B3：类别内 prototype confidence 连续加权
+#### B2-3：GCE q=0.9
 
-这是本阶段最重要的数据侧实验。
+仅在 q=0.7 有明确正收益、但训练后期仍有噪声记忆迹象时执行。
+
+```yaml
+loss:
+  name: gce
+  q: 0.9
+```
+
+更鲁棒，但更容易忽略困难干净样本。必须重点观察 bottom-10% 类别准确率和低样本类别准确率。
+
+#### B2-4：CE Warmup → GCE
+
+如果从 epoch 1 直接使用 GCE 出现前几轮收敛明显慢、训练准确率长期过低，则执行：
+
+```text
+Epoch 1–5：普通 CE
+Epoch 6–50：GCE q=0.7
+```
+
+利用 early learning：先用 CE 快速学习主要类别结构，再用 GCE 降低后期记忆噪声的速度。
+
+#### B2 分支停止规则
+
+- GCE q=0.7 的 micro、macro 同时下降 > 0.20pp → 停止 GCE 分支
+- 训练准确率很低、验证也下降 → 最多测试 warmup 版本
+- micro 提升但 bottom-10% 明显下降 → 不进入平台提交
+- q=0.7 提升 >= 0.30pp → 允许测试一个相邻 q
+- 最佳 GCE 提升 >= 0.50pp → 进入平台验证
+
+---
+
+### 4.3 B3：Prototype Confidence 样本加权分支
+
+B3 不是只处理 D3 已发现的重复冲突，而是为全部训练样本估计标签可信度。
 
 #### 4.3.1 构建权重
 
 新增 `scripts/build_prototype_weights.py`。
 
-输入：D3 clean train.csv + 冻结 OpenAI CLIP ViT-B/32 图像特征。
+**特征提取**：使用冻结的 CLIP 图像编码器 $z_i = f_{\mathrm{CLIP}}(x_i)$，L2 normalize。必须只使用 D3 clean train，不允许使用 validation。
 
-全部特征做 L2 normalize。
-
-对每类构建 10% trimmed centroid：
+**构建类别原型**：对类别 $c$，10% trimmed centroid：
 
 $$p_c = \text{Normalize}\left(\text{TrimmedMean}\{z_i : y_i = c\}\right)$$
 
-每个样本计算：
+**样本可信度**：
 
-$$s_i = z_i^\top p_{y_i}$$
+自身类别相似度：$s_i = z_i^\top p_{y_i}$
 
-$$m_i = z_i^\top p_{y_i} - \max_{c \ne y_i} z_i^\top p_c$$
+类别 margin：$m_i = z_i^\top p_{y_i} - \max_{c \ne y_i} z_i^\top p_c$
 
-在每个类别内部计算 percentile rank：
+在每个类别内部计算 $r_{sim}$（自身相似度百分位）和 $r_{margin}$（margin 百分位）。
 
-- $r_{sim}(i)$：$s_i$ 的类别内百分位
-- $r_{margin}(i)$：$m_i$ 的类别内百分位
+综合置信度：$c_i = 0.5 \cdot r_{sim} + 0.5 \cdot r_{margin}$
 
-置信度：
+样本权重：$w_i = 0.2 + 0.8 \cdot c_i$，因此 $0.2 \le w_i \le 1.0$。
 
-$$c_i = 0.5 \cdot r_{sim}(i) + 0.5 \cdot r_{margin}(i)$$
-
-样本权重：
-
-$$w_i = 0.2 + 0.8 \cdot c_i$$
-
-因此 $0.2 \le w_i \le 1.0$。
-
-**关键要求**：
-
-- 必须按类别内部排序
-- 不得使用全局 percentile
-- 不得删除样本
-- 不得使用 validation 特征构建 centroid
+**关键要求**：必须按类别内部排序，不得使用全局 percentile，不得删除样本，不得使用 validation 特征构建 centroid。
 
 输出：
 
@@ -344,17 +369,17 @@ outputs/phase2/prototype_weights/
 
 #### 4.3.2 加权 CE
 
-修改 batch 解包，保留 `_paths`。
-
 训练损失：
 
 $$L = \frac{\sum_i w_i \cdot CE_i}{\sum_i w_i + \epsilon}$$
 
-配置 `configs/r3_d3_proto_weight.yaml`：
+必须按权重和归一化，避免平均权重小于 1 时等效降低学习率。
+
+配置：
 
 ```yaml
 experiment:
-  id: R3_D3_PROTO_WEIGHT
+  id: B3_PROTO_STATIC
 
 loss:
   name: cross_entropy
@@ -362,34 +387,116 @@ loss:
 
 sample_weighting:
   enabled: true
+  method: prototype_static
   weights_path: outputs/phase2/prototype_weights/sample_weights.json
+  minimum_weight: 0.2
   normalize_by_weight_sum: true
   missing_weight_policy: error
 ```
 
 `missing_weight_policy` 必须为 `error`，不能静默使用 1.0。
 
+#### B3-2：保守最低权重 0.4
+
+如果 B3-1 出现训练准确率明显下降、bottom-10% 类别下降、大量困难样本受到过强抑制，则把最低权重从 0.2 提高到 0.4：
+
+$$w_i = 0.4 + 0.6 \cdot c_i$$
+
+#### B3-3：5 Epoch Warmup 后启用权重
+
+如果 B3-1 在训练早期收敛不稳：
+
+```text
+Epoch 1–5：所有样本权重 = 1
+Epoch 6–50：启用 prototype weight
+```
+
+#### B3-4：Prototype + EMA Loss 联合权重
+
+仅在 B3-1 明确有效后执行。
+
+为每个样本维护 EMA loss：$\ell_i^{EMA}(t) = \beta \ell_i^{EMA}(t-1) + (1-\beta)\ell_i(t)$，推荐 $\beta = 0.9$，warmup 5 epochs，每个 epoch 更新一次。
+
+在类别内部计算 EMA loss 百分位 $r_{loss}(i)$（loss 从低到高），loss 可信度 $c_i^{loss} = 1 - r_i^{loss}$。
+
+联合置信度：
+
+$$c_i = 0.7 \cdot c_i^{prototype} + 0.3 \cdot c_i^{loss}$$
+
+最终权重：$w_i = 0.2 + 0.8 \cdot c_i$。
+
+Prototype confidence 来自冻结 CLIP 先验（相对稳定），EMA loss 来自当前分类头（动态但容易把困难干净样本误认为噪声）。因此 prototype 占主要权重（0.7），EMA loss 作为补充（0.3）。
+
+#### B3 状态保存要求
+
+checkpoint 必须保存：sample weighting 配置、sample weight 文件 SHA-256、EMA loss 数组、EMA momentum、当前 epoch、每类权重统计。resume 时必须严格恢复，不能重新初始化 EMA loss。
+
+#### B3 诊断指标
+
+除常规准确率外，必须记录：权重均值/标准差、权重 p10/p50/p90、每类平均权重、最低权重样本数量、权重与最终 loss 的相关性、权重与正确预测的相关性、bottom-10% 类别平均权重。
+
+重点排查：某些困难类别是否整体被赋低权重、高权重样本是否确实更容易预测正确、低权重样本是否集中在跨类冲突或异常图片中。
+
+#### B3 分支停止规则
+
+- B3-1 micro 下降 > 0.20pp → 不立即降低 minimum weight，先分析类别级权重分布
+- B3-1 macro 或 bottom-10% 明显下降 → 优先测试 minimum_weight=0.4
+- B3-1 提升 >= 0.30pp → 允许测试 warmup 或 EMA hybrid 中的一个
+- B3-1 提升 >= 0.50pp → 优先平台提交
+- B3-4 未超过静态 B3-1 → 停止动态 EMA 权重路线
+
 ---
 
-## 5. 实验结果判定
+## 5. 组合实验
 
-基线固定为：
+独立实验完成前不组合。
 
-```
-D3_STRICT
-micro = 70.6572%
-macro = 70.6100%
-```
+### C1：最佳 Label Smoothing + 最佳 Prototype Weight
 
-每个候选输出：
+最优先组合，两者机制互补：
 
-- best micro / best macro / bottom-10%
-- best epoch / train accuracy / validation loss
-- train-val gap
-- per-class delta
-- prediction disagreement vs D3
+- Label Smoothing：降低标签目标的绝对置信度
+- Prototype Weight：降低可疑样本的整体梯度贡献
 
-### 5.1 seed42 初筛 gate
+损失：$L = \frac{\sum_i w_i L_{LS,i}}{\sum_i w_i}$
+
+触发条件：B1 独立提升 >= 0.20pp，B3 独立提升 >= 0.30pp，二者 macro 均不下降。
+
+### C2：最佳 GCE + Prototype Weight
+
+需谨慎：二者都会降低疑似噪声样本影响，可能造成重复抑制。
+
+只有满足 GCE 独立提升 >= 0.30pp、Prototype Weight 独立提升 >= 0.30pp、bottom-10% 类别均未下降时才运行。建议提高最低权重到 0.4。
+
+### C3：Linear Head EMA
+
+不作为第一轮独立主实验，而作为最佳方案的稳定器。
+
+推荐 `ema_decay = 0.99`。验证和推理同时评估普通 best head 和 EMA best head。只有 EMA 在多个 epoch 上稳定优于普通 head，才用于平台提交。
+
+---
+
+## 6. 暂缓的策略
+
+以下内容保留在后续阶段，不与 B1–B3 第一轮混合：
+
+- MixUp / CutMix / RandAugment
+- 强 RandomResizedCrop / ColorJitter
+- EMA Teacher
+- 高置信度伪标签替换
+- 扩大 backbone 解冻范围
+
+原因：当前首先要回答「哪一种标签噪声鲁棒机制真正有效」。同时加入增强、MixUp 或解冻后，即使结果提升也无法清楚归因。
+
+---
+
+## 7. 实验结果判定
+
+基线固定为 D3_STRICT（micro = 70.6572%, macro = 70.6100%）。
+
+每个候选输出：best micro / best macro / bottom-10% / best epoch / train accuracy / validation loss / train-val gap / per-class delta / prediction disagreement vs D3。
+
+### 7.1 seed42 初筛 gate
 
 **强保留**：micro >= D3 + 0.50pp 且 macro 不下降。
 
@@ -410,13 +517,26 @@ macro = 70.6100%
 
 本阶段最多保留两个训练候选。
 
+### 7.2 第一轮结果决策表
+
+| 结果 | 决策 |
+|---|---|
+| B1 正、B2 负、B3 负 | 沿 Label Smoothing 小范围搜索 |
+| B1 负、B2 正、B3 负 | 沿 GCE 或 CE→GCE warmup |
+| B1/B2 负、B3 正 | 重点发展样本可信度建模 |
+| B1 与 B3 均正 | 运行 C1 |
+| B2 与 B3 均正 | 谨慎运行 C2 |
+| 三者本地均无收益 | 停止 loss/weighting 小修，转向模型适配或验证域问题 |
+| 本地提升但平台不提升 | 停止围绕当前 validation 微调 |
+| 平台提升 >= 1pp | 对该方向做多 seed 和参数精调 |
+
 ---
 
-## 6. 平台提交策略
+## 8. 平台提交策略
 
 平台提交不是等所有实验做完再进行。
 
-### 6.1 第一提交候选
+### 8.1 第一提交候选
 
 优先顺序：
 
@@ -427,7 +547,7 @@ macro = 70.6100%
 
 选择一个信息量最大的候选提交，不同时提交多个近似方法。
 
-### 6.2 提交前硬检查
+### 8.2 提交前硬检查
 
 - 预测数必须为 24967
 - 无缺失文件名
@@ -436,7 +556,7 @@ macro = 70.6100%
 - ZIP 实际文件 SHA-256 已记录
 - checkpoint / CSV / ZIP lineage 完整
 
-### 6.3 平台决策
+### 8.3 平台决策
 
 | 平台提升 | 行动 |
 |---|---|
@@ -448,7 +568,7 @@ macro = 70.6100%
 
 ---
 
-## 7. 测试要求
+## 9. 测试要求
 
 新增：
 
@@ -480,73 +600,22 @@ pytest -q
 
 ---
 
-## 8. 执行命令顺序
-
-```bash
-# 1. 开发与测试
-pytest -q
-
-# 2. 缓存 D3 logits
-python scripts/cache_val_test_logits.py \
-  --config configs/d3_strict.yaml \
-  --checkpoint outputs/d3_strict/seed42/checkpoints/best.pt \
-  --output-dir outputs/phase2/d3_logits
-
-# 3. Track A
-python scripts/evaluate_tta.py \
-  --config configs/d3_strict.yaml \
-  --checkpoint outputs/d3_strict/seed42/checkpoints/best.pt \
-  --tta horizontal_flip \
-  --output-dir outputs/phase2/a1_tta_flip
-
-python scripts/sweep_logit_adjustment.py \
-  --val-logits outputs/phase2/d3_logits/val_logits.pt \
-  --val-labels outputs/phase2/d3_logits/val_labels.pt \
-  --train-csv outputs/d3_strict/seed42/train.csv \
-  --taus 0 0.25 0.5 0.75 1.0 \
-  --output-dir outputs/phase2/a2_logit_adjustment
-
-# 4. 构建 prototype weights
-python scripts/build_prototype_weights.py \
-  --config configs/d3_strict.yaml \
-  --train-csv outputs/d3_strict/seed42/train.csv \
-  --output-dir outputs/phase2/prototype_weights
-
-# 5. Track B 并行训练
-python -m experiments.baseline.train \
-  --config configs/r1_d3_ls005.yaml \
-  --experiment-id R1_D3_LS005 \
-  --mode dev
-
-python -m experiments.baseline.train \
-  --config configs/r2_d3_gce07.yaml \
-  --experiment-id R2_D3_GCE07 \
-  --mode dev
-
-python -m experiments.baseline.train \
-  --config configs/r3_d3_proto_weight.yaml \
-  --experiment-id R3_D3_PROTO_WEIGHT \
-  --mode dev
-```
-
----
-
-## 9. Stop / Go 决策
+## 10. Stop / Go 决策
 
 ### Gate 1：Track A
 
 - A1/A2 都无本地收益 → 停止推理校准路线
 - 至少一个通过 → 生成完整提交并平台验证
 
-### Gate 2：Loss
+### Gate 2：Loss（B1 / B2）
 
 - LS/GCE 都低于 D3 → 不继续 loss 参数 sweep
 - 任一通过 → 保留一个，最多补一个参数点
 
-### Gate 3：Prototype weighting
+### Gate 3：Prototype weighting（B3）
 
-- R3 无收益 → 检查权重与 per-class retention 的相关性，不立即尝试更低 min_weight
-- R3 明显提升 → 优先平台提交
+- B3 无收益 → 检查权重与 per-class retention 的相关性，不立即尝试更低 min_weight
+- B3 明显提升 → 优先平台提交
 
 ### Gate 4：下一阶段
 
@@ -556,19 +625,3 @@ python -m experiments.baseline.train \
 - 或平台提升 >= +1.0pp
 
 组合实验最多一个：best robust loss + prototype weighting。禁止同时加入部分解冻。
-
----
-
-## 10. 本阶段完成标准
-
-- [ ] Track A 完成
-- [ ] LS 0.05 完成
-- [ ] GCE 0.7 完成
-- [ ] prototype weighting 完成
-- [ ] 所有结果从 best.pt 复评
-- [ ] 至少完成一次新平台提交
-- [ ] 根据平台反馈选出下一条主线
-
-本阶段成功不要求立即达到 70%。
-
-**阶段目标**：第一目标平台突破 60%；第二目标找到本地提升能够转化为平台提升的方法。

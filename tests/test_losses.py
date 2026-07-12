@@ -1,0 +1,184 @@
+"""Tests for common.losses module."""
+
+import torch
+import torch.nn as nn
+import pytest
+
+from common.losses import build_loss, LabelSmoothingLoss, GCELoss
+
+
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def logits_target():
+    """Return (logits, targets) with shape (N=8, n_classes=5)."""
+    rng = torch.Generator().manual_seed(42)
+    logits = torch.randn(8, 5, generator=rng)
+    targets = torch.randint(0, 5, (8,), generator=rng)
+    return logits, targets
+
+
+# ---------------------------------------------------------------------------
+# Cross Entropy
+# ---------------------------------------------------------------------------
+
+
+class TestCrossEntropy:
+    def test_ce_identical_to_pytorch(self, logits_target):
+        logits, targets = logits_target
+        cfg = {"loss": {"name": "cross_entropy"}}
+        custom_loss = build_loss(cfg)
+        reference = nn.CrossEntropyLoss()
+
+        l1 = custom_loss(logits, targets)
+        l2 = reference(logits, targets)
+
+        assert torch.isclose(l1, l2, atol=1e-8).item(), (
+            f"custom CE {l1.item()} != torch CE {l2.item()}"
+        )
+
+    def test_ce_reduction_none(self, logits_target):
+        logits, targets = logits_target
+        cfg = {"loss": {"name": "cross_entropy", "reduction": "none"}}
+        loss_fn = build_loss(cfg)
+        loss = loss_fn(logits, targets)
+
+        assert loss.shape == (logits.size(0),), f"Expected ({logits.size(0)},), got {loss.shape}"
+
+    def test_ce_reduction_sum(self, logits_target):
+        logits, targets = logits_target
+        cfg_none = {"loss": {"name": "cross_entropy", "reduction": "none"}}
+        cfg_sum = {"loss": {"name": "cross_entropy", "reduction": "sum"}}
+        loss_none = build_loss(cfg_none)(logits, targets)
+        loss_sum = build_loss(cfg_sum)(logits, targets)
+
+        assert torch.isclose(loss_sum, loss_none.sum(), atol=1e-8).item()
+
+
+# ---------------------------------------------------------------------------
+# Label Smoothing
+# ---------------------------------------------------------------------------
+
+
+class TestLabelSmoothing:
+    def test_label_smoothing_epsilon_zero_equals_ce(self, logits_target):
+        logits, targets = logits_target
+        cfg_ls = {"loss": {"name": "label_smoothing", "epsilon": 0.0}}
+        cfg_ce = {"loss": {"name": "cross_entropy"}}
+        ls_loss = build_loss(cfg_ls)(logits, targets)
+        ce_loss = build_loss(cfg_ce)(logits, targets)
+
+        assert torch.isclose(ls_loss, ce_loss, atol=1e-8).item(), (
+            f"label smoothing (eps=0) {ls_loss.item()} != CE {ce_loss.item()}"
+        )
+
+    def test_label_smoothing_epsilon_half_uniform(self):
+        """At epsilon=0.5 with 2 classes, verify target distribution and loss manually."""
+        logits = torch.tensor([[1.0, 0.0], [0.0, 2.0]])
+        targets = torch.tensor([0, 1])
+        loss_fn = LabelSmoothingLoss(epsilon=0.5, reduction="none")
+        loss = loss_fn(logits, targets)
+
+        # Manually compute per-sample.
+        n_classes = 2
+        eps = 0.5
+        # Smooth target for correct class: 1 - eps + eps/n = 1 - 0.5 + 0.25 = 0.75
+        # Smooth target for wrong class: eps/n = 0.25
+        soft = torch.softmax(logits, dim=1)
+        log_soft = torch.log(soft)
+
+        # Sample 0: logits [1.0, 0.0] → softmax [0.7311, 0.2689]
+        #   expected loss = -(0.75 * ln(0.7311) + 0.25 * ln(0.2689))
+        expected_sample0 = -(
+            0.75 * torch.log(soft[0, 0]) + 0.25 * torch.log(soft[0, 1])
+        )
+        # Sample 1: logits [0.0, 2.0] → softmax [0.1192, 0.8808]
+        expected_sample1 = -(
+            0.25 * torch.log(soft[1, 0]) + 0.75 * torch.log(soft[1, 1])
+        )
+
+        assert loss.shape == (2,)
+        assert torch.isclose(loss[0], expected_sample0, atol=1e-8).item()
+        assert torch.isclose(loss[1], expected_sample1, atol=1e-8).item()
+
+    def test_label_smoothing_reduction_none(self, logits_target):
+        logits, targets = logits_target
+        cfg = {"loss": {"name": "label_smoothing", "reduction": "none"}}
+        loss_fn = build_loss(cfg)
+        loss = loss_fn(logits, targets)
+
+        assert loss.shape == (logits.size(0),), f"Expected ({logits.size(0)},), got {loss.shape}"
+
+    def test_label_smoothing_epsilon_range(self):
+        LabelSmoothingLoss(epsilon=0.0)
+        LabelSmoothingLoss(epsilon=0.5)
+        LabelSmoothingLoss(epsilon=1.0)
+
+        with pytest.raises(ValueError, match="epsilon must be in"):
+            LabelSmoothingLoss(epsilon=-0.1)
+        with pytest.raises(ValueError, match="epsilon must be in"):
+            LabelSmoothingLoss(epsilon=1.1)
+
+
+# ---------------------------------------------------------------------------
+# Generalized Cross Entropy
+# ---------------------------------------------------------------------------
+
+
+class TestGCE:
+    def test_gce_q_equals_1_is_mae(self):
+        """When q=1.0, GCE = (1 - py) / 1 = 1 - py."""
+        logits = torch.tensor([[2.0, 1.0, 0.1], [1.0, 3.0, -1.0]])
+        targets = torch.tensor([0, 2])
+        loss_fn = GCELoss(q=1.0, reduction="none")
+        loss = loss_fn(logits, targets)
+
+        # Manual computation.
+        probs = torch.softmax(logits, dim=1)
+        py = probs.gather(1, targets.unsqueeze(1)).squeeze(1)
+        expected = 1.0 - py
+
+        assert torch.allclose(loss, expected, atol=1e-8), (
+            f"GCE (q=1) {loss} != 1-py {expected}"
+        )
+
+    def test_gce_clamps_low_probability(self):
+        """py very small is clamped to probability_epsilon; no inf/nan."""
+        logits = torch.tensor([[-100.0, 100.0]])
+        targets = torch.tensor([0])
+        loss_fn = GCELoss(q=0.7, probability_epsilon=1e-7, reduction="none")
+        loss = loss_fn(logits, targets)
+
+        assert not torch.isnan(loss).any(), "Loss contains NaN"
+        assert not torch.isinf(loss).any(), "Loss contains Inf"
+        # py should be clamped to 1e-7: loss = (1 - (1e-7)^0.7) / 0.7
+        assert loss.item() < 1.0 / 0.7, "Loss not bounded as expected"
+
+    def test_gce_q_close_to_zero(self):
+        """Small q (0.1) works without nan."""
+        logits = torch.randn(4, 10)
+        targets = torch.randint(0, 10, (4,))
+        loss_fn = GCELoss(q=0.1, reduction="none")
+        loss = loss_fn(logits, targets)
+
+        assert not torch.isnan(loss).any(), "Loss contains NaN"
+        assert not torch.isinf(loss).any(), "Loss contains Inf"
+        assert loss.shape == (4,)
+
+
+# ---------------------------------------------------------------------------
+# build_loss — edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestBuildLoss:
+    def test_build_loss_unknown_name_raises(self):
+        with pytest.raises(ValueError, match="Unknown loss name"):
+            build_loss({"loss": {"name": "nonexistent"}})
+
+    def test_build_loss_extra_params_raises(self):
+        with pytest.raises(ValueError, match="CE loss takes no extra params"):
+            build_loss({"loss": {"name": "cross_entropy", "foo": "bar"}})
