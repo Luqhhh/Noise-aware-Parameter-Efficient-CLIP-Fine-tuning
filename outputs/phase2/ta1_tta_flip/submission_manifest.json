@@ -1,0 +1,18 @@
+{
+  "experiment_id": "TA1_TTA_FLIP",
+  "parent_checkpoint": "outputs/d3_strict/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "45cbfb1eed38eed7efcfb014063082c3067a70407b0d52a152633aeed675cda3",
+  "checkpoint_epoch": 49,
+  "tta_strategy": "horizontal_flip",
+  "local_micro_accuracy": 0.7080263668088407,
+  "local_macro_accuracy": 0.7076032757759094,
+  "baseline_micro": 0.7065723148507174,
+  "baseline_macro": 0.7060997486114502,
+  "prediction_csv_path": "/home/lux1/noise/outputs/phase2/ta1_tta_flip/pred_results.csv",
+  "prediction_csv_sha256": "1642a9927ded9855766cfcbb6785b033bbedb0437c4d5cfa22b74e872247ab4c",
+  "zip_internal_csv_sha256": "1642a9927ded9855766cfcbb6785b033bbedb0437c4d5cfa22b74e872247ab4c",
+  "submission_zip_path": "/home/lux1/noise/outputs/phase2/ta1_tta_flip/submission.zip",
+  "submission_zip_sha256": "6fac5374e48cb70228fdd405f1090f5610fd5de82a25dd974547819dd675fb52",
+  "num_predictions": 24967,
+  "created_at_utc": "2026-07-12T15:05:03Z"
+}
