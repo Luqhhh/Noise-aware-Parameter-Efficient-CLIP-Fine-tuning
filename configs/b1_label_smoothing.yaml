@@ -1,0 +1,68 @@
+# B1: Label Smoothing (epsilon=0.05) on D3_STRICT baseline.
+# Init from OpenAI CLIP ViT-B/32, train linear head with uniform label smoothing.
+# Training data: train_dedup (cleaned master-train from D3_STRICT).
+# Validation: master-val (identical to D3_STRICT val).
+# All D3_STRICT training hyperparameters preserved.
+
+experiment:
+  id: B1_LS005
+  mode: dev
+  head_type: linear
+  augmentation_preset: a0
+
+loss:
+  name: label_smoothing
+  epsilon: 0.05
+  reduction: mean
+
+data:
+  stage: preliminary
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  seed: 42
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/d3_strict/seed42
+  test_dir: test
+  train_dir: train_dedup
+  val_ratio: 0.1
+  expected_num_classes: 500
+  class_mapping_path: outputs/master_splits/seed42
+  use_full_training_set: false
+
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+  use_cached_features: false
+  unfreeze_last_n_blocks: 0
+  train_ln_post: false
+  train_visual_proj: false
+
+eval:
+  batch_size: 256
+
+output:
+  log_dir: outputs/phase2/b1_ls005/logs
+  submission_dir: outputs/phase2/b1_ls005/submissions
+
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 50
+  image_size: 224
+  lr: 0.005
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/phase2/b1_ls005/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001
+  min_lr_ratio: 0.01
+  early_stop_patience: 10
