@@ -387,22 +387,62 @@ def _unpack_batch(
     batch_data,
     device: torch.device,
 ):
-    """Return inputs, labels, is_cached."""
+    """Return inputs, labels, is_cached, paths.
+
+    paths is None for cached-feature batches (2-tuple) and a tuple of
+    image-path strings for online-image batches (3-tuple).
+    """
     if len(batch_data) == 3:
-        images, labels, _paths = batch_data
+        images, labels, paths = batch_data
         inputs = images.to(device, non_blocking=True)
         is_cached = False
     elif len(batch_data) == 2:
         features, labels = batch_data
         inputs = features.to(device, non_blocking=True)
         is_cached = True
+        paths = None
     else:
         raise ValueError(
             f"Unexpected batch tuple length: {len(batch_data)}"
         )
 
     labels = labels.to(device, non_blocking=True)
-    return inputs, labels, is_cached
+    return inputs, labels, is_cached, paths
+
+
+def _apply_sample_weights(
+    loss_per_sample: torch.Tensor,
+    paths: tuple,
+    sample_weights: dict,
+    normalize_by_weight_sum: bool,
+    missing_policy: str,
+    device: torch.device,
+) -> torch.Tensor:
+    """Apply per-sample weights to a loss vector.
+
+    When *sample_weights* is None or *paths* is None, returns the
+    unweighted mean (standard training).
+    """
+    if sample_weights is None or paths is None:
+        return loss_per_sample.mean()
+
+    w_vals = []
+    for p in paths:
+        entry = sample_weights.get(p)
+        if entry is None:
+            if missing_policy == "error":
+                raise KeyError(
+                    f"Sample weight missing for image: {p}"
+                )
+            w_vals.append(1.0)
+        else:
+            w_vals.append(float(entry["weight"]))
+
+    w = torch.tensor(w_vals, device=device, dtype=loss_per_sample.dtype)
+
+    if normalize_by_weight_sum:
+        return (loss_per_sample * w).sum() / (w.sum() + 1e-8)
+    return (loss_per_sample * w).mean()
 
 
 def _forward_inputs(
@@ -433,8 +473,12 @@ def train_one_epoch(
     config: Dict[str, Any],
     warmup_steps: int,
     global_step: int,
+    sample_weights: dict = None,
 ) -> tuple:
     """Train for one epoch.
+
+    Args:
+        sample_weights: Optional dict[image_path -> {"weight": float}].
 
     Returns:
         Tuple of (avg_loss, accuracy, global_step, head_grad_norm,
@@ -444,6 +488,12 @@ def train_one_epoch(
     train_cfg = config["train"]
     use_amp = train_cfg.get("amp", False)
     max_grad_norm = train_cfg.get("max_grad_norm", 1.0)
+    normalize_by_weight_sum = (
+        config.get("sample_weighting", {}).get("normalize_by_weight_sum", True)
+    )
+    missing_policy = (
+        config.get("sample_weighting", {}).get("missing_weight_policy", "error")
+    )
 
     total_loss = 0.0
     correct = 0
@@ -454,7 +504,7 @@ def train_one_epoch(
     pbar = tqdm(loader, desc=f"Epoch {epoch:3d} [Train]", dynamic_ncols=True)
 
     for batch_idx, batch_data in enumerate(pbar):
-        inputs, labels, is_cached = _unpack_batch(batch_data, device)
+        inputs, labels, is_cached, paths = _unpack_batch(batch_data, device)
 
         # Warmup
         if global_step < warmup_steps:
@@ -465,8 +515,12 @@ def train_one_epoch(
         if use_amp:
             with autocast(device_type=device.type, enabled=use_amp):
                 logits = _forward_inputs(model, inputs, is_cached)
-                loss = criterion(logits, labels)
+                loss_per_sample = criterion(logits, labels)
 
+            loss = _apply_sample_weights(
+                loss_per_sample, paths, sample_weights,
+                normalize_by_weight_sum, missing_policy, device,
+            )
             scaler.scale(loss).backward()
 
             if max_grad_norm > 0:
@@ -477,7 +531,12 @@ def train_one_epoch(
             scaler.update()
         else:
             logits = _forward_inputs(model, inputs, is_cached)
-            loss = criterion(logits, labels)
+            loss_per_sample = criterion(logits, labels)
+
+            loss = _apply_sample_weights(
+                loss_per_sample, paths, sample_weights,
+                normalize_by_weight_sum, missing_policy, device,
+            )
             loss.backward()
 
             if max_grad_norm > 0:
@@ -560,7 +619,7 @@ def validate(
     pbar = tqdm(loader, desc=" " * 16 + "[Val]  ", dynamic_ncols=True)
 
     for batch_data in pbar:
-        inputs, labels, is_cached = _unpack_batch(batch_data, device)
+        inputs, labels, is_cached, _paths = _unpack_batch(batch_data, device)
 
         if use_amp:
             with autocast(device_type=device.type, enabled=use_amp):
@@ -569,6 +628,10 @@ def validate(
         else:
             logits = _forward_inputs(model, inputs, is_cached)
             loss = criterion(logits, labels)
+
+        # Handle reduction='none' (sample-weighted training uses per-sample loss)
+        if loss.ndim > 0:
+            loss = loss.mean()
 
         batch_size = inputs.size(0)
         total_loss += loss.item() * batch_size
@@ -1063,7 +1126,37 @@ def main():
     total_steps = epochs * len(train_loader)
     cosine_steps = max(total_steps - warmup_steps, 1)
 
-    criterion = nn.CrossEntropyLoss()
+    # ── Build loss function ────────────────────────────────────────
+    from common.losses import build_loss
+
+    sample_weights = None
+    sw_cfg = config.get("sample_weighting", {})
+
+    if sw_cfg.get("enabled", False):
+        weights_path = Path(sw_cfg["weights_path"])
+        if not weights_path.exists():
+            raise FileNotFoundError(
+                f"Sample weights file not found: {weights_path}"
+            )
+        with open(weights_path, "r") as f:
+            sample_weights = json.load(f)
+        train_logger.info(
+            "Sample weighting enabled: %d weights loaded from %s",
+            len(sample_weights), weights_path,
+        )
+        # Use reduction='none' so we can apply per-sample weights
+        loss_cfg = config.get("loss", {}).copy()
+        loss_cfg["reduction"] = "none"
+        criterion = build_loss({"loss": loss_cfg})
+    else:
+        criterion = build_loss(config)
+
+    train_logger.info(
+        "Loss: %s (reduction=%s)",
+        config.get("loss", {}).get("name", "cross_entropy"),
+        config.get("loss", {}).get("reduction", "mean"),
+    )
+
     optimizer, scheduler = _build_optimizer_and_scheduler(
         model, config, cosine_steps
     )
@@ -1265,6 +1358,7 @@ def main():
             config,
             warmup_steps,
             global_step,
+            sample_weights=sample_weights,
         )
 
         # Validate (skip if no val_loader, e.g., final_fit)

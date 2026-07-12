@@ -20,7 +20,7 @@
 | A0 | CLIP 标准预处理（无增强） | **69.86%** |
 | A1 | RandomResizedCrop + RandomHorizontalFlip | 69.77% (lr=5e-3 对齐对照) |
 | A2 | + ColorJitter | 67.36% (平台期截断) |
-| A3 | + RandomErasing | 待定 |
+| A3 | + RandomErasing | 未完成（已弃用） |
 
 A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJitter 显著破坏细粒度判别信息。最终采用 A0。
 
@@ -64,7 +64,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | Experiment | Local Micro | Local Macro | Micro-Macro Gap | vs E0 | vs D3 |
 |---|---|---|---|---|---|
-| E0-strict | pending | — | — | — | — |
+| E0-strict | 70.5409% | 70.5015% | 0.0394pp | — | −0.1163pp |
 | D3-strict | 70.6572% | 70.6100% | 0.0473pp | — | — |
 | F0-strict | 70.6378% | 70.5939% | 0.0439pp | — | −0.0194pp |
 | F1-strict | 70.7832% | 70.7458% | 0.0374pp | — | +0.1260pp |
@@ -107,15 +107,17 @@ After discovering 88% validation leakage in F1 and 3.79% content leakage in the 
 
 | Experiment | Local Micro | Local Macro | Gap | Epochs | Status |
 |---|---|---|---|---|---|
-| E0-strict | pending | — | — | clean rerun in progress | pending_clean_rerun |
+| E0-strict | 70.5409% | 70.5015% | 0.0394pp | 47/50 | valid (D3−E0 = +0.1163pp) |
 | D3-strict | 70.6572% | 70.6100% | 0.0473pp | 49† | valid_seed42_pending_multiseed |
 | F0-strict | 70.6378% | 70.5939% | 0.0439pp | 5† | control_complete_no_gain |
 | F1-strict | 70.7832% | 70.7458% | 0.0374pp | 4† | below_gain_threshold |
 
 † Early stopped (patience=10). All metrics from `reeval_best.json` (best.pt reload).
+E0_STRICT: clean rerun completed (50 epochs, best epoch 47, no early stop).
 
 **D3_STRICT Platform Submission:**
 - Local: 70.6572% → Platform: 57.3397% → Gap: 13.3175pp
+- Predictions: 24,967
 - Manifest: `outputs/d3_strict/seed42/submissions/submission_manifest.json`
 - Registry: `results/submission_registry.csv` (entry `D3_STRICT_20260712_123554`)
 

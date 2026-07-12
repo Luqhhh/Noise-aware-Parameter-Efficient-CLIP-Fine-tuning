@@ -12,11 +12,11 @@ D4C,dropout=0.1 on frozen head,linear,true,5e-3,,0.1,a0,,,incomplete,independent
 F0,frozen continue 50 extra epochs (E0 init),linear,true,3e-4,,,a0,1,0.6984,incomplete,independent_split,E0,?,only 1 epoch completed; killed; no valid comparison possible
 F1,unfreeze ln_post+proj (D3 init),linear,false,3e-4,1e-5,0,a0,50,0.8013,invalid_stage_leakage,per_experiment_split,D3,8902/10116 (88.0%),DELETED: +9.60pp vs D3 BUT val overlap=88%; output dir removed
 F1b,ln_post+proj + dropout 0.2 + low lr (D3 init),linear,false,1e-4,1e-5,0.2,a0,50,0.8013,invalid_stage_leakage,per_experiment_split,D3,8902/10116 (88.0%),DELETED: same leak as F1; output dir removed
-F2,last block + ln_post+proj (F1 init),linear,false,1e-4,1e-5,0.2,a0,,,,invalid_stage_leakage,per_experiment_split,F1,?,parent F1 has invalid results; paused
-F2_d3,last block + ln_post+proj (D3 init),linear,false,1e-4,1e-5,0.2,a0,,,,invalid_stage_leakage,per_experiment_split,D3,?,deferred until strict baselines established
-F2_hi_bb,last block + ln_post+proj + bb_lr=3e-5 (F1 init),linear,false,1e-4,3e-5,0.2,a0,,,,invalid_stage_leakage,per_experiment_split,F1,?,parent F1 has invalid results; paused
-F2_no_drop,last block + ln_post+proj no dropout (F1 init),linear,false,1e-4,1e-5,0,a0,,,,invalid_stage_leakage,per_experiment_split,F1,?,parent F1 has invalid results; paused
-E0_STRICT,baseline on SHA-256 dedup master split,linear,true,5e-3,,0,a0,,,pending_clean_rerun,unified_master_split_sha256_dedup,,,,legacy manually-stopped run archived; clean rerun in progress (2026-07-12)
-D3_STRICT,dedup on SHA-256 dedup master split (train-only clean),linear,true,5e-3,,0,a0,49,0.706572,valid_seed42_pending_multiseed,unified_master_split_sha256_dedup,,,,seed=42; reeval micro=0.706572 macro=0.706100 gap=0.000473; platform=57.3397%; submission D3_STRICT_20260712_123554
+F2,last block + ln_post+proj (F1 init),linear,false,1e-4,1e-5,0.2,a0,,,invalid_stage_leakage,per_experiment_split,F1,?,parent F1 has invalid results; paused
+F2_d3,last block + ln_post+proj (D3 init),linear,false,1e-4,1e-5,0.2,a0,,,invalid_stage_leakage,per_experiment_split,D3,?,deferred until strict baselines established
+F2_hi_bb,last block + ln_post+proj + bb_lr=3e-5 (F1 init),linear,false,1e-4,3e-5,0.2,a0,,,invalid_stage_leakage,per_experiment_split,F1,?,parent F1 has invalid results; paused
+F2_no_drop,last block + ln_post+proj no dropout (F1 init),linear,false,1e-4,1e-5,0,a0,,,invalid_stage_leakage,per_experiment_split,F1,?,parent F1 has invalid results; paused
+E0_STRICT,baseline on SHA-256 dedup master split,linear,true,5e-3,,0,a0,47,0.705409,valid,unified_master_split_sha256_dedup,,,clean rerun; 50 epochs; best epoch 47; D3-E0=+0.1163pp
+D3_STRICT,dedup on SHA-256 dedup master split (train-only clean),linear,true,5e-3,,0,a0,49,0.706572,valid_seed42_pending_multiseed,unified_master_split_sha256_dedup,,,reeval micro=0.706572 macro=0.706100 gap=0.000473; platform=57.3397%
 F0_STRICT,frozen continue from D3-strict (SHA-256 split),linear,true,3e-4,,0,a0,5,0.706378,control_complete_no_gain,unified_master_split_sha256_dedup,D3_STRICT,0/10316 (0%),seed=42; reeval micro=0.706378 macro=0.705939 gap=0.000439; epoch-0 gate PASSED; early stop@15; no gain vs D3
 F1_STRICT,ln_post+proj from D3-strict (SHA-256 split),linear,false,3e-4,1e-5,0,a0,4,0.707832,below_gain_threshold,unified_master_split_sha256_dedup,D3_STRICT,0/10316 (0%),seed=42; reeval micro=0.707832 macro=0.707458 gap=0.000374; epoch-0 gate PASSED; +0.12pp vs D3 (gate +0.30pp); early stop@14
