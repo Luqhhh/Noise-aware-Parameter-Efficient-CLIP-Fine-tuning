@@ -76,28 +76,29 @@ class TestLabelSmoothing:
         )
 
     def test_label_smoothing_epsilon_half_uniform(self):
-        """At epsilon=0.5 with 2 classes, verify target distribution and loss manually."""
+        """At epsilon=0.5 with 2 classes, verify target distribution and loss manually.
+
+        Formula: q_y = 1 - eps, q_other = eps / (C - 1).
+        With eps=0.5, C=2: q_y = 0.5, q_other = 0.5 / 1 = 0.5 (uniform).
+        """
         logits = torch.tensor([[1.0, 0.0], [0.0, 2.0]])
         targets = torch.tensor([0, 1])
         loss_fn = LabelSmoothingLoss(epsilon=0.5, reduction="none")
         loss = loss_fn(logits, targets)
 
         # Manually compute per-sample.
-        n_classes = 2
         eps = 0.5
-        # Smooth target for correct class: 1 - eps + eps/n = 1 - 0.5 + 0.25 = 0.75
-        # Smooth target for wrong class: eps/n = 0.25
+        # q_y = 1 - eps = 0.5, q_other = eps / (C-1) = 0.5
         soft = torch.softmax(logits, dim=1)
-        log_soft = torch.log(soft)
 
         # Sample 0: logits [1.0, 0.0] → softmax [0.7311, 0.2689]
-        #   expected loss = -(0.75 * ln(0.7311) + 0.25 * ln(0.2689))
+        #   expected loss = -(0.5 * ln(0.7311) + 0.5 * ln(0.2689))
         expected_sample0 = -(
-            0.75 * torch.log(soft[0, 0]) + 0.25 * torch.log(soft[0, 1])
+            0.5 * torch.log(soft[0, 0]) + 0.5 * torch.log(soft[0, 1])
         )
         # Sample 1: logits [0.0, 2.0] → softmax [0.1192, 0.8808]
         expected_sample1 = -(
-            0.25 * torch.log(soft[1, 0]) + 0.75 * torch.log(soft[1, 1])
+            0.5 * torch.log(soft[1, 0]) + 0.5 * torch.log(soft[1, 1])
         )
 
         assert loss.shape == (2,)
@@ -121,6 +122,47 @@ class TestLabelSmoothing:
             LabelSmoothingLoss(epsilon=-0.1)
         with pytest.raises(ValueError, match="epsilon must be in"):
             LabelSmoothingLoss(epsilon=1.1)
+
+    def test_label_smoothing_illegal_reduction(self):
+        with pytest.raises(ValueError, match="reduction must be"):
+            LabelSmoothingLoss(epsilon=0.1, reduction="sum_mean")
+
+    def test_label_smoothing_bad_logits_shape(self):
+        loss_fn = LabelSmoothingLoss(epsilon=0.1)
+        # 3-D logits not allowed
+        with pytest.raises(ValueError, match="logits must be 2-D"):
+            loss_fn(torch.randn(4, 5, 5), torch.randint(0, 5, (4,)))
+
+    def test_label_smoothing_bad_targets_shape(self):
+        loss_fn = LabelSmoothingLoss(epsilon=0.1)
+        with pytest.raises(ValueError, match="targets must be 1-D"):
+            loss_fn(torch.randn(4, 5), torch.randint(0, 5, (4, 1)))
+
+    def test_label_smoothing_batch_size_mismatch(self):
+        loss_fn = LabelSmoothingLoss(epsilon=0.1)
+        with pytest.raises(ValueError, match="Batch size mismatch"):
+            loss_fn(torch.randn(4, 5), torch.randint(0, 5, (3,)))
+
+    def test_label_smoothing_target_out_of_range(self):
+        loss_fn = LabelSmoothingLoss(epsilon=0.1)
+        with pytest.raises(ValueError, match="targets must be in"):
+            loss_fn(torch.randn(4, 5), torch.tensor([0, 1, 2, 5]))
+
+    def test_label_smoothing_single_class(self):
+        # 1 class is invalid for label smoothing
+        with pytest.raises(ValueError, match="at least 2 classes"):
+            loss_fn = LabelSmoothingLoss(epsilon=0.1)
+            loss_fn(torch.randn(4, 1), torch.zeros(4, dtype=torch.long))
+
+    def test_label_smoothing_sum_reduction(self, logits_target):
+        """Verify sum reduction = manual sum of per-sample losses."""
+        logits, targets = logits_target
+        cfg_none = {"loss": {"name": "label_smoothing", "reduction": "none"}}
+        cfg_sum = {"loss": {"name": "label_smoothing", "reduction": "sum"}}
+        loss_none = build_loss(cfg_none)(logits, targets)
+        loss_sum = build_loss(cfg_sum)(logits, targets)
+
+        assert torch.isclose(loss_sum, loss_none.sum(), atol=1e-8).item()
 
 
 # ---------------------------------------------------------------------------
@@ -182,6 +224,29 @@ class TestBuildLoss:
     def test_build_loss_extra_params_raises(self):
         with pytest.raises(ValueError, match="CE loss takes no extra params"):
             build_loss({"loss": {"name": "cross_entropy", "foo": "bar"}})
+
+    def test_build_loss_defaults_to_ce_when_no_loss_key(self):
+        """Empty config → default CE."""
+        loss_fn = build_loss({})
+        assert isinstance(loss_fn, nn.CrossEntropyLoss)
+
+    def test_build_loss_defaults_to_ce_when_empty_loss_dict(self):
+        """loss: {} → default CE."""
+        loss_fn = build_loss({"loss": {}})
+        assert isinstance(loss_fn, nn.CrossEntropyLoss)
+
+    def test_build_loss_default_ce_identical_to_pytorch(self, logits_target):
+        """Default (no config) CE matches torch CE."""
+        logits, targets = logits_target
+        l1 = build_loss({})(logits, targets)
+        l2 = nn.CrossEntropyLoss()(logits, targets)
+        assert torch.isclose(l1, l2, atol=1e-8).item()
+
+    def test_build_loss_label_smoothing_extra_params_raises(self):
+        with pytest.raises(ValueError, match="Unknown label_smoothing params"):
+            build_loss(
+                {"loss": {"name": "label_smoothing", "epsilon": 0.1, "bad": True}}
+            )
 
 
 # ---------------------------------------------------------------------------

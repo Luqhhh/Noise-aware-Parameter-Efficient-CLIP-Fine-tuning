@@ -25,8 +25,15 @@ import torch.nn.functional as F
 class LabelSmoothingLoss(nn.Module):
     """Cross-entropy with uniform label smoothing.
 
+    Uses the standard formulation:
+
+        q_y   = 1 - epsilon
+        q_oth = epsilon / (C - 1)
+
+    where C is the number of classes.  epsilon=0 recovers standard CE.
+
     Args:
-        epsilon: Smoothing factor in [0, 1].  epsilon=0 recovers standard CE.
+        epsilon: Smoothing factor in [0, 1].
         reduction: "mean", "sum", or "none".
     """
 
@@ -34,16 +41,47 @@ class LabelSmoothingLoss(nn.Module):
         super().__init__()
         if not 0.0 <= epsilon <= 1.0:
             raise ValueError(f"epsilon must be in [0,1], got {epsilon}")
+        if reduction not in ("none", "mean", "sum"):
+            raise ValueError(
+                f"reduction must be 'none', 'mean', or 'sum', got {reduction!r}"
+            )
         self.epsilon = epsilon
         self.reduction = reduction
 
     def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        # ── Input validation ──────────────────────────────────────────
+        if logits.dim() != 2:
+            raise ValueError(
+                f"logits must be 2-D (batch, classes), got shape {tuple(logits.shape)}"
+            )
         n_classes = logits.size(-1)
+        if n_classes < 2:
+            raise ValueError(
+                f"Label smoothing requires at least 2 classes, got {n_classes}"
+            )
+        if targets.dim() != 1:
+            raise ValueError(
+                f"targets must be 1-D, got shape {tuple(targets.shape)}"
+            )
+        if logits.size(0) != targets.size(0):
+            raise ValueError(
+                f"Batch size mismatch: logits {logits.size(0)}, targets {targets.size(0)}"
+            )
+        if targets.lt(0).any() or targets.ge(n_classes).any():
+            raise ValueError(
+                f"targets must be in [0, {n_classes - 1}], "
+                f"got range [{targets.min().item()}, {targets.max().item()}]"
+            )
+
+        # ── Smooth targets ────────────────────────────────────────────
         log_probs = F.log_softmax(logits, dim=-1)
 
         with torch.no_grad():
-            smooth_targets = torch.full_like(log_probs, self.epsilon / n_classes)
-            smooth_targets.scatter_(1, targets.unsqueeze(1), 1.0 - self.epsilon + self.epsilon / n_classes)
+            off_target = self.epsilon / (n_classes - 1)
+            smooth_targets = torch.full_like(log_probs, off_target)
+            smooth_targets.scatter_(
+                1, targets.unsqueeze(1), 1.0 - self.epsilon
+            )
 
         loss = -(smooth_targets * log_probs).sum(dim=-1)
 
@@ -93,6 +131,24 @@ class GCELoss(nn.Module):
         elif self.reduction == "sum":
             return loss.sum()
         return loss
+
+
+def reduce_loss(loss: torch.Tensor) -> torch.Tensor:
+    """Reduce per-sample loss to a scalar via mean if needed.
+
+    When a loss module returns per-sample values (reduction="none"),
+    this helper averages them into a scalar suitable for .backward()
+    and .item().
+
+    Args:
+        loss: Scalar or 1-D tensor of per-sample losses.
+
+    Returns:
+        Scalar tensor.
+    """
+    if loss.dim() > 0:
+        return loss.mean()
+    return loss
 
 
 def build_loss(config: Dict) -> nn.Module:

@@ -38,6 +38,7 @@ from tqdm import tqdm
 from common.cache import CachedFeatureDataset
 from common.class_mapping import load_or_generate_mapping
 from common.dataset import TrainImageDataset, seed_worker
+from common.losses import build_loss, reduce_loss
 from common.runtime_config import resolve_runtime_args
 from common.transforms import build_train_transform, VALID_PRESETS
 from common.utils import (count_parameters, ensure_dir, format_time,
@@ -1156,7 +1157,6 @@ def main():
         config.get("loss", {}).get("name", "cross_entropy"),
         config.get("loss", {}).get("reduction", "mean"),
     )
-
     optimizer, scheduler = _build_optimizer_and_scheduler(
         model, config, cosine_steps
     )

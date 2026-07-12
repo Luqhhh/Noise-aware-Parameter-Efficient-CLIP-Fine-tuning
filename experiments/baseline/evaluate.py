@@ -23,6 +23,7 @@ from tqdm import tqdm
 
 from common.class_mapping import load_or_generate_mapping
 from common.dataset import TrainImageDataset
+from common.losses import build_loss, reduce_loss
 from common.utils import load_config, set_seed, setup_logging
 
 logger = logging.getLogger(__name__)
@@ -135,6 +136,7 @@ def evaluate(
             logits = model(images)
             loss = criterion(logits, labels)
 
+        loss = reduce_loss(loss)
         batch_size = images.size(0)
         total_loss += loss.item() * batch_size
         preds = logits.argmax(dim=1)
@@ -287,7 +289,7 @@ def main():
     )
 
     # Evaluate
-    criterion = nn.CrossEntropyLoss()
+    criterion = build_loss(config)
     results = evaluate(
         model,
         val_loader,
