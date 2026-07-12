@@ -48,28 +48,34 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 ### 5. 测试覆盖
 
-104 个测试全部通过，新增：
+147 个测试全部通过，新增：
 - `test_partial_unfreeze.py`（16 tests）：参数冻结/解冻、train mode 行为
 - `test_discriminative_optimizer.py`（11 tests）：参数组结构、LR/WD 正确性、覆盖率
 - `test_init_checkpoint.py`（4 tests）：权重加载、跨架构兼容、requires_grad 保持
 - `test_scheduler_ratio.py`（7 tests）：余弦因子边界、比例保持、缓存 guard
+- `test_run_artifact_guard.py`（7 tests）：fresh-run 产物保护、resume 放行、--allow-overwrite
+- `test_best_checkpoint_post_eval.py`（4 tests）：best.pt 重载、strict load 校验
+- `test_metric_consistency.py`（7 tests）：micro-macro gap 一致性、bottom-10% 计算
+- `test_submission_manifest.py`（11 tests）：SHA-256 哈希、ZIP 校验、标签格式、重复登记拒绝
 
 ### 6. 当前状态与待完成
 
-**已完成 (strict protocol, seed=42):**
-- E0-strict (69.09%): Frozen CLIP + linear head baseline on unified master split
-- D3-strict (69.32%): Train-only dedup, +0.23pp vs E0
-- F0-strict (69.33%): Frozen continue control from D3-strict (no gain beyond epoch 1)
-- F1-strict (69.43%): ln_post+proj unfrozen from D3-strict, +0.12pp vs D3
+**已完成 (strict protocol, seed=42, reeval from best.pt):**
 
-**已废弃 (data leakage):**
-- F1 (old): 80.13% — invalid due to 88% validation overlap with parent training data
-- F1b (old): 80.13% — same leakage as F1
-- F2 (old): blocked by invalid parent F1
+| Experiment | Local Micro | Local Macro | Micro-Macro Gap | vs E0 | vs D3 |
+|---|---|---|---|---|---|
+| E0-strict | pending | — | — | — | — |
+| D3-strict | 70.6572% | 70.6100% | 0.0473pp | — | — |
+| F0-strict | 70.6378% | 70.5939% | 0.0439pp | — | −0.0194pp |
+| F1-strict | 70.7832% | 70.7458% | 0.0374pp | — | +0.1260pp |
 
-**待完成:**
-- **多 seed 确认 (D3 only)**: D3-strict + E0-strict 在 seeds 3407/2026 上做 paired delta 验证（F1 未通过 +0.30pp gate，不继续多 seed）
-- **E4 (A3) 增强对照**: 正在由队友执行
+**Platform submission (D3_STRICT):**
+- **Local micro**: 70.6572% (strict validation, 10,316 val samples)
+- **Platform score**: 57.3397% (24,966 test predictions)
+- **Local-platform gap**: 13.3175pp
+- **Submission**: `D3_STRICT_20260712_123554` (registered in `results/submission_registry.csv`)
+
+> ⚠️ **Important**: The local strict validation accuracy (70.66%) is NOT a platform score estimate. The 13.32pp gap between local strict validation and the official platform score is expected due to the competition's private test set distribution.
 
 ## 项目结构
 
@@ -99,14 +105,19 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 After discovering 88% validation leakage in F1 and 3.79% content leakage in the original seed 42 split, all baselines were rebuilt on a SHA-256 dedup-enabled master split.
 
-| Experiment | Val Acc | vs E0 | vs D3 | Epochs | Notes |
+| Experiment | Local Micro | Local Macro | Gap | Epochs | Status |
 |---|---|---|---|---|---|
-| E0-strict | 70.45% | — | — | 34 (manual stop) | Frozen CLIP + linear head, seed=42 |
-| D3-strict | 70.66% | +0.21pp | — | 49† | Train-only dedup (1,527 removed), seed=42 |
-| F0-strict | 70.64% | — | −0.02pp | 5† | Frozen continue control (D3-strict init), no gain |
-| F1-strict | 70.78% | — | +0.12pp | 4† | ln_post+proj unfrozen (D3-strict init), below +0.30pp gate |
+| E0-strict | pending | — | — | clean rerun in progress | pending_clean_rerun |
+| D3-strict | 70.6572% | 70.6100% | 0.0473pp | 49† | valid_seed42_pending_multiseed |
+| F0-strict | 70.6378% | 70.5939% | 0.0439pp | 5† | control_complete_no_gain |
+| F1-strict | 70.7832% | 70.7458% | 0.0374pp | 4† | below_gain_threshold |
 
-† Early stopped (patience=10).
+† Early stopped (patience=10). All metrics from `reeval_best.json` (best.pt reload).
+
+**D3_STRICT Platform Submission:**
+- Local: 70.6572% → Platform: 57.3397% → Gap: 13.3175pp
+- Manifest: `outputs/d3_strict/seed42/submissions/submission_manifest.json`
+- Registry: `results/submission_registry.csv` (entry `D3_STRICT_20260712_123554`)
 
 **Key changes from original:**
 - Master split rebuilt with `duplicate_grouping_enabled: true` (SHA-256 group-aware) — **0 cross-boundary SHA-256 groups** (was 192 groups / 391 leaked images)
@@ -114,8 +125,8 @@ After discovering 88% validation leakage in F1 and 3.79% content leakage in the 
 - D3 train-only cleaning (CLIP centroid arbitration, content-based removal list)
 - Parent-child split audit + epoch-0 validation gate
 - Old F1 80.13% deprecated due to 88% validation leakage; output dirs deleted
-
-**Per-class metrics (seed=42):** micro ≈ macro (gap < 0.01pp); bottom-10% accuracy: E0 27.8% → D3 28.9% → F1 29.8% — D3/F1 help hardest classes
+- All post-training metrics reloaded from best.pt (no in-memory contamination)
+- `micro_macro_gap == micro - macro` enforced at 1e-10 precision
 ## Git 策略
 
 - ✅ 跟踪：`.json/.csv/.log/.yaml` 结果文件

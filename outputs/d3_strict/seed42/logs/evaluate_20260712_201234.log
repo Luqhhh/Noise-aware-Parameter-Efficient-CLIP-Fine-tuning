@@ -1,0 +1,10 @@
+2026-07-12 20:12:34 | INFO | Config: configs/d3_strict.yaml
+2026-07-12 20:12:34 | INFO | Checkpoint: outputs/d3_strict/seed42/checkpoints/best.pt
+2026-07-12 20:12:34 | INFO | Seed: 42
+2026-07-12 20:12:34 | INFO | Device: cuda
+2026-07-12 20:12:34 | INFO | Head type: linear
+2026-07-12 20:12:39 | INFO | Loaded checkpoint from epoch 49
+2026-07-12 20:12:39 | INFO | Checkpoint best val acc: 0.7065723148507174
+2026-07-12 20:12:39 | INFO | Checkpoint SHA-256: 45cbfb1eed38eed7efcfb014063082c3067a70407b0d52a152633aeed675cda3
+2026-07-12 20:12:39 | INFO | Val CSV SHA-256: 70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c
+2026-07-12 20:12:40 | INFO | Validation set: 10316 samples, 41 batches

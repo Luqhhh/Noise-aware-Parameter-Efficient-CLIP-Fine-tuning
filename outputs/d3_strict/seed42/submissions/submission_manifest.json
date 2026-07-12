@@ -1,0 +1,17 @@
+{
+  "experiment_id": "D3_STRICT",
+  "git_commit": "a831752d7eca579d6a80d3fdc73ea4a05bba7013",
+  "checkpoint_path": "/home/lux1/noise/outputs/d3_strict/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "45cbfb1eed38eed7efcfb014063082c3067a70407b0d52a152633aeed675cda3",
+  "checkpoint_epoch": 49,
+  "local_micro_accuracy": 0.7065723148507174,
+  "local_macro_accuracy": 0.7060997486114502,
+  "prediction_csv_path": "/home/lux1/noise/outputs/d3_strict/seed42/submissions/pred_results.csv",
+  "prediction_csv_sha256": "79e5562902d1e71c83ac07bb6c25b8abb24af164ec44a5930cddc12f56110d27",
+  "submission_zip_path": "/home/lux1/noise/outputs/d3_strict/seed42/submissions/submission.zip",
+  "submission_zip_sha256": "79e5562902d1e71c83ac07bb6c25b8abb24af164ec44a5930cddc12f56110d27",
+  "online_accuracy": 0.573397,
+  "local_online_gap": 0.13317531485071732,
+  "num_predictions": 24966,
+  "created_at_utc": "2026-07-12T12:35:50Z"
+}

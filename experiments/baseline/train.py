@@ -159,6 +159,16 @@ def parse_args() -> argparse.Namespace:
              "and adjust output paths to seed{N}/ subdirectories. "
              "Used for multi-seed paired delta experiments.",
     )
+    # Fresh-run artifact guard
+    parser.add_argument(
+        "--allow-overwrite",
+        action="store_true",
+        help=(
+            "Allow removal of generated artifacts in the configured output "
+            "directories before a fresh non-resume run. Historical artifacts "
+            "must be archived by the caller before using this flag."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -246,6 +256,46 @@ def _check_splits_exist(split_dir: str) -> bool:
     split_dir = Path(split_dir)
     required = ["train.csv", "val.csv", "class_to_idx.json", "idx_to_class.json"]
     return all((split_dir / f).exists() for f in required)
+
+
+def _prepare_fresh_run_artifacts(
+    save_dir: Path,
+    log_dir: Path,
+    resume_path: Optional[str],
+    allow_overwrite: bool,
+) -> None:
+    """Guard fresh (non-resume) runs against clobbering existing artifacts.
+
+    Raises FileExistsError when generated files already exist and
+    --allow-overwrite was not passed.  With --allow-overwrite the stale
+    files are removed so the fresh run starts from a clean slate.
+    """
+    generated_files = [
+        save_dir / "best.pt",
+        save_dir / "last.pt",
+        save_dir / "eval_results.json",
+        save_dir / "config_snapshot.yaml",
+        log_dir / "train_log.csv",
+    ]
+
+    existing = [p for p in generated_files if p.exists()]
+
+    if resume_path:
+        if not Path(resume_path).exists():
+            raise FileNotFoundError(f"Resume checkpoint not found: {resume_path}")
+        return
+
+    if existing and not allow_overwrite:
+        formatted = "\n".join(f"  - {p}" for p in existing)
+        raise FileExistsError(
+            "Fresh run refused because generated artifacts already exist:\n"
+            f"{formatted}\n"
+            "Archive the old run or pass --allow-overwrite explicitly."
+        )
+
+    if allow_overwrite:
+        for path in existing:
+            path.unlink()
 
 
 def _cosine_factor(
@@ -1172,11 +1222,20 @@ def main():
 
     # Save config snapshot
     save_dir = ensure_dir(train_cfg["save_dir"])
+
+    # Guard: refuse fresh runs when generated artifacts already exist
+    _prepare_fresh_run_artifacts(
+        save_dir=save_dir,
+        log_dir=log_dir,
+        resume_path=args.resume,
+        allow_overwrite=args.allow_overwrite,
+    )
+
     save_config_snapshot(config, str(save_dir))
 
     # Training log CSV
     log_file = Path(config["output"]["log_dir"]) / "train_log.csv"
-    log_header = not log_file.exists() or args.resume is None
+    log_header = not log_file.exists()
 
     # Training loop
     train_logger.info(
@@ -1343,9 +1402,43 @@ def main():
 
     # Save eval_results.json for dev/confirm modes
     if mode in ("dev", "confirm"):
-        # Run enhanced per-class evaluation on the best model (post-training)
-        per_class_metrics = {}
+        # ── Reload best checkpoint for post-training evaluation ──
+        # The in-memory model may hold the final-epoch weights, not the
+        # best-epoch weights.  We must reload best.pt so that every metric
+        # in eval_results.json is derived from the same checkpoint.
+        best_checkpoint_path = save_dir / "best.pt"
+        post_eval_ckpt_epoch = None
+        post_eval_ckpt_best_val_acc = None
+
         if val_loader is not None:
+            if not best_checkpoint_path.exists():
+                raise FileNotFoundError(
+                    f"Best checkpoint missing before post-training evaluation: "
+                    f"{best_checkpoint_path}"
+                )
+
+            best_checkpoint = torch.load(best_checkpoint_path, map_location=device)
+            model.load_state_dict(
+                best_checkpoint["model_state_dict"],
+                strict=True,
+            )
+            model.to(device)
+            model.eval()
+
+            post_eval_ckpt_epoch = best_checkpoint.get("epoch")
+            post_eval_ckpt_best_val_acc = float(
+                best_checkpoint.get("best_val_acc", -1.0)
+            )
+
+            train_logger.info(
+                "Reloaded best checkpoint for post-training evaluation: %s "
+                "(epoch=%s, best_val_acc=%.8f)",
+                best_checkpoint_path,
+                post_eval_ckpt_epoch,
+                post_eval_ckpt_best_val_acc,
+            )
+
+            # ── Per-class evaluation from best.pt ──
             train_logger.info("Running post-training per-class evaluation...")
             from .evaluate import evaluate as evaluate_full
 
@@ -1353,16 +1446,44 @@ def main():
                 model, val_loader, criterion, device,
                 use_amp=train_cfg.get("amp", False),
             )
+
+            post_eval_micro = float(per_class_results["accuracy"])
+            post_eval_macro = float(per_class_results["macro_accuracy"])
+            post_eval_gap = post_eval_micro - post_eval_macro
+            reported_gap = float(per_class_results["micro_macro_gap"])
+
+            # ── Consistency hard-checks ──
+            if abs(post_eval_micro - float(best_val_acc)) > 1e-8:
+                raise RuntimeError(
+                    "Best-checkpoint post evaluation does not reproduce "
+                    "best_val_acc: "
+                    f"post_eval_micro={post_eval_micro:.10f}, "
+                    f"best_val_acc={best_val_acc:.10f}"
+                )
+
+            if abs(reported_gap - post_eval_gap) > 1e-10:
+                raise RuntimeError(
+                    "micro_macro_gap is inconsistent: "
+                    f"reported={reported_gap:.10f}, "
+                    f"expected={post_eval_gap:.10f}"
+                )
+
             per_class_metrics = {
-                "macro_accuracy": float(per_class_results["macro_accuracy"]),
+                "macro_accuracy": post_eval_macro,
                 "median_per_class_accuracy": float(
                     per_class_results["median_per_class_accuracy"]
                 ),
                 "bottom_10_percent_accuracy": float(
                     per_class_results["bottom_10_percent_accuracy"]
                 ),
-                "micro_macro_gap": float(per_class_results["micro_macro_gap"]),
+                "micro_macro_gap": reported_gap,
+                "post_eval_checkpoint": str(best_checkpoint_path),
+                "post_eval_checkpoint_epoch": post_eval_ckpt_epoch,
+                "post_eval_micro_accuracy": post_eval_micro,
+                "post_eval_macro_accuracy": post_eval_macro,
             }
+        else:
+            per_class_metrics = {}
 
         eval_results = {
             "experiment_id": experiment_id,

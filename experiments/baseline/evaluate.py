@@ -10,6 +10,7 @@ Usage:
 """
 
 import argparse
+import hashlib
 import json
 import logging
 from pathlib import Path
@@ -25,6 +26,18 @@ from common.dataset import TrainImageDataset
 from common.utils import load_config, set_seed, setup_logging
 
 logger = logging.getLogger(__name__)
+
+
+def _sha256_hex(path: Path, chunk_size: int = 1 << 20) -> str:
+    """Streaming SHA-256 of a file (1 MiB chunks by default)."""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        while True:
+            chunk = f.read(chunk_size)
+            if not chunk:
+                break
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def parse_args() -> argparse.Namespace:
@@ -64,6 +77,13 @@ def parse_args() -> argparse.Namespace:
         choices=["true", "false"],
         help="Whether logit scale is learnable for cosine head "
              "(overrides model.cos_learnable_scale).",
+    )
+    parser.add_argument(
+        "--output-json",
+        type=str,
+        default=None,
+        help="Path to write evaluation results JSON. "
+             "Defaults to reeval_best.json alongside the checkpoint.",
     )
     return parser.parse_args()
 
@@ -169,8 +189,12 @@ def main():
     # Load config
     config = load_config(args.config)
 
-    # Set seed
-    set_seed(config["data"]["seed"])
+    # Flexible seed access: try train_seed → split_seed → seed → 42
+    seed = config["data"].get(
+        "train_seed",
+        config["data"].get("split_seed", config["data"].get("seed", 42)),
+    )
+    set_seed(seed)
 
     # Device
     device = torch.device(
@@ -184,6 +208,7 @@ def main():
 
     logger.info(f"Config: {args.config}")
     logger.info(f"Checkpoint: {args.ckpt}")
+    logger.info(f"Seed: {seed}")
     logger.info(f"Device: {device}")
 
     # Load class mapping from canonical source (common.class_mapping)
@@ -219,6 +244,7 @@ def main():
         model, preprocess = build_model(config, device)
 
     # Load checkpoint
+    ckpt_path = Path(args.ckpt)
     checkpoint = torch.load(args.ckpt, map_location=device)
     model.load_state_dict(checkpoint["model_state_dict"])
     logger.info(f"Loaded checkpoint from epoch {checkpoint.get('epoch', 'unknown')}")
@@ -226,11 +252,19 @@ def main():
 
     model = model.to(device)
 
+    # Compute checkpoint SHA-256 (streaming, never loads whole file into memory)
+    ckpt_sha256 = _sha256_hex(ckpt_path)
+    logger.info(f"Checkpoint SHA-256: {ckpt_sha256}")
+
     # Load validation dataset
     split_dir = Path(config["data"]["split_dir"])
     val_csv = split_dir / "val.csv"
     if not val_csv.exists():
         raise FileNotFoundError(f"Validation split not found: {val_csv}")
+
+    # Compute val CSV SHA-256
+    val_csv_sha256 = _sha256_hex(val_csv)
+    logger.info(f"Val CSV SHA-256: {val_csv_sha256}")
 
     val_dataset = TrainImageDataset(
         data_root=config["data"]["train_dir"],
@@ -285,12 +319,19 @@ def main():
     logger.info(f"  Loss:                       {results['loss']:.4f}")
     logger.info("=" * 50)
 
-    # Save evaluation results as JSON alongside the checkpoint
-    ckpt_path = Path(args.ckpt)
-    eval_results_path = ckpt_path.parent / f"eval_results_{ckpt_path.stem}.json"
+    # Determine output path: --output-json > default reeval_best.json
+    if args.output_json:
+        eval_results_path = Path(args.output_json)
+    else:
+        eval_results_path = ckpt_path.parent / "reeval_best.json"
+
     eval_results = {
         "checkpoint": str(ckpt_path),
-        "accuracy": float(results["accuracy"]),
+        "checkpoint_sha256": ckpt_sha256,
+        "val_csv": str(val_csv),
+        "val_csv_sha256": val_csv_sha256,
+        "config": str(Path(args.config).resolve()),
+        "micro_accuracy": float(results["accuracy"]),
         "macro_accuracy": float(results["macro_accuracy"]),
         "median_per_class_accuracy": float(results["median_per_class_accuracy"]),
         "bottom_10_percent_accuracy": float(results["bottom_10_percent_accuracy"]),
@@ -298,7 +339,10 @@ def main():
         "loss": float(results["loss"]),
         "total_samples": results["total_samples"],
         "correct_samples": results["correct_samples"],
+        "checkpoint_epoch": checkpoint.get("epoch"),
+        "checkpoint_best_val_acc": float(checkpoint.get("best_val_acc", -1.0)),
     }
+    eval_results_path.parent.mkdir(parents=True, exist_ok=True)
     with open(eval_results_path, "w") as f:
         json.dump(eval_results, f, indent=2)
     logger.info(f"Eval results saved to: {eval_results_path}")
