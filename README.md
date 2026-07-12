@@ -83,6 +83,24 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - **早停机制**：`train.early_stop_patience: 10`，连续 N 个 epoch 无提升自动终止
 - **指纹校验**：缓存与数据集通过 SHA-256 全量指纹匹配，防止特征-图片错位
 
+
+## Strict Validation Protocol (2026-07-12)
+
+After discovering 88% validation leakage in F1 (child val overlapped with parent train), all baselines were rebuilt on a unified master split.
+
+| Experiment | Val Acc | Protocol | vs E0 | vs D3 | Notes |
+|---|---|---|---|---|---|
+| E0-strict | TBD | unified_master_split | — | — | Frozen CLIP + linear head |
+| D3-strict | TBD | unified_master_split | TBD | — | Train-only dedup, same val |
+| F0-strict | TBD | unified_master_split | — | TBD | Frozen continue control |
+| F1-strict | TBD | unified_master_split | — | TBD | ln_post+proj, audit passed |
+
+**Key changes:**
+- All experiments share outputs/master_splits/seed42/ for train/val
+- D3 cleaning restricted to training data only
+- Parent-child split audit prevents stage-to-stage leakage
+- Epoch-0 validation gate verifies checkpoint integrity
+- Old F1 80.13% deprecated due to validation leakage
 ## Git 策略
 
 - ✅ 跟踪：`.json/.csv/.log/.yaml` 结果文件

@@ -1,0 +1,23 @@
+{
+  "experiment_id": "E0_STRICT",
+  "mode": "dev",
+  "config_path": "configs/e0_strict.yaml",
+  "split_seed": 42,
+  "train_seed": 42,
+  "best_val_acc": 0.690854485564813,
+  "dev_best_epoch": 40,
+  "trained_epochs": 50,
+  "head_type": "linear",
+  "augmentation_preset": "a0",
+  "use_cached_features": false,
+  "learning_rate": 0.005,
+  "weight_decay": 0.0001,
+  "batch_size": 128,
+  "freeze_clip": true,
+  "clip_model_name": "ViT-B/32",
+  "git_commit": "a2c2f127ca526a73014d172a955b9589f38db8c9",
+  "early_stop_patience": 10,
+  "early_stopped": true,
+  "stopped_at_epoch": 50,
+  "init_checkpoint": null
+}
