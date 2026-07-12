@@ -1,6 +1,0 @@
-2026-07-12 00:29:29 | INFO | Using device: cuda
-2026-07-12 00:29:29 | INFO | Configuration: configs/e0_strict.yaml
-2026-07-12 00:29:29 | INFO | Train seed: 42
-2026-07-12 00:29:29 | INFO | Resolved runtime: experiment_id=E0_STRICT, mode=dev, head_type=linear, augmentation=a0, cached=False
-2026-07-12 00:29:31 | INFO | Total parameters:     88,105,716
-2026-07-12 00:29:31 | INFO | Trainable parameters: 256,500

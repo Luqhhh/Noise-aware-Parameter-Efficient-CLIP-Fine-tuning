@@ -86,13 +86,20 @@ def evaluate(
         use_amp: Whether to use AMP autocast.
 
     Returns:
-        Dictionary with keys: loss, accuracy, total_samples, correct_samples.
+        Dictionary with keys: loss, accuracy, macro_accuracy,
+        median_per_class_accuracy, bottom_10_percent_accuracy,
+        micro_macro_gap, per_class_accuracy, total_samples, correct_samples.
     """
     model.eval()
+    num_classes = getattr(model, 'num_classes', None)
+    if num_classes is None:
+        num_classes = model.classifier.out_features
 
     total_loss = 0.0
     correct = 0
     total = 0
+    correct_per_class = torch.zeros(num_classes, device=device, dtype=torch.long)
+    total_per_class = torch.zeros(num_classes, device=device, dtype=torch.long)
 
     pbar = tqdm(loader, desc="Evaluating", dynamic_ncols=True)
 
@@ -114,6 +121,14 @@ def evaluate(
         correct += (preds == labels).sum().item()
         total += batch_size
 
+        # Per-class accumulation
+        for c in range(num_classes):
+            mask = (labels == c)
+            n_c = mask.sum().item()
+            if n_c > 0:
+                total_per_class[c] += n_c
+                correct_per_class[c] += (preds[mask] == c).sum().item()
+
         pbar.set_postfix(
             {
                 "loss": f"{loss.item():.4f}",
@@ -122,11 +137,27 @@ def evaluate(
         )
 
     avg_loss = total_loss / total
-    accuracy = correct / total
+    micro_acc = correct / total
+
+    # Per-class and macro metrics
+    per_class_acc = correct_per_class.float() / total_per_class.float().clamp(min=1)
+    macro_acc = per_class_acc.mean().item()
+    median_per_class = per_class_acc.median().item()
+
+    # Bottom-10%: mean of worst 10% classes (50 out of 500)
+    k = max(1, num_classes // 10)
+    bottom_10_percent_acc = per_class_acc.topk(k, largest=False).values.mean().item()
+
+    micro_macro_gap = micro_acc - macro_acc
 
     return {
         "loss": avg_loss,
-        "accuracy": accuracy,
+        "accuracy": micro_acc,
+        "macro_accuracy": macro_acc,
+        "per_class_accuracy": per_class_acc.cpu().tolist(),
+        "median_per_class_accuracy": median_per_class,
+        "bottom_10_percent_accuracy": bottom_10_percent_acc,
+        "micro_macro_gap": micro_macro_gap,
         "total_samples": total,
         "correct_samples": correct,
     }
@@ -234,12 +265,24 @@ def main():
     # Print results
     logger.info("=" * 50)
     logger.info("Evaluation Results:")
-    logger.info(f"  Total samples:    {results['total_samples']}")
-    logger.info(f"  Correct samples:  {results['correct_samples']}")
+    logger.info(f"  Total samples:              {results['total_samples']}")
+    logger.info(f"  Correct samples:            {results['correct_samples']}")
     logger.info(
-        f"  Top-1 Accuracy:   {results['accuracy']:.4f} ({results['accuracy']*100:.2f}%)"
+        f"  Top-1 Accuracy (micro):     {results['accuracy']:.4f} ({results['accuracy']*100:.2f}%)"
     )
-    logger.info(f"  Loss:             {results['loss']:.4f}")
+    logger.info(
+        f"  Macro Accuracy:             {results['macro_accuracy']:.4f} ({results['macro_accuracy']*100:.2f}%)"
+    )
+    logger.info(
+        f"  Median Per-Class Accuracy:  {results['median_per_class_accuracy']:.4f} ({results['median_per_class_accuracy']*100:.2f}%)"
+    )
+    logger.info(
+        f"  Bottom-10%% Accuracy:        {results['bottom_10_percent_accuracy']:.4f} ({results['bottom_10_percent_accuracy']*100:.2f}%)"
+    )
+    logger.info(
+        f"  Micro-Macro Gap:            {results['micro_macro_gap']:+.4f} ({results['micro_macro_gap']*100:+.2f}%)"
+    )
+    logger.info(f"  Loss:                       {results['loss']:.4f}")
     logger.info("=" * 50)
 
     # Save evaluation results as JSON alongside the checkpoint
@@ -248,6 +291,10 @@ def main():
     eval_results = {
         "checkpoint": str(ckpt_path),
         "accuracy": float(results["accuracy"]),
+        "macro_accuracy": float(results["macro_accuracy"]),
+        "median_per_class_accuracy": float(results["median_per_class_accuracy"]),
+        "bottom_10_percent_accuracy": float(results["bottom_10_percent_accuracy"]),
+        "micro_macro_gap": float(results["micro_macro_gap"]),
         "loss": float(results["loss"]),
         "total_samples": results["total_samples"],
         "correct_samples": results["correct_samples"],

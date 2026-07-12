@@ -1,0 +1,65 @@
+2026-07-12 18:29:59 | INFO | Using device: cuda
+2026-07-12 18:29:59 | INFO | Configuration: configs/f1_strict.yaml
+2026-07-12 18:29:59 | INFO | Train seed: 42
+2026-07-12 18:29:59 | INFO | Resolved runtime: experiment_id=F1_STRICT, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-12 18:30:01 | INFO | Total parameters:     88,105,716
+2026-07-12 18:30:01 | INFO | Trainable parameters: 651,252
+2026-07-12 18:30:04 | INFO | Using config epochs: 50 (dev mode)
+2026-07-12 18:30:04 | INFO | Optimizer parameter groups:
+2026-07-12 18:30:04 | INFO |   head        :    256,500 params, lr=3.00e-04, wd=1.00e-04
+2026-07-12 18:30:04 | INFO |   backbone    :    394,752 params, lr=1.00e-05, wd=1.00e-02
+2026-07-12 18:30:04 | INFO |   TOTAL       :    651,252 optimizer params
+2026-07-12 18:30:04 | INFO |   Trainable head params:       256,500
+2026-07-12 18:30:04 | INFO |   Trainable visual params:     394,752
+2026-07-12 18:30:04 | INFO | Initializing model weights from: outputs/d3_strict/seed42/checkpoints/best.pt
+2026-07-12 18:30:04 | INFO | Model weights loaded with exact key match.
+2026-07-12 18:30:04 | INFO | Running split lineage audit...
+2026-07-12 18:30:04 | INFO |   Parent: outputs/d3_strict
+2026-07-12 18:30:04 | INFO |   Parent split: outputs/d3_strict/seed42
+2026-07-12 18:30:04 | INFO |   Child split:  outputs/d3_strict/seed42
+2026-07-12 18:30:04 | INFO | Split lineage audit: protocol_valid = True
+2026-07-12 18:30:04 | INFO | ============================================================
+2026-07-12 18:30:04 | INFO | Epoch-0 validation gate: verifying loaded checkpoint
+2026-07-12 18:30:21 | INFO | Epoch 0   | Val Loss: 1.3280 | Val Acc: 0.7066
+2026-07-12 18:30:21 | INFO | Epoch-0 validation gate PASSED: delta=0.000000 <= 0.0005
+2026-07-12 18:30:21 | INFO | ============================================================
+2026-07-12 18:30:21 | INFO | Starting training: 50 epochs, 714 batches/epoch
+2026-07-12 18:30:21 | INFO | Warmup steps: 1428, Total steps: 35700, Cosine steps: 34272
+2026-07-12 18:30:21 | INFO | AMP: True
+2026-07-12 18:30:21 | INFO | ============================================================
+2026-07-12 18:32:46 | INFO | Epoch   1/50 | Train Loss: 0.8327 | Train Acc: 0.8211 | Val Loss: 1.3237 | Val Acc: 0.7061 | head_lr: 1.50e-04 | bb_lr: 5.00e-06 | Time: 2m 24s
+2026-07-12 18:32:46 | INFO |   >> New best model! Val Acc: 0.7061
+2026-07-12 18:35:11 | INFO | Epoch   2/50 | Train Loss: 0.8026 | Train Acc: 0.8206 | Val Loss: 1.3324 | Val Acc: 0.7054 | head_lr: 3.00e-04 | bb_lr: 1.00e-05 | Time: 2m 24s
+2026-07-12 18:35:11 | INFO |   >> No improvement for 1/10 epochs
+2026-07-12 18:37:39 | INFO | Epoch   3/50 | Train Loss: 0.7735 | Train Acc: 0.8236 | Val Loss: 1.3428 | Val Acc: 0.7058 | head_lr: 3.00e-04 | bb_lr: 9.99e-06 | Time: 2m 27s
+2026-07-12 18:37:39 | INFO |   >> No improvement for 2/10 epochs
+2026-07-12 18:40:03 | INFO | Epoch   4/50 | Train Loss: 0.7492 | Train Acc: 0.8270 | Val Loss: 1.3510 | Val Acc: 0.7078 | head_lr: 2.99e-04 | bb_lr: 9.96e-06 | Time: 2m 24s
+2026-07-12 18:40:03 | INFO |   >> New best model! Val Acc: 0.7078
+2026-07-12 18:42:31 | INFO | Epoch   5/50 | Train Loss: 0.7289 | Train Acc: 0.8310 | Val Loss: 1.3605 | Val Acc: 0.7061 | head_lr: 2.97e-04 | bb_lr: 9.90e-06 | Time: 2m 26s
+2026-07-12 18:42:31 | INFO |   >> No improvement for 1/10 epochs
+2026-07-12 18:44:55 | INFO | Epoch   6/50 | Train Loss: 0.7112 | Train Acc: 0.8347 | Val Loss: 1.3653 | Val Acc: 0.7073 | head_lr: 2.95e-04 | bb_lr: 9.83e-06 | Time: 2m 24s
+2026-07-12 18:44:55 | INFO |   >> No improvement for 2/10 epochs
+2026-07-12 18:47:19 | INFO | Epoch   7/50 | Train Loss: 0.6950 | Train Acc: 0.8380 | Val Loss: 1.3661 | Val Acc: 0.7046 | head_lr: 2.92e-04 | bb_lr: 9.74e-06 | Time: 2m 23s
+2026-07-12 18:47:19 | INFO |   >> No improvement for 3/10 epochs
+2026-07-12 18:49:47 | INFO | Epoch   8/50 | Train Loss: 0.6802 | Train Acc: 0.8411 | Val Loss: 1.3703 | Val Acc: 0.7050 | head_lr: 2.89e-04 | bb_lr: 9.62e-06 | Time: 2m 27s
+2026-07-12 18:49:47 | INFO |   >> No improvement for 4/10 epochs
+2026-07-12 18:52:13 | INFO | Epoch   9/50 | Train Loss: 0.6666 | Train Acc: 0.8446 | Val Loss: 1.3740 | Val Acc: 0.7041 | head_lr: 2.85e-04 | bb_lr: 9.49e-06 | Time: 2m 24s
+2026-07-12 18:52:13 | INFO |   >> No improvement for 5/10 epochs
+2026-07-12 18:54:40 | INFO | Epoch  10/50 | Train Loss: 0.6544 | Train Acc: 0.8478 | Val Loss: 1.3754 | Val Acc: 0.7041 | head_lr: 2.80e-04 | bb_lr: 9.34e-06 | Time: 2m 26s
+2026-07-12 18:54:40 | INFO |   >> No improvement for 6/10 epochs
+2026-07-12 18:57:08 | INFO | Epoch  11/50 | Train Loss: 0.6426 | Train Acc: 0.8503 | Val Loss: 1.3777 | Val Acc: 0.7024 | head_lr: 2.75e-04 | bb_lr: 9.17e-06 | Time: 2m 27s
+2026-07-12 18:57:08 | INFO |   >> No improvement for 7/10 epochs
+2026-07-12 18:59:38 | INFO | Epoch  12/50 | Train Loss: 0.6319 | Train Acc: 0.8530 | Val Loss: 1.3800 | Val Acc: 0.7037 | head_lr: 2.69e-04 | bb_lr: 8.98e-06 | Time: 2m 29s
+2026-07-12 18:59:38 | INFO |   >> No improvement for 8/10 epochs
+2026-07-12 19:02:05 | INFO | Epoch  13/50 | Train Loss: 0.6216 | Train Acc: 0.8551 | Val Loss: 1.3837 | Val Acc: 0.7055 | head_lr: 2.63e-04 | bb_lr: 8.77e-06 | Time: 2m 26s
+2026-07-12 19:02:05 | INFO |   >> No improvement for 9/10 epochs
+2026-07-12 19:04:31 | INFO | Epoch  14/50 | Train Loss: 0.6120 | Train Acc: 0.8581 | Val Loss: 1.3841 | Val Acc: 0.7013 | head_lr: 2.57e-04 | bb_lr: 8.55e-06 | Time: 2m 25s
+2026-07-12 19:04:31 | INFO |   >> No improvement for 10/10 epochs
+2026-07-12 19:04:32 | INFO | Early stopping triggered at epoch 14 (no improvement for 10 epochs). Best val acc: 0.7078 at epoch 4.
+2026-07-12 19:04:32 | INFO | ============================================================
+2026-07-12 19:04:32 | INFO | Training complete! Total time: 34m 10s
+2026-07-12 19:04:32 | INFO | Best validation accuracy: 0.7078
+2026-07-12 19:04:32 | INFO | Best model saved to: outputs/f1_strict/seed42/checkpoints/best.pt
+2026-07-12 19:04:32 | INFO | Training log saved to: outputs/f1_strict/seed42/logs/train_log.csv
+2026-07-12 19:04:32 | INFO | Running post-training per-class evaluation...
+2026-07-12 19:04:51 | INFO | Eval results saved to: outputs/f1_strict/seed42/checkpoints/eval_results.json

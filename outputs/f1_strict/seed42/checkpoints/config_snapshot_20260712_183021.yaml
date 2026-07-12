@@ -1,0 +1,60 @@
+data:
+  class_mapping_path: outputs/master_splits/seed42
+  expected_num_classes: 500
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  seed: 42
+  split_dir: outputs/d3_strict/seed42
+  split_seed: 42
+  stage: preliminary
+  test_dir: test
+  train_dir: train_dedup
+  train_seed: 42
+  use_full_training_set: false
+  val_ratio: 0.1
+eval:
+  batch_size: 256
+experiment:
+  augmentation_preset: a0
+  head_type: linear
+  id: F1_STRICT
+  mode: dev
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: false
+  num_classes: 500
+  train_ln_post: true
+  train_visual_proj: true
+  unfreeze_last_n_blocks: 0
+  use_cached_features: false
+output:
+  log_dir: outputs/f1_strict/seed42/logs
+  submission_dir: outputs/f1_strict/seed42/submissions
+runtime:
+  augmentation_preset: a0
+  experiment_id: F1_STRICT
+  head_type: linear
+  mode: dev
+  use_cached_features: false
+train:
+  amp: true
+  backbone_lr: 1.0e-05
+  backbone_weight_decay: 0.01
+  batch_size: 128
+  device: cuda
+  early_stop_patience: 10
+  epochs: 50
+  image_size: 224
+  lr: 0.0003
+  max_grad_norm: 1.0
+  min_lr_ratio: 0.01
+  num_workers: 8
+  save_dir: outputs/f1_strict/seed42/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001

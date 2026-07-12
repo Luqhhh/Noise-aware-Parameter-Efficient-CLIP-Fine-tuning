@@ -4,9 +4,11 @@
   "config_path": "configs/d3_strict.yaml",
   "split_seed": 42,
   "train_seed": 42,
-  "best_val_acc": 0.6931796163534198,
-  "dev_best_epoch": 41,
+  "best_val_acc": 0.7065723148507174,
+  "dev_best_epoch": 49,
   "trained_epochs": 50,
+  "max_epochs": 50,
+  "actual_epochs_run": 50,
   "head_type": "linear",
   "augmentation_preset": "a0",
   "use_cached_features": false,
@@ -15,7 +17,7 @@
   "batch_size": 128,
   "freeze_clip": true,
   "clip_model_name": "ViT-B/32",
-  "git_commit": "a2c2f127ca526a73014d172a955b9589f38db8c9",
+  "git_commit": "33fc9c06ebf868b671016f9eb1d7ca1116eb19d1",
   "early_stop_patience": 10,
   "early_stopped": false,
   "stopped_at_epoch": null,
@@ -23,5 +25,9 @@
   "epoch0_val_acc": null,
   "epoch0_val_loss": null,
   "parent_best_val_acc": null,
-  "epoch0_delta": null
+  "epoch0_delta": null,
+  "macro_accuracy": 0.706013560295105,
+  "median_per_class_accuracy": 0.761904776096344,
+  "bottom_10_percent_accuracy": 0.3103480041027069,
+  "micro_macro_gap": 0.0004618177584041483
 }

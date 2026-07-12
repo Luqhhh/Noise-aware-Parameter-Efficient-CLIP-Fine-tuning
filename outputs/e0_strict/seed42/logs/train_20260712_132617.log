@@ -1,0 +1,24 @@
+2026-07-12 13:26:17 | INFO | Using device: cuda
+2026-07-12 13:26:17 | INFO | Configuration: configs/e0_strict.yaml
+2026-07-12 13:26:17 | INFO | Train seed: 42
+2026-07-12 13:26:17 | INFO | Resolved runtime: experiment_id=E0_STRICT, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-12 13:26:19 | INFO | Total parameters:     88,105,716
+2026-07-12 13:26:19 | INFO | Trainable parameters: 256,500
+2026-07-12 13:26:22 | INFO | Using config epochs: 50 (dev mode)
+2026-07-12 13:26:22 | INFO | Optimizer parameter groups:
+2026-07-12 13:26:22 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-12 13:26:22 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-12 13:26:22 | INFO |   Trainable head params:       256,500
+2026-07-12 13:26:22 | INFO |   Trainable visual params:           0
+2026-07-12 13:26:22 | INFO | Starting training: 50 epochs, 726 batches/epoch
+2026-07-12 13:26:22 | INFO | Warmup steps: 1452, Total steps: 36300, Cosine steps: 34848
+2026-07-12 13:26:22 | INFO | AMP: True
+2026-07-12 13:26:22 | INFO | ============================================================
+2026-07-12 13:28:43 | INFO | Epoch   1/50 | Train Loss: 5.7184 | Train Acc: 0.1999 | Val Loss: 4.8276 | Val Acc: 0.3717 | head_lr: 2.50e-03 | bb_lr: 0.00e+00 | Time: 2m 20s
+2026-07-12 13:28:43 | INFO |   >> New best model! Val Acc: 0.3717
+2026-07-12 13:31:11 | INFO | Epoch   2/50 | Train Loss: 3.7791 | Train Acc: 0.4611 | Val Loss: 2.9229 | Val Acc: 0.5294 | head_lr: 5.00e-03 | bb_lr: 0.00e+00 | Time: 2m 27s
+2026-07-12 13:31:11 | INFO |   >> New best model! Val Acc: 0.5294
+2026-07-12 13:33:41 | INFO | Epoch   3/50 | Train Loss: 2.4473 | Train Acc: 0.5787 | Val Loss: 2.1997 | Val Acc: 0.5952 | head_lr: 4.99e-03 | bb_lr: 0.00e+00 | Time: 2m 28s
+2026-07-12 13:33:41 | INFO |   >> New best model! Val Acc: 0.5952
+2026-07-12 13:36:10 | INFO | Epoch   4/50 | Train Loss: 1.9629 | Train Acc: 0.6302 | Val Loss: 1.9184 | Val Acc: 0.6259 | head_lr: 4.98e-03 | bb_lr: 0.00e+00 | Time: 2m 27s
+2026-07-12 13:36:10 | INFO |   >> New best model! Val Acc: 0.6259

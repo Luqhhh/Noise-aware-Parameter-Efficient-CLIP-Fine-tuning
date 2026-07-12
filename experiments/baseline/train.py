@@ -150,6 +150,15 @@ def parse_args() -> argparse.Namespace:
         help="Whether logit scale is learnable for cosine head "
              "(overrides model.cos_learnable_scale).",
     )
+    # Multi-seed override
+    parser.add_argument(
+        "--seed-override",
+        type=int,
+        default=None,
+        help="Override data.seed, data.split_seed, data.train_seed "
+             "and adjust output paths to seed{N}/ subdirectories. "
+             "Used for multi-seed paired delta experiments.",
+    )
     return parser.parse_args()
 
 
@@ -737,6 +746,34 @@ def main():
     # Load config
     config = load_config(args.config)
 
+    # --seed-override: apply multi-seed path and seed adjustments
+    if args.seed_override is not None:
+        import re
+        new_seed = args.seed_override
+        config["data"]["seed"] = new_seed
+        config["data"]["split_seed"] = new_seed
+        config["data"]["train_seed"] = new_seed
+
+        # Replace seed{N} or seed_N in all path-like config values
+        def _replace_seed(path_str: str) -> str:
+            path_str = re.sub(r'/seed\d+/', f'/seed{new_seed}/', path_str)
+            path_str = re.sub(r'/seed_\d+/', f'/seed_{new_seed}/', path_str)
+            return path_str
+
+        config["data"]["split_dir"] = _replace_seed(
+            config["data"]["split_dir"])
+        config["train"]["save_dir"] = _replace_seed(
+            config["train"]["save_dir"])
+        config["output"]["log_dir"] = _replace_seed(
+            config["output"]["log_dir"])
+        config["output"]["submission_dir"] = _replace_seed(
+            config["output"].get("submission_dir",
+                                 config["output"]["log_dir"]))
+        # Also adjust class_mapping_path if present
+        if "class_mapping_path" in config["data"]:
+            config["data"]["class_mapping_path"] = _replace_seed(
+                config["data"]["class_mapping_path"])
+
     # Resolve runtime args: explicit CLI > YAML > hard default
     args = resolve_runtime_args(args, config)
 
@@ -1021,6 +1058,13 @@ def main():
             "training run; use --resume to continue a crashed run."
         )
 
+    # Declare epoch0 tracking variables (initialized to None for non-init-checkpoint runs;
+    # overwritten with computed values inside the init_checkpoint block below)
+    epoch0_val_acc = None
+    epoch0_val_loss = None
+    epoch0_parent_acc = None
+    epoch0_delta = None
+
     # Initialize model weights from checkpoint (no optimizer/scheduler/epoch)
     if args.init_checkpoint:
         init_ckpt_path = args.init_checkpoint
@@ -1113,10 +1157,6 @@ def main():
     global_step = 0
     best_val_acc = 0.0
     dev_best_epoch = None
-    epoch0_val_acc = None
-    epoch0_val_loss = None
-    epoch0_parent_acc = None
-    epoch0_delta = None
 
     if args.resume:
         resume_info = load_checkpoint(
@@ -1303,6 +1343,27 @@ def main():
 
     # Save eval_results.json for dev/confirm modes
     if mode in ("dev", "confirm"):
+        # Run enhanced per-class evaluation on the best model (post-training)
+        per_class_metrics = {}
+        if val_loader is not None:
+            train_logger.info("Running post-training per-class evaluation...")
+            from .evaluate import evaluate as evaluate_full
+
+            per_class_results = evaluate_full(
+                model, val_loader, criterion, device,
+                use_amp=train_cfg.get("amp", False),
+            )
+            per_class_metrics = {
+                "macro_accuracy": float(per_class_results["macro_accuracy"]),
+                "median_per_class_accuracy": float(
+                    per_class_results["median_per_class_accuracy"]
+                ),
+                "bottom_10_percent_accuracy": float(
+                    per_class_results["bottom_10_percent_accuracy"]
+                ),
+                "micro_macro_gap": float(per_class_results["micro_macro_gap"]),
+            }
+
         eval_results = {
             "experiment_id": experiment_id,
             "mode": mode,
@@ -1311,7 +1372,9 @@ def main():
             "train_seed": train_seed,
             "best_val_acc": float(best_val_acc),
             "dev_best_epoch": dev_best_epoch,
-            "trained_epochs": epochs,
+            "trained_epochs": epochs,  # deprecated: kept for backward compatibility
+            "max_epochs": epochs,
+            "actual_epochs_run": epoch,
             "head_type": model.head_type,
             "augmentation_preset": aug_preset,
             "use_cached_features": use_cached,
@@ -1329,6 +1392,7 @@ def main():
             "epoch0_val_loss": epoch0_val_loss,
             "parent_best_val_acc": epoch0_parent_acc,
             "epoch0_delta": epoch0_delta,
+            **per_class_metrics,
         }
         eval_path = save_dir / "eval_results.json"
         with open(eval_path, "w") as f:

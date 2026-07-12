@@ -1,0 +1,14 @@
+2026-07-12 17:45:55 | INFO | Config: configs/d3_strict.yaml
+2026-07-12 17:45:55 | INFO | Checkpoint: outputs/d3_strict/seed42/checkpoints/best.pt
+2026-07-12 17:45:55 | INFO | Device: cuda
+2026-07-12 17:45:55 | INFO | Head type: linear
+2026-07-12 17:46:00 | INFO | Loaded checkpoint from epoch 49
+2026-07-12 17:46:00 | INFO | Checkpoint best val acc: 0.7065723148507174
+2026-07-12 17:46:00 | INFO | Loaded idx_to_class mapping from checkpoint metadata.
+2026-07-12 17:46:00 | INFO | idx_to_class mapping has 500 entries.
+2026-07-12 17:46:00 | INFO | Test set: 24967 images, 98 batches
+2026-07-12 17:47:58 | INFO | Raw predictions saved to: outputs/d3_strict/seed42/submissions/pred_raw.csv
+2026-07-12 17:47:58 | INFO | Total predictions: 24967
+2026-07-12 17:47:59 | INFO | Unique predicted classes: 499 / 500
+2026-07-12 17:47:59 | INFO | Prediction label lengths: {4: 24967}
+2026-07-12 17:47:59 | INFO | Inference complete.

@@ -1,0 +1,16 @@
+2026-07-12 13:39:42 | INFO | Using device: cuda
+2026-07-12 13:39:42 | INFO | Configuration: configs/e0_strict.yaml
+2026-07-12 13:39:42 | INFO | Train seed: 42
+2026-07-12 13:39:42 | INFO | Resolved runtime: experiment_id=E0_STRICT, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-12 13:39:44 | INFO | Total parameters:     88,105,716
+2026-07-12 13:39:44 | INFO | Trainable parameters: 256,500
+2026-07-12 13:39:47 | INFO | Using config epochs: 50 (dev mode)
+2026-07-12 13:39:47 | INFO | Optimizer parameter groups:
+2026-07-12 13:39:47 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-12 13:39:47 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-12 13:39:47 | INFO |   Trainable head params:       256,500
+2026-07-12 13:39:47 | INFO |   Trainable visual params:           0
+2026-07-12 13:39:47 | INFO | Starting training: 50 epochs, 726 batches/epoch
+2026-07-12 13:39:47 | INFO | Warmup steps: 1452, Total steps: 36300, Cosine steps: 34848
+2026-07-12 13:39:47 | INFO | AMP: True
+2026-07-12 13:39:47 | INFO | ============================================================

@@ -128,6 +128,12 @@ def main():
     df = pd.DataFrame(records)
     logger.info("Found %d images in %d classes.", len(df), df["class_name"].nunique())
 
+    # Derive integer labels from sorted class names (lexicographic order)
+    sorted_classes = sorted(df["class_name"].unique())
+    class_to_label = {c: i for i, c in enumerate(sorted_classes)}
+    df["label"] = df["class_name"].map(class_to_label)
+    logger.info("Assigned labels 0-%d to %d classes.", len(sorted_classes) - 1, len(sorted_classes))
+
     # ------------------------------------------------------------------
     # SHA-256 group-aware splitting (strict-v2)
     # ------------------------------------------------------------------

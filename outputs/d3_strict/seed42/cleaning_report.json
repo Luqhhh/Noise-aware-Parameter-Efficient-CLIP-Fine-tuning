@@ -1,9 +1,10 @@
 {
-  "master_train_count": 92896,
-  "clean_train_count": 91195,
-  "removed_count": 1701,
-  "removed_ratio": 0.0183,
+  "master_train_count": 92902,
+  "clean_train_count": 91375,
+  "removed_count": 1527,
+  "removed_ratio": 0.0164,
   "val_untouched": true,
-  "val_count": 10322,
-  "note": "train-only cleaning: paths point to train_dedup/"
+  "val_count": 10316,
+  "removal_list_source": "outputs/d3_strict/seed42/removal_list_train_only.txt",
+  "note": "train-only cleaning applied to seed 42; paths point to train_dedup/; removal list from seed 42 (content-based, seed-independent)"
 }

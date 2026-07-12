@@ -1,7 +1,0 @@
-2026-07-11 14:38:34 | INFO | Using device: cuda
-2026-07-11 14:38:34 | INFO | Configuration: outputs/e0/search/generated_configs/lr_3e-03__wd_1e-04.yaml
-2026-07-11 14:38:34 | INFO | Train seed: 42
-2026-07-11 14:38:34 | INFO | Resolved runtime: experiment_id=E0, mode=dev, head_type=linear, augmentation=a0, cached=True
-2026-07-11 14:38:37 | INFO | Total parameters:     88,105,716
-2026-07-11 14:38:37 | INFO | Trainable parameters: 256,500
-2026-07-11 14:38:37 | INFO | Using cached features for training.

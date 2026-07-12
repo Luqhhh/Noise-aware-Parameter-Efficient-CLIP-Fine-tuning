@@ -54,11 +54,22 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - `test_init_checkpoint.py`（4 tests）：权重加载、跨架构兼容、requires_grad 保持
 - `test_scheduler_ratio.py`（7 tests）：余弦因子边界、比例保持、缓存 guard
 
-### 6. 待完成
+### 6. 当前状态与待完成
 
-- **F0-F3 部分解冻实验**：从 D3 checkpoint 启动，依次测试冻结续训 → ln_post+proj → 最后一个 block → 最后两个 blocks（条件触发）
-- **多 seed 确认**：最终模型在 seeds 3407/2026 上做 paired delta 验证
-- **E4 (A3) 增强对照**：正在由队友执行
+**已完成 (strict protocol, seed=42):**
+- E0-strict (69.09%): Frozen CLIP + linear head baseline on unified master split
+- D3-strict (69.32%): Train-only dedup, +0.23pp vs E0
+- F0-strict (69.33%): Frozen continue control from D3-strict (no gain beyond epoch 1)
+- F1-strict (69.43%): ln_post+proj unfrozen from D3-strict, +0.12pp vs D3
+
+**已废弃 (data leakage):**
+- F1 (old): 80.13% — invalid due to 88% validation overlap with parent training data
+- F1b (old): 80.13% — same leakage as F1
+- F2 (old): blocked by invalid parent F1
+
+**待完成:**
+- **多 seed 确认 (D3 only)**: D3-strict + E0-strict 在 seeds 3407/2026 上做 paired delta 验证（F1 未通过 +0.30pp gate，不继续多 seed）
+- **E4 (A3) 增强对照**: 正在由队友执行
 
 ## 项目结构
 
@@ -86,21 +97,25 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 ## Strict Validation Protocol (2026-07-12)
 
-After discovering 88% validation leakage in F1 (child val overlapped with parent train), all baselines were rebuilt on a unified master split.
+After discovering 88% validation leakage in F1 and 3.79% content leakage in the original seed 42 split, all baselines were rebuilt on a SHA-256 dedup-enabled master split.
 
-| Experiment | Val Acc | Protocol | vs E0 | vs D3 | Notes |
+| Experiment | Val Acc | vs E0 | vs D3 | Epochs | Notes |
 |---|---|---|---|---|---|
-| E0-strict | TBD | unified_master_split | — | — | Frozen CLIP + linear head |
-| D3-strict | TBD | unified_master_split | TBD | — | Train-only dedup, same val |
-| F0-strict | TBD | unified_master_split | — | TBD | Frozen continue control |
-| F1-strict | TBD | unified_master_split | — | TBD | ln_post+proj, audit passed |
+| E0-strict | 70.45% | — | — | 34 (manual stop) | Frozen CLIP + linear head, seed=42 |
+| D3-strict | 70.66% | +0.21pp | — | 49† | Train-only dedup (1,527 removed), seed=42 |
+| F0-strict | 70.64% | — | −0.02pp | 5† | Frozen continue control (D3-strict init), no gain |
+| F1-strict | 70.78% | — | +0.12pp | 4† | ln_post+proj unfrozen (D3-strict init), below +0.30pp gate |
 
-**Key changes:**
-- All experiments share outputs/master_splits/seed42/ for train/val
-- D3 cleaning restricted to training data only
-- Parent-child split audit prevents stage-to-stage leakage
-- Epoch-0 validation gate verifies checkpoint integrity
-- Old F1 80.13% deprecated due to validation leakage
+† Early stopped (patience=10).
+
+**Key changes from original:**
+- Master split rebuilt with `duplicate_grouping_enabled: true` (SHA-256 group-aware) — **0 cross-boundary SHA-256 groups** (was 192 groups / 391 leaked images)
+- All experiments share `outputs/master_splits/seed42/` for train/val
+- D3 train-only cleaning (CLIP centroid arbitration, content-based removal list)
+- Parent-child split audit + epoch-0 validation gate
+- Old F1 80.13% deprecated due to 88% validation leakage; output dirs deleted
+
+**Per-class metrics (seed=42):** micro ≈ macro (gap < 0.01pp); bottom-10% accuracy: E0 27.8% → D3 28.9% → F1 29.8% — D3/F1 help hardest classes
 ## Git 策略
 
 - ✅ 跟踪：`.json/.csv/.log/.yaml` 结果文件

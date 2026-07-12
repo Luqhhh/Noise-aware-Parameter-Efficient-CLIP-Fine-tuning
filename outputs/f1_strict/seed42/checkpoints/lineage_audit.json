@@ -1,0 +1,120 @@
+{
+  "generated_at": "2026-07-12T05:22:36.026373+00:00",
+  "submission_checkpoint": "outputs/f1_strict/seed42/checkpoints/best.pt",
+  "submission": {
+    "checkpoint_path": "outputs/f1_strict/seed42/checkpoints/best.pt",
+    "ckpt_sha256": "9130de3aaa352fd9bb3513f12eaa4c034f3b6c2e43d8632cce20348582aa6f0f",
+    "ckpt_epoch": 17,
+    "ckpt_best_val_acc": 0.6943421817477233,
+    "ckpt_config_present": true,
+    "eval_results": {
+      "experiment_id": "F1_STRICT",
+      "best_val_acc": 0.6943421817477233,
+      "dev_best_epoch": 17,
+      "actual_epochs_run": null,
+      "max_epochs": null,
+      "early_stopped": true,
+      "stopped_at_epoch": 27,
+      "git_commit": "a2c2f127ca526a73014d172a955b9589f38db8c9",
+      "config_path": "configs/f1_strict.yaml",
+      "init_checkpoint": "outputs/d3_strict/seed42/checkpoints/best.pt",
+      "split_seed": 42,
+      "train_seed": 42,
+      "epoch0_val_acc": null,
+      "epoch0_delta": null,
+      "macro_accuracy": null,
+      "micro_macro_gap": null,
+      "bottom_10_percent_accuracy": null
+    },
+    "init_checkpoint": "outputs/d3_strict/seed42/checkpoints/best.pt",
+    "split_lineage_audit": {
+      "parent_experiment": "outputs/d3_strict",
+      "parent_checkpoint": "outputs/d3_strict/seed42/checkpoints/best.pt",
+      "parent_train_count": 91195,
+      "parent_val_count": 10322,
+      "child_train_count": 91195,
+      "child_val_count": 10322,
+      "child_val_in_parent_train": 0,
+      "child_val_in_parent_val": 10322,
+      "child_val_equals_parent_val": true,
+      "protocol_valid": true
+    },
+    "config_snapshot": "outputs/f1_strict/seed42/checkpoints/config_snapshot_20260712_075240.yaml",
+    "split_info": {
+      "experiment_id": "F1_STRICT",
+      "split_dir": "outputs/d3_strict/seed42",
+      "train.csv_rows": 91195,
+      "train.csv_sha256": "646fc7b90b7c244a402f6376d966f40148b5b278dad29cce0c6955c92a1b6666",
+      "val.csv_rows": 10322,
+      "val.csv_sha256": "607e019165912bb0639efb456b7e8dea122b3e8579a2344dedb8109798921eae",
+      "cleaning_report": {
+        "master_train_count": 92896,
+        "clean_train_count": 91195,
+        "removed_count": 1701,
+        "removed_ratio": 0.0183,
+        "val_untouched": true,
+        "val_count": 10322,
+        "note": "train-only cleaning: paths point to train_dedup/"
+      },
+      "num_classes": 500
+    }
+  },
+  "parent": {
+    "checkpoint_path": "outputs/d3_strict/seed42/checkpoints/best.pt",
+    "ckpt_sha256": "a53a3055698b865c501766a6685ddc5c27e33241d38205b46bcb3b87878ed447",
+    "ckpt_epoch": 41,
+    "ckpt_best_val_acc": 0.6931796163534198,
+    "ckpt_config_present": true,
+    "eval_results": {
+      "experiment_id": "D3_STRICT",
+      "best_val_acc": 0.6931796163534198,
+      "dev_best_epoch": 41,
+      "actual_epochs_run": null,
+      "max_epochs": null,
+      "early_stopped": false,
+      "stopped_at_epoch": null,
+      "git_commit": "a2c2f127ca526a73014d172a955b9589f38db8c9",
+      "config_path": "configs/d3_strict.yaml",
+      "init_checkpoint": null,
+      "split_seed": 42,
+      "train_seed": 42,
+      "epoch0_val_acc": null,
+      "epoch0_delta": null,
+      "macro_accuracy": null,
+      "micro_macro_gap": null,
+      "bottom_10_percent_accuracy": null
+    },
+    "init_checkpoint": null,
+    "config_snapshot": "outputs/d3_strict/seed42/checkpoints/config_snapshot_20260712_051505.yaml",
+    "split_info": {
+      "experiment_id": "D3_STRICT",
+      "split_dir": "outputs/d3_strict/seed42",
+      "train.csv_rows": 91195,
+      "train.csv_sha256": "646fc7b90b7c244a402f6376d966f40148b5b278dad29cce0c6955c92a1b6666",
+      "val.csv_rows": 10322,
+      "val.csv_sha256": "607e019165912bb0639efb456b7e8dea122b3e8579a2344dedb8109798921eae",
+      "cleaning_report": {
+        "master_train_count": 92896,
+        "clean_train_count": 91195,
+        "removed_count": 1701,
+        "removed_ratio": 0.0183,
+        "val_untouched": true,
+        "val_count": 10322,
+        "note": "train-only cleaning: paths point to train_dedup/"
+      },
+      "num_classes": 500
+    }
+  },
+  "integrity_checks": [
+    {
+      "check": "submission_val == parent_val",
+      "result": "PASS",
+      "detail": "sub=607e019165912bb0... par=607e019165912bb0..."
+    },
+    {
+      "check": "no_val_leakage_from_parent_train",
+      "result": "PASS",
+      "detail": "child_val_in_parent_train=0"
+    }
+  ]
+}
