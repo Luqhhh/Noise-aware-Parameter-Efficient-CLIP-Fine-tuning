@@ -34,7 +34,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - 203/1032 组高置信度仲裁，829 组低置信度整组移除
 - 最终过滤 1,892 张图片
 
-**去重后从 69.86% → 70.53%（+0.67pp）**，标签矛盾的直接证据和修复收益均被验证。
+**历史探索结果**：旧独立 split 上 D3 达到 70.53%（+0.67pp vs 旧 E0），但因验证集与 E0 不共享，该 +0.67pp 不作为严格消融证据。当前严格 paired delta 等待 E0_STRICT 干净重跑完成后计算。
 
 ### 4. 部分解冻基础设施
 
@@ -56,7 +56,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - `test_run_artifact_guard.py`（7 tests）：fresh-run 产物保护、resume 放行、--allow-overwrite
 - `test_best_checkpoint_post_eval.py`（4 tests）：best.pt 重载、strict load 校验
 - `test_metric_consistency.py`（7 tests）：micro-macro gap 一致性、bottom-10% 计算
-- `test_submission_manifest.py`（11 tests）：SHA-256 哈希、ZIP 校验、标签格式、重复登记拒绝
+- `test_submission_manifest.py`（18 tests）：SHA-256 哈希、ZIP vs CSV hash 区分、标签格式、预测计数、重复登记拒绝、manifest schema
 
 ### 6. 当前状态与待完成
 
@@ -86,7 +86,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 │   └── cosine/          # Cosine Head 实验（委托 baseline）
 ├── configs/             # 每个实验一个 YAML
 ├── scripts/             # 数据准备、超参搜索、去重仲裁、提交验证
-├── tests/               # 104 个 pytest 测试
+├── tests/               # 147 个 pytest 测试
 ├── outputs/             # 实验结果（tracked in git，*.pt 忽略）
 └── docs/superpowers/    # 设计文档与实施计划
 ```

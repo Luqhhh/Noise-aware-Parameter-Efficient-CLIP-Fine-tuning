@@ -36,14 +36,14 @@ def _sha256_hex(path: Path, chunk_size: int = 1 << 20) -> str:
 
 
 def _validate_labels(csv_path: Path) -> bool:
-    """Every label in the CSV must match ^\\d{4}$."""
+    """Every label in the CSV must match ^\\d{4}$.
+
+    Note: pred_results.csv has NO header — it is the submission format directly.
+    """
     import re
     pattern = re.compile(r"^\d{4}$")
     with open(csv_path, "r", encoding="utf-8") as f:
         reader = csv.reader(f)
-        header = next(reader, None)
-        if header is None:
-            return False
         for row in reader:
             if len(row) < 2:
                 return False
@@ -54,9 +54,9 @@ def _validate_labels(csv_path: Path) -> bool:
 
 
 def _count_predictions(csv_path: Path) -> int:
+    """Count data rows in pred_results.csv (no header)."""
     with open(csv_path, "r", encoding="utf-8") as f:
         reader = csv.reader(f)
-        next(reader, None)  # skip header
         return sum(1 for _ in reader)
 
 
@@ -64,7 +64,10 @@ def _validate_zip_contents(
     zip_path: Path,
     expected_csv_path: Path,
 ) -> dict:
-    """Validate ZIP: single pred_results.csv, hash matches external."""
+    """Validate ZIP: single pred_results.csv, hash matches external.
+
+    Returns dict with valid, internal_csv_sha256, zip_sha256 keys.
+    """
     with zipfile.ZipFile(zip_path, "r") as zf:
         names = zf.namelist()
         if names != ["pred_results.csv"]:
@@ -77,18 +80,24 @@ def _validate_zip_contents(
                 if not chunk:
                     break
                 h.update(chunk)
-            zip_csv_hash = h.hexdigest()
+            internal_csv_hash = h.hexdigest()
 
     external_hash = _sha256_hex(expected_csv_path)
 
-    if zip_csv_hash != external_hash:
+    if internal_csv_hash != external_hash:
         return {
             "valid": False,
-            "error": f"Hash mismatch: zip={zip_csv_hash[:16]}..., "
+            "error": f"Hash mismatch: internal={internal_csv_hash[:16]}..., "
                      f"external={external_hash[:16]}...",
         }
 
-    return {"valid": True, "sha256": zip_csv_hash}
+    actual_zip_hash = _sha256_hex(zip_path)
+
+    return {
+        "valid": True,
+        "internal_csv_sha256": internal_csv_hash,
+        "zip_sha256": actual_zip_hash,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -140,6 +149,24 @@ class TestSubmissionManifestHashes:
         result = _validate_zip_contents(zip_path, csv_path)
         assert result["valid"], result.get("error", "")
 
+    def test_zip_hash_differs_from_csv_hash(self, tmp_path):
+        """The ZIP file's own SHA-256 must differ from the internal CSV hash."""
+        csv_path = tmp_path / "pred_results.csv"
+        csv_content = "img.jpg, 0001\n" * 100
+        csv_path.write_text(csv_content, encoding="utf-8")
+
+        zip_path = tmp_path / "submission.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("pred_results.csv", csv_content)
+
+        result = _validate_zip_contents(zip_path, csv_path)
+        assert result["valid"]
+        # The ZIP file hash must NOT equal the internal CSV hash
+        assert result["internal_csv_sha256"] != result["zip_sha256"], (
+            "ZIP file SHA-256 must differ from internal CSV SHA-256 — "
+            "they are different byte streams"
+        )
+
     def test_zip_extra_files_rejected(self, tmp_path):
         """ZIP with extra files must fail validation."""
         csv_path = tmp_path / "pred_results.csv"
@@ -186,7 +213,6 @@ class TestLabelValidation:
     def test_valid_four_digit_labels(self, tmp_path):
         csv_path = tmp_path / "pred.csv"
         csv_path.write_text(
-            "image_name, label\n"
             "img_001.jpg, 0001\n"
             "img_002.jpg, 0499\n"
             "img_003.jpg, 0000\n",
@@ -197,21 +223,21 @@ class TestLabelValidation:
     def test_invalid_three_digit_label(self, tmp_path):
         csv_path = tmp_path / "pred.csv"
         csv_path.write_text(
-            "image_name, label\nimg.jpg, 001\n", encoding="utf-8"
+            "img.jpg, 001\n", encoding="utf-8"
         )
         assert not _validate_labels(csv_path)
 
     def test_invalid_five_digit_label(self, tmp_path):
         csv_path = tmp_path / "pred.csv"
         csv_path.write_text(
-            "image_name, label\nimg.jpg, 00001\n", encoding="utf-8"
+            "img.jpg, 00001\n", encoding="utf-8"
         )
         assert not _validate_labels(csv_path)
 
     def test_non_numeric_label(self, tmp_path):
         csv_path = tmp_path / "pred.csv"
         csv_path.write_text(
-            "image_name, label\nimg.jpg, abcd\n", encoding="utf-8"
+            "img.jpg, abcd\n", encoding="utf-8"
         )
         assert not _validate_labels(csv_path)
 
@@ -221,7 +247,8 @@ class TestPredictionCount:
 
     def test_exact_count(self, tmp_path):
         csv_path = tmp_path / "pred.csv"
-        lines = ["image_name, label"]
+        # pred_results.csv has NO header — submission format
+        lines = []
         for i in range(24967):
             lines.append(f"img_{i:05d}.jpg, {i % 500:04d}")
         csv_path.write_text("\n".join(lines), encoding="utf-8")
@@ -230,7 +257,8 @@ class TestPredictionCount:
 
     def test_wrong_count_detected(self, tmp_path):
         csv_path = tmp_path / "pred.csv"
-        lines = ["image_name, label"]
+        # pred_results.csv has NO header — submission format
+        lines = []
         for i in range(100):
             lines.append(f"img_{i:05d}.jpg, {i % 500:04d}")
         csv_path.write_text("\n".join(lines), encoding="utf-8")
@@ -273,10 +301,15 @@ class TestManifestSchema:
         "checkpoint_path",
         "checkpoint_sha256",
         "checkpoint_epoch",
+        "split_seed",
+        "train_seed",
+        "split_dir",
+        "val_csv_sha256",
         "local_micro_accuracy",
         "local_macro_accuracy",
         "prediction_csv_path",
         "prediction_csv_sha256",
+        "zip_internal_csv_sha256",
         "submission_zip_path",
         "submission_zip_sha256",
         "online_accuracy",
@@ -292,12 +325,17 @@ class TestManifestSchema:
             "checkpoint_path": "outputs/d3_strict/seed42/checkpoints/best.pt",
             "checkpoint_sha256": "sha256...",
             "checkpoint_epoch": 49,
+            "split_seed": 42,
+            "train_seed": 42,
+            "split_dir": "outputs/d3_strict/seed42",
+            "val_csv_sha256": "70a63d5a...",
             "local_micro_accuracy": 0.7065723,
-            "local_macro_accuracy": 0.7060,
+            "local_macro_accuracy": 0.7060997,
             "prediction_csv_path": "outputs/d3_strict/seed42/submissions/pred_results.csv",
-            "prediction_csv_sha256": "sha256...",
+            "prediction_csv_sha256": "79e55629...",
+            "zip_internal_csv_sha256": "79e55629...",
             "submission_zip_path": "outputs/d3_strict/seed42/submissions/submission.zip",
-            "submission_zip_sha256": "sha256...",
+            "submission_zip_sha256": "72036e7b...",
             "online_accuracy": 0.573397,
             "local_online_gap": 0.1331753,
             "num_predictions": 24967,

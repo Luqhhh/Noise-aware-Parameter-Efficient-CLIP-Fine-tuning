@@ -53,14 +53,15 @@ def _get_git_commit() -> str:
 
 
 def _validate_labels(csv_path: Path) -> None:
-    """Every label must match ^\\d{4}$."""
+    """Every label must match ^\\d{4}$.
+
+    Note: pred_results.csv has NO header row — it is the submission
+    format ``image_name.jpg, 0001`` directly.
+    """
     pattern = re.compile(r"^\d{4}$")
     with open(csv_path, "r", encoding="utf-8") as f:
         reader = csv.reader(f)
-        header = next(reader, None)
-        if header is None:
-            raise ValueError("CSV has no header row")
-        for lineno, row in enumerate(reader, start=2):
+        for lineno, row in enumerate(reader, start=1):
             if len(row) < 2:
                 raise ValueError(
                     f"Line {lineno}: expected 2 fields, got {len(row)}"
@@ -74,15 +75,20 @@ def _validate_labels(csv_path: Path) -> None:
 
 
 def _count_predictions(csv_path: Path) -> int:
+    """Count data rows in pred_results.csv (no header row)."""
     with open(csv_path, "r", encoding="utf-8") as f:
         reader = csv.reader(f)
-        next(reader, None)
         return sum(1 for _ in reader)
 
 
-def _validate_zip(zip_path: Path, csv_path: Path) -> str:
-    """Validate ZIP contents and return the internal CSV SHA-256."""
-    csv_sha = _sha256_hex(csv_path)
+def _validate_zip(zip_path: Path, csv_path: Path) -> tuple:
+    """Validate ZIP contents and return (internal_csv_sha256, zip_sha256).
+
+    Returns:
+        (internal_csv_sha256, actual_zip_file_sha256)
+        — two *different* hashes.
+    """
+    external_csv_sha = _sha256_hex(csv_path)
 
     with zipfile.ZipFile(zip_path, "r") as zf:
         names = zf.namelist()
@@ -92,22 +98,25 @@ def _validate_zip(zip_path: Path, csv_path: Path) -> str:
                 f"found: {names}"
             )
 
-        with zf.open("pred_results.csv") as zf_csv:
+        with zf.open("pred_results.csv") as f:
             h = hashlib.sha256()
             while True:
-                chunk = zf_csv.read(1 << 20)
+                chunk = f.read(1 << 20)
                 if not chunk:
                     break
                 h.update(chunk)
-            zip_hash = h.hexdigest()
+            internal_csv_sha = h.hexdigest()
 
-    if zip_hash != csv_sha:
+    if internal_csv_sha != external_csv_sha:
         raise ValueError(
-            f"ZIP-internal CSV hash ({zip_hash[:16]}...) does not "
-            f"match external CSV hash ({csv_sha[:16]}...)"
+            f"ZIP-internal CSV hash ({internal_csv_sha[:16]}...) does not "
+            f"match external CSV hash ({external_csv_sha[:16]}...)"
         )
 
-    return zip_hash
+    # The actual ZIP file hash — NOT the internal CSV hash
+    actual_zip_sha = _sha256_hex(zip_path)
+
+    return internal_csv_sha, actual_zip_sha
 
 
 # ---------------------------------------------------------------------------
@@ -174,13 +183,17 @@ def main():
     # ── Load checkpoint metadata (streaming hash, no full load) ─────
     ckpt_sha = _sha256_hex(ckpt_path)
 
-    # Lightweight checkpoint metadata peek: read only small header keys
     import torch
-    # We must load the checkpoint to read epoch/best_val_acc, but we
-    # already computed the streaming hash before this point.
     ckpt = torch.load(str(ckpt_path), map_location="cpu")
     ckpt_epoch = ckpt.get("epoch")
     ckpt_best_val_acc = float(ckpt.get("best_val_acc", -1.0))
+
+    # ── Extract seeds from checkpoint config ────────────────────────
+    ckpt_config = ckpt.get("config", {})
+    ckpt_data = ckpt_config.get("data", {})
+    split_seed = ckpt_data.get("split_seed")
+    train_seed = ckpt_data.get("train_seed")
+    split_dir = ckpt_data.get("split_dir", "")
 
     # ── Consistency: checkpoint best_val_acc == reeval micro ─────────
     if abs(ckpt_best_val_acc - local_micro) > 1e-8:
@@ -191,24 +204,31 @@ def main():
         )
 
     # ── Validate prediction CSV ─────────────────────────────────────
+    # pred_results.csv has NO header — it is the submission format directly.
     _validate_labels(csv_path)
     num_preds = _count_predictions(csv_path)
-    # The official test set contains 24,967 images; one may be skipped
-    # by the inference script if it is corrupted/unreadable, yielding
-    # 24,966 predictions.  Both counts are valid for platform submission.
-    if num_preds not in (24966, 24967):
+
+    EXPECTED = 24967
+    if num_preds != EXPECTED:
         raise ValueError(
-            f"Expected 24966 or 24967 predictions, got {num_preds}"
+            f"Expected exactly {EXPECTED} predictions, got {num_preds}. "
+            f"Every test-set image must have a prediction. "
+            f"If an image fails to load, use a deterministic fallback "
+            f"(e.g. zero tensor → most frequent class) rather than "
+            f"dropping the row."
         )
 
     csv_sha = _sha256_hex(csv_path)
 
     # ── Validate ZIP ────────────────────────────────────────────────
-    zip_sha = _validate_zip(zip_path, csv_path)
+    internal_csv_sha, zip_sha = _validate_zip(zip_path, csv_path)
 
     # ── Compute gap ─────────────────────────────────────────────────
     online_acc = args.online_accuracy
     gap = local_micro - online_acc
+
+    # ── Val CSV hash from reeval results ─────────────────────────────
+    val_csv_sha256 = eval_data.get("val_csv_sha256", "")
 
     # ── Build manifest ──────────────────────────────────────────────
     git_commit = _get_git_commit()
@@ -220,10 +240,15 @@ def main():
         "checkpoint_path": str(ckpt_path),
         "checkpoint_sha256": ckpt_sha,
         "checkpoint_epoch": ckpt_epoch,
+        "split_seed": split_seed,
+        "train_seed": train_seed,
+        "split_dir": split_dir,
+        "val_csv_sha256": val_csv_sha256,
         "local_micro_accuracy": local_micro,
         "local_macro_accuracy": local_macro,
         "prediction_csv_path": str(csv_path),
         "prediction_csv_sha256": csv_sha,
+        "zip_internal_csv_sha256": internal_csv_sha,
         "submission_zip_path": str(zip_path),
         "submission_zip_sha256": zip_sha,
         "online_accuracy": online_acc,
@@ -238,13 +263,16 @@ def main():
         f.write("\n")
 
     print(f"Manifest written to: {output_path}")
-    print(f"  experiment:    {manifest['experiment_id']}")
-    print(f"  ckpt epoch:    {manifest['checkpoint_epoch']}")
-    print(f"  local micro:   {manifest['local_micro_accuracy']:.8f}")
-    print(f"  local macro:   {manifest['local_macro_accuracy']:.8f}")
-    print(f"  online:        {manifest['online_accuracy']:.6f}")
-    print(f"  gap:           {manifest['local_online_gap']:+.6f}")
-    print(f"  predictions:   {manifest['num_predictions']}")
+    print(f"  experiment:       {manifest['experiment_id']}")
+    print(f"  ckpt epoch:       {manifest['checkpoint_epoch']}")
+    print(f"  split_seed:       {manifest['split_seed']}")
+    print(f"  train_seed:       {manifest['train_seed']}")
+    print(f"  local micro:      {manifest['local_micro_accuracy']:.8f}")
+    print(f"  local macro:      {manifest['local_macro_accuracy']:.8f}")
+    print(f"  online:           {manifest['online_accuracy']:.6f}")
+    print(f"  gap:              {manifest['local_online_gap']:+.6f}")
+    print(f"  predictions:      {manifest['num_predictions']}")
+    print(f"  zip sha256:       {zip_sha}")
 
 
 if __name__ == "__main__":
