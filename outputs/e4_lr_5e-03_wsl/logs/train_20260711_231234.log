@@ -1,0 +1,16 @@
+2026-07-11 23:12:34 | INFO | Using device: cuda
+2026-07-11 23:12:34 | INFO | Configuration: configs/e4_augmentation.wsl.local.yaml
+2026-07-11 23:12:34 | INFO | Train seed: 42
+2026-07-11 23:12:34 | INFO | Resolved runtime: experiment_id=E4, mode=dev, head_type=linear, augmentation=a3, cached=False
+2026-07-11 23:12:40 | INFO | Total parameters:     88,105,716
+2026-07-11 23:12:40 | INFO | Trainable parameters: 256,500
+2026-07-11 23:12:46 | INFO | Using config epochs: 50 (dev mode)
+2026-07-11 23:12:46 | INFO | Optimizer parameter groups:
+2026-07-11 23:12:46 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-11 23:12:46 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-11 23:12:46 | INFO |   Trainable head params:       256,500
+2026-07-11 23:12:46 | INFO |   Trainable visual params:           0
+2026-07-11 23:12:46 | INFO | Starting training: 50 epochs, 728 batches/epoch
+2026-07-11 23:12:46 | INFO | Warmup steps: 728, Total steps: 36400, Cosine steps: 35672
+2026-07-11 23:12:46 | INFO | AMP: True
+2026-07-11 23:12:46 | INFO | ============================================================

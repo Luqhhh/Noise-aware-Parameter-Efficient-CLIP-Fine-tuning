@@ -1,0 +1,20 @@
+2026-07-11 23:14:35 | INFO | Using device: cuda
+2026-07-11 23:14:35 | INFO | Configuration: configs/e4_augmentation.wsl.local.yaml
+2026-07-11 23:14:35 | INFO | Train seed: 42
+2026-07-11 23:14:35 | INFO | Resolved runtime: experiment_id=E4, mode=dev, head_type=linear, augmentation=a3, cached=False
+2026-07-11 23:14:40 | INFO | Total parameters:     88,105,716
+2026-07-11 23:14:40 | INFO | Trainable parameters: 256,500
+2026-07-11 23:14:45 | INFO | Using config epochs: 50 (dev mode)
+2026-07-11 23:14:45 | INFO | Optimizer parameter groups:
+2026-07-11 23:14:45 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-11 23:14:45 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-11 23:14:45 | INFO |   Trainable head params:       256,500
+2026-07-11 23:14:45 | INFO |   Trainable visual params:           0
+2026-07-11 23:14:45 | INFO | Starting training: 50 epochs, 728 batches/epoch
+2026-07-11 23:14:45 | INFO | Warmup steps: 728, Total steps: 36400, Cosine steps: 35672
+2026-07-11 23:14:45 | INFO | AMP: True
+2026-07-11 23:14:45 | INFO | ============================================================
+2026-07-11 23:21:02 | INFO | Epoch   1/50 | Train Loss: 5.4941 | Train Acc: 0.1788 | Val Loss: 4.0961 | Val Acc: 0.3649 | head_lr: 5.00e-03 | bb_lr: 0.00e+00 | Time: 6m 17s
+2026-07-11 23:21:02 | INFO |   >> New best model! Val Acc: 0.3649
+2026-07-11 23:27:30 | INFO | Epoch   2/50 | Train Loss: 3.4805 | Train Acc: 0.4235 | Val Loss: 2.6222 | Val Acc: 0.5274 | head_lr: 4.99e-03 | bb_lr: 0.00e+00 | Time: 6m 25s
+2026-07-11 23:27:30 | INFO |   >> New best model! Val Acc: 0.5274
