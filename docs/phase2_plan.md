@@ -154,7 +154,7 @@ $$\text{logits}_{tta} = \frac{\text{logits}_{original} + \text{logits}_{flip}}{2
 - macro >= D3 + 0.20pp
 - bottom-10% >= D3 + 1.00pp，且 micro 不下降超过 0.05pp
 
-实际结果：micro +0.145pp, macro +0.150pp（均 < 0.20pp gate），但用户决定保留 TTA 分支活跃，用于后续平台提交实验。
+实际结果：micro +0.145pp, macro +0.150pp（均 < 0.20pp gate），但用户决定保留 TTA 分支活跃。平台提交得分 **58.3090%**，vs D3（57.3397%）**+0.9693pp**，接近 1.0pp 阈值。TTA 验证为平台有效方向。
 
 ### TA2：类别先验 logit adjustment
 

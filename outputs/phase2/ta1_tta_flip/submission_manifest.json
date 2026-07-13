@@ -14,5 +14,7 @@
   "submission_zip_path": "/home/lux1/noise/outputs/phase2/ta1_tta_flip/submission.zip",
   "submission_zip_sha256": "6fac5374e48cb70228fdd405f1090f5610fd5de82a25dd974547819dd675fb52",
   "num_predictions": 24967,
-  "created_at_utc": "2026-07-12T15:05:03Z"
+  "created_at_utc": "2026-07-12T15:05:03Z",
+  "online_accuracy": 0.58309,
+  "local_online_gap": 0.12493636680884068
 }

@@ -121,6 +121,11 @@ E0_STRICT: clean rerun completed (50 epochs, best epoch 47, no early stop).
 - Manifest: `outputs/d3_strict/seed42/submissions/submission_manifest.json`
 - Registry: `results/submission_registry.csv` (entry `D3_STRICT_20260712_123554`)
 
+**TA1_TTA_FLIP Platform Submission:**
+- Local: 70.80% → Platform: **58.3090%** → Gap: 12.49pp
+- vs D3: platform **+0.97pp** (57.34% → 58.31%), TTA validated as platform-effective
+- Predictions: 24,967, 0 fallback
+
 **Key changes from original:**
 - Master split rebuilt with `duplicate_grouping_enabled: true` (SHA-256 group-aware) — **0 cross-boundary SHA-256 groups** (was 192 groups / 391 leaked images)
 - All experiments share `outputs/master_splits/seed42/` for train/val
