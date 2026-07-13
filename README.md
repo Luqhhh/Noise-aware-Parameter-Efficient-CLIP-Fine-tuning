@@ -58,24 +58,32 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - `test_metric_consistency.py`（7 tests）：micro-macro gap 一致性、bottom-10% 计算
 - `test_submission_manifest.py`（18 tests）：SHA-256 哈希、ZIP vs CSV hash 区分、标签格式、预测计数、重复登记拒绝、manifest schema
 
-### 6. 当前状态与待完成
+### 6. 平台结果总览
+
+| 实验 | 平台分数 | vs ref (D3) | vs gce_q07 (B2) | 推理策略 |
+|------|---------|-------------|-----------------|----------|
+| ref（原 D3_STRICT） | 57.3397% | — | — | 单视图 |
+| ref + Flip TTA | 58.3090% | +0.9693pp | — | 2-view mean logits |
+| **gce_q07（原 B2_GCE07）** | **58.9578%** | +1.6181pp | — | 单视图 |
+| **gce_q07 + Flip TTA** | **59.4064%** | **+2.0667pp** | **+0.4486pp** | 2-view mean logits |
+
+**基线定义：**
+- **训练基线**：gce_q07 单视图 = 58.9578% —— 新训练方法与此比较
+- **提交基线**：gce_q07 + Flip TTA = 59.4064% —— 最终提交方案
+
+**结论：** Horizontal-flip TTA 在 gce_q07 上进一步带来 +0.4486pp 平台收益。后续新训练方法应先与单视图 gce_q07 比较，只有训练方法本身有效才叠加 TTA。
+
+### 7. 本地评估与待完成
 
 **已完成 (strict protocol, seed=42, reeval from best.pt):**
 
-| Experiment | Local Micro | Local Macro | Micro-Macro Gap | vs E0 | vs D3 |
-|---|---|---|---|---|---|
-| E0-strict | 70.5409% | 70.5015% | 0.0394pp | — | −0.1163pp |
-| D3-strict | 70.6572% | 70.6100% | 0.0473pp | — | — |
-| F0-strict | 70.6378% | 70.5939% | 0.0439pp | — | −0.0194pp |
-| F1-strict | 70.7832% | 70.7458% | 0.0374pp | — | +0.1260pp | — |
-| B2_GCE07 | 69.5909% | 69.5304% | 0.0605pp | — | −1.0663pp | **58.9578%** |
-| B3_PROTO_STATIC | 70.1919% | 70.1440% | 0.0479pp | — | −0.4653pp | **58.0526%** |
-
-**Platform submission (D3_STRICT):**
-- **Local micro**: 70.6572% (strict validation, 10,316 val samples)
-- **Platform score**: 57.3397% (24,966 test predictions)
-- **Local-platform gap**: 13.3175pp
-- **Submission**: `D3_STRICT_20260712_123554` (registered in `results/submission_registry.csv`)
+| Experiment | Local Micro | Local Macro | vs ref | Platform |
+|---|---|---|---|---|
+| ref（原 D3_STRICT） | 70.6572% | 70.6100% | — | 57.3397% |
+| gce_q07（原 B2_GCE07） | 69.5909% | 69.5304% | −1.0663pp | **58.9578%** |
+| pw_v1（原 B3_PROTO_STATIC） | 70.1919% | 70.1440% | −0.4653pp | **58.0526%** |
+| ft_frozen（原 F0_STRICT） | 70.6378% | 70.5939% | −0.0194pp | — |
+| ft_lnpost（原 F1_STRICT） | 70.7832% | 70.7458% | +0.1260pp | — |
 
 > ⚠️ **Important**: The local strict validation accuracy (70.66%) is NOT a platform score estimate. The 13.32pp gap between local strict validation and the official platform score is expected due to the competition's private test set distribution.
 
@@ -117,35 +125,18 @@ After discovering 88% validation leakage in F1 and 3.79% content leakage in the 
 † Early stopped (patience=10). All metrics from `reeval_best.json` (best.pt reload).
 E0_STRICT: clean rerun completed (50 epochs, best epoch 47, no early stop).
 
-**D3_STRICT Platform Submission:**
-- Local: 70.6572% → Platform: 57.3397% → Gap: 13.3175pp
-- Predictions: 24,967
-- Manifest: `outputs/d3_strict/seed42/submissions/submission_manifest.json`
-- Registry: `results/submission_registry.csv` (entry `D3_STRICT_20260712_123554`)
+**Platform Submissions (registered in `results/submission_registry.csv`):**
 
-**TA1_TTA_FLIP Platform Submission:**
-- Local: 70.80% → Platform: **58.3090%** → Gap: 12.49pp
-- vs D3: platform **+0.97pp** (57.34% → 58.31%), TTA validated as platform-effective
+| Submission | Platform | vs ref | 推理 |
+|------------|---------|--------|------|
+| ref（D3_STRICT） | 57.3397% | — | 单视图 |
+| ref + Flip TTA | 58.3090% | +0.97pp | 2-view mean logits |
+| gce_q07（B2_GCE07） | 58.9578% | +1.62pp | 单视图 |
+| gce_q07 + Flip TTA | **59.4064%** | **+2.07pp** | 2-view mean logits |
+| pw_v1（B3_PROTO_STATIC） | 58.0526% | +0.71pp | 单视图 |
+| B1_LS005 | 57.3918% | +0.05pp | 单视图（已关闭） |
 
-**B1_LS005 Platform Submission:**
-- Platform: **57.3918%** → vs D3 +0.05pp — essentially flat, no benefit
-
-**B2_GCE07 Platform Submission:**
-- Local: 69.59% → Platform: **58.9578%** → Gap: 10.63pp
-- vs D3: platform **+1.62pp** (57.34% → 58.96%), **best platform score so far**
-- Local drop (−1.07pp) but platform gain (+1.62pp) — consistent with GCE reducing overfitting to noisy labels
-- **Trusted subset**: GCE slightly better on high-consistency samples (trusted Δ=+0.14pp, 3-sample advantage)
-- ⚠️ Trusted advantage is small (3 samples), same magnitude as feature-bank encoding noise; single seed only
-
-**B3_PROTO_STATIC Platform Submission:**
-- Local: 70.19% → Platform: **58.0526%** → Gap: 11.86pp
-- vs D3: platform **+0.71pp** (57.34% → 58.05%)
-- Local drop (−0.47pp) but platform gain (+0.71pp) — same local-negative/platform-positive pattern as B2
-- **Trusted subset**: flat vs D3 (trusted Δ=0.00pp); pattern consistent but weaker than B2
-
-**Pattern note (seed=42, B2 & B3):** Both noise-robust methods that showed local raw accuracy regression achieved positive platform gains. This suggests raw noisy-label validation may invert model ranking relative to clean test performance, but multi-seed confirmation is required before treating this as a general principle.
-- vs D3: platform **+0.71pp** (57.34% → 58.05%)
-- Local drop (−0.47pp) but platform gain (+0.71pp) — prototype weighting also improves generalization
+**Pattern note (seed=42):** Both GCE and prototype-weighting showed local raw accuracy regression but positive platform gains, suggesting raw noisy-label validation may invert model ranking vs clean test performance. Multi-seed confirmation in progress (gce_q07 seeds 2026, 3407).
 
 **Key changes from original:**
 - Master split rebuilt with `duplicate_grouping_enabled: true` (SHA-256 group-aware) — **0 cross-boundary SHA-256 groups** (was 192 groups / 391 leaked images)
