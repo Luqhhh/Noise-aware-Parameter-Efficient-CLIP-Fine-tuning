@@ -4,9 +4,9 @@
 > 日期：2026-07-13  
 > 当前骨干：OpenAI CLIP ViT-B/32  
 > 当前主模型：冻结 CLIP visual backbone，仅训练 Linear Head  
-> 当前平台最好结果：B2_GCE07 = 58.9578%  
+> 当前平台最好结果：gce_q07 + horizontal-flip TTA = 59.4064%（gce_q07 裸模型 = 58.9578%）  
 > 冲刺目标：平台 Top-1 Accuracy 70%  
-> 当前状态说明：B2_GCE07 + horizontal-flip TTA 已完成实现并正在进行平台测试，本计划不再安排该实验。
+> TTA 收益：+0.45pp（horizontal-flip 单 crop），已确认有效。
 
 ---
 
@@ -40,8 +40,8 @@ EMA Teacher / 一致性训练
 
 ## 2.1 保留方向
 
-- B2_GCE07 是当前主训练基线；
-- horizontal-flip TTA 是有效推理策略；
+- gce_q07（原 B2_GCE07）是当前主训练基线；
+- horizontal-flip TTA 已确认有效（+0.45pp 平台收益）；
 - Prototype Weighting 平台有正收益，可作为可信度信号；
 - 轻量部分解冻需要在 GCE 保护下重新测试；
 - 自动样本可信度和 OOF 标签质量是下一阶段主线。
@@ -78,7 +78,7 @@ EMA Teacher / 一致性训练
 
 本版删除：
 
-- B2_GCE07 + horizontal-flip TTA 平台测试任务；
+- gce_q07 + horizontal-flip TTA 平台测试任务（已完成：59.4064%，+0.45pp vs 裸模型）；
 - 已完成或正在执行的 TTA 打包与提交步骤。
 
 ---
