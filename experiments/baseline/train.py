@@ -1170,12 +1170,15 @@ def main():
             "Translated legacy sample_weighting.enabled to type=static_manifest"
         )
 
-    weight_provider = build_weight_provider(config, num_train_samples=len(train_dataset))
+    # n_train from the already-constructed train_loader
+    n_train = len(train_loader.dataset) if train_loader is not None else 0
+    weight_provider = build_weight_provider(config, num_train_samples=n_train)
 
     # For stateful providers, initialise the path→index mapping
-    if hasattr(weight_provider, "init_sample_index"):
-        all_paths = [str(p) for p in train_dataset.samples]
-        all_labels = torch.tensor(train_dataset.labels, dtype=torch.long)
+    if hasattr(weight_provider, "init_sample_index") and train_loader is not None:
+        ds = train_loader.dataset
+        all_paths = [str(p) for p in ds.samples]
+        all_labels = torch.tensor(ds.labels, dtype=torch.long)
         weight_provider.init_sample_index(all_paths, all_labels)
 
     use_sample_weights = not isinstance(weight_provider, NoneWeightProvider)
