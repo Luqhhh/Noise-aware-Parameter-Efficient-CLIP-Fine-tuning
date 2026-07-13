@@ -19,13 +19,13 @@
 
 ## 部分解冻
 
-| 目录 | 实验 ID | 说明 | 本地 Acc |
-|------|---------|------|----------|
-| `ft_frozen/` | ft_frozen | 对照组：从 ref init，继续冻结全部 CLIP，lr=3e-4 | 70.64% |
-| `ft_lnpost/` | ft_lnpost | 实验组：从 ref init，解冻 ln_post + visual.proj | 70.78% |
+| 目录 | 实验 ID | 说明 | 本地 Acc | 平台 |
+|------|---------|------|----------|------|
+| `ft_frozen/` | ft_frozen | 对照组：从 ref init，继续冻结全部 CLIP，lr=3e-4 | 70.64% | — |
+| `ft_lnpost/` | ft_lnpost | 实验组：从 ref init，解冻 ln_post + visual.proj | 70.78% | 56.92% |
 
 ft_frozen 与 ref 几乎持平（−0.02pp），证明 ref 的 50 epoch 已收敛。
-ft_lnpost 有 +0.13pp 微弱正信号，但使用 CE loss，需改为 GCE 重跑。
+ft_lnpost 本地 +0.13pp 但平台 −0.42pp vs ref（56.92% vs 57.34%）——又一起 local-platform 反转。CE loss 下的部分解冻已关闭，等待 GCE 重测。
 
 ## Dropout 正则化
 
