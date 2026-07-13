@@ -1,0 +1,12 @@
+{
+  "experiment_id": "TA1_TTA_B2_GCE07",
+  "parent_experiment": "B2_GCE07",
+  "checkpoint_sha256": "458f664847ecf02b226d7a5b2c0226be726ad48f1161040a4e0ce6425d2f7353",
+  "checkpoint_epoch": 41,
+  "tta_strategy": "horizontal_flip (2-view)",
+  "local_val_micro": 0.699884,
+  "prediction_csv_sha256": "0132560f28a06e271d56314e40f105d7da10875b98f984c5c73c9b579486f42b",
+  "submission_zip_sha256": "ca7562f542773754e233bd63201553416cb3636e90790b0732384fd9d1cd8337",
+  "num_predictions": 24967,
+  "created_at_utc": "2026-07-13T06:30:25Z"
+}
