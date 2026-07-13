@@ -29,6 +29,10 @@ class TrustedSubsetConfig:
     require_prototype_top1_matches_label: bool = True
     reject_cross_class_duplicate_conflict: bool = True
 
+    # ── V2: continuous trust-weighted & class-balanced metrics ──
+    class_balanced_top_k: int = 5
+    prototype_margin_ref: float = 0.05  # reference for w_proto normalization
+
 
 REJECTION_LABELS = {
     "low_knn_agreement": "kNN label agreement below threshold",
@@ -158,3 +162,226 @@ def build_trusted_subset(
     summary["rejection_reason_counts"] = dict(Counter(all_reasons))
 
     return df, summary
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# V2: Continuous trust-weighted and class-balanced trusted metrics
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def _compute_composite_trust_weights(
+    df: pd.DataFrame,
+    margin_ref: float = 0.05,
+) -> np.ndarray:
+    """Compute continuous composite trust weights per sample.
+
+    w_i = w_knn_i × w_proto_i × w_flip_i
+
+    where:
+      - w_knn_i  = knn_label_agreement          (already in [0, 1])
+      - w_proto_i = clamp(proto_margin / margin_ref, 0, 1)
+      - w_flip_i  = clip_flip_cosine             (already in [0, 1])
+
+    Args:
+        df: DataFrame with columns knn_label_agreement, prototype_margin,
+            clip_flip_cosine.
+        margin_ref: Reference margin for w_proto normalisation (default 0.05).
+
+    Returns:
+        Float ndarray of shape (n_samples,) with weights in [0, 1].
+    """
+    w_knn = df["knn_label_agreement"].values.astype(np.float64)
+    w_flip = df["clip_flip_cosine"].values.astype(np.float64)
+
+    proto_margin = df["prototype_margin"].values.astype(np.float64)
+    w_proto = np.clip(proto_margin / margin_ref, 0.0, 1.0)
+
+    weights = w_knn * w_proto * w_flip
+    # Clamp to [0, 1] to guard against floating-point overshoot
+    weights = np.clip(weights, 0.0, 1.0)
+    return weights
+
+
+def compute_trust_weighted_accuracy(
+    df: pd.DataFrame,
+    correct: np.ndarray,
+    margin_ref: float = 0.05,
+) -> dict:
+    """Compute continuous trust-weighted accuracy.
+
+    Uses ALL validation samples — no hard acceptance/rejection threshold.
+    Each sample contributes w_i rather than a binary 1/0, giving higher
+    influence to samples that multiple model-agnostic signals agree are
+    trustworthy.
+
+    score = Σ(w_i × 1[ŷ_i = y_i]) / Σ(w_i)
+
+    Args:
+        df: DataFrame with columns knn_label_agreement, prototype_margin,
+            clip_flip_cosine, noisy_label (for per-class breakdown).
+        correct: Boolean array of shape (n_samples,) — True if prediction
+            matches the noisy label.
+        margin_ref: Reference margin for w_proto normalisation (default 0.05).
+
+    Returns:
+        Dict with keys:
+            accuracy:            trust-weighted accuracy
+            weight_sum:          Σ w_i (total trust mass)
+            effective_samples:   Σ w_i (same — interpretable as
+                                 "trust-equivalent sample count")
+            total_samples:       N
+            mean_weight:         mean per-sample trust weight
+            median_weight:       median per-sample trust weight
+            per_class_accuracy:  dict class_idx → trust-weighted accuracy
+                                 (NaN if zero weight in class)
+    """
+    n_total = len(df)
+    if n_total == 0:
+        return {
+            "accuracy": float("nan"),
+            "weight_sum": 0.0,
+            "effective_samples": 0.0,
+            "total_samples": 0,
+            "mean_weight": float("nan"),
+            "median_weight": float("nan"),
+            "per_class_accuracy": {},
+        }
+
+    weights = _compute_composite_trust_weights(df, margin_ref=margin_ref)
+    correct_float = np.asarray(correct, dtype=np.float64)
+    weight_sum = float(weights.sum())
+
+    if weight_sum == 0.0:
+        accuracy = float("nan")
+    else:
+        accuracy = float((weights * correct_float).sum() / weight_sum)
+
+    # Per-class
+    labels = df["noisy_label"].values.astype(int)
+    per_class = {}
+    unique_classes = np.unique(labels)
+    for c in unique_classes:
+        c_mask = labels == c
+        c_weights = weights[c_mask]
+        c_weight_sum = float(c_weights.sum())
+        if c_weight_sum > 0:
+            per_class[str(c)] = float(
+                (c_weights * correct_float[c_mask]).sum() / c_weight_sum
+            )
+        else:
+            per_class[str(c)] = float("nan")
+
+    return {
+        "accuracy": accuracy,
+        "weight_sum": weight_sum,
+        "effective_samples": weight_sum,
+        "total_samples": n_total,
+        "mean_weight": float(weights.mean()),
+        "median_weight": float(np.median(weights)),
+        "per_class_accuracy": per_class,
+    }
+
+
+def compute_class_balanced_trusted_accuracy(
+    df: pd.DataFrame,
+    correct: np.ndarray,
+    top_k: int = 5,
+    margin_ref: float = 0.05,
+) -> dict:
+    """Compute class-balanced trusted accuracy via per-class Top-K selection.
+
+    For each class:
+      1. Rank samples by composite trust score (kNN × prototype × flip).
+      2. Select the top-K highest-trust samples.
+      3. Compute accuracy on those K samples.
+    Then macro-average across all classes that have at least K candidates.
+
+    This avoids the "ceiling effect" of V1 (where trusted accuracy ≈ 99.8%)
+    and guarantees every class with sufficient candidates contributes equally.
+
+    Args:
+        df: DataFrame with columns knn_label_agreement, prototype_margin,
+            clip_flip_cosine, noisy_label.
+        correct: Boolean array of shape (n_samples,).
+        top_k: Number of top-trust samples per class (default 5).
+        margin_ref: Reference margin for w_proto normalisation.
+
+    Returns:
+        Dict with keys:
+            top_k_per_class:       K value used
+            macro_accuracy:         mean of per-class top-K accuracies
+            num_classes_with_k:     classes with ≥ K candidates
+            num_classes_total:       total classes with any candidate
+            total_classes:          total unique classes in df
+            coverage:               samples used / total samples
+            num_samples_used:       total samples selected
+            per_class_accuracy:     dict class_idx → top-K accuracy
+            per_class_count:        dict class_idx → num candidates in class
+    """
+    n_total = len(df)
+    if n_total == 0:
+        return {
+            "top_k_per_class": top_k,
+            "macro_accuracy": float("nan"),
+            "num_classes_with_k": 0,
+            "num_classes_total": 0,
+            "total_classes": 0,
+            "coverage": 0.0,
+            "num_samples_used": 0,
+            "per_class_accuracy": {},
+            "per_class_count": {},
+        }
+
+    weights = _compute_composite_trust_weights(df, margin_ref=margin_ref)
+    correct_float = np.asarray(correct, dtype=np.float64)
+    labels = df["noisy_label"].values.astype(int)
+
+    unique_classes = np.unique(labels)
+    per_class_acc = {}
+    per_class_count = {}
+    samples_used = 0
+    n_with_k = 0
+    n_with_any = 0
+
+    for c in unique_classes:
+        c_mask = labels == c
+        c_count = int(c_mask.sum())
+        per_class_count[str(c)] = c_count
+
+        if c_count == 0:
+            per_class_acc[str(c)] = float("nan")
+            continue
+
+        n_with_any += 1
+
+        if c_count < top_k:
+            per_class_acc[str(c)] = float("nan")
+            continue
+
+        n_with_k += 1
+        # Select top-K by composite trust weight
+        c_indices = np.where(c_mask)[0]
+        c_weights = weights[c_indices]
+        top_k_idx = c_indices[np.argsort(-c_weights)[:top_k]]
+        samples_used += top_k
+
+        top_k_correct = correct_float[top_k_idx]
+        per_class_acc[str(c)] = float(top_k_correct.mean())
+
+    # Macro-average over classes with ≥ K candidates
+    valid_accs = [v for v in per_class_acc.values() if not np.isnan(v)]
+    macro_accuracy = float(np.mean(valid_accs)) if valid_accs else float("nan")
+
+    coverage = samples_used / n_total if n_total > 0 else 0.0
+
+    return {
+        "top_k_per_class": top_k,
+        "macro_accuracy": macro_accuracy,
+        "num_classes_with_k": n_with_k,
+        "num_classes_total": n_with_any,
+        "total_classes": len(unique_classes),
+        "coverage": coverage,
+        "num_samples_used": samples_used,
+        "per_class_accuracy": per_class_acc,
+        "per_class_count": per_class_count,
+    }

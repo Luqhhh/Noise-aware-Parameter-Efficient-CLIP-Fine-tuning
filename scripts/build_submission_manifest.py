@@ -6,13 +6,13 @@ online score so the submission is fully reproducible and auditable.
 
 Usage:
     python scripts/build_submission_manifest.py \
-      --experiment-id D3_STRICT \
-      --checkpoint outputs/d3_strict/seed42/checkpoints/best.pt \
-      --eval-results outputs/d3_strict/seed42/checkpoints/reeval_best.json \
-      --prediction-csv outputs/d3_strict/seed42/submissions/pred_results.csv \
-      --submission-zip outputs/d3_strict/seed42/submissions/submission.zip \
+      --experiment-id ref \
+      --checkpoint outputs/ref/seed42/checkpoints/best.pt \
+      --eval-results outputs/ref/seed42/checkpoints/reeval_best.json \
+      --prediction-csv outputs/ref/seed42/submissions/pred_results.csv \
+      --submission-zip outputs/ref/seed42/submissions/submission.zip \
       --online-accuracy 0.573397 \
-      --output outputs/d3_strict/seed42/submissions/submission_manifest.json
+      --output outputs/ref/seed42/submissions/submission_manifest.json
 """
 
 import argparse
@@ -128,7 +128,7 @@ def main():
         description="Build a submission manifest."
     )
     parser.add_argument(
-        "--experiment-id", required=True, help="e.g. D3_STRICT"
+        "--experiment-id", required=True, help="e.g. ref"
     )
     parser.add_argument(
         "--checkpoint", required=True,

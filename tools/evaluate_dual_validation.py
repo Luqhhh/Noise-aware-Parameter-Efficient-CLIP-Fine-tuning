@@ -445,8 +445,8 @@ def main():
     logger.info("Computing raw noisy validation metrics...")
     raw_metrics = compute_raw_metrics(correct, val_labels_np, num_classes)
 
-    # ── Compute trusted metrics ──
-    logger.info("Computing trusted validation metrics...")
+    # ── Compute trusted metrics (V1) ──
+    logger.info("Computing trusted validation metrics (V1)...")
     trusted_metrics = compute_trusted_metrics(
         correct, val_labels_np, trusted_v1, num_classes
     )
@@ -462,9 +462,68 @@ def main():
     rejected_metrics["num_rejected_samples"] = int(rejected_mask.sum())
     rejected_metrics["num_total_samples"] = n_val
 
+    # ── Compute V2 trusted metrics (continuous + class-balanced) ──
+    logger.info("Computing trusted validation metrics (V2)...")
+    from common.trusted_subset import (
+        TrustedSubsetConfig,
+        compute_class_balanced_trusted_accuracy,
+        compute_trust_weighted_accuracy,
+    )
+
+    v2_config = TrustedSubsetConfig()
+
+    # Verify required columns are present in manifest
+    v2_required_cols = [
+        "knn_label_agreement", "prototype_margin",
+        "clip_flip_cosine", "noisy_label",
+    ]
+    v2_missing_cols = [
+        c for c in v2_required_cols if c not in manifest.columns
+    ]
+    if v2_missing_cols:
+        logger.warning(
+            "V2 metrics skipped: manifest missing columns: %s",
+            v2_missing_cols,
+        )
+        trusted_v2_metrics = None
+    else:
+        # Verify manifest row order matches val bank
+        # (already verified paths match above)
+        trust_weighted = compute_trust_weighted_accuracy(
+            manifest,
+            correct.astype(bool),
+            margin_ref=v2_config.prototype_margin_ref,
+        )
+        class_balanced = compute_class_balanced_trusted_accuracy(
+            manifest,
+            correct.astype(bool),
+            top_k=v2_config.class_balanced_top_k,
+            margin_ref=v2_config.prototype_margin_ref,
+        )
+        trusted_v2_metrics = {
+            "trust_weighted": trust_weighted,
+            "class_balanced": class_balanced,
+            "config": {
+                "class_balanced_top_k": v2_config.class_balanced_top_k,
+                "prototype_margin_ref": v2_config.prototype_margin_ref,
+            },
+        }
+        logger.info(
+            "V2 trust-weighted accuracy: %.4f (eff_samples=%.1f)",
+            trust_weighted["accuracy"],
+            trust_weighted["effective_samples"],
+        )
+        logger.info(
+            "V2 class-balanced accuracy (Top-%d): %.4f (%d/%d classes)",
+            class_balanced["top_k_per_class"],
+            class_balanced["macro_accuracy"],
+            class_balanced["num_classes_with_k"],
+            class_balanced["num_classes_total"],
+        )
+
     # ── Build output report ──
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "experiment_name": args.name,
         "checkpoint_sha256": ckpt_sha256,
         "val_feature_bank_sha256": val_bank_sha256,
@@ -473,6 +532,8 @@ def main():
         "trusted_validation": trusted_metrics,
         "rejected_subset_diagnostic": rejected_metrics,
     }
+    if trusted_v2_metrics is not None:
+        report["trusted_validation_v2"] = trusted_v2_metrics
 
     # ── Save output ──
     if args.output:
@@ -507,6 +568,20 @@ def main():
     logger.info("Rejected subset:")
     logger.info("  micro_accuracy:                 %.4f", rejected_metrics["micro_accuracy"])
     logger.info("  num_rejected_samples:           %d", rejected_metrics["num_rejected_samples"])
+    if trusted_v2_metrics is not None:
+        tw = trusted_v2_metrics["trust_weighted"]
+        cb = trusted_v2_metrics["class_balanced"]
+        logger.info("Trusted V2 — continuous trust-weighted:")
+        logger.info("  accuracy:                       %.4f", tw["accuracy"])
+        logger.info("  effective_samples:              %.1f", tw["effective_samples"])
+        logger.info("  mean_weight:                    %.4f", tw["mean_weight"])
+        logger.info("Trusted V2 — class-balanced (Top-%d):", cb["top_k_per_class"])
+        logger.info("  macro_accuracy:                 %.4f", cb["macro_accuracy"])
+        logger.info("  classes with ≥%d:               %d / %d",
+                    cb["top_k_per_class"], cb["num_classes_with_k"],
+                    cb["num_classes_total"])
+        logger.info("  samples used:                   %d (%.1f%%)",
+                    cb["num_samples_used"], 100.0 * cb["coverage"])
     logger.info("=" * 60)
     logger.info("Done.")
 

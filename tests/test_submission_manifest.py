@@ -272,7 +272,7 @@ class TestDuplicateRejection:
     def test_duplicate_hash_rejected(self):
         registry = {
             "abc123def456": {
-                "experiment_id": "D3_STRICT",
+                "experiment_id": "ref",
                 "submission_zip_sha256": "abc123def456",
             }
         }
@@ -283,7 +283,7 @@ class TestDuplicateRejection:
     def test_unique_hash_accepted(self):
         registry = {
             "abc123def456": {
-                "experiment_id": "D3_STRICT",
+                "experiment_id": "ref",
                 "submission_zip_sha256": "abc123def456",
             }
         }
@@ -320,21 +320,21 @@ class TestManifestSchema:
 
     def test_all_required_fields_present(self):
         manifest = {
-            "experiment_id": "D3_STRICT",
+            "experiment_id": "ref",
             "git_commit": "abc123",
-            "checkpoint_path": "outputs/d3_strict/seed42/checkpoints/best.pt",
+            "checkpoint_path": "outputs/ref/seed42/checkpoints/best.pt",
             "checkpoint_sha256": "sha256...",
             "checkpoint_epoch": 49,
             "split_seed": 42,
             "train_seed": 42,
-            "split_dir": "outputs/d3_strict/seed42",
+            "split_dir": "outputs/ref/seed42",
             "val_csv_sha256": "70a63d5a...",
             "local_micro_accuracy": 0.7065723,
             "local_macro_accuracy": 0.7060997,
-            "prediction_csv_path": "outputs/d3_strict/seed42/submissions/pred_results.csv",
+            "prediction_csv_path": "outputs/ref/seed42/submissions/pred_results.csv",
             "prediction_csv_sha256": "79e55629...",
             "zip_internal_csv_sha256": "79e55629...",
-            "submission_zip_path": "outputs/d3_strict/seed42/submissions/submission.zip",
+            "submission_zip_path": "outputs/ref/seed42/submissions/submission.zip",
             "submission_zip_sha256": "72036e7b...",
             "online_accuracy": 0.573397,
             "local_online_gap": 0.1331753,
@@ -348,7 +348,7 @@ class TestManifestSchema:
         """local_online_gap must equal local_micro - online."""
         manifest_path = tmp_path / "manifest.json"
         manifest = {
-            "experiment_id": "D3_STRICT",
+            "experiment_id": "ref",
             "local_micro_accuracy": 0.7065723148507174,
             "online_accuracy": 0.573397,
         }

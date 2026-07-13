@@ -1,0 +1,14 @@
+2026-07-13 15:05:10 | INFO | Config: configs/r3_d3_proto_weight.yaml
+2026-07-13 15:05:10 | INFO | Checkpoint: outputs/r3_d3_proto_weight/seed42/checkpoints/best.pt
+2026-07-13 15:05:10 | INFO | Device: cuda
+2026-07-13 15:05:10 | INFO | Head type: linear
+2026-07-13 15:05:13 | INFO | Loaded checkpoint from epoch 41
+2026-07-13 15:05:13 | INFO | Checkpoint best val acc: 0.7019193485847227
+2026-07-13 15:05:13 | INFO | Loaded idx_to_class mapping from checkpoint metadata.
+2026-07-13 15:05:13 | INFO | idx_to_class mapping has 500 entries.
+2026-07-13 15:05:13 | INFO | Test set: 24967 images, 98 batches
+2026-07-13 15:05:35 | INFO | Raw predictions saved to: outputs/r3_d3_proto_weight/seed42/submissions/pred_raw.csv
+2026-07-13 15:05:35 | INFO | Total predictions: 24967
+2026-07-13 15:05:35 | INFO | Unique predicted classes: 500 / 500
+2026-07-13 15:05:35 | INFO | Prediction label lengths: {4: 24967}
+2026-07-13 15:05:35 | INFO | Inference complete.

@@ -135,3 +135,190 @@ class TestBuildTrustedSubset:
         sample_df["cross_class_duplicate_conflict"] = False
         manifest, _ = build_trusted_subset(sample_df, cfg)
         assert manifest["trusted_v1"].sum() == len(sample_df)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# V2: Continuous trust-weighted and class-balanced metrics
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestTrustedSubsetConfigV2:
+    def test_defaults(self):
+        cfg = TrustedSubsetConfig()
+        assert cfg.class_balanced_top_k == 5
+        assert cfg.prototype_margin_ref == 0.05
+
+    def test_override_class_balanced_k(self):
+        cfg = TrustedSubsetConfig(class_balanced_top_k=10)
+        assert cfg.class_balanced_top_k == 10
+
+    def test_override_margin_ref(self):
+        cfg = TrustedSubsetConfig(prototype_margin_ref=0.10)
+        assert cfg.prototype_margin_ref == 0.10
+
+
+class TestComputeCompositeTrustWeights:
+    def test_weights_in_range(self, sample_df):
+        from common.trusted_subset import _compute_composite_trust_weights
+        w = _compute_composite_trust_weights(sample_df, margin_ref=0.05)
+        assert w.shape == (len(sample_df),)
+        assert w.min() >= 0.0
+        assert w.max() <= 1.0
+
+    def test_perfect_signals_give_high_weights(self):
+        from common.trusted_subset import _compute_composite_trust_weights
+        df = pd.DataFrame({
+            "knn_label_agreement": [1.0] * 10,
+            "prototype_margin": [1.0] * 10,
+            "clip_flip_cosine": [1.0] * 10,
+        })
+        w = _compute_composite_trust_weights(df, margin_ref=0.05)
+        # All signals at max → weights near 1.0
+        assert (w > 0.99).all()
+
+    def test_weak_signals_give_low_weights(self):
+        from common.trusted_subset import _compute_composite_trust_weights
+        df = pd.DataFrame({
+            "knn_label_agreement": [0.0] * 10,
+            "prototype_margin": [0.0] * 10,
+            "clip_flip_cosine": [0.0] * 10,
+        })
+        w = _compute_composite_trust_weights(df, margin_ref=0.05)
+        assert (w == 0.0).all()
+
+    def test_margin_clamping(self):
+        from common.trusted_subset import _compute_composite_trust_weights
+        df = pd.DataFrame({
+            "knn_label_agreement": [1.0, 1.0, 1.0],
+            "prototype_margin": [0.0, 0.05, 0.25],
+            "clip_flip_cosine": [1.0, 1.0, 1.0],
+        })
+        w = _compute_composite_trust_weights(df, margin_ref=0.05)
+        # margin=0.0 → w_proto≈0; margin=0.05 → w_proto=1; margin=0.25 → w_proto=1
+        assert w[0] == pytest.approx(0.0, abs=1e-9)
+        assert w[1] == pytest.approx(1.0, abs=1e-9)
+        assert w[2] == pytest.approx(1.0, abs=1e-9)
+
+
+class TestTrustWeightedAccuracy:
+    def test_perfect_correct_gives_one(self):
+        from common.trusted_subset import compute_trust_weighted_accuracy
+        df = pd.DataFrame({
+            "noisy_label": [0] * 10,
+            "knn_label_agreement": [0.8] * 10,
+            "prototype_margin": [0.05] * 10,
+            "clip_flip_cosine": [0.95] * 10,
+        })
+        correct = np.ones(10, dtype=bool)
+        result = compute_trust_weighted_accuracy(df, correct)
+        assert result["accuracy"] == pytest.approx(1.0, abs=1e-9)
+        assert result["total_samples"] == 10
+
+    def test_all_wrong_gives_zero(self):
+        from common.trusted_subset import compute_trust_weighted_accuracy
+        df = pd.DataFrame({
+            "noisy_label": [0] * 10,
+            "knn_label_agreement": [0.8] * 10,
+            "prototype_margin": [0.05] * 10,
+            "clip_flip_cosine": [0.95] * 10,
+        })
+        correct = np.zeros(10, dtype=bool)
+        result = compute_trust_weighted_accuracy(df, correct)
+        assert result["accuracy"] == pytest.approx(0.0, abs=1e-9)
+
+    def test_between_raw_and_one(self, sample_df):
+        from common.trusted_subset import compute_trust_weighted_accuracy
+        correct = np.ones(len(sample_df), dtype=bool)
+        # Make half correct
+        correct[len(sample_df)//2:] = False
+        raw = correct.mean()
+        result = compute_trust_weighted_accuracy(sample_df, correct)
+        # Trust-weighted should differ from raw if weights are non-uniform
+        assert result["total_samples"] == len(sample_df)
+        assert result["weight_sum"] > 0
+        assert "per_class_accuracy" in result
+
+    def test_effective_samples_bounded(self, sample_df):
+        from common.trusted_subset import compute_trust_weighted_accuracy
+        correct = np.ones(len(sample_df), dtype=bool)
+        result = compute_trust_weighted_accuracy(sample_df, correct)
+        assert 0 < result["effective_samples"] <= result["total_samples"]
+
+    def test_empty_df(self):
+        from common.trusted_subset import compute_trust_weighted_accuracy
+        df = pd.DataFrame({
+            "noisy_label": pd.Series([], dtype=int),
+            "knn_label_agreement": pd.Series([], dtype=float),
+            "prototype_margin": pd.Series([], dtype=float),
+            "clip_flip_cosine": pd.Series([], dtype=float),
+        })
+        result = compute_trust_weighted_accuracy(df, np.array([], dtype=bool))
+        assert result["total_samples"] == 0
+        assert np.isnan(result["accuracy"])
+
+
+class TestClassBalancedTrustedAccuracy:
+    def test_all_classes_have_k(self):
+        from common.trusted_subset import compute_class_balanced_trusted_accuracy
+        n_per_class = 10
+        n_classes = 5
+        # Each class gets the same pattern: increasing trust across its 10 samples
+        pattern = [0.3, 0.5, 0.7, 0.9, 1.0, 0.3, 0.5, 0.7, 0.9, 1.0]
+        pattern_margin = [0.01, 0.03, 0.05, 0.07, 0.10, 0.01, 0.03, 0.05, 0.07, 0.10]
+        pattern_flip = [0.80, 0.85, 0.90, 0.95, 0.99, 0.80, 0.85, 0.90, 0.95, 0.99]
+        df = pd.DataFrame({
+            "noisy_label": np.repeat(np.arange(n_classes), n_per_class),
+            "knn_label_agreement": np.tile(pattern, n_classes),
+            "prototype_margin": np.tile(pattern_margin, n_classes),
+            "clip_flip_cosine": np.tile(pattern_flip, n_classes),
+        })
+        correct = np.ones(n_per_class * n_classes, dtype=bool)
+        # Make lowest-trust samples wrong, highest-trust correct
+        # The top-2 per class will be the ones with highest trust weights
+        result = compute_class_balanced_trusted_accuracy(df, correct, top_k=3)
+        assert result["num_classes_with_k"] == n_classes
+        assert result["top_k_per_class"] == 3
+        # All correct → macro_accuracy = 1.0
+        assert result["macro_accuracy"] == pytest.approx(1.0, abs=1e-9)
+
+    def test_some_classes_below_k(self):
+        from common.trusted_subset import compute_class_balanced_trusted_accuracy
+        df = pd.DataFrame({
+            "noisy_label": [0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 2, 2],
+            "knn_label_agreement": 0.8,
+            "prototype_margin": 0.05,
+            "clip_flip_cosine": 0.95,
+        })
+        correct = np.ones(len(df), dtype=bool)
+        result = compute_class_balanced_trusted_accuracy(df, correct, top_k=5)
+        # Class 0 has 4 (<5), class 1 has 2 (<5), class 2 has 6 (≥5)
+        assert result["num_classes_with_k"] == 1  # only class 2
+        assert result["num_classes_total"] == 3
+
+    def test_samples_used_count(self):
+        from common.trusted_subset import compute_class_balanced_trusted_accuracy
+        n_per_class = 10
+        n_classes = 10
+        df = pd.DataFrame({
+            "noisy_label": np.repeat(np.arange(n_classes), n_per_class),
+            "knn_label_agreement": 0.8,
+            "prototype_margin": 0.05,
+            "clip_flip_cosine": 0.95,
+        })
+        correct = np.ones(n_per_class * n_classes, dtype=bool)
+        result = compute_class_balanced_trusted_accuracy(df, correct, top_k=3)
+        assert result["num_samples_used"] == n_classes * 3
+
+    def test_empty_df(self):
+        from common.trusted_subset import compute_class_balanced_trusted_accuracy
+        df = pd.DataFrame({
+            "noisy_label": pd.Series([], dtype=int),
+            "knn_label_agreement": pd.Series([], dtype=float),
+            "prototype_margin": pd.Series([], dtype=float),
+            "clip_flip_cosine": pd.Series([], dtype=float),
+        })
+        result = compute_class_balanced_trusted_accuracy(
+            df, np.array([], dtype=bool), top_k=5
+        )
+        assert result["num_classes_total"] == 0
+        assert np.isnan(result["macro_accuracy"])

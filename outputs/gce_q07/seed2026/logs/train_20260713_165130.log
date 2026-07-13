@@ -1,0 +1,25 @@
+2026-07-13 16:51:30 | INFO | Using device: cuda
+2026-07-13 16:51:30 | INFO | Configuration: configs/gce_q07.yaml
+2026-07-13 16:51:30 | INFO | Train seed: 2026
+2026-07-13 16:51:30 | INFO | Resolved runtime: experiment_id=gce_q07, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-13 16:51:33 | INFO | Total parameters:     88,105,716
+2026-07-13 16:51:33 | INFO | Trainable parameters: 256,500
+2026-07-13 16:51:36 | INFO | Using config epochs: 50 (dev mode)
+2026-07-13 16:51:36 | INFO | Loss: gce (reduction=mean)
+2026-07-13 16:51:36 | INFO | Optimizer parameter groups:
+2026-07-13 16:51:36 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-13 16:51:36 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-13 16:51:36 | INFO |   Trainable head params:       256,500
+2026-07-13 16:51:36 | INFO |   Trainable visual params:           0
+2026-07-13 16:51:36 | INFO | Starting training: 50 epochs, 714 batches/epoch
+2026-07-13 16:51:36 | INFO | Warmup steps: 1428, Total steps: 35700, Cosine steps: 34272
+2026-07-13 16:51:36 | INFO | AMP: True
+2026-07-13 16:51:36 | INFO | ============================================================
+2026-07-13 16:54:02 | INFO | Epoch   1/50 | Train Loss: 1.3939 | Train Acc: 0.1255 | Val Loss: 1.3268 | Val Acc: 0.1731 | head_lr: 2.50e-03 | bb_lr: 0.00e+00 | Time: 2m 26s
+2026-07-13 16:54:02 | INFO |   >> New best model! Val Acc: 0.1731
+2026-07-13 16:56:34 | INFO | Epoch   2/50 | Train Loss: 1.1106 | Train Acc: 0.3444 | Val Loss: 0.9267 | Val Acc: 0.4777 | head_lr: 5.00e-03 | bb_lr: 0.00e+00 | Time: 2m 32s
+2026-07-13 16:56:34 | INFO |   >> New best model! Val Acc: 0.4777
+2026-07-13 16:59:12 | INFO | Epoch   3/50 | Train Loss: 0.8081 | Train Acc: 0.5530 | Val Loss: 0.7576 | Val Acc: 0.5749 | head_lr: 4.99e-03 | bb_lr: 0.00e+00 | Time: 2m 37s
+2026-07-13 16:59:12 | INFO |   >> New best model! Val Acc: 0.5749
+2026-07-13 17:01:48 | INFO | Epoch   4/50 | Train Loss: 0.6841 | Train Acc: 0.6184 | Val Loss: 0.6823 | Val Acc: 0.6077 | head_lr: 4.98e-03 | bb_lr: 0.00e+00 | Time: 2m 34s
+2026-07-13 17:01:48 | INFO |   >> New best model! Val Acc: 0.6077

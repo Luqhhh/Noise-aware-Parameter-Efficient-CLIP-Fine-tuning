@@ -62,6 +62,13 @@ def encode_frozen_clip_features(clip_model, images, device, use_amp=False):
     Features are L2-normalized. This is the single canonical encoding path
     shared by online training (B0) and offline cache building.
 
+    **Encoding consistency:** This function mirrors ``model.py:encode_image``
+    exactly: it converts images to the visual encoder's conv1 weight dtype
+    (float32 after ``load_openai_clip`` calls ``.float()``) BEFORE calling
+    ``clip_model.visual()``.  CLIP's built-in ``encode_image`` would cast to
+    ``self.dtype`` (float16) which produces a subtle mixed-precision path
+    and 1–3 prediction discrepancies on the validation set.
+
     Args:
         clip_model: CLIP model (from load_openai_clip).
         images: Image batch on the correct device, shape (B, 3, H, W).
@@ -71,6 +78,20 @@ def encode_frozen_clip_features(clip_model, images, device, use_amp=False):
     Returns:
         L2-normalized feature tensor of shape (B, feature_dim), float32.
     """
+    # Match model.py:encode_image — convert to visual encoder's conv1 dtype
+    # (float32 after load_openai_clip's .float() call), NOT CLIP's self.dtype
+    # (which remains float16 and causes a 1-3 sample prediction discrepancy).
+    conv1_dtype = clip_model.visual.conv1.weight.dtype
+    images = images.to(dtype=conv1_dtype)
+
     with torch.autocast(device_type=device.type, enabled=use_amp):
-        features = clip_model.encode_image(images)
+        features = clip_model.visual(images)
+
+    # Handle CLIP returning spatial features depending on version / jit mode.
+    # This matches model.py:encode_image lines 192-196.
+    if features.dim() > 2:
+        features = (
+            features.mean(dim=[2, 3]) if features.dim() == 4 else features[:, 0]
+        )
+
     return F.normalize(features.float(), dim=-1)

@@ -23,11 +23,11 @@ def main():
     )
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--removal-list",
-                        default="outputs/d3_strict/seed42/removal_list_train_only.txt")
+                        default="outputs/ref/seed42/removal_list_train_only.txt")
     parser.add_argument("--master-split-root",
                         default="outputs/master_splits")
     parser.add_argument("--output-root",
-                        default="outputs/d3_strict")
+                        default="outputs/ref")
     args = parser.parse_args()
 
     seed = args.seed

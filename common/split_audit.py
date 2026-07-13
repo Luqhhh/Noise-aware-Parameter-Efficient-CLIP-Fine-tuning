@@ -14,13 +14,13 @@ Usage:
     from common.split_audit import run_split_audit
 
     run_split_audit(
-        parent_experiment_id="D3_STRICT",
-        parent_checkpoint_path="outputs/d3_strict/seed42/checkpoints/best.pt",
+        parent_experiment_id="ref",
+        parent_checkpoint_path="outputs/ref/seed42/checkpoints/best.pt",
         parent_train_csv=Path("outputs/master_splits/seed42/train.csv"),
         parent_val_csv=Path("outputs/master_splits/seed42/val.csv"),
         child_train_csv=Path("outputs/master_splits/seed42/train.csv"),
         child_val_csv=Path("outputs/master_splits/seed42/val.csv"),
-        output_dir=Path("outputs/f1_strict/seed42"),
+        output_dir=Path("outputs/ft_lnpost/seed42"),
     )
 """
 

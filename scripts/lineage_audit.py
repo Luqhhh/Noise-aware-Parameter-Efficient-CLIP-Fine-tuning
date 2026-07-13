@@ -9,7 +9,7 @@ Traces the full chain from the submission checkpoint back to raw data:
 Produces lineage_audit.json with full traceability.
 
 Usage:
-    python3 scripts/lineage_audit.py --ckpt outputs/f1_strict/seed42/checkpoints/best.pt
+    python3 scripts/lineage_audit.py --ckpt outputs/ft_lnpost/seed42/checkpoints/best.pt
 """
 
 import argparse
@@ -119,7 +119,7 @@ def main():
     )
     parser.add_argument(
         "--ckpt",
-        default="outputs/f1_strict/seed42/checkpoints/best.pt",
+        default="outputs/ft_lnpost/seed42/checkpoints/best.pt",
         help="Path to submission checkpoint."
     )
     parser.add_argument(

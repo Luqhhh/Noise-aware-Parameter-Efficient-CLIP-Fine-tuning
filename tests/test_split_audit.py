@@ -58,7 +58,7 @@ class TestRunSplitAudit:
             _make_csv(d / "child_val.csv", ["d.jpg", "e.jpg"])
 
             audit = run_split_audit(
-                "D3_STRICT",
+                "ref",
                 "d3/best.pt",
                 d / "parent_train.csv",
                 d / "parent_val.csv",
@@ -87,7 +87,7 @@ class TestRunSplitAudit:
 
             with pytest.raises(SplitAuditError, match="VALIDATION LEAK"):
                 run_split_audit(
-                    "D3_STRICT",
+                    "ref",
                     "d3/best.pt",
                     d / "parent_train.csv",
                     d / "parent_val.csv",
@@ -109,7 +109,7 @@ class TestRunSplitAudit:
 
             with pytest.raises(SplitAuditError, match="VALIDATION MISMATCH"):
                 run_split_audit(
-                    "D3_STRICT",
+                    "ref",
                     "d3/best.pt",
                     d / "parent_train.csv",
                     d / "parent_val.csv",
@@ -127,7 +127,7 @@ class TestRunSplitAudit:
             _make_csv(d / "child_val.csv", ["b.jpg"])
 
             run_split_audit(
-                "D3_STRICT",
+                "ref",
                 "d3/best.pt",
                 d / "parent_train.csv",
                 d / "parent_val.csv",
@@ -140,4 +140,4 @@ class TestRunSplitAudit:
             assert audit_path.exists()
             audit = json.loads(audit_path.read_text())
             assert audit["protocol_valid"] is True
-            assert audit["parent_experiment"] == "D3_STRICT"
+            assert audit["parent_experiment"] == "ref"

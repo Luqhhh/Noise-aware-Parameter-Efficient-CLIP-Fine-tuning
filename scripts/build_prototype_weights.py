@@ -7,8 +7,8 @@ per-class 10%-trimmed centroids, and assigns each sample a weight in
 
 Usage:
     PYTHONPATH=. python scripts/build_prototype_weights.py \
-        --config configs/d3_strict.yaml \
-        --train-csv outputs/d3_strict/seed42/train.csv \
+        --config configs/ref.yaml \
+        --train-csv outputs/ref/seed42/train.csv \
         --output-dir outputs/phase2/prototype_weights \
         --batch-size 256
 """

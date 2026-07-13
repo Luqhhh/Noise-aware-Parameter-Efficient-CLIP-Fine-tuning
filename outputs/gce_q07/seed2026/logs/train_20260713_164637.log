@@ -1,0 +1,19 @@
+2026-07-13 16:46:37 | INFO | Using device: cuda
+2026-07-13 16:46:37 | INFO | Configuration: configs/b2_gce07.yaml
+2026-07-13 16:46:37 | INFO | Train seed: 2026
+2026-07-13 16:46:37 | INFO | Resolved runtime: experiment_id=B2_GCE07, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-13 16:46:39 | INFO | Total parameters:     88,105,716
+2026-07-13 16:46:39 | INFO | Trainable parameters: 256,500
+2026-07-13 16:46:42 | INFO | Using config epochs: 50 (dev mode)
+2026-07-13 16:46:42 | INFO | Loss: gce (reduction=mean)
+2026-07-13 16:46:42 | INFO | Optimizer parameter groups:
+2026-07-13 16:46:42 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-13 16:46:42 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-13 16:46:42 | INFO |   Trainable head params:       256,500
+2026-07-13 16:46:42 | INFO |   Trainable visual params:           0
+2026-07-13 16:46:42 | INFO | Starting training: 50 epochs, 714 batches/epoch
+2026-07-13 16:46:42 | INFO | Warmup steps: 1428, Total steps: 35700, Cosine steps: 34272
+2026-07-13 16:46:42 | INFO | AMP: True
+2026-07-13 16:46:42 | INFO | ============================================================
+2026-07-13 16:49:06 | INFO | Epoch   1/50 | Train Loss: 1.3939 | Train Acc: 0.1255 | Val Loss: 1.3268 | Val Acc: 0.1731 | head_lr: 2.50e-03 | bb_lr: 0.00e+00 | Time: 2m 23s
+2026-07-13 16:49:06 | INFO |   >> New best model! Val Acc: 0.1731

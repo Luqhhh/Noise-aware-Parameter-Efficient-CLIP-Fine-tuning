@@ -7,8 +7,8 @@ submission_zip_sha256.
 
 Usage:
     python scripts/register_submission.py \
-      --manifest outputs/d3_strict/seed42/submissions/submission_manifest.json \
-      [--notes "First platform submission for D3_STRICT"]
+      --manifest outputs/ref/seed42/submissions/submission_manifest.json \
+      [--notes "First platform submission for ref"]
 """
 
 import argparse

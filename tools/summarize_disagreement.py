@@ -13,8 +13,8 @@ Usage:
         --sample-metrics outputs/d3_vs_b2_disagreement/sample_metrics.csv \\
         --group-summary outputs/d3_vs_b2_disagreement/group_summary.json \\
         --trusted-summary outputs/d3_vs_b2_disagreement/trusted_subset_summary.json \\
-        --reference-dual outputs/d3_strict/seed42/checkpoints/dual_validation.json \\
-        --candidate-dual outputs/b2_gce07/seed42/checkpoints/dual_validation.json \\
+        --reference-dual outputs/ref/seed42/checkpoints/dual_validation.json \\
+        --candidate-dual outputs/gce_q07/seed42/checkpoints/dual_validation.json \\
         --output outputs/d3_vs_b2_disagreement/findings.md
 """
 

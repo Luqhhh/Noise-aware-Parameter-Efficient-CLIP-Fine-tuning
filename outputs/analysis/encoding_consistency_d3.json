@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "config": "configs/d3_strict.yaml",
+  "checkpoint": "outputs/d3_strict/seed42/checkpoints/best.pt",
+  "split_dir": "outputs/d3_strict/seed42",
+  "n_samples": 10316,
+  "num_classes": 500,
+  "full_vs_encoded": {
+    "max_abs_diff": 0.0,
+    "mean_abs_diff": 0.0,
+    "top1_mismatches": 0,
+    "mismatch_fraction": 0.0
+  },
+  "encoded_vs_fast_linear": {
+    "max_abs_diff": 0.0,
+    "top1_mismatches": 0
+  },
+  "per_sample_distribution": {
+    "p50": 0.0,
+    "p99": 0.0,
+    "p99_9": 0.0,
+    "max": 0.0
+  },
+  "acceptance": {
+    "fp32_top1_mismatch_zero": true,
+    "max_logits_error_lt_1e5": true,
+    "overall_pass": true
+  },
+  "mismatch_details": []
+}

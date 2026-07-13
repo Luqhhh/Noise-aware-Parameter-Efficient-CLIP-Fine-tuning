@@ -10,12 +10,12 @@ Usage:
     python tools/analyze_checkpoint_disagreement.py \\
         --audit outputs/audit/d3_vs_b2/audit.json \\
         --reference-name d3 --candidate-name b2 \\
-        --reference-config configs/d3_strict.yaml \\
-        --candidate-config configs/b2_gce07.yaml \\
-        --reference-ckpt outputs/d3_strict/seed42/checkpoints/best.pt \\
-        --candidate-ckpt outputs/b2_gce07/seed42/checkpoints/best.pt \\
-        --train-feature-bank outputs/d3_strict/seed42/feature_banks/train_feature_bank.pt \\
-        --val-feature-bank outputs/d3_strict/seed42/feature_banks/val_feature_bank.pt \\
+        --reference-config configs/ref.yaml \\
+        --candidate-config configs/gce_q07.yaml \\
+        --reference-ckpt outputs/ref/seed42/checkpoints/best.pt \\
+        --candidate-ckpt outputs/gce_q07/seed42/checkpoints/best.pt \\
+        --train-feature-bank outputs/ref/seed42/feature_banks/train_feature_bank.pt \\
+        --val-feature-bank outputs/ref/seed42/feature_banks/val_feature_bank.pt \\
         --output-dir outputs/d3_vs_b2_disagreement \\
         --device cuda
 """

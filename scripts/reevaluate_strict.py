@@ -34,27 +34,27 @@ logger = logging.getLogger(__name__)
 # ── Checkpoint definitions ──────────────────────────────────────────
 EXPERIMENTS = [
     {
-        "id": "E0_STRICT",
-        "config": "configs/e0_strict.yaml",
-        "ckpt": "outputs/e0_strict/seed42/checkpoints/best.pt",
+        "id": "base_ce",
+        "config": "configs/base_ce.yaml",
+        "ckpt": "outputs/base_ce/seed42/checkpoints/best.pt",
         "head_type": "linear",
     },
     {
-        "id": "D3_STRICT",
-        "config": "configs/d3_strict.yaml",
-        "ckpt": "outputs/d3_strict/seed42/checkpoints/best.pt",
+        "id": "ref",
+        "config": "configs/ref.yaml",
+        "ckpt": "outputs/ref/seed42/checkpoints/best.pt",
         "head_type": "linear",
     },
     {
-        "id": "F0_STRICT",
-        "config": "configs/f0_strict.yaml",
-        "ckpt": "outputs/f0_strict/seed42/checkpoints/best.pt",
+        "id": "ft_frozen",
+        "config": "configs/ft_frozen.yaml",
+        "ckpt": "outputs/ft_frozen/seed42/checkpoints/best.pt",
         "head_type": "linear",
     },
     {
-        "id": "F1_STRICT",
-        "config": "configs/f1_strict.yaml",
-        "ckpt": "outputs/f1_strict/seed42/checkpoints/best.pt",
+        "id": "ft_lnpost",
+        "config": "configs/ft_lnpost.yaml",
+        "ckpt": "outputs/ft_lnpost/seed42/checkpoints/best.pt",
         "head_type": "linear",
     },
 ]
@@ -180,19 +180,19 @@ def main():
     print("-" * 100)
 
     # Paired comparisons
-    if "E0_STRICT" in results and "D3_STRICT" in results:
-        d3_vs_e0 = (results["D3_STRICT"]["accuracy"]
-                    - results["E0_STRICT"]["accuracy"]) * 100
+    if "base_ce" in results and "ref" in results:
+        d3_vs_e0 = (results["ref"]["accuracy"]
+                    - results["base_ce"]["accuracy"]) * 100
         print(f"\nD3 vs E0 (micro): {d3_vs_e0:+.4f}pp")
 
-    if "D3_STRICT" in results and "F0_STRICT" in results:
-        f0_vs_d3 = (results["F0_STRICT"]["accuracy"]
-                    - results["D3_STRICT"]["accuracy"]) * 100
+    if "ref" in results and "ft_frozen" in results:
+        f0_vs_d3 = (results["ft_frozen"]["accuracy"]
+                    - results["ref"]["accuracy"]) * 100
         print(f"F0 vs D3 (micro): {f0_vs_d3:+.4f}pp")
 
-    if "D3_STRICT" in results and "F1_STRICT" in results:
-        f1_vs_d3 = (results["F1_STRICT"]["accuracy"]
-                    - results["D3_STRICT"]["accuracy"]) * 100
+    if "ref" in results and "ft_lnpost" in results:
+        f1_vs_d3 = (results["ft_lnpost"]["accuracy"]
+                    - results["ref"]["accuracy"]) * 100
         print(f"F1 vs D3 (micro): {f1_vs_d3:+.4f}pp")
 
     # Macro gap analysis

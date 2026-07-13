@@ -3,8 +3,8 @@
 
 Usage:
     PYTHONPATH=. python scripts/infer_tta.py \
-        --config configs/d3_strict.yaml \
-        --checkpoint outputs/d3_strict/seed42/checkpoints/best.pt \
+        --config configs/ref.yaml \
+        --checkpoint outputs/ref/seed42/checkpoints/best.pt \
         --tta horizontal_flip \
         --output-dir outputs/phase2/ta1_tta_flip
 """
