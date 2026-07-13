@@ -1,0 +1,72 @@
+# A-EXP-2: GCE q=0.7 + Conservative Prototype Weight.
+# Parent: gce_q07. Only change: add prototype-based sample weighting.
+# Uses pre-computed prototype confidence weights (same as pw_v1).
+
+experiment:
+  id: w2_proto_min04
+  mode: dev
+  head_type: linear
+  augmentation_preset: a0
+
+data:
+  stage: preliminary
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  seed: 42
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/ref/seed42
+  test_dir: test
+  train_dir: train
+  val_ratio: 0.1
+  expected_num_classes: 500
+  class_mapping_path: outputs/master_splits/seed42
+  use_full_training_set: false
+
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+  use_cached_features: false
+  unfreeze_last_n_blocks: 0
+  train_ln_post: false
+  train_visual_proj: false
+
+loss:
+  name: gce
+  q: 0.7
+  probability_epsilon: 1.0e-7
+
+sample_weighting:
+  type: static_manifest
+  manifest_path: outputs/phase2/prototype_weights/sample_weights.json
+  normalize_by_weight_sum: true
+  missing_weight_policy: error
+
+eval:
+  batch_size: 256
+
+output:
+  log_dir: outputs/w2_proto_min04/seed42/logs
+  submission_dir: outputs/w2_proto_min04/seed42/submissions
+
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 50
+  image_size: 224
+  lr: 0.005
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/w2_proto_min04/seed42/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001
+  min_lr_ratio: 0.01
+  early_stop_patience: 10
