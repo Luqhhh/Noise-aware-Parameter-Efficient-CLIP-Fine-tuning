@@ -1,0 +1,12 @@
+{
+  "experiment_id": "B3_PROTO_STATIC",
+  "checkpoint_sha256": "7d07715d7aca45f6108ba264cbe6ffd907210fee283a73edf595a73fcf2958af",
+  "checkpoint_epoch": 41,
+  "local_micro_accuracy": 0.7019193485847227,
+  "local_macro_accuracy": 0.7014404535293579,
+  "prediction_csv_sha256": "a4def3edb8a90b55e7f3c4ec7180d0e8ad08f667a4e139b1dc9a3175a181772b",
+  "zip_internal_csv_sha256": "a4def3edb8a90b55e7f3c4ec7180d0e8ad08f667a4e139b1dc9a3175a181772b",
+  "submission_zip_sha256": "fa03312f511ad9d4afa55119c9022740ef5088bcad39c102c28c696700bc6fff",
+  "num_predictions": 24967,
+  "created_at_utc": "2026-07-13T07:05:54Z"
+}
