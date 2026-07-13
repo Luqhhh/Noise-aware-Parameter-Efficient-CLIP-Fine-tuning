@@ -421,6 +421,7 @@ def _apply_sample_weights(
     missing_policy: str,
     device: torch.device,
     epoch: int = 0,
+    labels: torch.Tensor = None,
 ) -> torch.Tensor:
     """Apply per-sample weights to a loss vector.
 
@@ -436,10 +437,8 @@ def _apply_sample_weights(
 
     # New provider path
     if hasattr(sample_weights, "get_weights"):
-        # Extract labels from the loss context — we pass None for labels
-        # since the provider uses per_sample_loss for EMA tracking
         w = sample_weights.get_weights(
-            list(paths), None, epoch, loss_per_sample
+            list(paths), labels, epoch, loss_per_sample
         )
         w = w.to(device)
         if normalize_by_weight_sum:
@@ -543,7 +542,7 @@ def train_one_epoch(
             loss = _apply_sample_weights(
                 loss_per_sample, paths, weight_provider or sample_weights,
                 normalize_by_weight_sum, missing_policy, device,
-                epoch=epoch,
+                epoch=epoch, labels=labels,
             )
             old_scale = scaler.get_scale()
             scaler.scale(loss).backward()
@@ -564,7 +563,7 @@ def train_one_epoch(
             loss = _apply_sample_weights(
                 loss_per_sample, paths, weight_provider or sample_weights,
                 normalize_by_weight_sum, missing_policy, device,
-                epoch=epoch,
+                epoch=epoch, labels=labels,
             )
             loss.backward()
 

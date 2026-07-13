@@ -184,12 +184,14 @@ class EMALossProvider(BaseWeightProvider):
         )
 
     def get_weights(self, sample_paths, labels, epoch, per_sample_loss=None):
-        device = labels.device
         n = len(sample_paths)
 
         # Warmup: all weights = 1.0
         if epoch <= self.warmup_epochs:
-            return torch.ones(n, device=device)
+            return torch.ones(n)
+
+        # Determine device from per_sample_loss
+        device = per_sample_loss.device if per_sample_loss is not None else torch.device("cpu")
 
         # Update EMA
         if per_sample_loss is not None:
