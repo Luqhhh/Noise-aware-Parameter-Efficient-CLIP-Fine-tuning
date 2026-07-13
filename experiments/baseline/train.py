@@ -695,6 +695,7 @@ def save_checkpoint(
     filepath: str,
     extra_meta: Optional[Dict[str, Any]] = None,
     ema_hook=None,
+    weight_provider=None,
     best_raw_acc: float = 0.0,
     best_raw_epoch: int = 0,
     best_ema_acc: float = 0.0,
@@ -721,6 +722,8 @@ def save_checkpoint(
     if ema_hook is not None:
         checkpoint["ema_state_dict"] = ema_hook.state_dict()
         checkpoint["ema_num_updates"] = ema_hook.num_updates
+    if hasattr(weight_provider, "state_dict") and callable(weight_provider.state_dict):
+        checkpoint["weight_provider_state"] = weight_provider.state_dict()
     if extra_meta:
         checkpoint.update(extra_meta)
     torch.save(checkpoint, filepath)
@@ -762,6 +765,7 @@ def load_checkpoint(
         "best_ema_epoch": checkpoint.get("best_ema_epoch", 0),
         "ema_state_dict": checkpoint.get("ema_state_dict"),
         "selection_source": checkpoint.get("selection_source", "raw"),
+        "weight_provider_state": checkpoint.get("weight_provider_state"),
     }
 
 
@@ -1418,6 +1422,11 @@ def main():
                     "state. Use --ema-reset-on-resume to re-initialise EMA "
                     "from raw weights."
                 )
+        # Restore sample weight provider state (e.g. ema_loss history)
+        if "weight_provider_state" in resume_info and resume_info["weight_provider_state"] is not None:
+            if hasattr(weight_provider, "load_state_dict"):
+                weight_provider.load_state_dict(resume_info["weight_provider_state"])
+                train_logger.info("Restored weight provider state.")
         train_logger.info(
             f"Resumed from epoch {resume_info['epoch']}, "
             f"best val acc: {best_val_acc:.4f}"
@@ -1630,6 +1639,7 @@ def main():
             best_ema_acc=best_ema_acc,
             best_ema_epoch=best_ema_epoch,
             selection_source=ema_selection_source if ema_enabled else "raw",
+                weight_provider=weight_provider,
         )
 
         # Save best_raw.pt and best_ema.pt independently
@@ -1644,6 +1654,7 @@ def main():
                 best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                 best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                 selection_source="raw",
+                weight_provider=weight_provider,
             )
         if is_best_ema and ema_hook is not None:
             # Save EMA weights as best_ema.pt
@@ -1660,6 +1671,7 @@ def main():
                 best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                 best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                 selection_source="ema",
+                weight_provider=weight_provider,
             )
             model.load_state_dict(ema_state)  # restore raw weights
 
@@ -1680,6 +1692,7 @@ def main():
                     best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                     best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                     selection_source="ema",
+                weight_provider=weight_provider,
                 )
                 model.load_state_dict(ema_state_bk)
             else:
@@ -1693,6 +1706,7 @@ def main():
                     best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                     best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                     selection_source="raw",
+                weight_provider=weight_provider,
                 )
 
         # Early stopping check
