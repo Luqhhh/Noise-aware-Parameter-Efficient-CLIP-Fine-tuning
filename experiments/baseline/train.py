@@ -538,7 +538,7 @@ def train_one_epoch(
                 loss_per_sample = criterion(logits, labels)
 
             loss = _apply_sample_weights(
-                loss_per_sample, paths, sample_weights,
+                loss_per_sample, paths, weight_provider or sample_weights,
                 normalize_by_weight_sum, missing_policy, device,
                 epoch=epoch,
             )
@@ -555,7 +555,7 @@ def train_one_epoch(
             loss_per_sample = criterion(logits, labels)
 
             loss = _apply_sample_weights(
-                loss_per_sample, paths, sample_weights,
+                loss_per_sample, paths, weight_provider or sample_weights,
                 normalize_by_weight_sum, missing_policy, device,
                 epoch=epoch,
             )
@@ -1400,7 +1400,6 @@ def main():
             config,
             warmup_steps,
             global_step,
-            sample_weights=sample_weights,
             weight_provider=weight_provider if use_sample_weights else None,
         )
 
