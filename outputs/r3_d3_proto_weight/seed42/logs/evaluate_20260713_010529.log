@@ -1,0 +1,22 @@
+2026-07-13 01:05:29 | INFO | Config: configs/r3_d3_proto_weight.yaml
+2026-07-13 01:05:29 | INFO | Checkpoint: outputs/r3_d3_proto_weight/seed42/checkpoints/best.pt
+2026-07-13 01:05:29 | INFO | Seed: 42
+2026-07-13 01:05:29 | INFO | Device: cuda
+2026-07-13 01:05:29 | INFO | Head type: linear
+2026-07-13 01:05:33 | INFO | Loaded checkpoint from epoch 41
+2026-07-13 01:05:33 | INFO | Checkpoint best val acc: 0.7019193485847227
+2026-07-13 01:05:33 | INFO | Checkpoint SHA-256: 7d07715d7aca45f6108ba264cbe6ffd907210fee283a73edf595a73fcf2958af
+2026-07-13 01:05:33 | INFO | Val CSV SHA-256: 70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c
+2026-07-13 01:05:33 | INFO | Validation set: 10316 samples, 41 batches
+2026-07-13 01:05:53 | INFO | ==================================================
+2026-07-13 01:05:53 | INFO | Evaluation Results:
+2026-07-13 01:05:53 | INFO |   Total samples:              10316
+2026-07-13 01:05:53 | INFO |   Correct samples:            7241
+2026-07-13 01:05:53 | INFO |   Top-1 Accuracy (micro):     0.7019 (70.19%)
+2026-07-13 01:05:53 | INFO |   Macro Accuracy:             0.7014 (70.14%)
+2026-07-13 01:05:53 | INFO |   Median Per-Class Accuracy:  0.7500 (75.00%)
+2026-07-13 01:05:53 | INFO |   Bottom-10%% Accuracy:        0.3216 (32.16%)
+2026-07-13 01:05:53 | INFO |   Micro-Macro Gap:            +0.0005 (+0.05%)
+2026-07-13 01:05:53 | INFO |   Loss:                       1.3538
+2026-07-13 01:05:53 | INFO | ==================================================
+2026-07-13 01:05:53 | INFO | Eval results saved to: outputs/r3_d3_proto_weight/seed42/checkpoints/reeval_best.json
