@@ -414,19 +414,37 @@ def _unpack_batch(
 def _apply_sample_weights(
     loss_per_sample: torch.Tensor,
     paths: tuple,
-    sample_weights: dict,
+    sample_weights,
     normalize_by_weight_sum: bool,
     missing_policy: str,
     device: torch.device,
+    epoch: int = 0,
 ) -> torch.Tensor:
     """Apply per-sample weights to a loss vector.
 
-    When *sample_weights* is None or *paths* is None, returns the
-    unweighted mean (standard training).
+    ``sample_weights`` may be:
+      - ``None`` → unweighted mean
+      - ``dict`` (legacy) → lookup by image path
+      - ``BaseWeightProvider`` (new) → ``get_weights()`` per batch
+
+    When *paths* is None, returns the unweighted mean.
     """
     if sample_weights is None or paths is None:
         return loss_per_sample.mean()
 
+    # New provider path
+    if hasattr(sample_weights, "get_weights"):
+        # Extract labels from the loss context — we pass None for labels
+        # since the provider uses per_sample_loss for EMA tracking
+        w = sample_weights.get_weights(
+            list(paths), None, epoch, loss_per_sample
+        )
+        w = w.to(device)
+        if normalize_by_weight_sum:
+            return (loss_per_sample * w).sum() / (w.sum() + 1e-8)
+        return (loss_per_sample * w).mean()
+
+    # Legacy dict path
     w_vals = []
     for p in paths:
         entry = sample_weights.get(p)
@@ -474,7 +492,8 @@ def train_one_epoch(
     config: Dict[str, Any],
     warmup_steps: int,
     global_step: int,
-    sample_weights: dict = None,
+    sample_weights=None,
+    weight_provider=None,
 ) -> tuple:
     """Train for one epoch.
 
@@ -521,6 +540,7 @@ def train_one_epoch(
             loss = _apply_sample_weights(
                 loss_per_sample, paths, sample_weights,
                 normalize_by_weight_sum, missing_policy, device,
+                epoch=epoch,
             )
             scaler.scale(loss).backward()
 
@@ -537,6 +557,7 @@ def train_one_epoch(
             loss = _apply_sample_weights(
                 loss_per_sample, paths, sample_weights,
                 normalize_by_weight_sum, missing_policy, device,
+                epoch=epoch,
             )
             loss.backward()
 
@@ -891,6 +912,12 @@ def main():
     # Resolve runtime args: explicit CLI > YAML > hard default
     args = resolve_runtime_args(args, config)
 
+    # ── Config schema validation (A-INFRA-1) ──
+    from common.config_schema import validate_config
+    schema_warnings = validate_config(config)
+    for w in schema_warnings:
+        logger.warning("Config schema: %s", w)
+
     mode = args.mode
     experiment_id = args.experiment_id
     use_cached = args.use_cached_features
@@ -1129,23 +1156,31 @@ def main():
 
     # ── Build loss function ────────────────────────────────────────
     from common.losses import build_loss
+    from common.sample_weighting import (
+        build_weight_provider, NoneWeightProvider,
+    )
 
-    sample_weights = None
+    # Backward-compat: old sample_weighting.enabled → translate to new provider
     sw_cfg = config.get("sample_weighting", {})
-
-    if sw_cfg.get("enabled", False):
-        weights_path = Path(sw_cfg["weights_path"])
-        if not weights_path.exists():
-            raise FileNotFoundError(
-                f"Sample weights file not found: {weights_path}"
-            )
-        with open(weights_path, "r") as f:
-            sample_weights = json.load(f)
+    if sw_cfg.get("enabled", False) and "type" not in sw_cfg:
+        config.setdefault("sample_weighting", {})
+        config["sample_weighting"]["type"] = "static_manifest"
+        config["sample_weighting"]["manifest_path"] = sw_cfg["weights_path"]
         train_logger.info(
-            "Sample weighting enabled: %d weights loaded from %s",
-            len(sample_weights), weights_path,
+            "Translated legacy sample_weighting.enabled to type=static_manifest"
         )
-        # Use reduction='none' so we can apply per-sample weights
+
+    weight_provider = build_weight_provider(config, num_train_samples=len(train_dataset))
+
+    # For stateful providers, initialise the path→index mapping
+    if hasattr(weight_provider, "init_sample_index"):
+        all_paths = [str(p) for p in train_dataset.samples]
+        all_labels = torch.tensor(train_dataset.labels, dtype=torch.long)
+        weight_provider.init_sample_index(all_paths, all_labels)
+
+    use_sample_weights = not isinstance(weight_provider, NoneWeightProvider)
+
+    if use_sample_weights:
         loss_cfg = config.get("loss", {}).copy()
         loss_cfg["reduction"] = "none"
         criterion = build_loss({"loss": loss_cfg})
@@ -1346,6 +1381,10 @@ def main():
         epoch_start = time.time()
 
         # Train
+        # ScheduledLoss: set active phase for this epoch
+        if hasattr(criterion, "set_epoch"):
+            criterion.set_epoch(epoch)
+
         train_loss, train_acc, global_step, head_grad_norm, backbone_grad_norm = train_one_epoch(
             model,
             train_loader,
@@ -1359,6 +1398,7 @@ def main():
             warmup_steps,
             global_step,
             sample_weights=sample_weights,
+            weight_provider=weight_provider if use_sample_weights else None,
         )
 
         # Validate (skip if no val_loader, e.g., final_fit)

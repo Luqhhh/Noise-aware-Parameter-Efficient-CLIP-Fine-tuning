@@ -162,8 +162,20 @@ def build_loss(config: Dict) -> nn.Module:
 
     Raises:
         ValueError: If loss name is unknown or required parameters are missing.
+
+    If ``loss.schedule`` is present, returns a ``ScheduledLoss`` (see
+    ``common.loss_schedule``).  Otherwise dispatches to the single-loss
+    builders below.
     """
-    loss_cfg = config.get("loss", {}).copy()
+    loss_section = config.get("loss", {})
+
+    # ── Schedule path ──
+    if "schedule" in loss_section:
+        from common.loss_schedule import ScheduledLoss
+        return ScheduledLoss(loss_section["schedule"])
+
+    # ── Single-loss path ──
+    loss_cfg = loss_section.copy()
     name = loss_cfg.pop("name", "cross_entropy")
     reduction = loss_cfg.pop("reduction", "mean")
 
