@@ -196,14 +196,14 @@ class EMALossProvider(BaseWeightProvider):
         # Update EMA
         if per_sample_loss is not None:
             indices = [self._sample_to_idx[p] for p in sample_paths]
-            idx_t = torch.tensor(indices, device=device)
+            idx_t = torch.tensor(indices, dtype=torch.long)  # CPU
             new_ema = torch.where(
-                self.ema_loss[idx_t].to(device).isnan(),
-                per_sample_loss.detach(),
-                self.momentum * self.ema_loss[idx_t].to(device)
-                + (1.0 - self.momentum) * per_sample_loss.detach(),
+                self.ema_loss[idx_t].isnan(),
+                per_sample_loss.detach().cpu(),
+                self.momentum * self.ema_loss[idx_t]
+                + (1.0 - self.momentum) * per_sample_loss.detach().cpu(),
             )
-            self.ema_loss[idx_t] = new_ema.cpu()
+            self.ema_loss[idx_t] = new_ema
 
         # Determine fraction of high-loss samples to downweight
         if epoch <= 15:
@@ -211,8 +211,8 @@ class EMALossProvider(BaseWeightProvider):
         else:
             frac = self.frac_16_plus
 
-        # Classwise ranking
-        weights = torch.ones(n, device=device)
+        # Classwise ranking (all on CPU, return CPU tensor)
+        weights = torch.ones(n)
         unique_labels = labels.unique()
         for c in unique_labels:
             c_mask = labels == c
@@ -220,15 +220,17 @@ class EMALossProvider(BaseWeightProvider):
             if len(c_indices) <= 1:
                 continue
             c_paths = [sample_paths[i.item()] for i in c_indices]
-            c_ema_indices = [self._sample_to_idx[p] for p in c_paths]
-            c_ema = self.ema_loss[torch.tensor(c_ema_indices)].clone()
+            c_ema_indices = torch.tensor(
+                [self._sample_to_idx[p] for p in c_paths], dtype=torch.long
+            )
+            c_ema = self.ema_loss[c_ema_indices].clone()
             # NaN → treat as 0 (no history yet, default to max weight)
             c_ema = torch.where(c_ema.isnan(), torch.zeros_like(c_ema), c_ema)
             n_high = max(1, int(len(c_indices) * frac))
             _, high_idx = torch.topk(c_ema, n_high)
             weights[c_indices[high_idx]] = self.min_weight
 
-        return weights
+        return weights.to(device)
 
     def state_dict(self) -> dict:
         return {
