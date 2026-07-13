@@ -125,6 +125,9 @@ E0_STRICT: clean rerun completed (50 epochs, best epoch 47, no early stop).
 - Local: 70.80% → Platform: **58.3090%** → Gap: 12.49pp
 - vs D3: platform **+0.97pp** (57.34% → 58.31%), TTA validated as platform-effective
 
+**B1_LS005 Platform Submission:**
+- Platform: **57.3918%** → vs D3 +0.05pp — essentially flat, no benefit
+
 **B2_GCE07 Platform Submission:**
 - Local: 69.59% → Platform: **58.9578%** → Gap: 10.63pp
 - vs D3: platform **+1.62pp** (57.34% → 58.96%), **best platform score so far**
