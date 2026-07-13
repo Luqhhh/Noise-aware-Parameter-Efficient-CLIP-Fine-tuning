@@ -273,6 +273,8 @@ def _prepare_fresh_run_artifacts(
     """
     generated_files = [
         save_dir / "best.pt",
+        save_dir / "best_raw.pt",
+        save_dir / "best_ema.pt",
         save_dir / "last.pt",
         save_dir / "eval_results.json",
         save_dir / "config_snapshot.yaml",
@@ -494,6 +496,7 @@ def train_one_epoch(
     global_step: int,
     sample_weights=None,
     weight_provider=None,
+    ema_hook=None,
 ) -> tuple:
     """Train for one epoch.
 
@@ -542,6 +545,7 @@ def train_one_epoch(
                 normalize_by_weight_sum, missing_policy, device,
                 epoch=epoch,
             )
+            old_scale = scaler.get_scale()
             scaler.scale(loss).backward()
 
             if max_grad_norm > 0:
@@ -550,6 +554,9 @@ def train_one_epoch(
 
             scaler.step(optimizer)
             scaler.update()
+            # EMA: only update if optimizer step was NOT skipped (no overflow)
+            if ema_hook is not None and scaler.get_scale() >= old_scale:
+                ema_hook.update(model)
         else:
             logits = _forward_inputs(model, inputs, is_cached)
             loss_per_sample = criterion(logits, labels)
@@ -565,6 +572,9 @@ def train_one_epoch(
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
 
             optimizer.step()
+            # EMA: always update in non-AMP path
+            if ema_hook is not None:
+                ema_hook.update(model)
 
         # Compute per-group gradient norms (before optimizer step is too late
         # since step already happened; compute after clipping, before step would
@@ -685,6 +695,12 @@ def save_checkpoint(
     config: Dict[str, Any],
     filepath: str,
     extra_meta: Optional[Dict[str, Any]] = None,
+    ema_hook=None,
+    best_raw_acc: float = 0.0,
+    best_raw_epoch: int = 0,
+    best_ema_acc: float = 0.0,
+    best_ema_epoch: int = 0,
+    selection_source: str = "raw",
 ) -> None:
     """Save a training checkpoint with optional extra metadata."""
     checkpoint: Dict[str, Any] = {
@@ -696,7 +712,16 @@ def save_checkpoint(
         "scaler_state_dict": scaler.state_dict(),
         "best_val_acc": best_val_acc,
         "config": config,
+        # EMA fields
+        "best_raw_val_acc": best_raw_acc,
+        "best_raw_epoch": best_raw_epoch,
+        "best_ema_val_acc": best_ema_acc,
+        "best_ema_epoch": best_ema_epoch,
+        "selection_source": selection_source,
     }
+    if ema_hook is not None:
+        checkpoint["ema_state_dict"] = ema_hook.state_dict()
+        checkpoint["ema_num_updates"] = ema_hook.num_updates
     if extra_meta:
         checkpoint.update(extra_meta)
     torch.save(checkpoint, filepath)
@@ -732,6 +757,12 @@ def load_checkpoint(
         "epoch": checkpoint["epoch"],
         "global_step": checkpoint["global_step"],
         "best_val_acc": checkpoint.get("best_val_acc", 0.0),
+        "best_raw_acc": checkpoint.get("best_raw_val_acc", 0.0),
+        "best_raw_epoch": checkpoint.get("best_raw_epoch", 0),
+        "best_ema_acc": checkpoint.get("best_ema_val_acc", 0.0),
+        "best_ema_epoch": checkpoint.get("best_ema_epoch", 0),
+        "ema_state_dict": checkpoint.get("ema_state_dict"),
+        "selection_source": checkpoint.get("selection_source", "raw"),
     }
 
 
@@ -984,6 +1015,14 @@ def main():
     total_params, trainable_params = count_parameters(model)
     train_logger.info(f"Total parameters:     {total_params:,}")
     train_logger.info(f"Trainable parameters: {trainable_params:,}")
+
+    # ── EMA Hook (A-INFRA-5) ──
+    ema_cfg = config.get("head_ema", {})
+    ema_enabled = ema_cfg.get("enabled", False)
+    ema_hook = None
+    ema_decay = ema_cfg.get("decay", 0.99)
+    ema_warmup_epochs = ema_cfg.get("warmup_epochs", 5)
+    ema_selection_source = ema_cfg.get("selection_source", "ema")
 
     # Canonical class mapping via common.class_mapping
     class_mapping_path = config["data"].get("class_mapping_path", config["data"]["split_dir"])
@@ -1333,10 +1372,25 @@ def main():
                 "No val_loader available; skipping epoch-0 validation gate."
             )
 
+    # ── Create EMA hook (after model weights are finalised) ──
+    if ema_enabled:
+        from common.hooks import EMAHook
+        steps_per_epoch = len(train_loader)
+        ema_warmup_steps = ema_warmup_epochs * steps_per_epoch
+        ema_hook = EMAHook(model, decay=ema_decay, warmup_steps=ema_warmup_steps)
+        train_logger.info(
+            "EMA enabled: decay=%.4f, warmup_epochs=%d, warmup_steps=%d, selection=%s",
+            ema_decay, ema_warmup_epochs, ema_warmup_steps, ema_selection_source,
+        )
+
     # Resume if requested
     start_epoch = 1
     global_step = 0
     best_val_acc = 0.0
+    best_raw_acc = 0.0
+    best_raw_epoch = 0
+    best_ema_acc = 0.0
+    best_ema_epoch = 0
     dev_best_epoch = None
 
     if args.resume:
@@ -1346,6 +1400,25 @@ def main():
         start_epoch = resume_info["epoch"] + 1
         global_step = resume_info["global_step"]
         best_val_acc = resume_info["best_val_acc"]
+        # Restore EMA state if present
+        best_raw_acc = resume_info.get("best_raw_acc", best_val_acc)
+        best_raw_epoch = resume_info.get("best_raw_epoch", 0)
+        best_ema_acc = resume_info.get("best_ema_acc", 0.0)
+        best_ema_epoch = resume_info.get("best_ema_epoch", 0)
+        if ema_enabled and ema_hook is not None:
+            if "ema_state_dict" in resume_info:
+                ema_hook.load_state_dict(resume_info["ema_state_dict"])
+            elif getattr(args, "ema_reset_on_resume", False):
+                train_logger.warning(
+                    "Resuming with EMA enabled but no EMA state in checkpoint. "
+                    "Re-initialising EMA from raw weights."
+                )
+            else:
+                raise ValueError(
+                    "EMA enabled and --resume used, but checkpoint has no EMA "
+                    "state. Use --ema-reset-on-resume to re-initialise EMA "
+                    "from raw weights."
+                )
         train_logger.info(
             f"Resumed from epoch {resume_info['epoch']}, "
             f"best val acc: {best_val_acc:.4f}"
@@ -1401,15 +1474,24 @@ def main():
             warmup_steps,
             global_step,
             weight_provider=weight_provider if use_sample_weights else None,
+            ema_hook=ema_hook,
         )
 
         # Validate (skip if no val_loader, e.g., final_fit)
         val_loss = None
         val_acc = None
+        ema_val_loss = None
+        ema_val_acc = None
         if val_loader is not None:
             val_loss, val_acc = validate(
                 model, val_loader, criterion, device, config
             )
+            # EMA validation (separate path — no swap, uses get_ema_model)
+            if ema_hook is not None:
+                ema_model = ema_hook.get_ema_model()
+                ema_val_loss, ema_val_acc = validate(
+                    ema_model, val_loader, criterion, device, config
+                )
 
         epoch_time = time.time() - epoch_start
         current_lr = optimizer.param_groups[0]["lr"]
@@ -1423,10 +1505,17 @@ def main():
         )
 
         if val_acc is not None:
+            ema_str = ""
+            if ema_val_acc is not None:
+                ema_str = (
+                    f" | EMA Val Loss: {ema_val_loss:.4f} | EMA Val Acc: {ema_val_acc:.4f}"
+                    f" | EMA updates: {ema_hook.num_updates}"
+                )
             log_msg = (
                 f"Epoch {epoch:3d}/{epochs} | "
                 f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
-                f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f} | "
+                f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}"
+                f"{ema_str} | "
                 f"head_lr: {head_lr_val:.2e} | "
                 f"bb_lr: {backbone_lr_val:.2e} | "
                 f"Time: {format_time(epoch_time)}"
@@ -1446,7 +1535,8 @@ def main():
             if log_header:
                 if val_acc is not None:
                     f.write(
-                        "epoch,train_loss,train_acc,val_loss,val_acc,"
+                        "epoch,train_loss,train_acc,raw_val_loss,raw_val_acc,"
+                        "ema_val_loss,ema_val_acc,ema_num_updates,"
                         "head_lr,backbone_lr,head_grad_norm,backbone_grad_norm,"
                         "epoch_time\n"
                     )
@@ -1458,9 +1548,13 @@ def main():
                     )
                 log_header = False
             if val_acc is not None:
+                ema_updates = ema_hook.num_updates if ema_hook is not None else 0
+                ema_vl_str = f"{ema_val_loss:.6f}" if ema_val_loss is not None else ""
+                ema_va_str = f"{ema_val_acc:.6f}" if ema_val_acc is not None else ""
                 f.write(
                     f"{epoch},{train_loss:.6f},{train_acc:.6f},"
                     f"{val_loss:.6f},{val_acc:.6f},"
+                    f"{ema_vl_str},{ema_va_str},{ema_updates},"
                     f"{head_lr_val:.8f},{backbone_lr_val:.8f},"
                     f"{head_grad_norm:.6f},{backbone_grad_norm:.6f},"
                     f"{epoch_time:.2f}\n"
@@ -1473,19 +1567,47 @@ def main():
                     f"{epoch_time:.2f}\n"
                 )
 
-        # Track best epoch and save checkpoints (dev mode only for tracking)
-        is_best = False
-        if val_acc is not None and val_acc > best_val_acc:
-            best_val_acc = val_acc
-            dev_best_epoch = epoch
-            is_best = True
-            early_stop_counter = 0
-            train_logger.info(f"  >> New best model! Val Acc: {best_val_acc:.4f}")
-        elif val_acc is not None and early_stop_patience > 0:
-            early_stop_counter += 1
-            train_logger.info(
-                f"  >> No improvement for {early_stop_counter}/{early_stop_patience} epochs"
-            )
+        # Track best epoch (raw + EMA)
+        is_best_raw = False
+        is_best_ema = False
+        if val_acc is not None:
+            if val_acc > best_raw_acc:
+                best_raw_acc = val_acc
+                best_raw_epoch = epoch
+                is_best_raw = True
+            if ema_val_acc is not None and ema_val_acc > best_ema_acc:
+                best_ema_acc = ema_val_acc
+                best_ema_epoch = epoch
+                is_best_ema = True
+
+            # Compat best_val_acc: track based on selection_source
+            if ema_hook is not None and ema_selection_source == "ema":
+                current_best = best_ema_acc
+            else:
+                current_best = best_raw_acc
+
+            is_best = False
+            if epoch == 1 or (ema_hook is not None and ema_selection_source == "ema" and is_best_ema):
+                is_best = True
+                best_val_acc = current_best
+                dev_best_epoch = epoch
+            elif ema_hook is None and is_best_raw:
+                is_best = True
+                best_val_acc = current_best
+                dev_best_epoch = epoch
+
+            if is_best_raw:
+                train_logger.info(f"  >> New best RAW! Val Acc: {best_raw_acc:.4f}")
+            if is_best_ema:
+                train_logger.info(f"  >> New best EMA! Val Acc: {best_ema_acc:.4f}")
+
+            if is_best:
+                early_stop_counter = 0
+            elif early_stop_patience > 0:
+                early_stop_counter += 1
+                train_logger.info(
+                    f"  >> No improvement for {early_stop_counter}/{early_stop_patience} epochs"
+                )
 
         # Build checkpoint metadata for this save
         extra_meta = _build_checkpoint_metadata(
@@ -1503,21 +1625,76 @@ def main():
             config,
             str(save_dir / "last.pt"),
             extra_meta=extra_meta,
+            ema_hook=ema_hook,
+            best_raw_acc=best_raw_acc,
+            best_raw_epoch=best_raw_epoch,
+            best_ema_acc=best_ema_acc,
+            best_ema_epoch=best_ema_epoch,
+            selection_source=ema_selection_source if ema_enabled else "raw",
         )
 
-        if is_best:
+        # Save best_raw.pt and best_ema.pt independently
+        if is_best_raw:
             save_checkpoint(
                 model,
-                optimizer,
-                scheduler,
-                scaler,
-                epoch,
-                global_step,
-                best_val_acc,
-                config,
-                str(save_dir / "best.pt"),
+                optimizer, scheduler, scaler,
+                epoch, global_step, best_raw_acc, config,
+                str(save_dir / "best_raw.pt"),
                 extra_meta=extra_meta,
+                ema_hook=ema_hook,
+                best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
+                best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
+                selection_source="raw",
             )
+        if is_best_ema and ema_hook is not None:
+            # Save EMA weights as best_ema.pt
+            ema_model = ema_hook.get_ema_model()
+            ema_state = model.state_dict()  # save raw model state for resume
+            model.load_state_dict(ema_model.state_dict())  # swap to EMA for save
+            save_checkpoint(
+                model,
+                optimizer, scheduler, scaler,
+                epoch, global_step, best_ema_acc, config,
+                str(save_dir / "best_ema.pt"),
+                extra_meta=extra_meta,
+                ema_hook=ema_hook,
+                best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
+                best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
+                selection_source="ema",
+            )
+            model.load_state_dict(ema_state)  # restore raw weights
+
+        if is_best:
+            best_ckpt_path = str(save_dir / "best.pt")
+            if ema_enabled and ema_selection_source == "ema":
+                # best.pt = best_ema.pt (copy EMA weights)
+                ema_model = ema_hook.get_ema_model()
+                ema_state_bk = model.state_dict()
+                model.load_state_dict(ema_model.state_dict())
+                save_checkpoint(
+                    model,
+                    optimizer, scheduler, scaler,
+                    epoch, global_step, best_val_acc, config,
+                    best_ckpt_path,
+                    extra_meta=extra_meta,
+                    ema_hook=ema_hook,
+                    best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
+                    best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
+                    selection_source="ema",
+                )
+                model.load_state_dict(ema_state_bk)
+            else:
+                save_checkpoint(
+                    model,
+                    optimizer, scheduler, scaler,
+                    epoch, global_step, best_val_acc, config,
+                    best_ckpt_path,
+                    extra_meta=extra_meta,
+                    ema_hook=ema_hook,
+                    best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
+                    best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
+                    selection_source="raw",
+                )
 
         # Early stopping check
         if early_stop_patience > 0 and early_stop_counter >= early_stop_patience:
@@ -1629,7 +1806,7 @@ def main():
             "train_seed": train_seed,
             "best_val_acc": float(best_val_acc),
             "dev_best_epoch": dev_best_epoch,
-            "trained_epochs": epochs,  # deprecated: kept for backward compatibility
+            "trained_epochs": epochs,
             "max_epochs": epochs,
             "actual_epochs_run": epoch,
             "head_type": model.head_type,
@@ -1649,6 +1826,16 @@ def main():
             "epoch0_val_loss": epoch0_val_loss,
             "parent_best_val_acc": epoch0_parent_acc,
             "epoch0_delta": epoch0_delta,
+            # EMA fields
+            "ema_enabled": ema_enabled,
+            "ema_decay": ema_decay if ema_enabled else None,
+            "ema_warmup_epochs": ema_warmup_epochs if ema_enabled else None,
+            "selection_source": ema_selection_source if ema_enabled else "raw",
+            "best_raw_val_acc": float(best_raw_acc),
+            "best_raw_epoch": best_raw_epoch,
+            "best_ema_val_acc": float(best_ema_acc) if ema_enabled else None,
+            "best_ema_epoch": best_ema_epoch if ema_enabled else None,
+            "post_eval_weight_source": ema_selection_source if ema_enabled else "raw",
             **per_class_metrics,
         }
         eval_path = save_dir / "eval_results.json"

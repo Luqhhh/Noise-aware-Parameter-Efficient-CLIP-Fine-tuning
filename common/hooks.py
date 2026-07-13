@@ -1,14 +1,10 @@
-"""Training hooks — EMA and Teacher–Student interfaces.
-
-These are thin interfaces that the training loop calls.  The actual
-algorithm logic is implemented by C (Head EMA, Teacher consistency loss, etc.).
-"""
+"""Training hooks — EMA and Teacher–Student interfaces."""
 
 from __future__ import annotations
 
 import copy
 import logging
-from typing import Dict, Optional
+from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -19,42 +15,60 @@ logger = logging.getLogger(__name__)
 class EMAHook:
     """Exponential Moving Average of model parameters.
 
-    Maintains a shadow copy of the model (EMA parameters).  The training
-    loop calls ``update()`` after each optimizer step and optionally uses
-    EMA parameters for validation.
+    Maintains a shadow copy of the model updated after each successful
+    optimizer step.  Supports step-level warmup (direct copy for the first
+    N updates) and full checkpoint save/restore.
 
-    C is responsible for the specific EMA logic (decay schedule, etc.).
-    This class provides the hook interface that train.py calls.
+    Usage in train.py::
+
+        ema = EMAHook(model, decay=0.99, warmup_steps=warmup_epochs * steps_per_epoch)
+        for batch in loader: ...
+            optimizer.step()
+            ema.update(model)  # after EACH successful step
+        # Validation:
+        raw_acc = validate(model, ...)
+        ema_acc = validate(ema.get_ema_model(), ...)
     """
 
     def __init__(
         self,
         model: nn.Module,
         decay: float = 0.99,
-        warmup_epochs: int = 5,
+        warmup_steps: int = 0,
     ):
         if not 0.0 < decay <= 1.0:
             raise ValueError(f"decay must be in (0, 1], got {decay}")
+        if warmup_steps < 0:
+            raise ValueError(f"warmup_steps must be >= 0, got {warmup_steps}")
+
         self.decay = decay
-        self.warmup_epochs = warmup_epochs
+        self.warmup_steps = warmup_steps
+        self.num_updates: int = 0
+
+        # Shadow model — never requires grad
         self._ema_model = copy.deepcopy(model)
         self._ema_model.eval()
         for p in self._ema_model.parameters():
             p.requires_grad_(False)
-        self._raw_state: Optional[Dict] = None
 
         logger.info(
-            "EMAHook: decay=%.4f, warmup_epochs=%d", decay, warmup_epochs
+            "EMAHook: decay=%.4f, warmup_steps=%d", decay, warmup_steps
         )
 
-    def update(self, model: nn.Module, epoch: int):
-        """Update EMA parameters after an optimizer step.
+    # ── Core update ──────────────────────────────────────────────────
 
-        During warmup, EMA is a direct copy of the model.
-        After warmup: ema = decay * ema + (1 - decay) * model.
+    def update(self, model: nn.Module):
+        """Update EMA after one successful optimizer step.
+
+        During warmup (``num_updates < warmup_steps``), EMA is replaced
+        with a direct copy of the raw model.  After warmup, the standard
+        EMA recurrence applies:
+
+            ema = decay * ema + (1 - decay) * raw
         """
-        if epoch <= self.warmup_epochs:
-            # Direct copy during warmup
+        self.num_updates += 1
+
+        if self.num_updates <= self.warmup_steps:
             self._ema_model.load_state_dict(model.state_dict())
         else:
             with torch.no_grad():
@@ -65,36 +79,31 @@ class EMAHook:
                         model_p.data, alpha=1.0 - self.decay
                     )
 
-    def swap_to_ema(self, model: nn.Module):
-        """Replace model parameters with EMA version (for validation/inference)."""
-        self._raw_state = {k: v.clone() for k, v in model.state_dict().items()}
-        model.load_state_dict(self._ema_model.state_dict())
-        logger.debug("Swapped to EMA parameters for evaluation.")
+    # ── Model access ─────────────────────────────────────────────────
 
-    def restore_raw(self, model: nn.Module):
-        """Restore original (non-EMA) model parameters."""
-        if self._raw_state is None:
-            logger.warning("restore_raw called but no raw state saved.")
-            return
-        model.load_state_dict(self._raw_state)
-        self._raw_state = None
-        logger.debug("Restored raw parameters.")
+    def get_ema_model(self) -> nn.Module:
+        """Return the EMA shadow model for direct validation/inference."""
+        return self._ema_model
+
+    # ── Checkpoint serialisation ─────────────────────────────────────
 
     def state_dict(self) -> dict:
         return {
             "ema_model": self._ema_model.state_dict(),
+            "num_updates": torch.tensor(self.num_updates, dtype=torch.long),
             "decay": self.decay,
-            "warmup_epochs": self.warmup_epochs,
+            "warmup_steps": self.warmup_steps,
         }
 
     def load_state_dict(self, d: dict):
         self._ema_model.load_state_dict(d["ema_model"])
+        self.num_updates = int(d["num_updates"].item())
         self.decay = d["decay"]
-        self.warmup_epochs = d["warmup_epochs"]
-
-    def get_ema_model(self) -> nn.Module:
-        """Return the EMA model for direct inference (no swap needed)."""
-        return self._ema_model
+        self.warmup_steps = d["warmup_steps"]
+        logger.info(
+            "EMAHook restored: num_updates=%d, decay=%.4f",
+            self.num_updates, self.decay,
+        )
 
 
 class TeacherHook:
@@ -102,7 +111,6 @@ class TeacherHook:
 
     Maintains a teacher model updated via EMA of the student.
     Teacher never participates in backprop.
-    C implements the consistency loss logic.
     """
 
     def __init__(self, student_model: nn.Module, ema_decay: float = 0.999):
@@ -115,14 +123,8 @@ class TeacherHook:
             p.requires_grad_(False)
         logger.info("TeacherHook: ema_decay=%.4f", ema_decay)
 
-    def update(self):
-        """EMA update: teacher = ema_decay * teacher + (1 - ema_decay) * student."""
-        # Called externally with student model reference
-        pass  # C implements
-
     @torch.no_grad()
     def forward(self, images: torch.Tensor) -> torch.Tensor:
-        """Teacher inference — no gradient."""
         return self._teacher(images)
 
     def get_teacher(self) -> nn.Module:

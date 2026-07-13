@@ -115,6 +115,25 @@ def validate_config(config: dict) -> List[str]:
                 f"Known: {sorted(KNOWN_PEFT_TYPES)}"
             )
 
+    # ── head_ema section ──
+    ema = config.get("head_ema", {})
+    if ema.get("enabled", False):
+        decay = ema.get("decay", 0.99)
+        if not 0.0 < decay <= 1.0:
+            raise ValueError(
+                f"head_ema.decay must be in (0, 1], got {decay}"
+            )
+        warmup = ema.get("warmup_epochs", 5)
+        if warmup < 0:
+            raise ValueError(
+                f"head_ema.warmup_epochs must be >= 0, got {warmup}"
+            )
+        src = ema.get("selection_source", "ema")
+        if src not in ("raw", "ema"):
+            raise ValueError(
+                f"head_ema.selection_source must be 'raw' or 'ema', got {src!r}"
+            )
+
     # ── train section ──
     train = config.get("train", {})
     if train.get("epochs", 0) <= 0:
