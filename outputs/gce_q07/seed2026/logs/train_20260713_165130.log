@@ -23,3 +23,19 @@
 2026-07-13 16:59:12 | INFO |   >> New best model! Val Acc: 0.5749
 2026-07-13 17:01:48 | INFO | Epoch   4/50 | Train Loss: 0.6841 | Train Acc: 0.6184 | Val Loss: 0.6823 | Val Acc: 0.6077 | head_lr: 4.98e-03 | bb_lr: 0.00e+00 | Time: 2m 34s
 2026-07-13 17:01:48 | INFO |   >> New best model! Val Acc: 0.6077
+2026-07-13 17:04:24 | INFO | Epoch   5/50 | Train Loss: 0.6193 | Train Acc: 0.6492 | Val Loss: 0.6405 | Val Acc: 0.6222 | head_lr: 4.95e-03 | bb_lr: 0.00e+00 | Time: 2m 34s
+2026-07-13 17:04:24 | INFO |   >> New best model! Val Acc: 0.6222
+2026-07-13 17:06:58 | INFO | Epoch   6/50 | Train Loss: 0.5782 | Train Acc: 0.6672 | Val Loss: 0.6107 | Val Acc: 0.6369 | head_lr: 4.92e-03 | bb_lr: 0.00e+00 | Time: 2m 33s
+2026-07-13 17:06:58 | INFO |   >> New best model! Val Acc: 0.6369
+2026-07-13 17:09:36 | INFO | Epoch   7/50 | Train Loss: 0.5479 | Train Acc: 0.6821 | Val Loss: 0.5890 | Val Acc: 0.6486 | head_lr: 4.87e-03 | bb_lr: 0.00e+00 | Time: 2m 37s
+2026-07-13 17:09:36 | INFO |   >> New best model! Val Acc: 0.6486
+2026-07-13 17:12:05 | INFO | Epoch   8/50 | Train Loss: 0.5236 | Train Acc: 0.6948 | Val Loss: 0.5704 | Val Acc: 0.6554 | head_lr: 4.81e-03 | bb_lr: 0.00e+00 | Time: 2m 27s
+2026-07-13 17:12:05 | INFO |   >> New best model! Val Acc: 0.6554
+2026-07-13 17:14:38 | INFO | Epoch   9/50 | Train Loss: 0.5039 | Train Acc: 0.7050 | Val Loss: 0.5573 | Val Acc: 0.6584 | head_lr: 4.74e-03 | bb_lr: 0.00e+00 | Time: 2m 31s
+2026-07-13 17:14:38 | INFO |   >> New best model! Val Acc: 0.6584
+2026-07-13 17:17:08 | INFO | Epoch  10/50 | Train Loss: 0.4874 | Train Acc: 0.7137 | Val Loss: 0.5455 | Val Acc: 0.6661 | head_lr: 4.67e-03 | bb_lr: 0.00e+00 | Time: 2m 29s
+2026-07-13 17:17:08 | INFO |   >> New best model! Val Acc: 0.6661
+2026-07-13 17:19:40 | INFO | Epoch  11/50 | Train Loss: 0.4731 | Train Acc: 0.7215 | Val Loss: 0.5362 | Val Acc: 0.6687 | head_lr: 4.58e-03 | bb_lr: 0.00e+00 | Time: 2m 31s
+2026-07-13 17:19:40 | INFO |   >> New best model! Val Acc: 0.6687
+2026-07-13 17:22:13 | INFO | Epoch  12/50 | Train Loss: 0.4607 | Train Acc: 0.7287 | Val Loss: 0.5280 | Val Acc: 0.6739 | head_lr: 4.49e-03 | bb_lr: 0.00e+00 | Time: 2m 31s
+2026-07-13 17:22:13 | INFO |   >> New best model! Val Acc: 0.6739

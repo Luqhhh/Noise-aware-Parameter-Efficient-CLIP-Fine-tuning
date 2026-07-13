@@ -1,0 +1,14 @@
+2026-07-13 17:23:29 | INFO | Config: configs/ft_lnpost.yaml
+2026-07-13 17:23:29 | INFO | Checkpoint: outputs/ft_lnpost/seed42/checkpoints/best.pt
+2026-07-13 17:23:29 | INFO | Device: cuda
+2026-07-13 17:23:29 | INFO | Head type: linear
+2026-07-13 17:23:34 | INFO | Loaded checkpoint from epoch 4
+2026-07-13 17:23:34 | INFO | Checkpoint best val acc: 0.7078324932144242
+2026-07-13 17:23:34 | INFO | Loaded idx_to_class mapping from checkpoint metadata.
+2026-07-13 17:23:34 | INFO | idx_to_class mapping has 500 entries.
+2026-07-13 17:23:34 | INFO | Test set: 24967 images, 98 batches
+2026-07-13 17:24:14 | INFO | Raw predictions saved to: outputs/ft_lnpost/seed42/submissions/pred_raw.csv
+2026-07-13 17:24:14 | INFO | Total predictions: 24967
+2026-07-13 17:24:14 | INFO | Unique predicted classes: 500 / 500
+2026-07-13 17:24:14 | INFO | Prediction label lengths: {4: 24967}
+2026-07-13 17:24:14 | INFO | Inference complete.

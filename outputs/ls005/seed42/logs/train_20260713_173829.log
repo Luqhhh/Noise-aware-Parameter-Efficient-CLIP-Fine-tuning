@@ -1,0 +1,7 @@
+2026-07-13 17:38:29 | INFO | Using device: cuda
+2026-07-13 17:38:29 | INFO | Configuration: configs/ls005.yaml
+2026-07-13 17:38:29 | INFO | Train seed: 42
+2026-07-13 17:38:29 | INFO | Resolved runtime: experiment_id=ls005, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-13 17:38:31 | INFO | Total parameters:     88,105,716
+2026-07-13 17:38:31 | INFO | Trainable parameters: 256,500
+2026-07-13 17:38:34 | INFO | Using config epochs: 50 (dev mode)
