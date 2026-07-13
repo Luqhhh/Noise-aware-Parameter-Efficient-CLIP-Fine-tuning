@@ -180,97 +180,7 @@ train_val_gap
 
 ---
 
-# 5. Wave 0：评估基础设施与可信验证修复
-
-Wave 0 不新增训练模型，目标是保证后续所有实验评价可信。
-
-## W0-1：Full Forward 与 Feature Bank 一致性
-
-### 目标
-
-对所有冻结 visual backbone 的模型，验证：
-
-```text
-完整模型前向预测
-=
-feature bank + classifier 前向预测
-```
-
-### 必须检查
-
-- preprocess 是否完全一致；
-- feature normalization 是否一致；
-- classifier weight/bias 是否一致；
-- AMP/FP16/FP32 是否一致；
-- logits 最大误差；
-- Top-1 mismatch 数量；
-- 低 margin 样本清单。
-
-### 验收标准
-
-```text
-FP32 Top-1 mismatch = 0
-max_abs_logit_error < 1e-5
-```
-
-如果因数值误差无法达到 0 mismatch，必须：
-
-- 明确记录全部 mismatch；
-- 严格重评仍作为权威结果；
-- trusted subset 的最终指标使用 full-forward predictions。
-
----
-
-## W0-2：Trusted Validation v2
-
-### 目标
-
-修复现有 trusted subset 覆盖率低、准确率饱和的问题。
-
-### 新增指标
-
-#### A. Class-balanced Trusted Accuracy
-
-每类选取固定数量的最高可信样本：
-
-```text
-Top-K per class
-K ∈ {3, 5, 10}
-```
-
-主指标优先使用 K=5。
-
-#### B. Continuous Trust-Weighted Accuracy
-
-对每个验证样本构建连续可信度：
-
-```text
-trust_score =
-  w1 * knn_agreement
-+ w2 * prototype_margin_score
-+ w3 * flip_stability
-+ w4 * duplicate_consistency
-```
-
-然后计算：
-
-\[
-Accuracy_{trust} =
-\frac{\sum_i trust_i \cdot \mathbf{1}(\hat y_i=y_i)}
-{\sum_i trust_i}
-\]
-
-### 要求
-
-- trusted subset 构建不能使用待比较模型的预测；
-- 不能使用平台结果调阈值；
-- 输出每类覆盖率；
-- 输出缺失类别；
-- rejected subset 只能称为低可信/困难子集，不能直接称为噪声标签。
-
----
-
-# 6. Wave 1：GCE 精调与训练稳定器
+# 5. Wave 1：GCE 精调与训练稳定器
 
 Wave 1 目标：
 
@@ -421,7 +331,7 @@ mixup:
 
 ---
 
-# 7. Wave 2：动态样本可信度与完整消融
+# 6. Wave 2：动态样本可信度与完整消融
 
 Wave 2 是 Phase 3 的核心训练阶段。
 
@@ -577,7 +487,7 @@ head_ema:
 
 ---
 
-# 8. Wave 3：三折 OOF 标签质量与保守重标注
+# 7. Wave 3：三折 OOF 标签质量与保守重标注
 
 Wave 3 目标：
 
@@ -732,7 +642,7 @@ relabel_audit.json
 
 ---
 
-# 9. Wave 4：鲁棒监督下的参数高效视觉适配
+# 8. Wave 4：鲁棒监督下的参数高效视觉适配
 
 Wave 4 不使用普通 CE 重新做 F1，而是从当前最佳鲁棒冻结模型继续训练。
 
@@ -812,7 +722,7 @@ early_stop_patience: 5
 
 ---
 
-# 10. Wave 5：EMA Teacher 与一致性训练
+# 9. Wave 5：EMA Teacher 与一致性训练
 
 只有以下任一条件满足后进入：
 
@@ -879,7 +789,7 @@ prediction_history_momentum: 0.9
 
 ---
 
-# 11. 多随机种子策略
+# 10. 多随机种子策略
 
 不需要所有实验都立即跑三 seed。
 
@@ -918,20 +828,19 @@ seed = 2026
 
 ---
 
-# 12. Wave 进入条件与停止条件
+# 11. Wave 进入条件与停止条件
 
 | Wave | 进入条件 | 停止条件 |
 |---|---|---|
-| Wave 0 | 立即执行 | full-forward 与 feature-bank 评价链可信 |
-| Wave 1 | Wave 0 基础检查完成 | 最多保留两个候选 |
-| Wave 2 | B2 基线稳定 | EMA Loss/Prototype 均无收益则停止 hybrid |
+| Wave 1 | 评估基础设施就绪 | 最多保留两个候选 |
+| Wave 2 | gce_q07 基线稳定 | EMA Loss/Prototype 均无收益则停止 hybrid |
 | Wave 3 | Wave 2 至少一个可信度策略有效，或当前仍明显受噪声限制 | OOF 信号不能区分高低风险样本则停止 relabel |
 | Wave 4 | 当前最佳冻结鲁棒模型确定 | 受控解冻连续退化则关闭 PEFT |
 | Wave 5 | OOF 或 robust PEFT 至少一个有效 | teacher confirmation bias 或一致性无收益则停止 |
 
 ---
 
-# 13. 平台提交优先级
+# 12. 平台提交优先级
 
 本计划不包含正在进行的 B2+TTA 平台测试。
 
@@ -949,13 +858,11 @@ seed = 2026
 
 ---
 
-# 14. 实验优先级
+# 13. 实验优先级
 
 ## P0：必须完成
 
 ```text
-W0-1 Full Forward / Feature Bank 一致性
-W0-2 Trusted Validation v2
 W1-1 GCE q=0.5
 W1-2 GCE q=0.9
 W1-3 CE5 → GCE07
@@ -988,7 +895,7 @@ W5-2 ELR
 
 ---
 
-# 15. 不建议直接组合的实验
+# 14. 不建议直接组合的实验
 
 以下组合禁止在没有独立消融前执行：
 
@@ -1005,7 +912,7 @@ Robust PEFT + Teacher + Relabel 同时启用
 
 ---
 
-# 16. 结果登记
+# 15. 结果登记
 
 新增：
 
@@ -1068,47 +975,44 @@ closed
 
 ---
 
-# 17. 推荐执行顺序
+# 16. 推荐执行顺序
 
 ```text
 Step 1
-W0-1 → W0-2
-
-Step 2
 W1-1 / W1-2 / W1-3
 同时实现 W1-4 Head EMA 基础设施
 
-Step 3
+Step 2
 选择 Wave 1 最佳候选
 运行 W1-4
 可选运行 W1-5
 
-Step 4
+Step 3
 W2-1 GCE + EMA Loss
 W2-2 GCE + Prototype
 
-Step 5
+Step 4
 若 W2-1/W2-2 有正收益：
 W2-3 Hybrid
 可选 W2-4 Head EMA Combination
 
-Step 6
+Step 5
 实现 W3-0 3-fold OOF
 生成 W3-1 sample quality
 
-Step 7
+Step 6
 W3-2 OOF soft weighting
 W3-3 OOF weight-only
 
-Step 8
+Step 7
 若 OOF 证据充分：
 W3-4 conservative relabel
 
-Step 9
+Step 8
 确定最佳冻结鲁棒模型
 W4-1 → W4-2 → 条件执行 W4-3
 
-Step 10
+Step 9
 只在前述主线有效后：
 W5-1 EMA Teacher
 或 W5-2 ELR
@@ -1116,7 +1020,7 @@ W5-1 EMA Teacher
 
 ---
 
-# 18. 70% 目标判断节点
+# 17. 70% 目标判断节点
 
 当前平台最好结果距离 70% 仍有较大差距，因此设置以下判断节点：
 
@@ -1132,7 +1036,7 @@ W5-1 EMA Teacher
 
 ---
 
-# 19. 最终主线
+# 18. 最终主线
 
 Phase 3 的核心不是继续增加普通增强，而是建立以下闭环：
 
