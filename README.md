@@ -124,7 +124,11 @@ E0_STRICT: clean rerun completed (50 epochs, best epoch 47, no early stop).
 **TA1_TTA_FLIP Platform Submission:**
 - Local: 70.80% → Platform: **58.3090%** → Gap: 12.49pp
 - vs D3: platform **+0.97pp** (57.34% → 58.31%), TTA validated as platform-effective
-- Predictions: 24,967, 0 fallback
+
+**B2_GCE07 Platform Submission:**
+- Local: 69.59% → Platform: **58.9578%** → Gap: 10.63pp
+- vs D3: platform **+1.62pp** (57.34% → 58.96%), **best platform score so far**
+- Local drop (−1.07pp) but platform gain (+1.62pp) — GCE reduces local overfitting
 
 **Key changes from original:**
 - Master split rebuilt with `duplicate_grouping_enabled: true` (SHA-256 group-aware) — **0 cross-boundary SHA-256 groups** (was 192 groups / 391 leaked images)

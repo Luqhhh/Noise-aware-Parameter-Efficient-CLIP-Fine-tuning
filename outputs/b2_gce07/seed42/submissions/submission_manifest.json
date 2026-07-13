@@ -1,0 +1,18 @@
+{
+  "experiment_id": "B2_GCE07",
+  "git_commit": "",
+  "checkpoint_path": "/home/lux1/noise/outputs/b2_gce07/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "",
+  "checkpoint_epoch": 41,
+  "local_micro_accuracy": 0.6959092671578131,
+  "local_macro_accuracy": 0.6953801512718201,
+  "prediction_csv_path": "/home/lux1/noise/outputs/b2_gce07/seed42/submissions/pred_results.csv",
+  "prediction_csv_sha256": "b734de27889543bccad0428da02a45505df84ef5775d3b77b37815f24ac979f7",
+  "zip_internal_csv_sha256": "b734de27889543bccad0428da02a45505df84ef5775d3b77b37815f24ac979f7",
+  "submission_zip_path": "/home/lux1/noise/outputs/b2_gce07/seed42/submissions/submission.zip",
+  "submission_zip_sha256": "1fcdef8a1aaebab0acbe85a4a5a1d8d2cb4dc5db585b97813bcc40ff85262733",
+  "online_accuracy": 0.589578,
+  "local_online_gap": 0.10633126715781305,
+  "num_predictions": 24967,
+  "created_at_utc": "2026-07-13T06:04:22Z"
+}
