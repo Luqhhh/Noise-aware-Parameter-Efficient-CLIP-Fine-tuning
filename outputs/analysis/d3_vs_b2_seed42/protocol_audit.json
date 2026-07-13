@@ -1,0 +1,43 @@
+{
+  "paired_valid": true,
+  "causal_claim_allowed": true,
+  "allowed_differences": [],
+  "unexpected_differences": [],
+  "warnings": [
+    "data.train_dir differs: ref=train_dedup, cand=train. Deferring to effective sample audit."
+  ],
+  "hashes": {
+    "ref_val": "70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c",
+    "cand_val": "70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c",
+    "ref_train": "d07cd2bc9390d7e499ab7e674e451726677f5f49f58f1ac6897773aef15357e6",
+    "cand_train": "d07cd2bc9390d7e499ab7e674e451726677f5f49f58f1ac6897773aef15357e6",
+    "class_to_idx.json": "0141916c3eab0b8e9471671e398acbdcbbd497fea5fbe81ec9c5bb9331ce6d65",
+    "idx_to_class.json": "8a7e030b5126124035177bd81e71c415dfb87f9b1ae6fba228b31c2cb7527913",
+    "ref_checkpoint": "45cbfb1eed38eed7efcfb014063082c3067a70407b0d52a152633aeed675cda3",
+    "cand_checkpoint": "458f664847ecf02b226d7a5b2c0226be726ad48f1161040a4e0ce6425d2f7353"
+  },
+  "counts": {
+    "ref_train_samples": 91375,
+    "cand_train_samples": 91375,
+    "ref_train_missing": 0,
+    "cand_train_missing": 0,
+    "ref_classifier_weight_shape": [
+      500,
+      512
+    ],
+    "ref_classifier_bias_shape": [
+      500
+    ],
+    "cand_classifier_weight_shape": [
+      500,
+      512
+    ],
+    "cand_classifier_bias_shape": [
+      500
+    ],
+    "ref_checkpoint_epoch": 49,
+    "cand_checkpoint_epoch": 41
+  },
+  "sample_classification": "identical_effective_samples",
+  "max_visual_abs_diff": 0.0
+}

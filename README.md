@@ -67,7 +67,9 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | E0-strict | 70.5409% | 70.5015% | 0.0394pp | — | −0.1163pp |
 | D3-strict | 70.6572% | 70.6100% | 0.0473pp | — | — |
 | F0-strict | 70.6378% | 70.5939% | 0.0439pp | — | −0.0194pp |
-| F1-strict | 70.7832% | 70.7458% | 0.0374pp | — | +0.1260pp |
+| F1-strict | 70.7832% | 70.7458% | 0.0374pp | — | +0.1260pp | — |
+| B2_GCE07 | 69.5909% | 69.5304% | 0.0605pp | — | −1.0663pp | **58.9578%** |
+| B3_PROTO_STATIC | 70.1919% | 70.1440% | 0.0479pp | — | −0.4653pp | **58.0526%** |
 
 **Platform submission (D3_STRICT):**
 - **Local micro**: 70.6572% (strict validation, 10,316 val samples)
@@ -132,6 +134,11 @@ E0_STRICT: clean rerun completed (50 epochs, best epoch 47, no early stop).
 - Local: 69.59% → Platform: **58.9578%** → Gap: 10.63pp
 - vs D3: platform **+1.62pp** (57.34% → 58.96%), **best platform score so far**
 - Local drop (−1.07pp) but platform gain (+1.62pp) — GCE reduces local overfitting
+
+**B3_PROTO_STATIC Platform Submission:**
+- Local: 70.19% → Platform: **58.0526%** → Gap: 11.86pp
+- vs D3: platform **+0.71pp** (57.34% → 58.05%)
+- Local drop (−0.47pp) but platform gain (+0.71pp) — prototype weighting also improves generalization
 
 **Key changes from original:**
 - Master split rebuilt with `duplicate_grouping_enabled: true` (SHA-256 group-aware) — **0 cross-boundary SHA-256 groups** (was 192 groups / 391 leaked images)

@@ -1,0 +1,15 @@
+{
+  "reference_name": "D3_STRICT",
+  "candidate_name": "B2_GCE07",
+  "total_samples": 10316,
+  "both_correct": 6841,
+  "D3_STRICT_only_correct": 445,
+  "B2_GCE07_only_correct": 337,
+  "both_wrong": 2693,
+  "D3_STRICT_correct": 7286,
+  "B2_GCE07_correct": 7178,
+  "D3_STRICT_accuracy": 0.7062815044590927,
+  "B2_GCE07_accuracy": 0.6958123303606049,
+  "D3_STRICT_only_minus_B2_GCE07_only": 108,
+  "shared_feature_fast_path": true
+}
