@@ -1,0 +1,14 @@
+2026-07-13 21:44:51 | INFO | Config: configs/base_ce.yaml
+2026-07-13 21:44:51 | INFO | Checkpoint: outputs/base_ce/seed42/checkpoints/best.pt
+2026-07-13 21:44:51 | INFO | Device: cuda
+2026-07-13 21:44:51 | INFO | Head type: linear
+2026-07-13 21:44:56 | INFO | Loaded checkpoint from epoch 47
+2026-07-13 21:44:56 | INFO | Checkpoint best val acc: 0.7054090732842186
+2026-07-13 21:44:56 | INFO | Loaded idx_to_class mapping from checkpoint metadata.
+2026-07-13 21:44:56 | INFO | idx_to_class mapping has 500 entries.
+2026-07-13 21:44:56 | INFO | Test set: 24967 images, 98 batches
+2026-07-13 21:45:36 | INFO | Raw predictions saved to: outputs/base_ce/seed42/submissions/pred_raw.csv
+2026-07-13 21:45:36 | INFO | Total predictions: 24967
+2026-07-13 21:45:36 | INFO | Unique predicted classes: 500 / 500
+2026-07-13 21:45:36 | INFO | Prediction label lengths: {4: 24967}
+2026-07-13 21:45:36 | INFO | Inference complete.
