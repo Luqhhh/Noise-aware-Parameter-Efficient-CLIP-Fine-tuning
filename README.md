@@ -133,10 +133,17 @@ E0_STRICT: clean rerun completed (50 epochs, best epoch 47, no early stop).
 **B2_GCE07 Platform Submission:**
 - Local: 69.59% → Platform: **58.9578%** → Gap: 10.63pp
 - vs D3: platform **+1.62pp** (57.34% → 58.96%), **best platform score so far**
-- Local drop (−1.07pp) but platform gain (+1.62pp) — GCE reduces local overfitting
+- Local drop (−1.07pp) but platform gain (+1.62pp) — consistent with GCE reducing overfitting to noisy labels
+- **Trusted subset**: GCE slightly better on high-consistency samples (trusted Δ=+0.14pp, 3-sample advantage)
+- ⚠️ Trusted advantage is small (3 samples), same magnitude as feature-bank encoding noise; single seed only
 
 **B3_PROTO_STATIC Platform Submission:**
 - Local: 70.19% → Platform: **58.0526%** → Gap: 11.86pp
+- vs D3: platform **+0.71pp** (57.34% → 58.05%)
+- Local drop (−0.47pp) but platform gain (+0.71pp) — same local-negative/platform-positive pattern as B2
+- **Trusted subset**: flat vs D3 (trusted Δ=0.00pp); pattern consistent but weaker than B2
+
+**Pattern note (seed=42, B2 & B3):** Both noise-robust methods that showed local raw accuracy regression achieved positive platform gains. This suggests raw noisy-label validation may invert model ranking relative to clean test performance, but multi-seed confirmation is required before treating this as a general principle.
 - vs D3: platform **+0.71pp** (57.34% → 58.05%)
 - Local drop (−0.47pp) but platform gain (+0.71pp) — prototype weighting also improves generalization
 
