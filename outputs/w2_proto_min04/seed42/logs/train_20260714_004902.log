@@ -1,0 +1,17 @@
+2026-07-14 00:49:02 | INFO | Using device: cuda
+2026-07-14 00:49:02 | INFO | Configuration: configs/w2_proto_min04.yaml
+2026-07-14 00:49:02 | INFO | Train seed: 42
+2026-07-14 00:49:02 | INFO | Resolved runtime: experiment_id=w2_proto_min04, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-14 00:49:05 | INFO | Total parameters:     88,105,716
+2026-07-14 00:49:05 | INFO | Trainable parameters: 256,500
+2026-07-14 00:49:08 | INFO | Using config epochs: 50 (dev mode)
+2026-07-14 00:49:08 | INFO | Loss: gce (reduction=mean)
+2026-07-14 00:49:08 | INFO | Optimizer parameter groups:
+2026-07-14 00:49:08 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-14 00:49:08 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-14 00:49:08 | INFO |   Trainable head params:       256,500
+2026-07-14 00:49:08 | INFO |   Trainable visual params:           0
+2026-07-14 00:49:08 | INFO | Starting training: 50 epochs, 714 batches/epoch
+2026-07-14 00:49:08 | INFO | Warmup steps: 1428, Total steps: 35700, Cosine steps: 34272
+2026-07-14 00:49:08 | INFO | AMP: True
+2026-07-14 00:49:08 | INFO | ============================================================

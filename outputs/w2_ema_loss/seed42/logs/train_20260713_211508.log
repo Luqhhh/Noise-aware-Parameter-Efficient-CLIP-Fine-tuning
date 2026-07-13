@@ -39,3 +39,5 @@
 2026-07-13 21:42:47 | INFO |   >> New best RAW! Val Acc: 0.6676
 2026-07-13 21:45:24 | INFO | Epoch  12/50 | Train Loss: 0.4449 | Train Acc: 0.7267 | Val Loss: 0.5296 | Val Acc: 0.6696 | head_lr: 4.49e-03 | bb_lr: 0.00e+00 | Time: 2m 36s
 2026-07-13 21:45:24 | INFO |   >> New best RAW! Val Acc: 0.6696
+2026-07-13 21:48:02 | INFO | Epoch  13/50 | Train Loss: 0.4346 | Train Acc: 0.7327 | Val Loss: 0.5219 | Val Acc: 0.6715 | head_lr: 4.39e-03 | bb_lr: 0.00e+00 | Time: 2m 36s
+2026-07-13 21:48:02 | INFO |   >> New best RAW! Val Acc: 0.6715
