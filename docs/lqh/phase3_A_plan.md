@@ -549,69 +549,6 @@ sample_weighting:
 
 ---
 
-## A-EXP-3：Prototype + EMA Loss Hybrid
-
-进入条件：
-
-```text
-A-EXP-1 或 A-EXP-2 至少一个独立有效
-```
-
-实验 ID：
-
-```text
-W2_GCE07_PROTO_EMA
-```
-
-置信度：
-
-\[
-c_i =
-0.7c_i^{prototype}
-+
-0.3c_i^{ema-loss}
-\]
-
-权重：
-
-\[
-w_i=0.4+0.6c_i
-\]
-
-限制：
-
-- 不加 Head EMA；
-- 不加 MixUp；
-- 不加 CE warmup；
-- 不加 OOF；
-- 不加 relabel；
-- 每次只新增 hybrid 这一变量。
-
-若两种独立策略都无效，则不运行。
-
----
-
-## A-EXP-4：最佳 Weighting + Head EMA
-
-进入条件：
-
-1. C 的 `W1_GCE07_HEAD_EMA099` 独立有效；
-2. A-EXP-1/2/3 至少一个独立有效。
-
-实验 ID：
-
-```text
-W2_BEST_WEIGHT_HEAD_EMA
-```
-
-要求：
-
-- 使用最佳 weighting checkpoint 配置；
-- 仅新增 Head EMA；
-- raw head 和 EMA head 都评估；
-- 不同时加入其他策略。
-
----
 
 ## A-EXP-5：OOF Soft Weight 训练
 
@@ -729,7 +666,6 @@ A 负责以下候选的多 seed：
 ```text
 最佳 EMA Loss
 最佳 Prototype
-最佳 Hybrid
 最佳 OOF Weight
 最佳 Relabel
 最终组合模型
@@ -900,23 +836,7 @@ W2_GCE07_PROTO_MIN04
 
 ---
 
-## Stage A2：Wave 2 组合
-
-若独立实验有效：
-
-```text
-W2_GCE07_PROTO_EMA
-```
-
-若 C 的 Head EMA 也有效：
-
-```text
-W2_BEST_WEIGHT_HEAD_EMA
-```
-
----
-
-## Stage A3：Wave 3 训练
+## Stage A2：Wave 3 训练
 
 接收 B 的 manifest 后：
 
@@ -929,7 +849,7 @@ W3_RELABEL_WEIGHT_ONLY
 
 ---
 
-## Stage A4：多 seed 与平台候选
+## Stage A3：多 seed 与平台候选
 
 对最佳主线候选：
 
@@ -951,7 +871,7 @@ seed=2026
 
 ---
 
-## Stage A5：最终组合
+## Stage A4：最终组合
 
 按独立贡献逐项叠加：
 
@@ -1108,7 +1028,6 @@ W2_GCE07_PROTO_MIN04
 ## P1
 
 ```text
-W2_GCE07_PROTO_EMA
 W3_OOF_SOFT_WEIGHT
 W3_OOF_WEIGHT_ONLY
 多 seed 验证
@@ -1117,7 +1036,6 @@ W3_OOF_WEIGHT_ONLY
 ## P2
 
 ```text
-W2_BEST_WEIGHT_HEAD_EMA
 W3_RELABEL_WEIGHT_ONLY
 W3_RELABEL_HARD
 最终复杂组合
