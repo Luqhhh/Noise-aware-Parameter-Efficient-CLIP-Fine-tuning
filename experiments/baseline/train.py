@@ -39,6 +39,7 @@ from common.cache import CachedFeatureDataset
 from common.class_mapping import load_or_generate_mapping
 from common.dataset import TrainImageDataset, seed_worker
 from common.losses import build_loss, reduce_loss
+from common.resolved_config import resolve_config, write_resolved_config
 from common.runtime_config import resolve_runtime_args
 from common.transforms import build_train_transform, VALID_PRESETS
 from common.utils import (count_parameters, ensure_dir, format_time,
@@ -1444,6 +1445,10 @@ def main():
     )
 
     save_config_snapshot(config, str(save_dir))
+
+    # Write resolved config with explicit defaults (A-INFRA-1)
+    resolved = resolve_config(config)
+    write_resolved_config(resolved, str(save_dir))
 
     # Training log CSV
     log_file = Path(config["output"]["log_dir"]) / "train_log.csv"
