@@ -1,21 +1,13 @@
-# Task 6: `tools/audit_experiment_pair.py` — Completed
+# Task 6: Generate artifact_manifest.json
 
-## What was done
+**Status:** Complete
 
-Created `/home/lux1/noise/tools/audit_experiment_pair.py`, a CLI tool wrapping `common.pair_protocol_audit.audit_experiment_pair`.
+**Commit hash:** `201b4cb`
 
-### CLI arguments
-- `--reference-config`, `--candidate-config`, `--reference-ckpt`, `--candidate-ckpt`, `--output` (all required)
-- `--allow-confounded-analysis` (flag)
+**Test result:** `python3 -c "from experiments.baseline.train import main; print('import OK')"` passed.
 
-### Exit codes
-| Code | Condition |
-|------|-----------|
-| 0    | Paired audit passed (no warnings, paired_valid=true) |
-| 2    | Warnings present, OR `--allow-confounded-analysis` with paired_valid=false |
-| 3    | paired_valid=false and `--allow-confounded-analysis` not set |
-| 4    | Missing input file, or audit raised an exception |
+**Changes made:**
+1. Added import: `from common.artifact_manifest import build_artifact_manifest, write_artifact_manifest` at line 38 of `experiments/baseline/train.py`.
+2. Added artifact manifest generation block after the `eval_results` save block (after `train_logger.info(f"Eval results saved to: {eval_path}")`) inside the `if mode in ("dev", "confirm"):` block. This calls `build_artifact_manifest()` with the `resolved` config, checkpoint paths, split CSVs, and extra metadata (best accuracies, best epoch, sample weighting type), then writes via `write_artifact_manifest()`.
 
-### Verification
-- Import check passed: `python3 -c "from tools.audit_experiment_pair import main; print('OK')"`
-- Files committed on branch `main` (commit 8fec432)
+**Concerns:** None.

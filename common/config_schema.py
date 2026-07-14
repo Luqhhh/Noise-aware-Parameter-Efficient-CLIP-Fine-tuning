@@ -25,6 +25,7 @@ KNOWN_TOP_KEYS = {
     "head_ema",
     "peft",
     "teacher",
+    "mixup",
     "cache",
     "runtime",       # written back by resolve_runtime_args
 }

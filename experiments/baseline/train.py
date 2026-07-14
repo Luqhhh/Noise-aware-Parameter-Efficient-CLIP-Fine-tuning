@@ -39,6 +39,8 @@ from common.cache import CachedFeatureDataset
 from common.class_mapping import load_or_generate_mapping
 from common.dataset import TrainImageDataset, seed_worker
 from common.losses import build_loss, reduce_loss
+from common.mixup import mixup_batch
+from common.peft import apply_peft, build_peft_param_groups
 from common.resolved_config import resolve_config, write_resolved_config
 from common.runtime_config import resolve_runtime_args
 from common.transforms import build_train_transform, VALID_PRESETS
@@ -328,11 +330,13 @@ def _cosine_factor(
 
 
 def _build_optimizer_and_scheduler(
-    model: nn.Module, config: Dict[str, Any], cosine_steps: int
+    model: nn.Module, config: Dict[str, Any], cosine_steps: int,
+    peft_cfg: Optional[Dict[str, Any]] = None,
 ) -> tuple:
     """Build optimizer and learning rate scheduler.
 
-    Supports three modes:
+    Supports four modes:
+      - PEFT-driven: uses build_peft_param_groups for non-default PEFT types.
       - Linear head, frozen CLIP: uniform LR from train.lr.
       - Linear head, partial unfreeze: discriminative LRs via get_param_groups.
       - Cosine head: uses its own get_param_groups (with scale handling).
@@ -343,9 +347,17 @@ def _build_optimizer_and_scheduler(
     train_cfg = config["train"]
     model_cfg = config.get("model", {})
 
-    # Use model.get_param_groups() if available (cosine head, or partial unfreeze),
-    # otherwise fall back to get_trainable_parameters() (frozen linear head).
-    if hasattr(model, "get_param_groups"):
+    peft_type = peft_cfg.get("type", "linear_head_only") if peft_cfg else "linear_head_only"
+
+    if peft_type != "linear_head_only":
+        # PEFT-driven param groups
+        param_groups = build_peft_param_groups(
+            model, peft_cfg,
+            head_lr=train_cfg["lr"],
+            head_weight_decay=train_cfg["weight_decay"],
+        )
+        optimizer = torch.optim.AdamW(param_groups)
+    elif hasattr(model, "get_param_groups"):
         optimizer = torch.optim.AdamW(
             model.get_param_groups(train_cfg["lr"], train_cfg["weight_decay"]),
         )
@@ -499,6 +511,7 @@ def train_one_epoch(
     weight_provider=None,
     ema_hook=None,
     teacher_hook=None,
+    mixup_cfg: Optional[Dict[str, Any]] = None,
 ) -> tuple:
     """Train for one epoch.
 
@@ -531,6 +544,18 @@ def train_one_epoch(
     for batch_idx, batch_data in enumerate(pbar):
         inputs, labels, is_cached, paths = _unpack_batch(batch_data, device)
 
+        # ── MixUp data augmentation ──
+        mixup_applied = False
+        labels_a = labels_b = labels
+        if mixup_cfg is not None and mixup_cfg.get("enabled", False):
+            mixup_alpha = mixup_cfg.get("alpha", 0.2)
+            mixup_prob = mixup_cfg.get("probability", 0.2)
+            if not is_cached:  # MixUp only for online image batches
+                inputs, labels_a, labels_b, lam = mixup_batch(
+                    inputs, labels, alpha=mixup_alpha, probability=mixup_prob,
+                )
+                mixup_applied = lam < 1.0
+
         # Warmup
         if global_step < warmup_steps:
             _warmup_lr(optimizer, warmup_steps, global_step)
@@ -540,30 +565,41 @@ def train_one_epoch(
         if use_amp:
             with autocast(device_type=device.type, enabled=use_amp):
                 logits = _forward_inputs(model, inputs, is_cached)
-                loss_per_sample = criterion(logits, labels)
 
-            loss = _apply_sample_weights(
-                loss_per_sample, paths, weight_provider or sample_weights,
-                normalize_by_weight_sum, missing_policy, device,
-                epoch=epoch, labels=labels,
-            )
+                if mixup_applied:
+                    loss_per_sample_a = criterion(logits, labels_a)
+                    loss_per_sample_b = criterion(logits, labels_b)
+                    loss_per_sample = (
+                        lam * loss_per_sample_a + (1.0 - lam) * loss_per_sample_b
+                    )
+                else:
+                    loss_per_sample = criterion(logits, labels)
 
-            # ── Teacher–Student consistency loss (A-INFRA-7) ──
-            if teacher_hook is not None:
-                teacher_cfg = config.get("teacher", {})
-                conf_thresh = teacher_cfg.get("confidence_threshold", 0.8)
-                cons_weight = teacher_cfg.get("consistency_weight", 1.0)
-                ramp_w = teacher_hook.rampup_weight(epoch)
-                with torch.no_grad():
-                    teacher_logits = teacher_hook.forward(inputs)
-                    conf_mask = teacher_hook.confidence_mask(
-                        teacher_logits, threshold=conf_thresh
-                    )
-                if conf_mask.any():
-                    cons_loss = torch.nn.functional.mse_loss(
-                        logits[conf_mask], teacher_logits[conf_mask],
-                    )
-                    loss = loss + ramp_w * cons_weight * cons_loss
+            if mixup_applied:
+                loss = reduce_loss(loss_per_sample)
+            else:
+                loss = _apply_sample_weights(
+                    loss_per_sample, paths, weight_provider or sample_weights,
+                    normalize_by_weight_sum, missing_policy, device,
+                    epoch=epoch, labels=labels,
+                )
+
+                # ── Teacher–Student consistency loss (A-INFRA-7) ──
+                if teacher_hook is not None:
+                    teacher_cfg = config.get("teacher", {})
+                    conf_thresh = teacher_cfg.get("confidence_threshold", 0.8)
+                    cons_weight = teacher_cfg.get("consistency_weight", 1.0)
+                    ramp_w = teacher_hook.rampup_weight(epoch)
+                    with torch.no_grad():
+                        teacher_logits = teacher_hook.forward(inputs)
+                        conf_mask = teacher_hook.confidence_mask(
+                            teacher_logits, threshold=conf_thresh
+                        )
+                    if conf_mask.any():
+                        cons_loss = torch.nn.functional.mse_loss(
+                            logits[conf_mask], teacher_logits[conf_mask],
+                        )
+                        loss = loss + ramp_w * cons_weight * cons_loss
 
             old_scale = scaler.get_scale()
             scaler.scale(loss).backward()
@@ -582,30 +618,41 @@ def train_one_epoch(
                 teacher_hook.update(model)
         else:
             logits = _forward_inputs(model, inputs, is_cached)
-            loss_per_sample = criterion(logits, labels)
 
-            loss = _apply_sample_weights(
-                loss_per_sample, paths, weight_provider or sample_weights,
-                normalize_by_weight_sum, missing_policy, device,
-                epoch=epoch, labels=labels,
-            )
+            if mixup_applied:
+                loss_per_sample_a = criterion(logits, labels_a)
+                loss_per_sample_b = criterion(logits, labels_b)
+                loss_per_sample = (
+                    lam * loss_per_sample_a + (1.0 - lam) * loss_per_sample_b
+                )
+            else:
+                loss_per_sample = criterion(logits, labels)
 
-            # ── Teacher–Student consistency loss (A-INFRA-7) ──
-            if teacher_hook is not None:
-                teacher_cfg = config.get("teacher", {})
-                conf_thresh = teacher_cfg.get("confidence_threshold", 0.8)
-                cons_weight = teacher_cfg.get("consistency_weight", 1.0)
-                ramp_w = teacher_hook.rampup_weight(epoch)
-                with torch.no_grad():
-                    teacher_logits = teacher_hook.forward(inputs)
-                    conf_mask = teacher_hook.confidence_mask(
-                        teacher_logits, threshold=conf_thresh
-                    )
-                if conf_mask.any():
-                    cons_loss = torch.nn.functional.mse_loss(
-                        logits[conf_mask], teacher_logits[conf_mask],
-                    )
-                    loss = loss + ramp_w * cons_weight * cons_loss
+            if mixup_applied:
+                loss = reduce_loss(loss_per_sample)
+            else:
+                loss = _apply_sample_weights(
+                    loss_per_sample, paths, weight_provider or sample_weights,
+                    normalize_by_weight_sum, missing_policy, device,
+                    epoch=epoch, labels=labels,
+                )
+
+                # ── Teacher–Student consistency loss (A-INFRA-7) ──
+                if teacher_hook is not None:
+                    teacher_cfg = config.get("teacher", {})
+                    conf_thresh = teacher_cfg.get("confidence_threshold", 0.8)
+                    cons_weight = teacher_cfg.get("consistency_weight", 1.0)
+                    ramp_w = teacher_hook.rampup_weight(epoch)
+                    with torch.no_grad():
+                        teacher_logits = teacher_hook.forward(inputs)
+                        conf_mask = teacher_hook.confidence_mask(
+                            teacher_logits, threshold=conf_thresh
+                        )
+                    if conf_mask.any():
+                        cons_loss = torch.nn.functional.mse_loss(
+                            logits[conf_mask], teacher_logits[conf_mask],
+                        )
+                        loss = loss + ramp_w * cons_weight * cons_loss
 
             loss.backward()
 
@@ -649,7 +696,9 @@ def train_one_epoch(
         batch_size = inputs.size(0)
         total_loss += loss.item() * batch_size
         preds = logits.argmax(dim=1)
-        correct += (preds == labels).sum().item()
+        # Use primary labels (labels_a) for accuracy — with lam >= 0.5 this is
+        # the dominant label; for non-MixUp batches labels_a == labels.
+        correct += (preds == labels_a).sum().item()
         total += batch_size
         global_step += 1
 
@@ -1069,6 +1118,21 @@ def main():
     train_logger.info(f"Total parameters:     {total_params:,}")
     train_logger.info(f"Trainable parameters: {trainable_params:,}")
 
+    # ── PEFT configuration ──
+    # Apply after model building; overrides manual freeze/unfreeze.
+    # Only non-default PEFT types trigger reconfiguration.
+    peft_cfg = config.get("peft", {})
+    peft_type = peft_cfg.get("type", "linear_head_only")
+    peft_info = None
+    if peft_type != "linear_head_only":
+        peft_info = apply_peft(model, peft_cfg)
+        # Re-count after PEFT reconfiguration
+        total_params, trainable_params = count_parameters(model)
+        train_logger.info(
+            f"After PEFT ({peft_type}): "
+            f"total={total_params:,}, trainable={trainable_params:,}"
+        )
+
     # ── EMA Hook (A-INFRA-5) ──
     ema_cfg = config.get("head_ema", {})
     ema_enabled = ema_cfg.get("enabled", False)
@@ -1297,7 +1361,7 @@ def main():
         config.get("loss", {}).get("reduction", "mean"),
     )
     optimizer, scheduler = _build_optimizer_and_scheduler(
-        model, config, cosine_steps
+        model, config, cosine_steps, peft_cfg=peft_cfg,
     )
     scaler = GradScaler(device=device.type, enabled=train_cfg.get("amp", False))
 
@@ -1576,6 +1640,7 @@ def main():
             weight_provider=weight_provider if use_sample_weights else None,
             ema_hook=ema_hook,
             teacher_hook=teacher_hook,
+            mixup_cfg=config.get("mixup") if config.get("mixup", {}).get("enabled", False) else None,
         )
 
         # Validate (skip if no val_loader, e.g., final_fit)

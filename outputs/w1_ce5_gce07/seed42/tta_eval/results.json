@@ -1,0 +1,19 @@
+{
+  "baseline_micro": 0.6977510663047692,
+  "baseline_macro": 0.6971992254257202,
+  "baseline_median": 0.75,
+  "baseline_bottom10": 0.2913627326488495,
+  "tta_micro": 0.7014346645986816,
+  "tta_macro": 0.7009193301200867,
+  "tta_median": 0.75,
+  "tta_bottom10": 0.2962833642959595,
+  "prediction_change_rate": 0.055641721597518415,
+  "total_samples": 10316,
+  "correct_samples_baseline": 7198,
+  "correct_samples_tta": 7236,
+  "checkpoint": "outputs/w1_ce5_gce07/seed42/checkpoints/best.pt",
+  "checkpoint_epoch": 38,
+  "checkpoint_best_val_acc": 0.6977510663047692,
+  "config": "/home/lux1/noise/configs/w1_ce5_gce07.yaml",
+  "tta_strategy": "horizontal_flip"
+}
