@@ -125,6 +125,90 @@ class StaticManifestProvider(BaseWeightProvider):
 
 
 # ──────────────────────────────────────────────────────────────────────
+# Prototype confidence weighting (stateless)
+# ──────────────────────────────────────────────────────────────────────
+
+
+class PrototypeProvider(BaseWeightProvider):
+    """Loads pre-computed prototype confidence weights from a JSON manifest.
+
+    The manifest maps image_path → {"weight": float, ...}.  The weight
+    is expected to already encode the prototype confidence transformation
+    (e.g. ``0.4 + 0.6 * c_i``).  This provider applies optional clamping
+    to ``[min_weight, max_weight]`` and logs diagnostic statistics.
+    """
+
+    def __init__(
+        self,
+        manifest_path: str,
+        min_weight: float = 0.4,
+        max_weight: float = 1.0,
+        classwise_percentile: bool = True,
+        normalize_by_weight_sum: bool = True,
+        missing_policy: str = "error",
+    ):
+        if min_weight < 0.0 or max_weight > 1.0 or min_weight >= max_weight:
+            raise ValueError(
+                f"Invalid weight range: min_weight={min_weight}, "
+                f"max_weight={max_weight}"
+            )
+
+        path = Path(manifest_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Prototype manifest not found: {path}")
+        with open(path) as f:
+            raw = json.load(f)
+
+        self._weights: Dict[str, float] = {}
+        margins = []
+        own_sims = []
+        for img_path, entry in raw.items():
+            w = float(entry["weight"]) if isinstance(entry, dict) else float(entry)
+            w = max(min_weight, min(max_weight, w))
+            self._weights[str(img_path)] = w
+            if isinstance(entry, dict):
+                if "margin" in entry:
+                    margins.append(float(entry["margin"]))
+                if "own_similarity" in entry:
+                    own_sims.append(float(entry["own_similarity"]))
+
+        self._min_weight = min_weight
+        self._max_weight = max_weight
+        self._classwise_percentile = classwise_percentile
+        self._normalize = normalize_by_weight_sum
+        self._missing = missing_policy
+
+        # Diagnostics
+        w_vals = np.array(list(self._weights.values()))
+        logger.info(
+            "PrototypeProvider: %d weights loaded from %s | "
+            "mean=%.4f median=%.4f min=%.4f max=%.4f | "
+            "clamped to [%.2f, %.2f]",
+            len(self._weights), manifest_path,
+            float(w_vals.mean()), float(np.median(w_vals)),
+            float(w_vals.min()), float(w_vals.max()),
+            min_weight, max_weight,
+        )
+        if margins:
+            logger.info(
+                "PrototypeProvider: margin mean=%.4f median=%.4f (n=%d)",
+                float(np.mean(margins)), float(np.median(margins)), len(margins),
+            )
+
+    def get_weights(self, sample_paths, labels, epoch, per_sample_loss=None):
+        w_vals = []
+        for p in sample_paths:
+            entry = self._weights.get(p)
+            if entry is None:
+                if self._missing == "error":
+                    raise KeyError(f"Prototype weight missing for: {p}")
+                w_vals.append(1.0)
+            else:
+                w_vals.append(entry)
+        return torch.tensor(w_vals, device=labels.device, dtype=torch.float32)
+
+
+# ──────────────────────────────────────────────────────────────────────
 # EMA loss weighting (stateful)
 # ──────────────────────────────────────────────────────────────────────
 
@@ -291,5 +375,14 @@ def build_weight_provider(config: dict, num_train_samples: int = 0) -> BaseWeigh
             max_weight=sw.get("max_weight", 1.0),
         )
 
-    # Future: prototype, hybrid, oof_manifest, relabel_manifest
+    if sw_type == "prototype":
+        return PrototypeProvider(
+            manifest_path=sw["manifest_path"],
+            min_weight=sw.get("min_weight", 0.4),
+            max_weight=sw.get("max_weight", 1.0),
+            classwise_percentile=sw.get("classwise_percentile", True),
+            normalize_by_weight_sum=sw.get("normalize_by_weight_sum", True),
+            missing_policy=sw.get("missing_weight_policy", "error"),
+        )
+
     raise ValueError(f"Unknown sample_weighting.type: {sw_type}")
