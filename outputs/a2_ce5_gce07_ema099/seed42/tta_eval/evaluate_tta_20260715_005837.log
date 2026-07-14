@@ -1,0 +1,26 @@
+2026-07-15 00:58:37 | INFO | Config: configs/a2_ce5_gce07_ema099.yaml
+2026-07-15 00:58:37 | INFO | Checkpoint: outputs/a2_ce5_gce07_ema099/seed42/checkpoints/best.pt
+2026-07-15 00:58:37 | INFO | TTA strategy: horizontal_flip
+2026-07-15 00:58:37 | INFO | Output dir: outputs/a2_ce5_gce07_ema099/seed42/tta_eval
+2026-07-15 00:58:37 | INFO | Seed: 42
+2026-07-15 00:58:37 | INFO | Device: cuda
+2026-07-15 00:58:41 | INFO | Loaded checkpoint from epoch 44
+2026-07-15 00:58:41 | INFO | Checkpoint best val acc: 0.6961031407522296
+2026-07-15 00:58:42 | INFO | Validation set: 10316 samples, 41 batches
+2026-07-15 00:59:06 | INFO | ==================================================
+2026-07-15 00:59:06 | INFO | TTA Evaluation Results:
+2026-07-15 00:59:06 | INFO |   Total samples:                10316
+2026-07-15 00:59:06 | INFO |   Baseline correct:             7181
+2026-07-15 00:59:06 | INFO |   TTA correct:                  7215
+2026-07-15 00:59:06 | INFO |   Baseline Top-1 (micro):       0.6961 (69.61%)
+2026-07-15 00:59:06 | INFO |   TTA Top-1 (micro):            0.6994 (69.94%)
+2026-07-15 00:59:06 | INFO |   Baseline Macro:               0.6956 (69.56%)
+2026-07-15 00:59:06 | INFO |   TTA Macro:                    0.6989 (69.89%)
+2026-07-15 00:59:06 | INFO |   Baseline Median:              0.7500 (75.00%)
+2026-07-15 00:59:06 | INFO |   TTA Median:                   0.7500 (75.00%)
+2026-07-15 00:59:06 | INFO |   Baseline Bottom-10%%:          0.2915 (29.15%)
+2026-07-15 00:59:06 | INFO |   TTA Bottom-10%%:               0.2916 (29.16%)
+2026-07-15 00:59:06 | INFO |   Prediction Change Rate:       0.0558 (5.58%)
+2026-07-15 00:59:06 | INFO | ==================================================
+2026-07-15 00:59:06 | INFO | Results saved to: outputs/a2_ce5_gce07_ema099/seed42/tta_eval/results.json
+2026-07-15 00:59:06 | INFO | Per-class delta CSV saved to: outputs/a2_ce5_gce07_ema099/seed42/tta_eval/per_class_delta.csv

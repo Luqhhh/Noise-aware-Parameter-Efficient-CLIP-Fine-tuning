@@ -1,0 +1,93 @@
+2026-07-14 23:39:58 | INFO | Using device: cuda
+2026-07-14 23:39:58 | INFO | Configuration: configs/a2_ce5_gce07_ema099.yaml
+2026-07-14 23:39:58 | INFO | Train seed: 42
+2026-07-14 23:39:58 | INFO | Resolved runtime: experiment_id=A2_CE5_GCE07_EMA099, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-14 23:40:01 | INFO | Total parameters:     88,105,716
+2026-07-14 23:40:01 | INFO | Trainable parameters: 256,500
+2026-07-14 23:40:04 | INFO | Using config epochs: 50 (dev mode)
+2026-07-14 23:40:04 | INFO | Loss: cross_entropy (reduction=mean)
+2026-07-14 23:40:04 | INFO | Optimizer parameter groups:
+2026-07-14 23:40:04 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-14 23:40:04 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-14 23:40:04 | INFO |   Trainable head params:       256,500
+2026-07-14 23:40:04 | INFO |   Trainable visual params:           0
+2026-07-14 23:40:04 | INFO | EMA enabled: decay=0.9900, warmup_epochs=5, warmup_steps=3570, selection=ema
+2026-07-14 23:40:04 | INFO | Restored weight provider state.
+2026-07-14 23:40:04 | INFO | Resumed from epoch 24, best val acc: 0.6888
+2026-07-14 23:40:04 | INFO | Starting training: 50 epochs, 714 batches/epoch
+2026-07-14 23:40:04 | INFO | Warmup steps: 1428, Total steps: 35700, Cosine steps: 34272
+2026-07-14 23:40:04 | INFO | AMP: True
+2026-07-14 23:40:04 | INFO | ============================================================
+2026-07-14 23:42:42 | INFO | Epoch  25/50 | Train Loss: 0.4033 | Train Acc: 0.7670 | Val Loss: 0.4941 | Val Acc: 0.6897 | EMA Val Loss: 0.4936 | EMA Val Acc: 0.6909 | EMA updates: 17849 | head_lr: 2.69e-03 | bb_lr: 0.00e+00 | Time: 2m 37s
+2026-07-14 23:42:42 | INFO |   >> New best RAW! Val Acc: 0.6897
+2026-07-14 23:42:42 | INFO |   >> New best EMA! Val Acc: 0.6909
+2026-07-14 23:45:30 | INFO | Epoch  26/50 | Train Loss: 0.3990 | Train Acc: 0.7695 | Val Loss: 0.4918 | Val Acc: 0.6900 | EMA Val Loss: 0.4916 | EMA Val Acc: 0.6918 | EMA updates: 18562 | head_lr: 2.52e-03 | bb_lr: 0.00e+00 | Time: 2m 42s
+2026-07-14 23:45:30 | INFO |   >> New best RAW! Val Acc: 0.6900
+2026-07-14 23:45:30 | INFO |   >> New best EMA! Val Acc: 0.6918
+2026-07-14 23:48:22 | INFO | Epoch  27/50 | Train Loss: 0.3952 | Train Acc: 0.7716 | Val Loss: 0.4896 | Val Acc: 0.6918 | EMA Val Loss: 0.4893 | EMA Val Acc: 0.6930 | EMA updates: 19276 | head_lr: 2.36e-03 | bb_lr: 0.00e+00 | Time: 2m 46s
+2026-07-14 23:48:22 | INFO |   >> New best RAW! Val Acc: 0.6918
+2026-07-14 23:48:22 | INFO |   >> New best EMA! Val Acc: 0.6930
+2026-07-14 23:51:13 | INFO | Epoch  28/50 | Train Loss: 0.3916 | Train Acc: 0.7742 | Val Loss: 0.4879 | Val Acc: 0.6921 | EMA Val Loss: 0.4875 | EMA Val Acc: 0.6919 | EMA updates: 19990 | head_lr: 2.20e-03 | bb_lr: 0.00e+00 | Time: 2m 44s
+2026-07-14 23:51:13 | INFO |   >> New best RAW! Val Acc: 0.6921
+2026-07-14 23:51:13 | INFO |   >> No improvement for 1/10 epochs
+2026-07-14 23:54:00 | INFO | Epoch  29/50 | Train Loss: 0.3880 | Train Acc: 0.7757 | Val Loss: 0.4859 | Val Acc: 0.6933 | EMA Val Loss: 0.4856 | EMA Val Acc: 0.6939 | EMA updates: 20704 | head_lr: 2.04e-03 | bb_lr: 0.00e+00 | Time: 2m 43s
+2026-07-14 23:54:00 | INFO |   >> New best RAW! Val Acc: 0.6933
+2026-07-14 23:54:00 | INFO |   >> New best EMA! Val Acc: 0.6939
+2026-07-14 23:56:50 | INFO | Epoch  30/50 | Train Loss: 0.3850 | Train Acc: 0.7776 | Val Loss: 0.4842 | Val Acc: 0.6949 | EMA Val Loss: 0.4842 | EMA Val Acc: 0.6946 | EMA updates: 21418 | head_lr: 1.88e-03 | bb_lr: 0.00e+00 | Time: 2m 46s
+2026-07-14 23:56:50 | INFO |   >> New best RAW! Val Acc: 0.6949
+2026-07-14 23:56:50 | INFO |   >> New best EMA! Val Acc: 0.6946
+2026-07-14 23:59:39 | INFO | Epoch  31/50 | Train Loss: 0.3824 | Train Acc: 0.7792 | Val Loss: 0.4831 | Val Acc: 0.6928 | EMA Val Loss: 0.4831 | EMA Val Acc: 0.6942 | EMA updates: 22132 | head_lr: 1.73e-03 | bb_lr: 0.00e+00 | Time: 2m 43s
+2026-07-14 23:59:39 | INFO |   >> No improvement for 1/10 epochs
+2026-07-15 00:02:24 | INFO | Epoch  32/50 | Train Loss: 0.3797 | Train Acc: 0.7810 | Val Loss: 0.4818 | Val Acc: 0.6944 | EMA Val Loss: 0.4817 | EMA Val Acc: 0.6940 | EMA updates: 22845 | head_lr: 1.58e-03 | bb_lr: 0.00e+00 | Time: 2m 44s
+2026-07-15 00:02:24 | INFO |   >> No improvement for 2/10 epochs
+2026-07-15 00:05:10 | INFO | Epoch  33/50 | Train Loss: 0.3773 | Train Acc: 0.7824 | Val Loss: 0.4806 | Val Acc: 0.6947 | EMA Val Loss: 0.4804 | EMA Val Acc: 0.6947 | EMA updates: 23559 | head_lr: 1.43e-03 | bb_lr: 0.00e+00 | Time: 2m 45s
+2026-07-15 00:05:10 | INFO |   >> New best EMA! Val Acc: 0.6947
+2026-07-15 00:08:03 | INFO | Epoch  34/50 | Train Loss: 0.3752 | Train Acc: 0.7832 | Val Loss: 0.4796 | Val Acc: 0.6952 | EMA Val Loss: 0.4797 | EMA Val Acc: 0.6956 | EMA updates: 24273 | head_lr: 1.29e-03 | bb_lr: 0.00e+00 | Time: 2m 49s
+2026-07-15 00:08:03 | INFO |   >> New best RAW! Val Acc: 0.6952
+2026-07-15 00:08:03 | INFO |   >> New best EMA! Val Acc: 0.6956
+2026-07-15 00:11:00 | INFO | Epoch  35/50 | Train Loss: 0.3735 | Train Acc: 0.7845 | Val Loss: 0.4789 | Val Acc: 0.6953 | EMA Val Loss: 0.4788 | EMA Val Acc: 0.6951 | EMA updates: 24986 | head_lr: 1.15e-03 | bb_lr: 0.00e+00 | Time: 2m 51s
+2026-07-15 00:11:00 | INFO |   >> New best RAW! Val Acc: 0.6953
+2026-07-15 00:11:00 | INFO |   >> No improvement for 1/10 epochs
+2026-07-15 00:13:52 | INFO | Epoch  36/50 | Train Loss: 0.3718 | Train Acc: 0.7855 | Val Loss: 0.4779 | Val Acc: 0.6959 | EMA Val Loss: 0.4780 | EMA Val Acc: 0.6957 | EMA updates: 25700 | head_lr: 1.02e-03 | bb_lr: 0.00e+00 | Time: 2m 48s
+2026-07-15 00:13:52 | INFO |   >> New best RAW! Val Acc: 0.6959
+2026-07-15 00:13:52 | INFO |   >> New best EMA! Val Acc: 0.6957
+2026-07-15 00:16:44 | INFO | Epoch  37/50 | Train Loss: 0.3704 | Train Acc: 0.7864 | Val Loss: 0.4775 | Val Acc: 0.6950 | EMA Val Loss: 0.4775 | EMA Val Acc: 0.6945 | EMA updates: 26413 | head_lr: 8.93e-04 | bb_lr: 0.00e+00 | Time: 2m 46s
+2026-07-15 00:16:44 | INFO |   >> No improvement for 1/10 epochs
+2026-07-15 00:19:30 | INFO | Epoch  38/50 | Train Loss: 0.3690 | Train Acc: 0.7874 | Val Loss: 0.4768 | Val Acc: 0.6956 | EMA Val Loss: 0.4769 | EMA Val Acc: 0.6957 | EMA updates: 27127 | head_lr: 7.75e-04 | bb_lr: 0.00e+00 | Time: 2m 44s
+2026-07-15 00:19:30 | INFO |   >> No improvement for 2/10 epochs
+2026-07-15 00:22:17 | INFO | Epoch  39/50 | Train Loss: 0.3678 | Train Acc: 0.7881 | Val Loss: 0.4763 | Val Acc: 0.6958 | EMA Val Loss: 0.4764 | EMA Val Acc: 0.6958 | EMA updates: 27841 | head_lr: 6.64e-04 | bb_lr: 0.00e+00 | Time: 2m 45s
+2026-07-15 00:22:17 | INFO |   >> New best EMA! Val Acc: 0.6958
+2026-07-15 00:25:04 | INFO | Epoch  40/50 | Train Loss: 0.3668 | Train Acc: 0.7884 | Val Loss: 0.4760 | Val Acc: 0.6955 | EMA Val Loss: 0.4760 | EMA Val Acc: 0.6954 | EMA updates: 28555 | head_lr: 5.61e-04 | bb_lr: 0.00e+00 | Time: 2m 44s
+2026-07-15 00:25:04 | INFO |   >> No improvement for 1/10 epochs
+2026-07-15 00:27:53 | INFO | Epoch  41/50 | Train Loss: 0.3659 | Train Acc: 0.7890 | Val Loss: 0.4756 | Val Acc: 0.6954 | EMA Val Loss: 0.4757 | EMA Val Acc: 0.6950 | EMA updates: 29268 | head_lr: 4.67e-04 | bb_lr: 0.00e+00 | Time: 2m 47s
+2026-07-15 00:27:53 | INFO |   >> No improvement for 2/10 epochs
+2026-07-15 00:30:41 | INFO | Epoch  42/50 | Train Loss: 0.3652 | Train Acc: 0.7896 | Val Loss: 0.4754 | Val Acc: 0.6954 | EMA Val Loss: 0.4754 | EMA Val Acc: 0.6953 | EMA updates: 29982 | head_lr: 3.82e-04 | bb_lr: 0.00e+00 | Time: 2m 47s
+2026-07-15 00:30:41 | INFO |   >> No improvement for 3/10 epochs
+2026-07-15 00:33:36 | INFO | Epoch  43/50 | Train Loss: 0.3645 | Train Acc: 0.7901 | Val Loss: 0.4751 | Val Acc: 0.6963 | EMA Val Loss: 0.4752 | EMA Val Acc: 0.6956 | EMA updates: 30696 | head_lr: 3.05e-04 | bb_lr: 0.00e+00 | Time: 2m 53s
+2026-07-15 00:33:36 | INFO |   >> New best RAW! Val Acc: 0.6963
+2026-07-15 00:33:36 | INFO |   >> No improvement for 4/10 epochs
+2026-07-15 00:36:26 | INFO | Epoch  44/50 | Train Loss: 0.3640 | Train Acc: 0.7904 | Val Loss: 0.4750 | Val Acc: 0.6959 | EMA Val Loss: 0.4750 | EMA Val Acc: 0.6961 | EMA updates: 31410 | head_lr: 2.38e-04 | bb_lr: 0.00e+00 | Time: 2m 48s
+2026-07-15 00:36:26 | INFO |   >> New best EMA! Val Acc: 0.6961
+2026-07-15 00:39:16 | INFO | Epoch  45/50 | Train Loss: 0.3636 | Train Acc: 0.7908 | Val Loss: 0.4749 | Val Acc: 0.6956 | EMA Val Loss: 0.4749 | EMA Val Acc: 0.6955 | EMA updates: 32123 | head_lr: 1.81e-04 | bb_lr: 0.00e+00 | Time: 2m 47s
+2026-07-15 00:39:16 | INFO |   >> No improvement for 1/10 epochs
+2026-07-15 00:42:01 | INFO | Epoch  46/50 | Train Loss: 0.3633 | Train Acc: 0.7909 | Val Loss: 0.4747 | Val Acc: 0.6957 | EMA Val Loss: 0.4748 | EMA Val Acc: 0.6953 | EMA updates: 32837 | head_lr: 1.34e-04 | bb_lr: 0.00e+00 | Time: 2m 44s
+2026-07-15 00:42:01 | INFO |   >> No improvement for 2/10 epochs
+2026-07-15 00:44:46 | INFO | Epoch  47/50 | Train Loss: 0.3630 | Train Acc: 0.7911 | Val Loss: 0.4747 | Val Acc: 0.6958 | EMA Val Loss: 0.4747 | EMA Val Acc: 0.6958 | EMA updates: 33551 | head_lr: 9.76e-05 | bb_lr: 0.00e+00 | Time: 2m 44s
+2026-07-15 00:44:46 | INFO |   >> No improvement for 3/10 epochs
+2026-07-15 00:47:33 | INFO | Epoch  48/50 | Train Loss: 0.3628 | Train Acc: 0.7912 | Val Loss: 0.4746 | Val Acc: 0.6956 | EMA Val Loss: 0.4746 | EMA Val Acc: 0.6954 | EMA updates: 34265 | head_lr: 7.12e-05 | bb_lr: 0.00e+00 | Time: 2m 45s
+2026-07-15 00:47:33 | INFO |   >> No improvement for 4/10 epochs
+2026-07-15 00:50:24 | INFO | Epoch  49/50 | Train Loss: 0.3627 | Train Acc: 0.7913 | Val Loss: 0.4746 | Val Acc: 0.6956 | EMA Val Loss: 0.4746 | EMA Val Acc: 0.6956 | EMA updates: 34979 | head_lr: 5.53e-05 | bb_lr: 0.00e+00 | Time: 2m 48s
+2026-07-15 00:50:24 | INFO |   >> No improvement for 5/10 epochs
+2026-07-15 00:53:11 | INFO | Epoch  50/50 | Train Loss: 0.3626 | Train Acc: 0.7912 | Val Loss: 0.4746 | Val Acc: 0.6956 | EMA Val Loss: 0.4746 | EMA Val Acc: 0.6955 | EMA updates: 35692 | head_lr: 5.00e-05 | bb_lr: 0.00e+00 | Time: 2m 45s
+2026-07-15 00:53:11 | INFO |   >> No improvement for 6/10 epochs
+2026-07-15 00:53:13 | INFO | ============================================================
+2026-07-15 00:53:13 | INFO | Training complete! Total time: 1h 13m 8s
+2026-07-15 00:53:13 | INFO | Best validation accuracy: 0.6961
+2026-07-15 00:53:13 | INFO | Best model saved to: outputs/a2_ce5_gce07_ema099/seed42/checkpoints/best.pt
+2026-07-15 00:53:13 | INFO | Training log saved to: outputs/a2_ce5_gce07_ema099/seed42/logs/train_log.csv
+2026-07-15 00:53:13 | INFO | Reloaded best checkpoint for post-training evaluation: outputs/a2_ce5_gce07_ema099/seed42/checkpoints/best.pt (epoch=44, best_val_acc=0.69610314)
+2026-07-15 00:53:13 | INFO | Running post-training per-class evaluation...
+2026-07-15 00:53:32 | INFO | Eval results saved to: outputs/a2_ce5_gce07_ema099/seed42/checkpoints/eval_results.json
+2026-07-15 00:53:33 | INFO | Artifact manifest saved to: outputs/a2_ce5_gce07_ema099/seed42/checkpoints/artifact_manifest.json
+2026-07-15 00:53:33 | INFO | Per-class metrics saved to: outputs/a2_ce5_gce07_ema099/seed42/checkpoints/per_class_metrics.csv
+2026-07-15 00:53:51 | INFO | Prediction records saved to: outputs/a2_ce5_gce07_ema099/seed42/checkpoints/prediction_records.csv

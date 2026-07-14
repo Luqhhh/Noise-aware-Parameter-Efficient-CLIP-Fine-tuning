@@ -102,5 +102,10 @@ CE warmup delivers +0.19pp local and +0.30pp platform over pure GCE. **New platf
 | 🥇 | **W1_CE5_GCE07** | 2-view hflip | **59.79%** |
 | 🥈 | gce_q07 seed2026 | 2-view hflip | 59.49% |
 | 🥉 | gce_q07 seed42 | 2-view hflip | 59.41% |
+| 🥉 | **C-EXP-1 (Head EMA 0.99)** | 2-view hflip | **59.40%** |
 | 4 | w2_ema_loss | 2-view hflip | 59.39% |
 | 5 | B2 GCE07 | bare | 58.96% |
+
+Notes:
+- **C-EXP-1**: Head EMA 0.99 on B2_GCE07. Platform 59.40% — flat vs parent (59.41%). Head EMA alone on frozen backbone provides no platform gain.
+- **A2** (CE warmup + Head EMA) in progress — combining the best config with EMA.
