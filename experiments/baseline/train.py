@@ -42,6 +42,7 @@ from common.losses import build_loss, reduce_loss
 from common.resolved_config import resolve_config, write_resolved_config
 from common.runtime_config import resolve_runtime_args
 from common.transforms import build_train_transform, VALID_PRESETS
+from common.artifact_manifest import build_artifact_manifest, write_artifact_manifest
 from common.utils import (count_parameters, ensure_dir, format_time,
                           load_config, save_config_snapshot, set_train_seed,
                           setup_logging)
@@ -1860,6 +1861,35 @@ def main():
         with open(eval_path, "w") as f:
             json.dump(eval_results, f, indent=2)
         train_logger.info(f"Eval results saved to: {eval_path}")
+
+        # ── Write artifact manifest (A-INFRA-9) ──
+        best_ckpt_path = str(save_dir / "best.pt")
+        train_csv_path = str(Path(split_dir) / "train.csv")
+        val_csv_path = str(Path(split_dir) / "val.csv")
+
+        manifest = build_artifact_manifest(
+            experiment_id=experiment_id,
+            parent_experiment=config.get("experiment", {}).get("parent"),
+            config=resolved,
+            checkpoint_path=best_ckpt_path,
+            train_csv=train_csv_path,
+            val_csv=val_csv_path,
+            extra={
+                "best_val_acc": float(best_val_acc),
+                "best_raw_acc": float(best_raw_acc),
+                "best_ema_acc": (
+                    float(best_ema_acc) if ema_enabled else None
+                ),
+                "best_epoch": dev_best_epoch,
+                "sample_weighting_type": config.get(
+                    "sample_weighting", {}
+                ).get("type", "none"),
+            },
+        )
+        artifact_path = write_artifact_manifest(manifest, str(save_dir))
+        train_logger.info(
+            "Artifact manifest saved to: %s", artifact_path
+        )
 
 
 if __name__ == "__main__":
