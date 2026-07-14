@@ -48,4 +48,8 @@
 
 ## Conclusion
 
-**STOP.** Head EMA (decay=0.99, warmup=5) with GCE q=0.7 did not improve over B2_GCE07 baseline. Both micro and macro declined by ~0.3pp, bottom-10% dropped by ~0.7pp. EMA consistently lagged raw throughout training (best_ema epoch 43: 0.6928 vs best_raw epoch 42: 0.6933). Head EMA does not provide benefit for this task under this configuration; do not proceed to 0.999 or C-2 EMA-based experiments.
+**STOP.** Head EMA (decay=0.99, warmup=5) with GCE q=0.7 did not improve over B2_GCE07 baseline. Both micro and macro declined by ~0.3pp, bottom-10% dropped by ~0.7pp. EMA consistently lagged raw throughout training (best_ema epoch 43: 0.6928 vs best_raw epoch 42: 0.6933). Head EMA does not provide benefit for this task under this configuration.
+
+**Decision:**
+- Head EMA 路线 STOP — 不测试 decay=0.999。
+- C-2 PEFT 独立保留，等待 A 指定最终父 checkpoint。
