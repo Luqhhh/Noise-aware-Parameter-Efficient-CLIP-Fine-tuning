@@ -109,33 +109,122 @@ class EMAHook:
 class TeacherHook:
     """EMA Teacher for consistency training.
 
-    Maintains a teacher model updated via EMA of the student.
-    Teacher never participates in backprop.
+    Maintains a teacher model updated via EMA of the student after each
+    successful optimizer step.  Teacher never participates in backprop.
+
+    Usage in train.py::
+
+        teacher = TeacherHook(model, ema_decay=0.999, ramp_epochs=10)
+        for batch in loader: ...
+            student_logits = model(images)
+            task_loss = criterion(student_logits, labels)
+            # --- consistency loss ---
+            with torch.no_grad():
+                teacher_logits = teacher(images)
+                conf_mask = teacher.confidence_mask(teacher_logits, threshold=0.8)
+            if conf_mask.any():
+                ramp_w = teacher.rampup_weight(epoch)
+                cons_loss = F.mse_loss(student_logits[conf_mask],
+                                       teacher_logits[conf_mask])
+                task_loss = task_loss + ramp_w * consistency_weight * cons_loss
+            # --- end consistency ---
+            task_loss.backward()
+            optimizer.step()
+            teacher.update(model)
     """
 
-    def __init__(self, student_model: nn.Module, ema_decay: float = 0.999):
+    def __init__(
+        self,
+        student_model: nn.Module,
+        ema_decay: float = 0.999,
+        ramp_epochs: int = 10,
+    ):
         if not 0.0 < ema_decay <= 1.0:
             raise ValueError(f"ema_decay must be in (0, 1], got {ema_decay}")
+        if ramp_epochs < 0:
+            raise ValueError(f"ramp_epochs must be >= 0, got {ramp_epochs}")
+
         self.ema_decay = ema_decay
+        self.ramp_epochs = ramp_epochs
+        self.num_updates: int = 0
+
         self._teacher = copy.deepcopy(student_model)
         self._teacher.eval()
         for p in self._teacher.parameters():
             p.requires_grad_(False)
-        logger.info("TeacherHook: ema_decay=%.4f", ema_decay)
+
+        logger.info(
+            "TeacherHook: ema_decay=%.4f, ramp_epochs=%d",
+            ema_decay, ramp_epochs,
+        )
+
+    # ── EMA update ────────────────────────────────────────────────────
+
+    @torch.no_grad()
+    def update(self, student_model: nn.Module):
+        """Update teacher via EMA after one successful optimizer step.
+
+        teacher = ema_decay * teacher + (1 - ema_decay) * student
+        """
+        self.num_updates += 1
+        for teacher_p, student_p in zip(
+            self._teacher.parameters(), student_model.parameters()
+        ):
+            teacher_p.data.mul_(self.ema_decay).add_(
+                student_p.data, alpha=1.0 - self.ema_decay
+            )
+
+    # ── Forward ───────────────────────────────────────────────────────
 
     @torch.no_grad()
     def forward(self, images: torch.Tensor) -> torch.Tensor:
+        """Teacher inference (no grad, eval mode)."""
         return self._teacher(images)
 
     def get_teacher(self) -> nn.Module:
+        """Return the teacher model (for direct access)."""
         return self._teacher
+
+    # ── Confidence mask ───────────────────────────────────────────────
+
+    @staticmethod
+    def confidence_mask(
+        logits: torch.Tensor, threshold: float = 0.8
+    ) -> torch.Tensor:
+        """Boolean mask: True for samples where teacher max-prob >= *threshold*."""
+        probs = torch.softmax(logits, dim=1)
+        max_probs, _ = probs.max(dim=1)
+        return max_probs >= threshold
+
+    # ── Ramp-up ───────────────────────────────────────────────────────
+
+    def rampup_weight(self, epoch: int) -> float:
+        """Sigmoid ramp-up: 0 at epoch 0, approaching 1.0 after *ramp_epochs*."""
+        if self.ramp_epochs <= 0:
+            return 1.0
+        if epoch <= 0:
+            return 0.0
+        progress = min(float(epoch) / float(self.ramp_epochs), 1.0)
+        # Sigmoid: smooth transition from 0→1
+        import math
+        return 1.0 / (1.0 + math.exp(-10.0 * (progress - 0.5)))
+
+    # ── Checkpoint serialisation ──────────────────────────────────────
 
     def state_dict(self) -> dict:
         return {
             "teacher_model": self._teacher.state_dict(),
             "ema_decay": self.ema_decay,
+            "ramp_epochs": self.ramp_epochs,
+            "num_updates": torch.tensor(self.num_updates, dtype=torch.long),
         }
 
     def load_state_dict(self, d: dict):
         self._teacher.load_state_dict(d["teacher_model"])
         self.ema_decay = d["ema_decay"]
+        self.ramp_epochs = d.get("ramp_epochs", 10)
+        self.num_updates = int(d.get("num_updates", torch.tensor(0)).item())
+        logger.info(
+            "TeacherHook restored: num_updates=%d, ema_decay=%.4f",
+            self.num_updates, self.ema_decay,
+        )

@@ -498,6 +498,7 @@ def train_one_epoch(
     sample_weights=None,
     weight_provider=None,
     ema_hook=None,
+    teacher_hook=None,
 ) -> tuple:
     """Train for one epoch.
 
@@ -546,6 +547,24 @@ def train_one_epoch(
                 normalize_by_weight_sum, missing_policy, device,
                 epoch=epoch, labels=labels,
             )
+
+            # ── Teacher–Student consistency loss (A-INFRA-7) ──
+            if teacher_hook is not None:
+                teacher_cfg = config.get("teacher", {})
+                conf_thresh = teacher_cfg.get("confidence_threshold", 0.8)
+                cons_weight = teacher_cfg.get("consistency_weight", 1.0)
+                ramp_w = teacher_hook.rampup_weight(epoch)
+                with torch.no_grad():
+                    teacher_logits = teacher_hook.forward(inputs)
+                    conf_mask = teacher_hook.confidence_mask(
+                        teacher_logits, threshold=conf_thresh
+                    )
+                if conf_mask.any():
+                    cons_loss = torch.nn.functional.mse_loss(
+                        logits[conf_mask], teacher_logits[conf_mask],
+                    )
+                    loss = loss + ramp_w * cons_weight * cons_loss
+
             old_scale = scaler.get_scale()
             scaler.scale(loss).backward()
 
@@ -558,6 +577,9 @@ def train_one_epoch(
             # EMA: only update if optimizer step was NOT skipped (no overflow)
             if ema_hook is not None and scaler.get_scale() >= old_scale:
                 ema_hook.update(model)
+            # Teacher: same gate as EMA (no update on overflow)
+            if teacher_hook is not None and scaler.get_scale() >= old_scale:
+                teacher_hook.update(model)
         else:
             logits = _forward_inputs(model, inputs, is_cached)
             loss_per_sample = criterion(logits, labels)
@@ -567,6 +589,24 @@ def train_one_epoch(
                 normalize_by_weight_sum, missing_policy, device,
                 epoch=epoch, labels=labels,
             )
+
+            # ── Teacher–Student consistency loss (A-INFRA-7) ──
+            if teacher_hook is not None:
+                teacher_cfg = config.get("teacher", {})
+                conf_thresh = teacher_cfg.get("confidence_threshold", 0.8)
+                cons_weight = teacher_cfg.get("consistency_weight", 1.0)
+                ramp_w = teacher_hook.rampup_weight(epoch)
+                with torch.no_grad():
+                    teacher_logits = teacher_hook.forward(inputs)
+                    conf_mask = teacher_hook.confidence_mask(
+                        teacher_logits, threshold=conf_thresh
+                    )
+                if conf_mask.any():
+                    cons_loss = torch.nn.functional.mse_loss(
+                        logits[conf_mask], teacher_logits[conf_mask],
+                    )
+                    loss = loss + ramp_w * cons_weight * cons_loss
+
             loss.backward()
 
             if max_grad_norm > 0:
@@ -576,6 +616,9 @@ def train_one_epoch(
             # EMA: always update in non-AMP path
             if ema_hook is not None:
                 ema_hook.update(model)
+            # Teacher: always update in non-AMP path
+            if teacher_hook is not None:
+                teacher_hook.update(model)
 
         # Compute per-group gradient norms (before optimizer step is too late
         # since step already happened; compute after clipping, before step would
@@ -698,6 +741,7 @@ def save_checkpoint(
     extra_meta: Optional[Dict[str, Any]] = None,
     ema_hook=None,
     weight_provider=None,
+    teacher_hook=None,
     best_raw_acc: float = 0.0,
     best_raw_epoch: int = 0,
     best_ema_acc: float = 0.0,
@@ -724,6 +768,9 @@ def save_checkpoint(
     if ema_hook is not None:
         checkpoint["ema_state_dict"] = ema_hook.state_dict()
         checkpoint["ema_num_updates"] = ema_hook.num_updates
+    if teacher_hook is not None:
+        checkpoint["teacher_state_dict"] = teacher_hook.state_dict()
+        checkpoint["teacher_num_updates"] = teacher_hook.num_updates
     if hasattr(weight_provider, "state_dict") and callable(weight_provider.state_dict):
         checkpoint["weight_provider_state"] = weight_provider.state_dict()
     if extra_meta:
@@ -768,6 +815,7 @@ def load_checkpoint(
         "ema_state_dict": checkpoint.get("ema_state_dict"),
         "selection_source": checkpoint.get("selection_source", "raw"),
         "weight_provider_state": checkpoint.get("weight_provider_state"),
+        "teacher_state_dict": checkpoint.get("teacher_state_dict"),
     }
 
 
@@ -1028,6 +1076,15 @@ def main():
     ema_decay = ema_cfg.get("decay", 0.99)
     ema_warmup_epochs = ema_cfg.get("warmup_epochs", 5)
     ema_selection_source = ema_cfg.get("selection_source", "ema")
+
+    # ── Teacher Hook (A-INFRA-7) ──
+    teacher_cfg = config.get("teacher", {})
+    teacher_enabled = teacher_cfg.get("enabled", False)
+    teacher_hook = None
+    teacher_ema_decay = teacher_cfg.get("ema_decay", 0.999)
+    teacher_confidence_threshold = teacher_cfg.get("confidence_threshold", 0.8)
+    teacher_consistency_weight = teacher_cfg.get("consistency_weight", 1.0)
+    teacher_ramp_epochs = teacher_cfg.get("ramp_epochs", 10)
 
     # Canonical class mapping via common.class_mapping
     class_mapping_path = config["data"].get("class_mapping_path", config["data"]["split_dir"])
@@ -1388,6 +1445,21 @@ def main():
             ema_decay, ema_warmup_epochs, ema_warmup_steps, ema_selection_source,
         )
 
+    # ── Create Teacher hook (after model weights are finalised) ──
+    if teacher_enabled:
+        from common.hooks import TeacherHook
+        teacher_hook = TeacherHook(
+            model,
+            ema_decay=teacher_ema_decay,
+            ramp_epochs=teacher_ramp_epochs,
+        )
+        train_logger.info(
+            "Teacher-Student enabled: ema_decay=%.4f, confidence_threshold=%.2f, "
+            "consistency_weight=%.2f, ramp_epochs=%d",
+            teacher_ema_decay, teacher_confidence_threshold,
+            teacher_consistency_weight, teacher_ramp_epochs,
+        )
+
     # Resume if requested
     start_epoch = 1
     global_step = 0
@@ -1429,6 +1501,20 @@ def main():
             if hasattr(weight_provider, "load_state_dict"):
                 weight_provider.load_state_dict(resume_info["weight_provider_state"])
                 train_logger.info("Restored weight provider state.")
+        # Restore teacher state
+        if teacher_enabled and teacher_hook is not None:
+            if "teacher_state_dict" in resume_info:
+                teacher_hook.load_state_dict(resume_info["teacher_state_dict"])
+                train_logger.info(
+                    "Restored teacher state: num_updates=%d",
+                    teacher_hook.num_updates,
+                )
+            else:
+                train_logger.warning(
+                    "Teacher enabled and --resume used, but checkpoint has no "
+                    "teacher state. Teacher will be re-initialised from current "
+                    "student weights."
+                )
         train_logger.info(
             f"Resumed from epoch {resume_info['epoch']}, "
             f"best val acc: {best_val_acc:.4f}"
@@ -1489,6 +1575,7 @@ def main():
             global_step,
             weight_provider=weight_provider if use_sample_weights else None,
             ema_hook=ema_hook,
+            teacher_hook=teacher_hook,
         )
 
         # Validate (skip if no val_loader, e.g., final_fit)
@@ -1640,6 +1727,7 @@ def main():
             str(save_dir / "last.pt"),
             extra_meta=extra_meta,
             ema_hook=ema_hook,
+            teacher_hook=teacher_hook,
             best_raw_acc=best_raw_acc,
             best_raw_epoch=best_raw_epoch,
             best_ema_acc=best_ema_acc,
@@ -1657,6 +1745,7 @@ def main():
                 str(save_dir / "best_raw.pt"),
                 extra_meta=extra_meta,
                 ema_hook=ema_hook,
+                teacher_hook=teacher_hook,
                 best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                 best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                 selection_source="raw",
@@ -1674,6 +1763,7 @@ def main():
                 str(save_dir / "best_ema.pt"),
                 extra_meta=extra_meta,
                 ema_hook=ema_hook,
+                teacher_hook=teacher_hook,
                 best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                 best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                 selection_source="ema",
@@ -1695,6 +1785,7 @@ def main():
                     best_ckpt_path,
                     extra_meta=extra_meta,
                     ema_hook=ema_hook,
+                    teacher_hook=teacher_hook,
                     best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                     best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                     selection_source="ema",
@@ -1709,6 +1800,7 @@ def main():
                     best_ckpt_path,
                     extra_meta=extra_meta,
                     ema_hook=ema_hook,
+                    teacher_hook=teacher_hook,
                     best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                     best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                     selection_source="raw",
@@ -1855,6 +1947,12 @@ def main():
             "best_ema_val_acc": float(best_ema_acc) if ema_enabled else None,
             "best_ema_epoch": best_ema_epoch if ema_enabled else None,
             "post_eval_weight_source": ema_selection_source if ema_enabled else "raw",
+            # Teacher-Student fields
+            "teacher_enabled": teacher_enabled,
+            "teacher_ema_decay": teacher_ema_decay if teacher_enabled else None,
+            "teacher_confidence_threshold": teacher_confidence_threshold if teacher_enabled else None,
+            "teacher_consistency_weight": teacher_consistency_weight if teacher_enabled else None,
+            "teacher_ramp_epochs": teacher_ramp_epochs if teacher_enabled else None,
             **per_class_metrics,
         }
         eval_path = save_dir / "eval_results.json"
