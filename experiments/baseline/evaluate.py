@@ -177,6 +177,7 @@ def evaluate(
         "accuracy": micro_acc,
         "macro_accuracy": macro_acc,
         "per_class_accuracy": per_class_acc.cpu().tolist(),
+        "per_class_counts": total_per_class.cpu().tolist(),
         "median_per_class_accuracy": median_per_class,
         "bottom_10_percent_accuracy": bottom_10_percent_acc,
         "micro_macro_gap": micro_macro_gap,

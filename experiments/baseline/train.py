@@ -1891,6 +1891,53 @@ def main():
             "Artifact manifest saved to: %s", artifact_path
         )
 
+        # ── Write per_class_metrics.csv (A-INFRA-9) ──
+        if val_loader is not None and per_class_results:
+            import csv as _csv
+            per_class_path = save_dir / "per_class_metrics.csv"
+            with open(per_class_path, "w", newline="") as f:
+                writer = _csv.writer(f)
+                writer.writerow(["class_idx", "accuracy", "n_samples"])
+                pca = per_class_results.get("per_class_accuracy", [])
+                pcc = per_class_results.get("per_class_counts", [])
+                for i in range(len(pca)):
+                    count = pcc[i] if i < len(pcc) else 0
+                    writer.writerow([i, f"{pca[i]:.6f}", count])
+            train_logger.info(
+                "Per-class metrics saved to: %s", per_class_path
+            )
+
+        # ── Write prediction_records.csv (A-INFRA-9) ──
+        if val_loader is not None:
+            pred_path = save_dir / "prediction_records.csv"
+            model.eval()
+            with open(pred_path, "w", newline="") as f:
+                writer = _csv.writer(f)
+                writer.writerow(
+                    ["image_path", "true_label", "pred_label", "pred_conf"]
+                )
+                with torch.no_grad():
+                    for batch_data in val_loader:
+                        inputs, labels, is_cached, paths = _unpack_batch(
+                            batch_data, device
+                        )
+                        if is_cached:
+                            logits = model.forward_features(inputs)
+                        else:
+                            logits = model(inputs)
+                        probs = torch.softmax(logits, dim=1)
+                        confs, preds = probs.max(dim=1)
+                        for path, tl, pl, cf in zip(
+                            paths, labels.cpu(), preds.cpu(), confs.cpu()
+                        ):
+                            writer.writerow([
+                                path, int(tl.item()),
+                                int(pl.item()), f"{cf.item():.6f}",
+                            ])
+            train_logger.info(
+                "Prediction records saved to: %s", pred_path
+            )
+
 
 if __name__ == "__main__":
     main()
