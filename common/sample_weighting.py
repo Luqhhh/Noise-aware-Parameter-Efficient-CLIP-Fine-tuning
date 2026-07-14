@@ -369,6 +369,192 @@ class RelabelManifestProvider(BaseWeightProvider):
 
 
 # ──────────────────────────────────────────────────────────────────────
+# Prototype + EMA loss hybrid weighting (stateful)
+# ──────────────────────────────────────────────────────────────────────
+
+
+class PrototypeEMAProvider(BaseWeightProvider):
+    """Hybrid: prototype confidence × EMA-loss confidence → per-sample weight.
+
+    confidence_i = proto_weight * c_i^prototype + ema_weight * c_i^ema
+    w_i = min_weight + (max_weight - min_weight) * confidence_i
+
+    Stateful — EMA loss history is written to / restored from checkpoints.
+    """
+
+    def __init__(
+        self,
+        num_samples: int,
+        prototype_manifest_path: str,
+        momentum: float = 0.9,
+        warmup_epochs: int = 5,
+        ranking: str = "classwise",
+        min_weight: float = 0.4,
+        max_weight: float = 1.0,
+        proto_weight: float = 0.7,
+        ema_weight: float = 0.3,
+        high_loss_fraction_epoch_6_15: float = 0.10,
+        high_loss_fraction_epoch_16_plus: float = 0.20,
+    ):
+        if abs(proto_weight + ema_weight - 1.0) > 1e-9:
+            raise ValueError(
+                f"proto_weight + ema_weight must sum to 1.0, "
+                f"got {proto_weight} + {ema_weight}"
+            )
+        if min_weight < 0.0 or max_weight > 1.0 or min_weight >= max_weight:
+            raise ValueError(
+                f"Invalid weight range: min_weight={min_weight}, "
+                f"max_weight={max_weight}"
+            )
+
+        # Load prototype weights
+        proto_path = Path(prototype_manifest_path)
+        if not proto_path.exists():
+            raise FileNotFoundError(
+                f"Prototype manifest not found: {proto_path}"
+            )
+        with open(proto_path) as f:
+            raw = json.load(f)
+
+        self._proto_weights: Dict[str, float] = {}
+        for img_path, entry in raw.items():
+            w = float(entry["weight"]) if isinstance(entry, dict) else float(entry)
+            self._proto_weights[str(img_path)] = w
+
+        # EMA state
+        self.momentum = momentum
+        self.warmup_epochs = warmup_epochs
+        self.ranking = ranking
+        self.min_weight = min_weight
+        self.max_weight = max_weight
+        self.proto_weight = proto_weight
+        self.ema_weight = ema_weight
+        self.frac_6_15 = high_loss_fraction_epoch_6_15
+        self.frac_16_plus = high_loss_fraction_epoch_16_plus
+
+        self.register_buffer(
+            "ema_loss", torch.full((num_samples,), float("nan"))
+        )
+        self._sample_to_idx: Dict[str, int] = {}
+        self._label_of_idx: Optional[torch.Tensor] = None
+
+        logger.info(
+            "PrototypeEMAProvider: %d prototype weights loaded | "
+            "momentum=%.2f warmup=%d proto_w=%.2f ema_w=%.2f",
+            len(self._proto_weights), momentum, warmup_epochs,
+            proto_weight, ema_weight,
+        )
+
+    def register_buffer(self, name, tensor):
+        setattr(self, name, tensor)
+
+    def init_sample_index(self, sample_paths: list, labels: torch.Tensor):
+        """Build path->index mapping (call once before training)."""
+        if self._sample_to_idx:
+            return
+        for i, p in enumerate(sample_paths):
+            if p in self._sample_to_idx:
+                raise ValueError(f"Duplicate sample path: {p}")
+            self._sample_to_idx[p] = i
+        self._label_of_idx = labels.clone()
+        logger.info(
+            "PrototypeEMAProvider: initialised with %d samples",
+            len(self._sample_to_idx),
+        )
+
+    def get_weights(self, sample_paths, labels, epoch, per_sample_loss=None):
+        n = len(sample_paths)
+        device = (
+            per_sample_loss.device
+            if per_sample_loss is not None
+            else torch.device("cpu")
+        )
+
+        # Warmup: prototype-only weights
+        if epoch <= self.warmup_epochs:
+            w_vals = []
+            for p in sample_paths:
+                w_vals.append(self._proto_weights.get(p, 1.0))
+            return torch.tensor(w_vals, device=device, dtype=torch.float32)
+
+        # Update EMA
+        if per_sample_loss is not None:
+            indices = [self._sample_to_idx[p] for p in sample_paths]
+            idx_t = torch.tensor(indices, dtype=torch.long)
+            new_ema = torch.where(
+                self.ema_loss[idx_t].isnan(),
+                per_sample_loss.detach().cpu(),
+                self.momentum * self.ema_loss[idx_t]
+                + (1.0 - self.momentum) * per_sample_loss.detach().cpu(),
+            )
+            self.ema_loss[idx_t] = new_ema
+
+        frac = self.frac_6_15 if epoch <= 15 else self.frac_16_plus
+        weights = torch.ones(n)
+
+        unique_labels = labels.unique()
+        for c_label in unique_labels:
+            c_mask = labels == c_label
+            c_indices = c_mask.nonzero(as_tuple=True)[0]
+            if len(c_indices) <= 1:
+                continue
+
+            # Prototype confidence: c = (w - 0.4) / 0.6
+            c_proto = torch.tensor([
+                (self._proto_weights.get(sample_paths[i.item()], 1.0)
+                 - self.min_weight)
+                / max(self.max_weight - self.min_weight, 1e-8)
+                for i in c_indices
+            ], dtype=torch.float32)
+            c_proto = torch.clamp(c_proto, 0.0, 1.0)
+
+            # EMA confidence: 1 - percentile_rank (lower loss = more confident)
+            c_paths = [sample_paths[i.item()] for i in c_indices]
+            c_ema_idx = torch.tensor(
+                [self._sample_to_idx[p] for p in c_paths], dtype=torch.long
+            )
+            c_ema_raw = self.ema_loss[c_ema_idx].clone()
+            c_ema_raw = torch.where(
+                c_ema_raw.isnan(), torch.zeros_like(c_ema_raw), c_ema_raw
+            )
+            n_class = len(c_indices)
+            _, sort_idx = torch.sort(c_ema_raw)
+            ranks = torch.zeros(n_class)
+            ranks[sort_idx] = torch.arange(n_class, dtype=torch.float32)
+            c_ema = 1.0 - ranks / max(n_class - 1, 1)
+
+            # Hybrid confidence --> weight
+            hybrid = self.proto_weight * c_proto + self.ema_weight * c_ema
+            hybrid = torch.clamp(hybrid, 0.0, 1.0)
+            c_weights = (
+                self.min_weight
+                + (self.max_weight - self.min_weight) * hybrid
+            )
+            weights[c_indices] = c_weights
+
+        return weights.to(device)
+
+    def state_dict(self) -> dict:
+        return {
+            "ema_loss": self.ema_loss.clone(),
+            "sample_to_idx_keys": list(self._sample_to_idx.keys()),
+            "sample_to_idx_values": list(self._sample_to_idx.values()),
+            "label_of_idx": (
+                self._label_of_idx.clone()
+                if self._label_of_idx is not None
+                else None
+            ),
+        }
+
+    def load_state_dict(self, d: dict):
+        self.ema_loss = d["ema_loss"]
+        self._sample_to_idx = dict(
+            zip(d["sample_to_idx_keys"], d["sample_to_idx_values"])
+        )
+        self._label_of_idx = d.get("label_of_idx")
+
+
+# ──────────────────────────────────────────────────────────────────────
 # EMA loss weighting (stateful)
 # ──────────────────────────────────────────────────────────────────────
 
@@ -560,6 +746,24 @@ def build_weight_provider(config: dict, num_train_samples: int = 0) -> BaseWeigh
             max_weight=sw.get("max_weight", 1.0),
             hard_relabel=sw.get("hard_relabel", False),
             missing_policy=sw.get("missing_weight_policy", "error"),
+        )
+
+    if sw_type == "prototype_ema_hybrid":
+        if num_train_samples <= 0:
+            raise ValueError(
+                "num_train_samples is required for "
+                "prototype_ema_hybrid provider"
+            )
+        return PrototypeEMAProvider(
+            num_samples=num_train_samples,
+            prototype_manifest_path=sw["manifest_path"],
+            momentum=sw.get("momentum", 0.9),
+            warmup_epochs=sw.get("warmup_epochs", 5),
+            ranking=sw.get("ranking", "classwise"),
+            min_weight=sw.get("min_weight", 0.4),
+            max_weight=sw.get("max_weight", 1.0),
+            proto_weight=sw.get("proto_weight", 0.7),
+            ema_weight=sw.get("ema_weight", 0.3),
         )
 
     raise ValueError(f"Unknown sample_weighting.type: {sw_type}")
