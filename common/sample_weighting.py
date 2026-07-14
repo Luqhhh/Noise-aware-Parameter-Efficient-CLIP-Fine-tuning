@@ -209,6 +209,81 @@ class PrototypeProvider(BaseWeightProvider):
 
 
 # ──────────────────────────────────────────────────────────────────────
+# OOF manifest weighting (B-delivered CSV)
+# ──────────────────────────────────────────────────────────────────────
+
+
+class OOFManifestProvider(BaseWeightProvider):
+    """Loads per-sample weights from a B-delivered OOF manifest CSV.
+
+    Uses ``ManifestLoader`` for fail-closed validation.  The manifest must
+    have 100% coverage and all ``sample_weight`` values in [0, 1].
+    """
+
+    def __init__(
+        self,
+        manifest_path: str,
+        min_weight: float = 0.3,
+        max_weight: float = 1.0,
+        missing_policy: str = "error",
+    ):
+        from common.manifest_loader import ManifestLoader
+
+        if min_weight < 0.0 or max_weight > 1.0 or min_weight >= max_weight:
+            raise ValueError(
+                f"Invalid weight range: min_weight={min_weight}, "
+                f"max_weight={max_weight}"
+            )
+
+        self._loader = ManifestLoader(manifest_path)
+        df = self._loader.load()
+
+        self._weights: Dict[str, float] = {}
+        self._training_labels: Dict[str, int] = {}
+        for _, row in df.iterrows():
+            path = str(row["image_path"])
+            w = float(row["sample_weight"])
+            w = max(min_weight, min(max_weight, w))
+            self._weights[path] = w
+            # Weight-only mode: keep original label
+            self._training_labels[path] = int(row["original_label"])
+
+        self._min_weight = min_weight
+        self._max_weight = max_weight
+        self._missing = missing_policy
+        self._manifest_sha256 = self._loader.sha256
+
+        w_vals = np.array(list(self._weights.values()))
+        logger.info(
+            "OOFManifestProvider: %d samples | "
+            "weight mean=%.4f median=%.4f | "
+            "manifest_sha256=%s",
+            len(self._weights),
+            float(w_vals.mean()), float(np.median(w_vals)),
+            self._manifest_sha256[:16],
+        )
+
+    def get_weights(self, sample_paths, labels, epoch, per_sample_loss=None):
+        w_vals = []
+        for p in sample_paths:
+            entry = self._weights.get(p)
+            if entry is None:
+                if self._missing == "error":
+                    raise KeyError(f"OOF weight missing for: {p}")
+                w_vals.append(1.0)
+            else:
+                w_vals.append(entry)
+        return torch.tensor(w_vals, device=labels.device, dtype=torch.float32)
+
+    def get_training_label(self, image_path: str, original_label: int) -> int:
+        """Return the training label for a sample.
+
+        For weight-only manifests, returns *original_label* unchanged.
+        """
+        return self._training_labels.get(image_path, original_label)
+
+
+# ──────────────────────────────────────────────────────────────────────
 # EMA loss weighting (stateful)
 # ──────────────────────────────────────────────────────────────────────
 
@@ -382,6 +457,14 @@ def build_weight_provider(config: dict, num_train_samples: int = 0) -> BaseWeigh
             max_weight=sw.get("max_weight", 1.0),
             classwise_percentile=sw.get("classwise_percentile", True),
             normalize_by_weight_sum=sw.get("normalize_by_weight_sum", True),
+            missing_policy=sw.get("missing_weight_policy", "error"),
+        )
+
+    if sw_type == "oof_manifest":
+        return OOFManifestProvider(
+            manifest_path=sw["manifest_path"],
+            min_weight=sw.get("min_weight", 0.3),
+            max_weight=sw.get("max_weight", 1.0),
             missing_policy=sw.get("missing_weight_policy", "error"),
         )
 
