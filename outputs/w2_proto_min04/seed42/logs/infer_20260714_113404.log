@@ -1,0 +1,14 @@
+2026-07-14 11:34:04 | INFO | Config: configs/w2_proto_min04.yaml
+2026-07-14 11:34:04 | INFO | Checkpoint: outputs/w2_proto_min04/seed42/checkpoints/best.pt
+2026-07-14 11:34:04 | INFO | Device: cuda
+2026-07-14 11:34:04 | INFO | Head type: linear
+2026-07-14 11:34:08 | INFO | Loaded checkpoint from epoch 37
+2026-07-14 11:34:08 | INFO | Checkpoint best val acc: 0.6875727025979061
+2026-07-14 11:34:08 | INFO | Loaded idx_to_class mapping from checkpoint metadata.
+2026-07-14 11:34:08 | INFO | idx_to_class mapping has 500 entries.
+2026-07-14 11:34:08 | INFO | Test set: 24967 images, 98 batches
+2026-07-14 11:34:28 | INFO | Raw predictions saved to: outputs/w2_proto_min04/seed42/submissions/pred_raw.csv
+2026-07-14 11:34:28 | INFO | Total predictions: 24967
+2026-07-14 11:34:28 | INFO | Unique predicted classes: 497 / 500
+2026-07-14 11:34:28 | INFO | Prediction label lengths: {4: 24967}
+2026-07-14 11:34:28 | INFO | Inference complete.

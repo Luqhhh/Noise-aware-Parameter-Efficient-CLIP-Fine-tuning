@@ -1,0 +1,29 @@
+2026-07-14 01:16:34 | INFO | Using device: cuda
+2026-07-14 01:16:34 | INFO | Configuration: configs/w2_proto_min04.yaml
+2026-07-14 01:16:34 | INFO | Train seed: 42
+2026-07-14 01:16:34 | INFO | Resolved runtime: experiment_id=w2_proto_min04, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-14 01:16:36 | INFO | Total parameters:     88,105,716
+2026-07-14 01:16:36 | INFO | Trainable parameters: 256,500
+2026-07-14 01:16:39 | INFO | Using config epochs: 50 (dev mode)
+2026-07-14 01:16:39 | INFO | Loss: gce (reduction=mean)
+2026-07-14 01:16:39 | INFO | Optimizer parameter groups:
+2026-07-14 01:16:39 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-14 01:16:39 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-14 01:16:39 | INFO |   Trainable head params:       256,500
+2026-07-14 01:16:39 | INFO |   Trainable visual params:           0
+2026-07-14 01:16:39 | INFO | Starting training: 50 epochs, 714 batches/epoch
+2026-07-14 01:16:39 | INFO | Warmup steps: 1428, Total steps: 35700, Cosine steps: 34272
+2026-07-14 01:16:39 | INFO | AMP: True
+2026-07-14 01:16:39 | INFO | ============================================================
+2026-07-14 01:19:03 | INFO | Epoch   1/50 | Train Loss: 1.3916 | Train Acc: 0.1382 | Val Loss: 1.3251 | Val Acc: 0.1904 | head_lr: 2.50e-03 | bb_lr: 0.00e+00 | Time: 2m 23s
+2026-07-14 01:19:03 | INFO |   >> New best RAW! Val Acc: 0.1904
+2026-07-14 01:21:35 | INFO | Epoch   2/50 | Train Loss: 1.0591 | Train Acc: 0.3588 | Val Loss: 0.9227 | Val Acc: 0.4906 | head_lr: 5.00e-03 | bb_lr: 0.00e+00 | Time: 2m 30s
+2026-07-14 01:21:35 | INFO |   >> New best RAW! Val Acc: 0.4906
+2026-07-14 01:24:10 | INFO | Epoch   3/50 | Train Loss: 0.7018 | Train Acc: 0.5587 | Val Loss: 0.7545 | Val Acc: 0.5783 | head_lr: 4.99e-03 | bb_lr: 0.00e+00 | Time: 2m 33s
+2026-07-14 01:24:10 | INFO |   >> New best RAW! Val Acc: 0.5783
+2026-07-14 01:26:45 | INFO | Epoch   4/50 | Train Loss: 0.5676 | Train Acc: 0.6113 | Val Loss: 0.6850 | Val Acc: 0.5997 | head_lr: 4.98e-03 | bb_lr: 0.00e+00 | Time: 2m 34s
+2026-07-14 01:26:45 | INFO |   >> New best RAW! Val Acc: 0.5997
+2026-07-14 01:29:20 | INFO | Epoch   5/50 | Train Loss: 0.5034 | Train Acc: 0.6363 | Val Loss: 0.6438 | Val Acc: 0.6168 | head_lr: 4.95e-03 | bb_lr: 0.00e+00 | Time: 2m 33s
+2026-07-14 01:29:20 | INFO |   >> New best RAW! Val Acc: 0.6168
+2026-07-14 01:31:56 | INFO | Epoch   6/50 | Train Loss: 0.4630 | Train Acc: 0.6522 | Val Loss: 0.6155 | Val Acc: 0.6258 | head_lr: 4.92e-03 | bb_lr: 0.00e+00 | Time: 2m 33s
+2026-07-14 01:31:56 | INFO |   >> New best RAW! Val Acc: 0.6258
