@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "experiment_id": "W1_GCE05_MIXUP",
+  "parent_experiment": null,
+  "commit_sha": "1f830de767517466ab38f5ab4120d0efc7fcd71f",
+  "created_at_utc": "2026-07-15T14:07:44.194876+00:00",
+  "config_sha256": "82c7bb4e089828428e886d13affa01407adacd607ec33911e1b5eab8492e150f",
+  "checkpoint_path": "outputs/w1_gce05_mixup/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "ef56bbe00491e41e4cbf49becb97a22a05102a44ae6ef76547b471aeffc5666a",
+  "train_csv_path": "outputs/ref/seed42/train.csv",
+  "train_csv_sha256": "d07cd2bc9390d7e499ab7e674e451726677f5f49f58f1ac6897773aef15357e6",
+  "val_csv_path": "outputs/ref/seed42/val.csv",
+  "val_csv_sha256": "70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c",
+  "best_val_acc": 0.7116130283055447,
+  "best_raw_acc": 0.7116130283055447,
+  "best_ema_acc": null,
+  "best_epoch": 46,
+  "sample_weighting_type": "none"
+}

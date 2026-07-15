@@ -1,0 +1,32 @@
+2026-07-15 22:13:58 | INFO | Using device: cuda
+2026-07-15 22:13:58 | INFO | Configuration: configs/c2_ln_proj.yaml
+2026-07-15 22:13:58 | INFO | Train seed: 42
+2026-07-15 22:13:58 | INFO | Resolved runtime: experiment_id=C2_LN_PROJ, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-15 22:14:00 | INFO | Total parameters:     88,105,716
+2026-07-15 22:14:00 | INFO | Trainable parameters: 651,252
+2026-07-15 22:14:03 | INFO | Using config epochs: 12 (dev mode)
+2026-07-15 22:14:03 | INFO | Loss: gce (reduction=mean)
+2026-07-15 22:14:03 | INFO | Optimizer parameter groups:
+2026-07-15 22:14:03 | INFO |   head        :    256,500 params, lr=1.00e-04, wd=1.00e-04
+2026-07-15 22:14:03 | INFO |   backbone    :    394,752 params, lr=1.00e-06, wd=1.00e-04
+2026-07-15 22:14:03 | INFO |   TOTAL       :    651,252 optimizer params
+2026-07-15 22:14:03 | INFO |   Trainable head params:       256,500
+2026-07-15 22:14:03 | INFO |   Trainable visual params:     394,752
+2026-07-15 22:14:03 | INFO | Initializing model weights from: outputs/w1_ce5_gce05/seed42/checkpoints/best.pt
+2026-07-15 22:14:03 | INFO | Model weights loaded with exact key match.
+2026-07-15 22:14:03 | INFO | Running split lineage audit...
+2026-07-15 22:14:03 | INFO |   Parent: outputs/w1_ce5_gce05
+2026-07-15 22:14:03 | INFO |   Parent split: outputs/ref/seed42
+2026-07-15 22:14:03 | INFO |   Child split:  outputs/ref/seed42
+2026-07-15 22:14:03 | INFO | Split lineage audit: protocol_valid = True
+2026-07-15 22:14:03 | INFO | ============================================================
+2026-07-15 22:14:03 | INFO | Epoch-0 validation gate: verifying loaded checkpoint
+2026-07-15 22:14:21 | INFO | Epoch 0   | Val Loss: 0.5468 | Val Acc: 0.7314
+2026-07-15 22:14:21 | INFO | Epoch-0 validation gate PASSED: delta=0.000000 <= 0.0005
+2026-07-15 22:14:21 | INFO | ============================================================
+2026-07-15 22:14:21 | INFO | Starting training: 12 epochs, 714 batches/epoch
+2026-07-15 22:14:21 | INFO | Warmup steps: 1428, Total steps: 8568, Cosine steps: 7140
+2026-07-15 22:14:21 | INFO | AMP: True
+2026-07-15 22:14:21 | INFO | ============================================================
+2026-07-15 22:16:58 | INFO | Epoch   1/12 | Train Loss: 0.4278 | Train Acc: 0.8104 | Val Loss: 0.5448 | Val Acc: 0.7313 | head_lr: 5.00e-05 | bb_lr: 5.00e-07 | Time: 2m 36s
+2026-07-15 22:16:58 | INFO |   >> New best RAW! Val Acc: 0.7313

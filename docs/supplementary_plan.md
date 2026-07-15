@@ -82,7 +82,7 @@ Phase 2 已关闭多数增强方向，但以下单点值得确认：
 | 2 | w1_ce5_gce07 | 69.78% | 未测 | 未测 | CE warmup + q=0.7 |
 | 3 | w1_gce09 | 58.91% | 未测 | 未测 | GCE q=0.9，本地差但平台未知 |
 | 4 | w1_gce07_mixup | 69.61% | 未测 | 未测 | MixUp + q=0.7 |
-| 5 | w1_gce05_mixup | 训练中 | — | — | MixUp + q=0.5 |
+| 5 | w1_gce05_mixup | 71.16% | 待测 | 60.36% | MixUp q=0.5，平台 TTA 当前最佳，bare 已提交待平台 |
 | 6 | ft_frozen | 70.64% | 未测 | 未测 | F0-strict frozen control |
 
 ## 已测（对照）
@@ -92,9 +92,57 @@ Phase 2 已关闭多数增强方向，但以下单点值得确认：
 | gce_q07 | 69.59% | 58.96% | 59.41% |
 | b2_gce05 | 69.49% | 59.62% | 60.16% |
 | w1_ce5_gce05 | 73.14% | 59.61% | 60.25% |
+| w1_gce05_mixup | 71.16% | 待测 | **60.36%** |
 | ft_lnpost | 70.78% | — | 56.92% |
 | w2_ema_loss | 69.42% | — | 59.39% |
 | w2_proto_min04 | 68.76% | — | 58.82% |
+
+---
+
+# S-MIXUP：MixUp q=0.5 扩展实验（P1）
+
+当前 MixUp q=0.5 (alpha=0.2, p=0.2)：bare 待测，TTA=60.36%（最佳）。MixUp 本地 71.16% < CE5 73.14%，但平台反超——MixUp 的输入正则化比 warmup 更利于泛化。以下探索组合：
+
+## S-MIXUP-1：CE5 warmup + MixUp q=0.5
+
+```yaml
+experiment_id: S_MIXUP_CE5
+loss:
+  schedule:
+    - start_epoch: 1
+      end_epoch: 5
+      name: cross_entropy
+    - start_epoch: 6
+      end_epoch: 50
+      name: gce
+      q: 0.5
+mixup:
+  enabled: true
+  alpha: 0.2
+  probability: 0.2
+```
+
+假设：CE warmup 本地 +3.65pp + MixUp 平台泛化 = 组合可能同时提升本地和平台。
+
+## S-MIXUP-2：MixUp alpha sweep
+
+当前 alpha=0.2 沿用 q=0.7 设置，q=0.5 下可能有更优值。
+
+| 实验 | alpha | probability |
+|:--|:--:|:--:|
+| S_MIXUP_A04 | 0.4 | 0.2 |
+| S_MIXUP_A01 | 0.1 | 0.2 |
+
+## S-MIXUP-3：MixUp probability sweep
+
+| 实验 | alpha | probability |
+|:--|:--:|:--:|
+| S_MIXUP_P04 | 0.2 | 0.4 |
+| S_MIXUP_P05 | 0.2 | 0.5 |
+
+## S-MIXUP-4：多 seed 验证
+
+如果组合实验有正收益，补 seed=3407 和 seed=2026。
 
 ---
 

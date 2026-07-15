@@ -101,3 +101,20 @@
 2026-07-15 21:57:40 | INFO |   >> New best RAW! Val Acc: 0.7116
 2026-07-15 22:00:09 | INFO | Epoch  47/50 | Train Loss: 0.4718 | Train Acc: 0.7959 | Val Loss: 0.5622 | Val Acc: 0.7116 | head_lr: 9.77e-05 | bb_lr: 0.00e+00 | Time: 2m 27s
 2026-07-15 22:00:09 | INFO |   >> No improvement for 1/10 epochs
+2026-07-15 22:02:38 | INFO | Epoch  48/50 | Train Loss: 0.4779 | Train Acc: 0.7916 | Val Loss: 0.5622 | Val Acc: 0.7112 | head_lr: 7.13e-05 | bb_lr: 0.00e+00 | Time: 2m 28s
+2026-07-15 22:02:38 | INFO |   >> No improvement for 2/10 epochs
+2026-07-15 22:05:01 | INFO | Epoch  49/50 | Train Loss: 0.4797 | Train Acc: 0.7919 | Val Loss: 0.5621 | Val Acc: 0.7114 | head_lr: 5.53e-05 | bb_lr: 0.00e+00 | Time: 2m 23s
+2026-07-15 22:05:01 | INFO |   >> No improvement for 3/10 epochs
+2026-07-15 22:07:25 | INFO | Epoch  50/50 | Train Loss: 0.4668 | Train Acc: 0.7975 | Val Loss: 0.5621 | Val Acc: 0.7113 | head_lr: 5.00e-05 | bb_lr: 0.00e+00 | Time: 2m 23s
+2026-07-15 22:07:25 | INFO |   >> No improvement for 4/10 epochs
+2026-07-15 22:07:26 | INFO | ============================================================
+2026-07-15 22:07:26 | INFO | Training complete! Total time: 1h 50m 39s
+2026-07-15 22:07:26 | INFO | Best validation accuracy: 0.7116
+2026-07-15 22:07:26 | INFO | Best model saved to: outputs/w1_gce05_mixup/seed42/checkpoints/best.pt
+2026-07-15 22:07:26 | INFO | Training log saved to: outputs/w1_gce05_mixup/seed42/logs/train_log.csv
+2026-07-15 22:07:26 | INFO | Reloaded best checkpoint for post-training evaluation: outputs/w1_gce05_mixup/seed42/checkpoints/best.pt (epoch=46, best_val_acc=0.71161303)
+2026-07-15 22:07:26 | INFO | Running post-training per-class evaluation...
+2026-07-15 22:07:44 | INFO | Eval results saved to: outputs/w1_gce05_mixup/seed42/checkpoints/eval_results.json
+2026-07-15 22:07:44 | INFO | Artifact manifest saved to: outputs/w1_gce05_mixup/seed42/checkpoints/artifact_manifest.json
+2026-07-15 22:07:44 | INFO | Per-class metrics saved to: outputs/w1_gce05_mixup/seed42/checkpoints/per_class_metrics.csv
+2026-07-15 22:08:02 | INFO | Prediction records saved to: outputs/w1_gce05_mixup/seed42/checkpoints/prediction_records.csv
