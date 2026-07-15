@@ -5,7 +5,7 @@
 > 当前骨干：OpenAI CLIP ViT-B/32  
 > 当前主模型：冻结 CLIP visual backbone，仅训练 Linear Head  
 >
-> **训练基线**：b2_gce05（GCE q=0.5）单视图 = 58.9578%（待平台确认单视图）  
+> **训练基线**：b2_gce05（GCE q=0.5）单视图 = 59.6187%  
 > **提交基线**：b2_gce05 + 2-view horizontal-flip TTA = 60.1594%  
 > **距 70% 目标**：9.8406pp  
 >
