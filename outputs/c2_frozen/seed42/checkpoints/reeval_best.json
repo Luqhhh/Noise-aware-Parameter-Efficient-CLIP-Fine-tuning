@@ -1,0 +1,17 @@
+{
+  "checkpoint": "outputs/c2_frozen/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "feb03aeff430d69b0a1407ef2bb6f71a26ca48126fb2f4b84c0d8feebdc55b4b",
+  "val_csv": "outputs/ref/seed42/val.csv",
+  "val_csv_sha256": "70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c",
+  "config": "/home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/configs/c2_frozen.yaml",
+  "micro_accuracy": 0.7315820085304382,
+  "macro_accuracy": 0.7311258316040039,
+  "median_per_class_accuracy": 0.761904776096344,
+  "bottom_10_percent_accuracy": 0.3357101380825043,
+  "micro_macro_gap": 0.000456176926434293,
+  "loss": 0.546898663581319,
+  "total_samples": 10316,
+  "correct_samples": 7547,
+  "checkpoint_epoch": 1,
+  "checkpoint_best_val_acc": 0.7315820085304382
+}

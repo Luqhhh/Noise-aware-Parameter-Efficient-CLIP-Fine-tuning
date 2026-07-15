@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "experiment_id": "C2_FROZEN",
+  "parent_experiment": null,
+  "commit_sha": "d3dee24dd269bf5b55fc6eb974e7352cb71a8bdb",
+  "created_at_utc": "2026-07-15T13:57:31.789880+00:00",
+  "config_sha256": "4a048a7842cfb1caaa6d535f01c7cfc1ad14f566a005589cd6358871a48b228e",
+  "checkpoint_path": "outputs/c2_frozen/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "feb03aeff430d69b0a1407ef2bb6f71a26ca48126fb2f4b84c0d8feebdc55b4b",
+  "train_csv_path": "outputs/ref/seed42/train.csv",
+  "train_csv_sha256": "d07cd2bc9390d7e499ab7e674e451726677f5f49f58f1ac6897773aef15357e6",
+  "val_csv_path": "outputs/ref/seed42/val.csv",
+  "val_csv_sha256": "70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c",
+  "best_val_acc": 0.7315820085304382,
+  "best_raw_acc": 0.7315820085304382,
+  "best_ema_acc": null,
+  "best_epoch": 1,
+  "sample_weighting_type": "none"
+}
