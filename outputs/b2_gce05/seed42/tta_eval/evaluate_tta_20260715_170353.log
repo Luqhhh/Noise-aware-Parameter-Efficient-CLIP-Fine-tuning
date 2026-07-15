@@ -1,0 +1,8 @@
+2026-07-15 17:03:53 | INFO | Config: configs/b2_gce05.yaml
+2026-07-15 17:03:53 | INFO | Checkpoint: outputs/b2_gce05/seed42/checkpoints/best.pt
+2026-07-15 17:03:53 | INFO | TTA strategy: horizontal_flip
+2026-07-15 17:03:53 | INFO | Output dir: outputs/b2_gce05/seed42/tta_eval
+2026-07-15 17:03:53 | INFO | Seed: 42
+2026-07-15 17:03:53 | INFO | Device: cuda
+2026-07-15 17:03:59 | INFO | Loaded checkpoint from epoch 50
+2026-07-15 17:03:59 | INFO | Checkpoint best val acc: 0.6949234644448751
