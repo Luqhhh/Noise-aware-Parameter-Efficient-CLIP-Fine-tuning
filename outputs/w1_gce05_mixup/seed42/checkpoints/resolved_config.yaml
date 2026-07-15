@@ -54,7 +54,7 @@ train:
   image_size: 224
   lr: 0.005
   max_grad_norm: 1.0
-  num_workers: 4
+  num_workers: 8
   save_dir: outputs/w1_gce05_mixup/seed42/checkpoints
   scheduler: cosine
   warmup_epochs: 2

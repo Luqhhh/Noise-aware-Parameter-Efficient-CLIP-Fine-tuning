@@ -1,0 +1,13 @@
+2026-07-15 20:16:15 | INFO | Using device: cuda
+2026-07-15 20:16:15 | INFO | Configuration: configs/w1_gce05_mixup.yaml
+2026-07-15 20:16:15 | INFO | Train seed: 42
+2026-07-15 20:16:15 | INFO | Resolved runtime: experiment_id=W1_GCE05_MIXUP, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-15 20:16:21 | INFO | Total parameters:     88,105,716
+2026-07-15 20:16:21 | INFO | Trainable parameters: 256,500
+2026-07-15 20:16:24 | INFO | Using config epochs: 50 (dev mode)
+2026-07-15 20:16:24 | INFO | Loss: gce (reduction=mean)
+2026-07-15 20:16:24 | INFO | Optimizer parameter groups:
+2026-07-15 20:16:24 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-15 20:16:24 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-15 20:16:24 | INFO |   Trainable head params:       256,500
+2026-07-15 20:16:24 | INFO |   Trainable visual params:           0
