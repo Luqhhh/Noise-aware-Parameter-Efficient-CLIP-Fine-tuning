@@ -10,10 +10,10 @@
 > **距 70% 目标**：9.7525pp  
 >
 > **2026-07-15 更新**：
-> - b2_gce05（纯 GCE q=0.5）+ TTA 平台 60.16%，超越 q=0.7 + TTA (59.41%) +0.75pp  
-> - W1_CE5_GCE05（CE warmup + GCE q=0.5）本地 73.14% (+3.65pp vs 纯 q=0.5)，平台 TTA 60.25%  
-> - CE warmup 对 q=0.5 的本地增益 (+3.65pp) 远超 q=0.7 (+0.19pp)，但平台转化仅 +0.09pp  
-> - C2 PEFT 初始权重已更新为 W1_CE5_GCE05 best.pt
+> - b2_gce05（纯 GCE q=0.5）bare 59.62%, TTA 60.16%  
+> - W1_CE5_GCE05（CE warmup + GCE q=0.5）bare 59.61%, TTA 60.25%  
+> - **关键发现**：CE warmup 本地增益 +3.65pp，但平台 bare 完全持平 (-0.004pp)，TTA 仅 +0.09pp。ref val set 与平台测试集分布差异大，本地分数不能预测平台收益  
+> - C2 PEFT 初始权重仍使用 W1_CE5_GCE05（TTA 最高 60.25%）
 
 ---
 
