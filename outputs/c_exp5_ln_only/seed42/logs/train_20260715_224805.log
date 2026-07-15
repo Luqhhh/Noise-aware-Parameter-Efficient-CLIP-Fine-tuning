@@ -22,3 +22,34 @@
 2026-07-15 22:48:11 | INFO | Split lineage audit: protocol_valid = True
 2026-07-15 22:48:11 | INFO | ============================================================
 2026-07-15 22:48:11 | INFO | Epoch-0 validation gate: verifying loaded checkpoint
+2026-07-15 22:48:29 | INFO | Epoch 0   | Val Loss: 0.5468 | Val Acc: 0.7314
+2026-07-15 22:48:29 | INFO | Epoch-0 validation gate PASSED: delta=0.000000 <= 0.0005
+2026-07-15 22:48:29 | INFO | ============================================================
+2026-07-15 22:48:29 | INFO | Starting training: 12 epochs, 714 batches/epoch
+2026-07-15 22:48:29 | INFO | Warmup steps: 1428, Total steps: 8568, Cosine steps: 7140
+2026-07-15 22:48:29 | INFO | AMP: True
+2026-07-15 22:48:29 | INFO | ============================================================
+2026-07-15 22:50:52 | INFO | Epoch   1/12 | Train Loss: 0.4285 | Train Acc: 0.8104 | Val Loss: 0.5469 | Val Acc: 0.7309 | head_lr: 5.00e-05 | bb_lr: 2.50e-06 | Time: 2m 23s
+2026-07-15 22:50:52 | INFO |   >> New best RAW! Val Acc: 0.7309
+2026-07-15 22:53:20 | INFO | Epoch   2/12 | Train Loss: 0.4286 | Train Acc: 0.8104 | Val Loss: 0.5471 | Val Acc: 0.7308 | head_lr: 1.00e-04 | bb_lr: 5.00e-06 | Time: 2m 26s
+2026-07-15 22:53:20 | INFO |   >> No improvement for 1/5 epochs
+2026-07-15 22:55:51 | INFO | Epoch   3/12 | Train Loss: 0.4285 | Train Acc: 0.8105 | Val Loss: 0.5473 | Val Acc: 0.7306 | head_lr: 9.76e-05 | bb_lr: 4.88e-06 | Time: 2m 30s
+2026-07-15 22:55:51 | INFO |   >> No improvement for 2/5 epochs
+2026-07-15 22:58:24 | INFO | Epoch   4/12 | Train Loss: 0.4283 | Train Acc: 0.8106 | Val Loss: 0.5475 | Val Acc: 0.7303 | head_lr: 9.05e-05 | bb_lr: 4.53e-06 | Time: 2m 32s
+2026-07-15 22:58:24 | INFO |   >> No improvement for 3/5 epochs
+2026-07-15 23:00:56 | INFO | Epoch   5/12 | Train Loss: 0.4281 | Train Acc: 0.8107 | Val Loss: 0.5476 | Val Acc: 0.7302 | head_lr: 7.96e-05 | bb_lr: 3.98e-06 | Time: 2m 30s
+2026-07-15 23:00:56 | INFO |   >> No improvement for 4/5 epochs
+2026-07-15 23:03:25 | INFO | Epoch   6/12 | Train Loss: 0.4280 | Train Acc: 0.8108 | Val Loss: 0.5477 | Val Acc: 0.7297 | head_lr: 6.58e-05 | bb_lr: 3.29e-06 | Time: 2m 28s
+2026-07-15 23:03:25 | INFO |   >> No improvement for 5/5 epochs
+2026-07-15 23:03:26 | INFO | Early stopping triggered at epoch 6 (no improvement for 5 epochs). Best val acc: 0.7309 at epoch 1.
+2026-07-15 23:03:26 | INFO | ============================================================
+2026-07-15 23:03:26 | INFO | Training complete! Total time: 14m 56s
+2026-07-15 23:03:26 | INFO | Best validation accuracy: 0.7309
+2026-07-15 23:03:26 | INFO | Best model saved to: outputs/c_exp5_ln_only/seed42/checkpoints/best.pt
+2026-07-15 23:03:26 | INFO | Training log saved to: outputs/c_exp5_ln_only/seed42/logs/train_log.csv
+2026-07-15 23:03:26 | INFO | Reloaded best checkpoint for post-training evaluation: outputs/c_exp5_ln_only/seed42/checkpoints/best.pt (epoch=1, best_val_acc=0.73090345)
+2026-07-15 23:03:26 | INFO | Running post-training per-class evaluation...
+2026-07-15 23:03:45 | INFO | Eval results saved to: outputs/c_exp5_ln_only/seed42/checkpoints/eval_results.json
+2026-07-15 23:03:45 | INFO | Artifact manifest saved to: outputs/c_exp5_ln_only/seed42/checkpoints/artifact_manifest.json
+2026-07-15 23:03:45 | INFO | Per-class metrics saved to: outputs/c_exp5_ln_only/seed42/checkpoints/per_class_metrics.csv
+2026-07-15 23:04:03 | INFO | Prediction records saved to: outputs/c_exp5_ln_only/seed42/checkpoints/prediction_records.csv
