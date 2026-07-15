@@ -15,3 +15,11 @@
 2026-07-15 19:50:11 | INFO | Warmup steps: 1426, Total steps: 35650, Cosine steps: 34224
 2026-07-15 19:50:11 | INFO | AMP: True
 2026-07-15 19:50:11 | INFO | ============================================================
+2026-07-15 19:54:11 | INFO | Epoch   1/50 | Train Loss: 1.8749 | Train Acc: 0.1486 | Val Loss: 1.7620 | Val Acc: 0.2544 | head_lr: 2.50e-03 | bb_lr: 0.00e+00 | Time: 3m 59s
+2026-07-15 19:54:11 | INFO |   >> New best RAW! Val Acc: 0.2544
+2026-07-15 19:58:17 | INFO | Epoch   2/50 | Train Loss: 1.4646 | Train Acc: 0.3733 | Val Loss: 1.1594 | Val Acc: 0.5237 | head_lr: 5.00e-03 | bb_lr: 0.00e+00 | Time: 4m 4s
+2026-07-15 19:58:17 | INFO |   >> New best RAW! Val Acc: 0.5237
+2026-07-15 20:02:32 | INFO | Epoch   3/50 | Train Loss: 1.0362 | Train Acc: 0.5701 | Val Loss: 0.9051 | Val Acc: 0.6187 | head_lr: 4.99e-03 | bb_lr: 0.00e+00 | Time: 4m 13s
+2026-07-15 20:02:32 | INFO |   >> New best RAW! Val Acc: 0.6187
+2026-07-15 20:06:48 | INFO | Epoch   4/50 | Train Loss: 0.8792 | Train Acc: 0.6259 | Val Loss: 0.8003 | Val Acc: 0.6535 | head_lr: 4.98e-03 | bb_lr: 0.00e+00 | Time: 4m 15s
+2026-07-15 20:06:48 | INFO |   >> New best RAW! Val Acc: 0.6535
