@@ -3,8 +3,9 @@
 > 项目：Noise-aware-Parameter-Efficient-CLIP-Fine-tuning  
 > 日期：2026-07-13  
 > 负责人：C  
-> 当前训练基线：B2_GCE07，平台单视图 58.9578%  
-> 当前提交基线：B2_GCE07 + 2-view horizontal-flip TTA，平台 59.4064%  
+> 当前训练基线：W1_CE5_GCE05（CE warmup + GCE q=0.5），平台 bare 59.61%, TTA 60.25%  
+> 当前提交基线：W1_CE5_GCE05 + 2-view horizontal-flip TTA，平台 60.25%  
+> （2026-07-15 更新：已从 B2_GCE07 切换至 W1_CE5_GCE05）  
 > 当前模型结构：冻结 OpenAI CLIP ViT-B/32 visual backbone，仅训练 Linear Head  
 > 说明：公共训练入口、配置、checkpoint schema 和 hook 接入由 A 维护；C 负责 EMA、PEFT、LoRA、Teacher/ELR 模块本体及对应实验。
 
@@ -245,9 +246,59 @@ prediction_change_vs_parent
 
 ---
 
-# 6. ln_post + visual_proj Continue Training
+# 6. Frozen Control (PEFT Baseline)
 
-## C-EXP-3：W4_ROBUST_LNPROJ
+## C-EXP-3：W4_FROZEN_CONTROL
+
+与 C-EXP-4 (LN+Projection) 配对，使用同一父权重、同一 split、同一超参，唯一差异是 `freeze_clip: true`。目的是隔离「继续训练」和「解冻 LN+Projection」各自的效果。
+
+初始化：
+
+```text
+best_frozen_robust_checkpoint (W1_CE5_GCE05)
+```
+
+可训练：
+
+```text
+Linear Head（仅此）
+```
+
+冻结：
+
+```text
+全部 CLIP visual backbone（包括 ln_post、visual.proj、所有 Transformer blocks）
+```
+
+配置：
+
+```yaml
+experiment_id: C2_FROZEN (configs/c2_frozen.yaml)
+
+epochs: 12
+early_stop_patience: 5
+
+optimizer:
+  head_lr: 1.0e-4
+  weight_decay: 1.0e-4
+
+loss:
+  name: gce
+  q: 0.5
+```
+
+进入前检查：
+
+```text
+父 checkpoint 完整加载
+epoch-0 prediction mismatch = 0
+```
+
+---
+
+# 7. ln_post + visual_proj Continue Training
+
+## C-EXP-4：W4_ROBUST_LNPROJ
 
 初始化：
 
@@ -303,14 +354,14 @@ trainable names 精确匹配
 
 ---
 
-# 7. Visual LayerNorm-Only Tuning
+# 8. Visual LayerNorm-Only Tuning
 
-## C-EXP-4：W4_ROBUST_VISUAL_LN_ONLY
+## C-EXP-5：W4_ROBUST_VISUAL_LN_ONLY
 
 进入条件：
 
 ```text
-W4_ROBUST_LNPROJ 无收益或出现过拟合
+C-EXP-4 (W4_ROBUST_LNPROJ) 无收益或出现过拟合
 ```
 
 可训练：
@@ -357,7 +408,7 @@ feature drift
 
 ---
 
-# 8. Last-Block LoRA
+# 9. Last-Block LoRA
 
 ## C-MOD-2：LoRA 模块
 
@@ -399,12 +450,12 @@ trainable parameter count
 
 ---
 
-## C-EXP-5：W4_ROBUST_LASTBLOCK_LORA_R4
+## C-EXP-6：W4_ROBUST_LASTBLOCK_LORA_R4
 
 进入条件：
 
 ```text
-W4_ROBUST_LNPROJ 或 W4_ROBUST_VISUAL_LN_ONLY 至少一个有正信号
+C-EXP-4 或 C-EXP-5 至少一个有正信号
 ```
 
 配置：
@@ -432,7 +483,7 @@ overfitting speed
 
 ---
 
-# 9. EMA Teacher
+# 10. EMA Teacher
 
 ## C-MOD-3：TeacherUpdater
 
@@ -489,7 +540,7 @@ ramp epochs = 10
 
 ---
 
-## C-EXP-6：W5_EMA_TEACHER_FLIP
+## C-EXP-7：W5_EMA_TEACHER_FLIP
 
 进入条件：
 
@@ -558,7 +609,7 @@ confirmation-bias indicators
 
 ---
 
-# 10. ELR 备选
+# 11. ELR 备选
 
 ## C-MOD-5：ELR State Manager
 
@@ -580,7 +631,7 @@ prediction_history[sample_id]
 
 ---
 
-## C-EXP-7：W5_GCE_ELR
+## C-EXP-8：W5_GCE_ELR
 
 配置建议：
 
@@ -600,7 +651,7 @@ Teacher 基础设施成熟 → 优先 Teacher
 
 ---
 
-# 11. C 的实验选模规则
+# 12. C 的实验选模规则
 
 所有实验先做单视图。
 
@@ -630,7 +681,7 @@ TTA 不由 C 对所有实验默认执行。
 
 ---
 
-# 12. C 的执行顺序
+# 13. C 的执行顺序
 
 ## Stage C0：接口确认
 
@@ -684,9 +735,9 @@ feature drift logger
 顺序：
 
 ```text
-W4_ROBUST_LNPROJ
-若无收益 → W4_ROBUST_VISUAL_LN_ONLY
-若有正信号 → W4_ROBUST_LASTBLOCK_LORA_R4
+C-EXP-3 (Frozen Control) 与 C-EXP-4 (LN+Proj) 并行
+若无收益 → C-EXP-5 (W4_ROBUST_VISUAL_LN_ONLY)
+若有正信号 → C-EXP-6 (W4_ROBUST_LASTBLOCK_LORA_R4)
 ```
 
 ---
@@ -717,7 +768,7 @@ A 负责最终组合实验和提交。
 
 ---
 
-# 13. C 的 Git 责任边界
+# 14. C 的 Git 责任边界
 
 C 默认维护：
 
@@ -758,7 +809,7 @@ phase3/c-teacher
 
 ---
 
-# 14. C 的交付物
+# 15. C 的交付物
 
 C 最终必须交付：
 
@@ -780,36 +831,37 @@ ELR 备选
 
 ---
 
-# 15. C 的优先级
+# 16. C 的优先级
 
 ## P0
 
 ```text
 EMAController
-W1_GCE07_HEAD_EMA099
+C-EXP-1 (W1_GCE07_HEAD_EMA099)
 PEFT parameter audit
-ln_post + projection
+C-EXP-3 (Frozen Control)
+C-EXP-4 (ln_post + projection)
 ```
 
 ## P1
 
 ```text
-Visual LayerNorm-only
-Last-block LoRA
+C-EXP-5 (Visual LayerNorm-only)
+C-EXP-6 (Last-block LoRA)
 feature drift logging
 ```
 
 ## P2
 
 ```text
-EMA Teacher
-ELR
-Head EMA 0.999
+C-EXP-7 (EMA Teacher)
+C-EXP-8 (ELR)
+C-EXP-2 (Head EMA 0.999)
 ```
 
 ---
 
-# 16. 完成标准
+# 17. 完成标准
 
 C 的工作完成需满足：
 
