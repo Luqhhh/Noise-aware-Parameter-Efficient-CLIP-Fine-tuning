@@ -5,13 +5,15 @@
 > 当前骨干：OpenAI CLIP ViT-B/32  
 > 当前主模型：冻结 CLIP visual backbone，仅训练 Linear Head  
 >
-> **训练基线**：b2_gce05（GCE q=0.5）单视图 = 59.6187%  
-> **提交基线**：b2_gce05 + 2-view horizontal-flip TTA = 60.1594%  
-> **距 70% 目标**：9.8406pp  
+> **训练基线**：W1_CE5_GCE05（CE warmup + GCE q=0.5）= 73.14% 本地  
+> **提交基线**：W1_CE5_GCE05 + 2-view horizontal-flip TTA = 60.2475% 平台  
+> **距 70% 目标**：9.7525pp  
 >
-> **2026-07-15 更新**：q=0.5 + TTA 平台 60.1594%，超越 q=0.7 + TTA (59.4064%) +0.75pp。  
-> q=0.5 替代 q=0.7 成为新的训练和提交基线。  
-> 后续新训练方法应先与单视图 b2_gce05 比较；只有训练方法本身有效，才叠加 Flip TTA。
+> **2026-07-15 更新**：
+> - b2_gce05（纯 GCE q=0.5）+ TTA 平台 60.16%，超越 q=0.7 + TTA (59.41%) +0.75pp  
+> - W1_CE5_GCE05（CE warmup + GCE q=0.5）本地 73.14% (+3.65pp vs 纯 q=0.5)，平台 TTA 60.25%  
+> - CE warmup 对 q=0.5 的本地增益 (+3.65pp) 远超 q=0.7 (+0.19pp)，但平台转化仅 +0.09pp  
+> - C2 PEFT 初始权重已更新为 W1_CE5_GCE05 best.pt
 
 ---
 
