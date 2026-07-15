@@ -1,0 +1,42 @@
+2026-07-16 00:01:58 | INFO | Using device: cuda
+2026-07-16 00:01:58 | INFO | Configuration: configs/c_exp7_teacher.yaml
+2026-07-16 00:01:58 | INFO | Train seed: 42
+2026-07-16 00:01:58 | INFO | Resolved runtime: experiment_id=C_EXP7_TEACHER, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-16 00:02:00 | INFO | Total parameters:     88,105,716
+2026-07-16 00:02:00 | INFO | Trainable parameters: 256,500
+2026-07-16 00:02:03 | INFO | Using config epochs: 30 (dev mode)
+2026-07-16 00:02:03 | INFO | Loss: gce (reduction=mean)
+2026-07-16 00:02:03 | INFO | Optimizer parameter groups:
+2026-07-16 00:02:03 | INFO |   head        :    256,500 params, lr=1.00e-04, wd=1.00e-04
+2026-07-16 00:02:03 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-16 00:02:03 | INFO |   Trainable head params:       256,500
+2026-07-16 00:02:03 | INFO |   Trainable visual params:           0
+2026-07-16 00:02:03 | INFO | Initializing model weights from: outputs/w1_gce05_mixup/seed42/checkpoints/best.pt
+2026-07-16 00:02:03 | INFO | Model weights loaded with exact key match.
+2026-07-16 00:02:03 | INFO | Running split lineage audit...
+2026-07-16 00:02:03 | INFO |   Parent: outputs/w1_gce05_mixup
+2026-07-16 00:02:03 | INFO |   Parent split: outputs/ref/seed42
+2026-07-16 00:02:03 | INFO |   Child split:  outputs/ref/seed42
+2026-07-16 00:02:03 | INFO | Split lineage audit: protocol_valid = True
+2026-07-16 00:02:03 | INFO | ============================================================
+2026-07-16 00:02:03 | INFO | Epoch-0 validation gate: verifying loaded checkpoint
+2026-07-16 00:02:24 | INFO | Epoch 0   | Val Loss: 0.5622 | Val Acc: 0.7116
+2026-07-16 00:02:24 | INFO | Epoch-0 validation gate PASSED: delta=0.000000 <= 0.0005
+2026-07-16 00:02:24 | INFO | ============================================================
+2026-07-16 00:02:24 | INFO | Teacher-Student enabled: ema_decay=0.9990, confidence_threshold=0.90, consistency_weight=0.50, ramp_epochs=10
+2026-07-16 00:02:24 | INFO | Starting training: 30 epochs, 714 batches/epoch
+2026-07-16 00:02:24 | INFO | Warmup steps: 1428, Total steps: 21420, Cosine steps: 19992
+2026-07-16 00:02:24 | INFO | AMP: True
+2026-07-16 00:02:24 | INFO | ============================================================
+2026-07-16 00:06:10 | INFO | Epoch   1/30 | Train Loss: 0.4254 | Train Acc: 0.8129 | Val Loss: 0.5622 | Val Acc: 0.7115 | head_lr: 5.00e-05 | bb_lr: 0.00e+00 | Time: 3m 46s
+2026-07-16 00:06:10 | INFO |   >> New best RAW! Val Acc: 0.7115
+2026-07-16 00:09:57 | INFO | Epoch   2/30 | Train Loss: 0.4332 | Train Acc: 0.8129 | Val Loss: 0.5622 | Val Acc: 0.7108 | head_lr: 1.00e-04 | bb_lr: 0.00e+00 | Time: 3m 43s
+2026-07-16 00:09:57 | INFO |   >> No improvement for 1/12 epochs
+2026-07-16 00:13:43 | INFO | Epoch   3/30 | Train Loss: 0.4522 | Train Acc: 0.8129 | Val Loss: 0.5622 | Val Acc: 0.7112 | head_lr: 9.97e-05 | bb_lr: 0.00e+00 | Time: 3m 44s
+2026-07-16 00:13:43 | INFO |   >> No improvement for 2/12 epochs
+2026-07-16 00:17:30 | INFO | Epoch   4/30 | Train Loss: 0.4915 | Train Acc: 0.8130 | Val Loss: 0.5622 | Val Acc: 0.7114 | head_lr: 9.88e-05 | bb_lr: 0.00e+00 | Time: 3m 45s
+2026-07-16 00:17:30 | INFO |   >> No improvement for 3/12 epochs
+2026-07-16 00:21:15 | INFO | Epoch   5/30 | Train Loss: 0.5522 | Train Acc: 0.8129 | Val Loss: 0.5622 | Val Acc: 0.7114 | head_lr: 9.72e-05 | bb_lr: 0.00e+00 | Time: 3m 43s
+2026-07-16 00:21:15 | INFO |   >> No improvement for 4/12 epochs
+2026-07-16 00:24:59 | INFO | Epoch   6/30 | Train Loss: 0.6124 | Train Acc: 0.8132 | Val Loss: 0.5623 | Val Acc: 0.7115 | head_lr: 9.51e-05 | bb_lr: 0.00e+00 | Time: 3m 43s
+2026-07-16 00:24:59 | INFO |   >> No improvement for 5/12 epochs
