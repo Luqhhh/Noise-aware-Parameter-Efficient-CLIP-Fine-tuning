@@ -6,8 +6,8 @@
 > 当前主模型：冻结 CLIP visual backbone，仅训练 Linear Head  
 >
 > **训练基线**：W1_CE5_GCE05（CE warmup + GCE q=0.5）= 73.14% 本地  
-> **提交基线**：W1_CE5_GCE05 + 2-view horizontal-flip TTA = 60.2475% 平台  
-> **距 70% 目标**：9.7525pp  
+> **提交基线**：W1_GCE05_MIXUP + 2-view horizontal-flip TTA = 60.3637% 平台  
+> **距 70% 目标**：9.6363pp  
 >
 > **2026-07-15 更新**：
 > - b2_gce05（纯 GCE q=0.5）bare 59.62%, TTA 60.16%  
