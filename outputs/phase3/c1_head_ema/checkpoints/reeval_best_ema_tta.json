@@ -1,0 +1,16 @@
+{
+  "checkpoint": "/home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/phase3/c1_head_ema/checkpoints/best_ema.pt",
+  "tta_strategy": "horizontal_flip",
+  "num_views": 2,
+  "fusion": "mean_logits",
+  "micro_accuracy_tta": 0.6961031407522296,
+  "macro_accuracy_tta": 0.6955916285514832,
+  "bottom_10_percent_accuracy_tta": 0.2819976508617401,
+  "micro_accuracy_single": 0.6928072896471501,
+  "macro_accuracy_single": 0.6922777891159058,
+  "bottom_10_percent_accuracy_single": 0.27650123834609985,
+  "tta_delta_micro": 0.0032958511050794614,
+  "tta_delta_macro": 0.0033138394355773926,
+  "tta_delta_bottom10": 0.005496412515640259,
+  "total_samples": 10316
+}

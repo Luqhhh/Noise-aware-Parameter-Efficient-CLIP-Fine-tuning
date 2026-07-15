@@ -1,0 +1,17 @@
+{
+  "checkpoint": "outputs/phase3/c1_head_ema/checkpoints/best_ema.pt",
+  "checkpoint_sha256": "cc8266f0b6debf01b9037d6933c1a8a76b64eb22a19ccca3e87faabbb7cb7e98",
+  "val_csv": "outputs/ref/seed42/val.csv",
+  "val_csv_sha256": "70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c",
+  "config": "/home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/configs/c1_head_ema.yaml",
+  "micro_accuracy": 0.6928072896471501,
+  "macro_accuracy": 0.6922777891159058,
+  "median_per_class_accuracy": 0.75,
+  "bottom_10_percent_accuracy": 0.27650123834609985,
+  "micro_macro_gap": 0.0005295005312443424,
+  "loss": 0.4722789164405777,
+  "total_samples": 10316,
+  "correct_samples": 7147,
+  "checkpoint_epoch": 43,
+  "checkpoint_best_val_acc": 0.6928072896471501
+}
