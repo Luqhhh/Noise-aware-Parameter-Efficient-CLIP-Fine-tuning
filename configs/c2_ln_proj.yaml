@@ -67,7 +67,7 @@ train:
   scheduler: cosine
   warmup_epochs: 2
   weight_decay: 0.0001
-  backbone_lr: 0.000001
-  backbone_weight_decay: 0.0001
+  backbone_lr: 0.0000001
+  backbone_weight_decay: 0.01
   min_lr_ratio: 0.01
   early_stop_patience: 5
