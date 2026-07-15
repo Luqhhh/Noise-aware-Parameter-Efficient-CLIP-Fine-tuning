@@ -1,0 +1,22 @@
+2026-07-15 19:46:07 | INFO | Config: configs/w1_ce5_gce05.yaml
+2026-07-15 19:46:07 | INFO | Checkpoint: outputs/w1_ce5_gce05/seed42/checkpoints/best.pt
+2026-07-15 19:46:07 | INFO | Seed: 42
+2026-07-15 19:46:07 | INFO | Device: cuda
+2026-07-15 19:46:07 | INFO | Head type: linear
+2026-07-15 19:46:14 | INFO | Loaded checkpoint from epoch 50
+2026-07-15 19:46:14 | INFO | Checkpoint best val acc: 0.7313881349360217
+2026-07-15 19:46:14 | INFO | Checkpoint SHA-256: cea35b25b1135c8ea32f1cfdf32e30eda077b6bd95b43bc95ceb5f61f1bf96a2
+2026-07-15 19:46:14 | INFO | Val CSV SHA-256: 70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c
+2026-07-15 19:46:14 | INFO | Validation set: 10316 samples, 41 batches
+2026-07-15 19:46:37 | INFO | ==================================================
+2026-07-15 19:46:37 | INFO | Evaluation Results:
+2026-07-15 19:46:37 | INFO |   Total samples:              10316
+2026-07-15 19:46:37 | INFO |   Correct samples:            7545
+2026-07-15 19:46:37 | INFO |   Top-1 Accuracy (micro):     0.7314 (73.14%)
+2026-07-15 19:46:37 | INFO |   Macro Accuracy:             0.7309 (73.09%)
+2026-07-15 19:46:37 | INFO |   Median Per-Class Accuracy:  0.7619 (76.19%)
+2026-07-15 19:46:37 | INFO |   Bottom-10%% Accuracy:        0.3367 (33.67%)
+2026-07-15 19:46:37 | INFO |   Micro-Macro Gap:            +0.0004 (+0.04%)
+2026-07-15 19:46:37 | INFO |   Loss:                       1.4778
+2026-07-15 19:46:37 | INFO | ==================================================
+2026-07-15 19:46:37 | INFO | Eval results saved to: outputs/w1_ce5_gce05/seed42/checkpoints/reeval_best.json

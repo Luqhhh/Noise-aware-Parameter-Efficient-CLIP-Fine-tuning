@@ -1,0 +1,66 @@
+2026-07-15 18:58:37 | INFO | Using device: cuda
+2026-07-15 18:58:37 | INFO | Configuration: configs/w1_ce5_gce05.yaml
+2026-07-15 18:58:37 | INFO | Train seed: 42
+2026-07-15 18:58:37 | INFO | Resolved runtime: experiment_id=W1_CE5_GCE05, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-15 18:58:39 | INFO | Total parameters:     88,105,716
+2026-07-15 18:58:39 | INFO | Trainable parameters: 256,500
+2026-07-15 18:58:42 | INFO | Using config epochs: 50 (dev mode)
+2026-07-15 18:58:42 | INFO | Loss: cross_entropy (reduction=mean)
+2026-07-15 18:58:42 | INFO | Optimizer parameter groups:
+2026-07-15 18:58:42 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-15 18:58:42 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-15 18:58:42 | INFO |   Trainable head params:       256,500
+2026-07-15 18:58:42 | INFO |   Trainable visual params:           0
+2026-07-15 18:58:42 | INFO | Restored weight provider state.
+2026-07-15 18:58:42 | INFO | Resumed from epoch 32, best val acc: 0.7055
+2026-07-15 18:58:42 | INFO | Starting training: 50 epochs, 713 batches/epoch
+2026-07-15 18:58:42 | INFO | Warmup steps: 1426, Total steps: 35650, Cosine steps: 34224
+2026-07-15 18:58:42 | INFO | AMP: True
+2026-07-15 18:58:42 | INFO | ============================================================
+2026-07-15 19:01:05 | INFO | Epoch  33/50 | Train Loss: 0.4531 | Train Acc: 0.7957 | Val Loss: 0.5754 | Val Acc: 0.7100 | head_lr: 1.42e-03 | bb_lr: 0.00e+00 | Time: 2m 22s
+2026-07-15 19:01:05 | INFO |   >> New best RAW! Val Acc: 0.7100
+2026-07-15 19:03:40 | INFO | Epoch  34/50 | Train Loss: 0.4501 | Train Acc: 0.7971 | Val Loss: 0.5704 | Val Acc: 0.7120 | head_lr: 1.28e-03 | bb_lr: 0.00e+00 | Time: 2m 32s
+2026-07-15 19:03:40 | INFO |   >> New best RAW! Val Acc: 0.7120
+2026-07-15 19:06:13 | INFO | Epoch  35/50 | Train Loss: 0.4475 | Train Acc: 0.7986 | Val Loss: 0.5660 | Val Acc: 0.7165 | head_lr: 1.14e-03 | bb_lr: 0.00e+00 | Time: 2m 31s
+2026-07-15 19:06:13 | INFO |   >> New best RAW! Val Acc: 0.7165
+2026-07-15 19:08:46 | INFO | Epoch  36/50 | Train Loss: 0.4453 | Train Acc: 0.8000 | Val Loss: 0.5626 | Val Acc: 0.7181 | head_lr: 1.01e-03 | bb_lr: 0.00e+00 | Time: 2m 30s
+2026-07-15 19:08:46 | INFO |   >> New best RAW! Val Acc: 0.7181
+2026-07-15 19:11:21 | INFO | Epoch  37/50 | Train Loss: 0.4433 | Train Acc: 0.8006 | Val Loss: 0.5597 | Val Acc: 0.7215 | head_lr: 8.88e-04 | bb_lr: 0.00e+00 | Time: 2m 33s
+2026-07-15 19:11:21 | INFO |   >> New best RAW! Val Acc: 0.7215
+2026-07-15 19:13:55 | INFO | Epoch  38/50 | Train Loss: 0.4416 | Train Acc: 0.8020 | Val Loss: 0.5571 | Val Acc: 0.7239 | head_lr: 7.70e-04 | bb_lr: 0.00e+00 | Time: 2m 31s
+2026-07-15 19:13:55 | INFO |   >> New best RAW! Val Acc: 0.7239
+2026-07-15 19:16:30 | INFO | Epoch  39/50 | Train Loss: 0.4401 | Train Acc: 0.8028 | Val Loss: 0.5548 | Val Acc: 0.7255 | head_lr: 6.60e-04 | bb_lr: 0.00e+00 | Time: 2m 33s
+2026-07-15 19:16:30 | INFO |   >> New best RAW! Val Acc: 0.7255
+2026-07-15 19:19:03 | INFO | Epoch  40/50 | Train Loss: 0.4388 | Train Acc: 0.8039 | Val Loss: 0.5531 | Val Acc: 0.7265 | head_lr: 5.57e-04 | bb_lr: 0.00e+00 | Time: 2m 30s
+2026-07-15 19:19:03 | INFO |   >> New best RAW! Val Acc: 0.7265
+2026-07-15 19:21:38 | INFO | Epoch  41/50 | Train Loss: 0.4377 | Train Acc: 0.8044 | Val Loss: 0.5515 | Val Acc: 0.7281 | head_lr: 4.63e-04 | bb_lr: 0.00e+00 | Time: 2m 33s
+2026-07-15 19:21:38 | INFO |   >> New best RAW! Val Acc: 0.7281
+2026-07-15 19:24:12 | INFO | Epoch  42/50 | Train Loss: 0.4368 | Train Acc: 0.8048 | Val Loss: 0.5503 | Val Acc: 0.7288 | head_lr: 3.78e-04 | bb_lr: 0.00e+00 | Time: 2m 32s
+2026-07-15 19:24:12 | INFO |   >> New best RAW! Val Acc: 0.7288
+2026-07-15 19:26:45 | INFO | Epoch  43/50 | Train Loss: 0.4360 | Train Acc: 0.8053 | Val Loss: 0.5494 | Val Acc: 0.7299 | head_lr: 3.02e-04 | bb_lr: 0.00e+00 | Time: 2m 31s
+2026-07-15 19:26:45 | INFO |   >> New best RAW! Val Acc: 0.7299
+2026-07-15 19:29:15 | INFO | Epoch  44/50 | Train Loss: 0.4354 | Train Acc: 0.8058 | Val Loss: 0.5487 | Val Acc: 0.7304 | head_lr: 2.36e-04 | bb_lr: 0.00e+00 | Time: 2m 28s
+2026-07-15 19:29:15 | INFO |   >> New best RAW! Val Acc: 0.7304
+2026-07-15 19:31:45 | INFO | Epoch  45/50 | Train Loss: 0.4348 | Train Acc: 0.8062 | Val Loss: 0.5481 | Val Acc: 0.7307 | head_lr: 1.79e-04 | bb_lr: 0.00e+00 | Time: 2m 28s
+2026-07-15 19:31:45 | INFO |   >> New best RAW! Val Acc: 0.7307
+2026-07-15 19:34:16 | INFO | Epoch  46/50 | Train Loss: 0.4344 | Train Acc: 0.8062 | Val Loss: 0.5477 | Val Acc: 0.7309 | head_lr: 1.33e-04 | bb_lr: 0.00e+00 | Time: 2m 28s
+2026-07-15 19:34:16 | INFO |   >> New best RAW! Val Acc: 0.7309
+2026-07-15 19:36:45 | INFO | Epoch  47/50 | Train Loss: 0.4341 | Train Acc: 0.8064 | Val Loss: 0.5474 | Val Acc: 0.7310 | head_lr: 9.63e-05 | bb_lr: 0.00e+00 | Time: 2m 28s
+2026-07-15 19:36:45 | INFO |   >> New best RAW! Val Acc: 0.7310
+2026-07-15 19:39:13 | INFO | Epoch  48/50 | Train Loss: 0.4339 | Train Acc: 0.8067 | Val Loss: 0.5472 | Val Acc: 0.7312 | head_lr: 7.03e-05 | bb_lr: 0.00e+00 | Time: 2m 26s
+2026-07-15 19:39:13 | INFO |   >> New best RAW! Val Acc: 0.7312
+2026-07-15 19:41:42 | INFO | Epoch  49/50 | Train Loss: 0.4337 | Train Acc: 0.8067 | Val Loss: 0.5470 | Val Acc: 0.7313 | head_lr: 5.49e-05 | bb_lr: 0.00e+00 | Time: 2m 27s
+2026-07-15 19:41:42 | INFO |   >> New best RAW! Val Acc: 0.7313
+2026-07-15 19:44:12 | INFO | Epoch  50/50 | Train Loss: 0.4336 | Train Acc: 0.8068 | Val Loss: 0.5468 | Val Acc: 0.7314 | head_lr: 5.00e-05 | bb_lr: 0.00e+00 | Time: 2m 29s
+2026-07-15 19:44:12 | INFO |   >> New best RAW! Val Acc: 0.7314
+2026-07-15 19:44:13 | INFO | ============================================================
+2026-07-15 19:44:13 | INFO | Training complete! Total time: 45m 31s
+2026-07-15 19:44:13 | INFO | Best validation accuracy: 0.7314
+2026-07-15 19:44:13 | INFO | Best model saved to: outputs/w1_ce5_gce05/seed42/checkpoints/best.pt
+2026-07-15 19:44:13 | INFO | Training log saved to: outputs/w1_ce5_gce05/seed42/logs/train_log.csv
+2026-07-15 19:44:14 | INFO | Reloaded best checkpoint for post-training evaluation: outputs/w1_ce5_gce05/seed42/checkpoints/best.pt (epoch=50, best_val_acc=0.73138813)
+2026-07-15 19:44:14 | INFO | Running post-training per-class evaluation...
+2026-07-15 19:44:33 | INFO | Eval results saved to: outputs/w1_ce5_gce05/seed42/checkpoints/eval_results.json
+2026-07-15 19:44:33 | INFO | Artifact manifest saved to: outputs/w1_ce5_gce05/seed42/checkpoints/artifact_manifest.json
+2026-07-15 19:44:33 | INFO | Per-class metrics saved to: outputs/w1_ce5_gce05/seed42/checkpoints/per_class_metrics.csv
+2026-07-15 19:44:53 | INFO | Prediction records saved to: outputs/w1_ce5_gce05/seed42/checkpoints/prediction_records.csv

@@ -1,15 +1,11 @@
-# B-EXP-4b: GCE q=0.5 + low-intensity MixUp diagnostic
-# Based on W1_GCE07_MIXUP, switching base loss from q=0.7 to q=0.5.
-# MixUp alpha=0.2, probability=0.2 — weak mixing for fine-grained task.
-# Single seed=42; kill if no positive signal vs b2_gce05 (q=0.5, no MixUp).
-# No extra augmentations, no label smoothing, no EMA loss, no head EMA.
-
 experiment:
   id: W1_GCE05_MIXUP
   mode: dev
   head_type: linear
   augmentation_preset: a0
-
+  parent: null
+  wave: null
+  seed: 42
 data:
   stage: preliminary
   image_extensions:
@@ -28,7 +24,6 @@ data:
   expected_num_classes: 500
   class_mapping_path: outputs/master_splits/seed42
   use_full_training_set: false
-
 model:
   clip_model_name: ViT-B/32
   feature_dim: 512
@@ -38,24 +33,19 @@ model:
   unfreeze_last_n_blocks: 0
   train_ln_post: false
   train_visual_proj: false
-
 loss:
   name: gce
   q: 0.5
-  probability_epsilon: 1.0e-7
-
+  probability_epsilon: 1.0e-07
 mixup:
   enabled: true
   alpha: 0.2
   probability: 0.2
-
 eval:
   batch_size: 256
-
 output:
   log_dir: outputs/w1_gce05_mixup/seed42/logs
   submission_dir: outputs/w1_gce05_mixup/seed42/submissions
-
 train:
   amp: true
   batch_size: 128
@@ -71,3 +61,31 @@ train:
   weight_decay: 0.0001
   min_lr_ratio: 0.01
   early_stop_patience: 10
+  pin_memory: true
+runtime:
+  experiment_id: W1_GCE05_MIXUP
+  mode: dev
+  augmentation_preset: a0
+  head_type: linear
+  use_cached_features: false
+sample_weighting:
+  type: none
+  min_weight: 0.4
+  max_weight: 1.0
+  normalize_by_weight_sum: true
+  missing_weight_policy: error
+head_ema:
+  enabled: false
+  decay: 0.99
+  warmup_epochs: 5
+  selection_source: raw
+peft:
+  type: linear_head_only
+teacher:
+  enabled: false
+  ema_decay: 0.999
+  confidence_threshold: 0.8
+  consistency_weight: 1.0
+  ramp_epochs: 10
+cache:
+  enabled: false

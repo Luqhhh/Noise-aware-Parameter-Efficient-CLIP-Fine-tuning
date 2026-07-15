@@ -1,0 +1,17 @@
+{
+  "checkpoint": "outputs/b2_gce05/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "817a7fd9412712ac6495b18d859604dd68e493345d2530a6dbfbdba5195b172a",
+  "val_csv": "outputs/ref/seed42/val.csv",
+  "val_csv_sha256": "70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c",
+  "config": "/home/lux1/noise/configs/gce_q07.yaml",
+  "micro_accuracy": 0.7973051570376115,
+  "macro_accuracy": 0.7969515919685364,
+  "median_per_class_accuracy": 0.8500000238418579,
+  "bottom_10_percent_accuracy": 0.4328936040401459,
+  "micro_macro_gap": 0.00035356506907513463,
+  "loss": 0.35789864349961514,
+  "total_samples": 10316,
+  "correct_samples": 8225,
+  "checkpoint_epoch": 50,
+  "checkpoint_best_val_acc": 0.6949234644448751
+}

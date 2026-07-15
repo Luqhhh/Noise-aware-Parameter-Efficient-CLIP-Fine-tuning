@@ -1,0 +1,21 @@
+2026-07-15 18:52:38 | INFO | Using device: cuda
+2026-07-15 18:52:38 | INFO | Configuration: configs/w1_ce5_gce05.yaml
+2026-07-15 18:52:38 | INFO | Train seed: 42
+2026-07-15 18:52:38 | INFO | Resolved runtime: experiment_id=W1_CE5_GCE05, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-15 18:52:40 | INFO | Total parameters:     88,105,716
+2026-07-15 18:52:40 | INFO | Trainable parameters: 256,500
+2026-07-15 18:52:43 | INFO | Using config epochs: 50 (dev mode)
+2026-07-15 18:52:43 | INFO | Loss: cross_entropy (reduction=mean)
+2026-07-15 18:52:43 | INFO | Optimizer parameter groups:
+2026-07-15 18:52:43 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-15 18:52:43 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-15 18:52:43 | INFO |   Trainable head params:       256,500
+2026-07-15 18:52:43 | INFO |   Trainable visual params:           0
+2026-07-15 18:52:43 | INFO | Restored weight provider state.
+2026-07-15 18:52:43 | INFO | Resumed from epoch 31, best val acc: 0.7001
+2026-07-15 18:52:43 | INFO | Starting training: 50 epochs, 713 batches/epoch
+2026-07-15 18:52:43 | INFO | Warmup steps: 1426, Total steps: 35650, Cosine steps: 34224
+2026-07-15 18:52:43 | INFO | AMP: True
+2026-07-15 18:52:43 | INFO | ============================================================
+2026-07-15 18:56:43 | INFO | Epoch  32/50 | Train Loss: 0.4564 | Train Acc: 0.7939 | Val Loss: 0.5813 | Val Acc: 0.7055 | head_lr: 1.57e-03 | bb_lr: 0.00e+00 | Time: 3m 59s
+2026-07-15 18:56:43 | INFO |   >> New best RAW! Val Acc: 0.7055
