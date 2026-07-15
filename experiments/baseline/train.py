@@ -590,15 +590,24 @@ def train_one_epoch(
                     conf_thresh = teacher_cfg.get("confidence_threshold", 0.8)
                     cons_weight = teacher_cfg.get("consistency_weight", 1.0)
                     ramp_w = teacher_hook.rampup_weight(epoch)
+                    flip_consistency = teacher_cfg.get("flip_consistency", False)
                     with torch.no_grad():
                         teacher_logits = teacher_hook.forward(inputs)
                         conf_mask = teacher_hook.confidence_mask(
                             teacher_logits, threshold=conf_thresh
                         )
                     if conf_mask.any():
-                        cons_loss = torch.nn.functional.mse_loss(
-                            logits[conf_mask], teacher_logits[conf_mask],
-                        )
+                        if flip_consistency:
+                            inputs_flip = torch.flip(inputs, dims=[3])
+                            with autocast(device_type=device.type, enabled=use_amp):
+                                student_flip_logits = model(inputs_flip)
+                            cons_loss = torch.nn.functional.mse_loss(
+                                student_flip_logits[conf_mask], teacher_logits[conf_mask],
+                            )
+                        else:
+                            cons_loss = torch.nn.functional.mse_loss(
+                                logits[conf_mask], teacher_logits[conf_mask],
+                            )
                         loss = loss + ramp_w * cons_weight * cons_loss
 
             old_scale = scaler.get_scale()
@@ -643,15 +652,23 @@ def train_one_epoch(
                     conf_thresh = teacher_cfg.get("confidence_threshold", 0.8)
                     cons_weight = teacher_cfg.get("consistency_weight", 1.0)
                     ramp_w = teacher_hook.rampup_weight(epoch)
+                    flip_consistency = teacher_cfg.get("flip_consistency", False)
                     with torch.no_grad():
                         teacher_logits = teacher_hook.forward(inputs)
                         conf_mask = teacher_hook.confidence_mask(
                             teacher_logits, threshold=conf_thresh
                         )
                     if conf_mask.any():
-                        cons_loss = torch.nn.functional.mse_loss(
-                            logits[conf_mask], teacher_logits[conf_mask],
-                        )
+                        if flip_consistency:
+                            inputs_flip = torch.flip(inputs, dims=[3])
+                            student_flip_logits = model(inputs_flip)
+                            cons_loss = torch.nn.functional.mse_loss(
+                                student_flip_logits[conf_mask], teacher_logits[conf_mask],
+                            )
+                        else:
+                            cons_loss = torch.nn.functional.mse_loss(
+                                logits[conf_mask], teacher_logits[conf_mask],
+                            )
                         loss = loss + ramp_w * cons_weight * cons_loss
 
             loss.backward()

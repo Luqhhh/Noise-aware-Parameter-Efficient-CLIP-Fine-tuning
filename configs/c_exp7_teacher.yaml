@@ -53,6 +53,7 @@ teacher:
   confidence_threshold: 0.90
   consistency_weight: 0.5
   ramp_epochs: 10
+  flip_consistency: true
 
 eval:
   batch_size: 256
@@ -65,9 +66,9 @@ train:
   amp: true
   batch_size: 128
   device: cuda
-  epochs: 50
+  epochs: 30
   image_size: 224
-  lr: 0.005
+  lr: 0.0001
   max_grad_norm: 1.0
   num_workers: 8
   save_dir: outputs/c_exp7_teacher/seed42/checkpoints
@@ -75,4 +76,4 @@ train:
   warmup_epochs: 2
   weight_decay: 0.0001
   min_lr_ratio: 0.01
-  early_stop_patience: 10
+  early_stop_patience: 5
