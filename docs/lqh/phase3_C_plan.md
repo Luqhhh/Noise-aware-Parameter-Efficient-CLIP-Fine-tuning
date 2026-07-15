@@ -42,8 +42,10 @@ C 不负责：
 ```text
 Full Forward / Feature Bank 0 mismatch
 Trusted Validation v2
-B2_GCE07 单视图平台 58.9578%
-B2_GCE07 + TTA 平台 59.4064%
+C-EXP-1 (Head EMA 0.99) 本地评估 — 负收益，已关闭
+  - bare: 69.28% (vs gce_q07 69.59%, -0.31pp)
+  - TTA:  69.61% (vs gce_q07 TTA local -0.39pp)
+  - 结论: Head EMA STOP, 不进入 0.999
 ```
 
 C 的任务分为三层：
@@ -190,6 +192,8 @@ last.pt
 - trusted/macro/bottom-10% 至少一项有稳定正信号；
 - raw 与 EMA 差距需要可解释；
 - 若 0.99 无收益，不测试 0.999。
+
+**执行状态（2026-07-15）**：已完成本地评估，bare 69.28%（vs gce_q07 69.59%，-0.31pp），TTA 69.61%（-0.39pp vs gce_q07 TTA local）。**结论：STOP——Head EMA 无独立收益，C-EXP-2 (0.999) 不进入。**
 
 ---
 
@@ -836,11 +840,9 @@ ELR 备选
 ## P0
 
 ```text
-EMAController
-C-EXP-1 (W1_GCE07_HEAD_EMA099)
-PEFT parameter audit
 C-EXP-3 (Frozen Control)
 C-EXP-4 (ln_post + projection)
+PEFT parameter audit
 ```
 
 ## P1
