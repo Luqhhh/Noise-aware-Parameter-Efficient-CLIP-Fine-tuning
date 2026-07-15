@@ -1,0 +1,24 @@
+2026-07-15 22:48:06 | INFO | Using device: cuda
+2026-07-15 22:48:06 | INFO | Configuration: configs/c_exp5_ln_only.yaml
+2026-07-15 22:48:06 | INFO | Train seed: 42
+2026-07-15 22:48:06 | INFO | Resolved runtime: experiment_id=C_EXP5_LN_ONLY, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-15 22:48:08 | INFO | Total parameters:     88,105,716
+2026-07-15 22:48:08 | INFO | Trainable parameters: 256,500
+2026-07-15 22:48:08 | INFO | After PEFT (visual_layernorm_only): total=88,105,716, trainable=296,436
+2026-07-15 22:48:11 | INFO | Using config epochs: 12 (dev mode)
+2026-07-15 22:48:11 | INFO | Loss: gce (reduction=mean)
+2026-07-15 22:48:11 | INFO | Optimizer parameter groups:
+2026-07-15 22:48:11 | INFO |   head        :    256,500 params, lr=1.00e-04, wd=1.00e-04
+2026-07-15 22:48:11 | INFO |   backbone    :     39,936 params, lr=5.00e-06, wd=1.00e-04
+2026-07-15 22:48:11 | INFO |   TOTAL       :    296,436 optimizer params
+2026-07-15 22:48:11 | INFO |   Trainable head params:       256,500
+2026-07-15 22:48:11 | INFO |   Trainable visual params:      39,936
+2026-07-15 22:48:11 | INFO | Initializing model weights from: outputs/w1_ce5_gce05/seed42/checkpoints/best.pt
+2026-07-15 22:48:11 | INFO | Model weights loaded with exact key match.
+2026-07-15 22:48:11 | INFO | Running split lineage audit...
+2026-07-15 22:48:11 | INFO |   Parent: outputs/w1_ce5_gce05
+2026-07-15 22:48:11 | INFO |   Parent split: outputs/ref/seed42
+2026-07-15 22:48:11 | INFO |   Child split:  outputs/ref/seed42
+2026-07-15 22:48:11 | INFO | Split lineage audit: protocol_valid = True
+2026-07-15 22:48:11 | INFO | ============================================================
+2026-07-15 22:48:11 | INFO | Epoch-0 validation gate: verifying loaded checkpoint
