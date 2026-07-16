@@ -512,6 +512,7 @@ def train_one_epoch(
     ema_hook=None,
     teacher_hook=None,
     mixup_cfg: Optional[Dict[str, Any]] = None,
+    elr_hook=None,
 ) -> tuple:
     """Train for one epoch.
 
@@ -610,6 +611,14 @@ def train_one_epoch(
                             )
                         loss = loss + ramp_w * cons_weight * cons_loss
 
+                # ── ELR temporal consistency ──
+                if elr_hook is not None:
+                    elr_hook.update(paths, logits.detach())
+                    elr_w = elr_hook.rampup_weight(epoch)
+                    if elr_w > 0:
+                        elr_loss = elr_hook.compute_loss(paths, logits)
+                        loss = loss + elr_w * elr_loss
+
             old_scale = scaler.get_scale()
             scaler.scale(loss).backward()
 
@@ -670,6 +679,14 @@ def train_one_epoch(
                                 logits[conf_mask], teacher_logits[conf_mask],
                             )
                         loss = loss + ramp_w * cons_weight * cons_loss
+
+                # ── ELR temporal consistency ──
+                if elr_hook is not None:
+                    elr_hook.update(paths, logits.detach())
+                    elr_w = elr_hook.rampup_weight(epoch)
+                    if elr_w > 0:
+                        elr_loss = elr_hook.compute_loss(paths, logits)
+                        loss = loss + elr_w * elr_loss
 
             loss.backward()
 
@@ -808,6 +825,7 @@ def save_checkpoint(
     ema_hook=None,
     weight_provider=None,
     teacher_hook=None,
+    elr_hook=None,
     best_raw_acc: float = 0.0,
     best_raw_epoch: int = 0,
     best_ema_acc: float = 0.0,
@@ -837,6 +855,8 @@ def save_checkpoint(
     if teacher_hook is not None:
         checkpoint["teacher_state_dict"] = teacher_hook.state_dict()
         checkpoint["teacher_num_updates"] = teacher_hook.num_updates
+    if elr_hook is not None:
+        checkpoint["elr_state_dict"] = elr_hook.state_dict()
     if hasattr(weight_provider, "state_dict") and callable(weight_provider.state_dict):
         checkpoint["weight_provider_state"] = weight_provider.state_dict()
     if extra_meta:
@@ -1541,6 +1561,44 @@ def main():
             teacher_consistency_weight, teacher_ramp_epochs,
         )
 
+    # ── Create ELR hook (after model weights are finalised) ──
+    elr_cfg = config.get("elr", {})
+    elr_enabled = elr_cfg.get("enabled", False)
+    elr_hook = None
+    if elr_enabled:
+        from common.elr import ELRHook
+
+        # Determine number of training samples
+        train_split_csv = (
+            None
+            if mode == "final_fit"
+            else str(Path(split_dir) / "train.csv")
+        )
+        if train_split_csv is not None:
+            import pandas as pd
+            num_train_samples = len(pd.read_csv(train_split_csv))
+        else:
+            num_train_samples = len(train_dataset)
+
+        elr_hook = ELRHook(
+            num_train_samples=num_train_samples,
+            num_classes=config["model"]["num_classes"],
+            momentum=elr_cfg.get("momentum", 0.9),
+            target_weight=elr_cfg.get("target_weight", 1.0),
+            warmup_epochs=elr_cfg.get("warmup_epochs", 10),
+            ramp_epochs=elr_cfg.get("ramp_epochs", 10),
+            storage_dtype=torch.float32,
+        )
+        train_logger.info(
+            "ELR enabled: momentum=%.3f, target_weight=%.2f, "
+            "warmup_epochs=%d, ramp_epochs=%d, num_samples=%d",
+            elr_cfg.get("momentum", 0.9),
+            elr_cfg.get("target_weight", 1.0),
+            elr_cfg.get("warmup_epochs", 10),
+            elr_cfg.get("ramp_epochs", 10),
+            num_train_samples,
+        )
+
     # Resume if requested
     start_epoch = 1
     global_step = 0
@@ -1595,6 +1653,19 @@ def main():
                     "Teacher enabled and --resume used, but checkpoint has no "
                     "teacher state. Teacher will be re-initialised from current "
                     "student weights."
+                )
+        # Restore ELR state
+        if elr_enabled and elr_hook is not None:
+            if "elr_state_dict" in resume_info:
+                elr_hook.load_state_dict(resume_info["elr_state_dict"])
+                train_logger.info(
+                    "Restored ELR state: slots_filled=%d",
+                    elr_hook.slots_filled,
+                )
+            else:
+                train_logger.warning(
+                    "ELR enabled and --resume used, but checkpoint has no "
+                    "ELR state. ELR memory will be initialised from scratch."
                 )
         train_logger.info(
             f"Resumed from epoch {resume_info['epoch']}, "
@@ -1658,6 +1729,7 @@ def main():
             ema_hook=ema_hook,
             teacher_hook=teacher_hook,
             mixup_cfg=config.get("mixup") if config.get("mixup", {}).get("enabled", False) else None,
+            elr_hook=elr_hook,
         )
 
         # Validate (skip if no val_loader, e.g., final_fit)
@@ -1810,6 +1882,7 @@ def main():
             extra_meta=extra_meta,
             ema_hook=ema_hook,
             teacher_hook=teacher_hook,
+            elr_hook=elr_hook,
             best_raw_acc=best_raw_acc,
             best_raw_epoch=best_raw_epoch,
             best_ema_acc=best_ema_acc,
@@ -1828,6 +1901,7 @@ def main():
                 extra_meta=extra_meta,
                 ema_hook=ema_hook,
                 teacher_hook=teacher_hook,
+                elr_hook=elr_hook,
                 best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                 best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                 selection_source="raw",
@@ -1846,6 +1920,7 @@ def main():
                 extra_meta=extra_meta,
                 ema_hook=ema_hook,
                 teacher_hook=teacher_hook,
+                elr_hook=elr_hook,
                 best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                 best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                 selection_source="ema",
@@ -1868,6 +1943,7 @@ def main():
                     extra_meta=extra_meta,
                     ema_hook=ema_hook,
                     teacher_hook=teacher_hook,
+                    elr_hook=elr_hook,
                     best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                     best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                     selection_source="ema",
@@ -1883,6 +1959,7 @@ def main():
                     extra_meta=extra_meta,
                     ema_hook=ema_hook,
                     teacher_hook=teacher_hook,
+                    elr_hook=elr_hook,
                     best_raw_acc=best_raw_acc, best_raw_epoch=best_raw_epoch,
                     best_ema_acc=best_ema_acc, best_ema_epoch=best_ema_epoch,
                     selection_source="raw",
