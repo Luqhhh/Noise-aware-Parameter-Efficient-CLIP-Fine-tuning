@@ -27,7 +27,7 @@ data:
   seed: 42
   split_seed: 42
   train_seed: 42
-  split_dir: outputs/ref/seed42
+  split_dir: outputs/d3_strict/seed42
   test_dir: test
   train_dir: train
   val_ratio: 0.1
@@ -60,7 +60,7 @@ sample_weighting:
   manifest_path: outputs/phase3/oof/oof_discrete_weight_manifest.csv
   min_weight: 0.3
   max_weight: 1.0
-  missing_policy: warn   # 180/91375 samples (0.2%) not in OOF manifest → weight=1.0
+  missing_policy: error
 
 eval:
   batch_size: 256

@@ -21,4 +21,3 @@ configs/*.local.yaml
 
 # Worktrees
 .claude/worktrees/
-outputs/d3_strict/
