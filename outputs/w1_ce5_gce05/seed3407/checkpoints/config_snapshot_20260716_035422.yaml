@@ -1,0 +1,68 @@
+data:
+  class_mapping_path: outputs/master_splits/seed42
+  expected_num_classes: 500
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  seed: 42
+  split_dir: outputs/ref/seed42
+  split_seed: 42
+  stage: preliminary
+  test_dir: test
+  train_dir: train
+  train_seed: 3407
+  use_full_training_set: false
+  val_ratio: 0.1
+eval:
+  batch_size: 256
+experiment:
+  augmentation_preset: a0
+  head_type: linear
+  id: W1_CE5_GCE05_SEED3407
+  mode: dev
+loss:
+  schedule:
+  - end_epoch: 5
+    name: cross_entropy
+    start_epoch: 1
+  - end_epoch: 50
+    name: gce
+    probability_epsilon: 1.0e-07
+    q: 0.5
+    start_epoch: 6
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+  train_ln_post: false
+  train_visual_proj: false
+  unfreeze_last_n_blocks: 0
+  use_cached_features: false
+output:
+  log_dir: outputs/w1_ce5_gce05/seed3407/logs
+  submission_dir: outputs/w1_ce5_gce05/seed3407/submissions
+runtime:
+  augmentation_preset: a0
+  experiment_id: W1_CE5_GCE05_SEED3407
+  head_type: linear
+  mode: dev
+  use_cached_features: false
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  early_stop_patience: 10
+  epochs: 50
+  image_size: 224
+  lr: 0.005
+  max_grad_norm: 1.0
+  min_lr_ratio: 0.01
+  num_workers: 8
+  save_dir: outputs/w1_ce5_gce05/seed3407/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001

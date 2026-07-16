@@ -1,0 +1,19 @@
+{
+  "experiment_id": "w1_ce5_gce05_seed3407",
+  "raw_micro": 0.7024040325707639,
+  "raw_macro": 0.7018752516997369,
+  "raw_bottom10": 0.3076084909242804,
+  "trusted_micro": 0.9990352146647371,
+  "trusted_macro": 0.999074074074074,
+  "trusted_class_balanced": 0.9195999999999999,
+  "trust_weighted_accuracy": 0.9693047186160282,
+  "rejected_micro": 0.6278054106514619,
+  "prediction_change_vs_parent": null,
+  "trusted_coverage": 0.20094998061264055,
+  "trusted_represented_classes": 336,
+  "trusted_total_classes": 500,
+  "class_balanced_classes": 500,
+  "class_balanced_samples_used": 2500,
+  "trust_effective_samples": 1826.735573309173,
+  "sample_count": 10316
+}

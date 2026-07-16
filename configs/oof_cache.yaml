@@ -1,0 +1,19 @@
+# Stable deterministic feature-cache build for Phase 3 OOF.
+data:
+  stage: preliminary
+  train_dir: train
+  expected_num_classes: 500
+
+model:
+  num_classes: 500
+
+train:
+  device: cuda
+  num_workers: 0
+
+eval:
+  batch_size: 128
+
+cache:
+  num_workers: 0
+  pin_memory: true

@@ -1,0 +1,42 @@
+{
+  "sample_count": 91195,
+  "all_samples_have_finite_logits": true,
+  "all_samples_have_one_oof_prediction": true,
+  "original_validation_used": false,
+  "holdout_used_for_epoch_selection": false,
+  "oof_accuracy": 0.6944788639728056,
+  "prediction_disagreement_rate": 0.3055211360271945,
+  "soft_weight_min": 0.30219895287958115,
+  "soft_weight_max": 1.0,
+  "classes_with_over_30pct_weight_below_0_5": [
+    65,
+    338,
+    407
+  ],
+  "fold_metrics": [
+    {
+      "fold": 0,
+      "train_count": 60796,
+      "holdout_count": 30399,
+      "fixed_epochs": 50,
+      "holdout_accuracy": 0.6932464838027954,
+      "holdout_used_for_epoch_selection": false
+    },
+    {
+      "fold": 1,
+      "train_count": 60797,
+      "holdout_count": 30398,
+      "fixed_epochs": 50,
+      "holdout_accuracy": 0.6970853209495544,
+      "holdout_used_for_epoch_selection": false
+    },
+    {
+      "fold": 2,
+      "train_count": 60797,
+      "holdout_count": 30398,
+      "fixed_epochs": 50,
+      "holdout_accuracy": 0.692907452583313,
+      "holdout_used_for_epoch_selection": false
+    }
+  ]
+}

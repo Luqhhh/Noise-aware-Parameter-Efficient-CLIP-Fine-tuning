@@ -1,0 +1,15 @@
+{
+  "protocol": "W3-0/W3-1 duplicate-aware 3-fold OOF",
+  "parent": "b2_gce05",
+  "loss": {
+    "name": "gce",
+    "q": 0.5
+  },
+  "fixed_epochs": 50,
+  "fold_seed_base": 42,
+  "feature_cache": "cache/preliminary/clip_vit_b32_openai",
+  "fold_assignments_sha256": "eb2409fdd252450cc8750b8e9ceb5ac6f2d6dd1e9c829b81bc3a609f6824c138",
+  "oof_logits_sha256": "eaa4338fa1f27ce76da3a03c206d0beebed3dd76b43451870af7cea22f70afe7",
+  "sample_quality_sha256": "784265e5b4c6deb84299d072b83e23287fec0cebbaba7bfbe5bfc34eaed7709f",
+  "sample_count": 91195
+}
