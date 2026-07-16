@@ -1,0 +1,42 @@
+{
+  "experiment_id": "S_MIXUP_A04",
+  "checkpoint": "outputs/s_mixup_a04/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "1000404492ec141d490d894cd20f6bc1a6748e5767ac9ead74cb06ee10c8b5f9",
+  "checkpoint_epoch": 37,
+  "val_csv": "outputs/ref/seed42/val.csv",
+  "val_csv_sha256": "70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c",
+  "config": "configs/s_mixup_a04.yaml",
+  "config_sha256": "46beba0610c29a20f4b04d19acbe2dd7266194b1e4755815a9d73e40ce104aef",
+  "official_metrics_amp": {
+    "precision": "amp_fp16_autocast",
+    "source": "experiments.baseline.evaluate --config configs/s_mixup_a04.yaml --ckpt best.pt (train.amp=true; same eval path used for training-time checkpoint selection)",
+    "n_total": 10316,
+    "n_correct": 7265,
+    "micro_accuracy": 0.70424583171772,
+    "macro_accuracy": 0.703697681427002,
+    "median_per_class_accuracy": 0.75,
+    "bottom_10_percent_accuracy": 0.31570005416870117,
+    "micro_macro_gap": 0.0005481502907180857,
+    "loss": 0.5778375725590845,
+    "matches_training_time_best_val_acc": true
+  },
+  "diagnostic_records_fp32": {
+    "precision": "fp32_no_autocast",
+    "source": "scripts/regenerate_records.py --ckpt-dir (same pass that produces prediction_records.csv / per_class_metrics.csv)",
+    "n_total": 10316,
+    "n_correct": 7266,
+    "micro_accuracy": 0.7043427685149283,
+    "macro_accuracy": 0.7037881257821762,
+    "bottom_10_percent_accuracy": 0.3147000835421888,
+    "byte_identical_to_training_pipeline_records": true
+  },
+  "amp_fp32_reconciliation": {
+    "prediction_flips": 14,
+    "wrong_to_correct_under_fp16": 2,
+    "correct_to_wrong_under_fp16": 3,
+    "net_correct_delta_fp16_vs_fp32": -1,
+    "max_flip_confidence_fp32": 0.4363,
+    "classification": "precision-boundary phenomenon (all flips conf 0.13-0.44), not corruption",
+    "detail_file": "amp_fp32_flip_census.txt"
+  }
+}

@@ -1,0 +1,18 @@
+fp32 correct: 7266/10316   fp16(AMP) correct: 7265/10316
+AMP-vs-fp32 prediction flips: 14
+  wrong->correct under fp16: 2   correct->wrong under fp16: 3
+  max flip confidence (fp32): 0.4363
+  train/0003/af248489e9994246a412d71d1d6683fb.jpg true=3 fp32=45(0.1870) fp16=28(0.1935)
+  train/0003/ee2a769f51f54bef9b1a1af2105518ce.jpg true=3 fp32=332(0.3333) fp16=311(0.3339)
+  train/0078/bb4a2018beea4bafa70b6c7823c7602a.jpg true=78 fp32=489(0.3220) fp16=416(0.3212)
+  train/0132/8db1b55bebbd4815afcce6d493659ca1.jpg true=132 fp32=69(0.4363) fp16=132(0.4388)
+  train/0159/4020d9f45b19417585dcb42dc1cdd0fe.jpg true=159 fp32=447(0.3468) fp16=94(0.3464)
+  train/0233/601bffab8e0344adb0dd29996256100a.jpg true=233 fp32=329(0.1870) fp16=49(0.1868)
+  train/0247/f6d265d1778f4ae6b3774766cf1f2706.jpg true=247 fp32=363(0.3867) fp16=247(0.3853)
+  train/0290/526a6174c50047ca9fc34e4e581780f6.jpg true=290 fp32=427(0.1437) fp16=422(0.1702)
+  train/0300/03ac22c1a52a48139ff31c5622698ee1.jpg true=300 fp32=429(0.1308) fp16=118(0.1302)
+  train/0314/465ba76914a24e5fbfbef94435cf52e0.jpg true=314 fp32=395(0.1676) fp16=194(0.1688)
+  train/0317/1255e9d0ceaa4559a2f39fe38eb2fffb.jpg true=317 fp32=317(0.3379) fp16=207(0.3363)
+  train/0348/9722f98eabf34ef9a8138a9f541309ea.jpg true=348 fp32=348(0.4158) fp16=48(0.4149)
+  train/0390/5a8d971f426e4fe2b6af2bd57c7a40ff.jpg true=390 fp32=180(0.3490) fp16=77(0.3478)
+  train/0446/680d797b73f04a4493e9ba5dd8ce33ef.jpg true=446 fp32=446(0.2986) fp16=373(0.2980)

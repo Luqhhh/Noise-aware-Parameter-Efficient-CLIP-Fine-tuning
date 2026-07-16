@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "experiment_id": "S_MIXUP_A04",
+  "parent_experiment": null,
+  "commit_sha": "7ef3fd2fa413fbf98977a5c51b82eabd9bb453cc",
+  "created_at_utc": "2026-07-16T14:33:07.543032+00:00",
+  "config_sha256": "87e256af8c6277e5f5dfb8b0ed29f92fb24b01c499d6b65582ff91d496afa8c3",
+  "checkpoint_path": "outputs/s_mixup_a04/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "1000404492ec141d490d894cd20f6bc1a6748e5767ac9ead74cb06ee10c8b5f9",
+  "train_csv_path": "outputs/ref/seed42/train.csv",
+  "train_csv_sha256": "d07cd2bc9390d7e499ab7e674e451726677f5f49f58f1ac6897773aef15357e6",
+  "val_csv_path": "outputs/ref/seed42/val.csv",
+  "val_csv_sha256": "70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c",
+  "best_val_acc": 0.70424583171772,
+  "best_raw_acc": 0.70424583171772,
+  "best_ema_acc": null,
+  "best_epoch": 37,
+  "sample_weighting_type": "none",
+  "artifacts": [
+    {
+      "path": "eval_results.json",
+      "role": "official local metrics (training-pipeline post-eval)",
+      "precision": "amp_fp16_autocast",
+      "n_correct": 7265,
+      "n_total": 10316,
+      "checkpoint_sha256": "1000404492ec141d490d894cd20f6bc1a6748e5767ac9ead74cb06ee10c8b5f9"
+    },
+    {
+      "path": "reeval_best.json",
+      "role": "deterministic re-eval, AMP official + FP32 diagnostic, precision-separated",
+      "precision": "both (see per-block precision field)",
+      "checkpoint_sha256": "1000404492ec141d490d894cd20f6bc1a6748e5767ac9ead74cb06ee10c8b5f9"
+    },
+    {
+      "path": "prediction_records.csv",
+      "role": "per-sample deterministic prediction records (paired-analysis basis)",
+      "precision": "fp32_no_autocast",
+      "n_correct": 7266,
+      "n_total": 10316,
+      "checkpoint_sha256": "1000404492ec141d490d894cd20f6bc1a6748e5767ac9ead74cb06ee10c8b5f9",
+      "path_format": "relative train/..."
+    },
+    {
+      "path": "per_class_metrics.csv",
+      "role": "per-class accuracy (same FP32 pass as prediction_records.csv)",
+      "precision": "fp32_no_autocast",
+      "n_correct": 7266,
+      "n_total": 10316,
+      "checkpoint_sha256": "1000404492ec141d490d894cd20f6bc1a6748e5767ac9ead74cb06ee10c8b5f9"
+    },
+    {
+      "path": "amp_fp32_flip_census.txt",
+      "role": "AMP-vs-FP32 flip census (14 flips, net -1 under fp16)",
+      "precision": "comparison",
+      "checkpoint_sha256": "1000404492ec141d490d894cd20f6bc1a6748e5767ac9ead74cb06ee10c8b5f9"
+    }
+  ],
+  "precision_note": "Official local metric = AMP (7265/10316 = 0.70424583), consistent with training-time checkpoint selection. FP32 records (7266/10316 = 0.70434277) are the deterministic per-sample basis for paired analyses. The 14 prediction flips (net -1 correct under fp16, all confidences 0.13-0.44) are a precision-boundary phenomenon, not corruption."
+}
