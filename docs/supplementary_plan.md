@@ -26,6 +26,12 @@ S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5) + Flip TTA = 60.48%
 MixUp + GCE q=0.5 = 59.86%
 ```
 
+**S_MIXUP_CE5 平台结果（2026-07-16）：**
+- Bare: 59.6988%（-0.16pp vs MixUp bare 59.86%）
+- TTA: 60.4758%（+0.12pp vs MixUp TTA 60.36%）
+- **结论：Bare 未超过父基线，按计划成功标准不视为训练策略有效。**
+```
+
 0.2 已确认的核心现象
 本地原始验证准确率不能可靠预测平台表现。
 CE warmup 使本地验证分数提高约 3.65pp；
