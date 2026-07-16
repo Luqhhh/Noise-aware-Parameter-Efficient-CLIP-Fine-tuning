@@ -72,9 +72,12 @@ Cosine head 在所有学习率下均显著弱于 linear head（~6pp 差距），
 
 | 提交 | 平台分数 | vs ref |
 |------|---------|--------|
-| gce_q07 + Flip TTA | **59.41%** | +2.07pp |
+| **S_MIXUP_CE5 + Flip TTA** | **60.48%** | +3.14pp |
+| w1_gce05_mixup + Flip TTA | 60.36% | +3.02pp |
+| w1_ce5_gce05 + Flip TTA | 60.25% | +2.91pp |
+| b2_gce05 + Flip TTA | 60.16% | +2.82pp |
+| gce_q07 + Flip TTA | 59.41% | +2.07pp |
 | gce_q07 裸模型 | 58.96% | +1.62pp |
-| ref + Flip TTA | 58.31% | +0.97pp |
 | pw_v1 | 58.05% | +0.71pp |
 | ref | 57.34% | — |
 

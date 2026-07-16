@@ -9,6 +9,7 @@ Supplementary Experiments — 完整修订方案
 0. 当前状态（2026-07-16）
    0.1 当前最佳结果
    方法 平台 Bare 平台 Flip TTA 本地 Val
+   **CE5 warmup + MixUp + GCE q=0.5** (S_MIXUP_CE5) — 60.48% 70.25%
    MixUp + GCE q=0.5 59.86% 60.36% 71.16%
    CE 5 epoch → GCE q=0.5 59.61% 60.25% 73.14%
    纯 GCE q=0.5 59.62% 60.16% 69.49%
@@ -16,7 +17,7 @@ Supplementary Experiments — 完整修订方案
    当前平台最佳基线：
 
 ```text
-MixUp + GCE q=0.5 + Flip TTA = 60.36%
+S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5) + Flip TTA = 60.48%
 ```
 
 当前 Bare 最佳基线：
