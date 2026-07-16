@@ -24,6 +24,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
+from pathlib import Path
 from typing import Dict, Optional
 
 import numpy as np
@@ -241,12 +242,15 @@ class OOFManifestProvider(BaseWeightProvider):
         self._weights: Dict[str, float] = {}
         self._training_labels: Dict[str, int] = {}
         for _, row in df.iterrows():
-            path = str(row["image_path"])
+            raw_path = str(row["image_path"])
+            # Resolve symlinks and relative prefixes so manifest keys
+            # match the absolute paths produced by TrainImageDataset.
+            resolved = str(Path(raw_path).resolve())
             w = float(row["sample_weight"])
             w = max(min_weight, min(max_weight, w))
-            self._weights[path] = w
+            self._weights[resolved] = w
             # Weight-only mode: keep original label
-            self._training_labels[path] = int(row["original_label"])
+            self._training_labels[resolved] = int(row["original_label"])
 
         self._min_weight = min_weight
         self._max_weight = max_weight
