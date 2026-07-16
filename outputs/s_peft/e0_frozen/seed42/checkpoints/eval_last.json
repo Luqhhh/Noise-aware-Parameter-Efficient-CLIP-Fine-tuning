@@ -1,0 +1,7 @@
+{
+  "checkpoint": "/home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/s_peft/e0_frozen/seed42/checkpoints/last.pt",
+  "checkpoint_sha256": "0b4579a70a610708770e0279816e70c6af9b7a83f9456c329e80b5b26f58fa51",
+  "checkpoint_epoch": 6,
+  "checkpoint_best_val_acc": 0.7320666925164793,
+  "note": "last checkpoint \u2014 training end state"
+}

@@ -1,0 +1,15 @@
+{
+  "checkpoint": "/home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/s_peft/e0_frozen/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "c3777f73a01224c7854ea96391a5aae9668433ff3ee32e8907fae25ff1d23021",
+  "checkpoint_epoch": 1,
+  "checkpoint_best_val_acc": 0.7317758821248546,
+  "prediction_mismatch_vs_parent": 5,
+  "max_visual_param_diff": 0.0,
+  "max_feature_diff_32samples": 0.0,
+  "record_micro_accuracy": 0.7317758821248546,
+  "record_macro_accuracy": 0.7313158650909223,
+  "record_bottom10_accuracy": 0.3367101086048454,
+  "record_n_correct": 7549,
+  "record_n_total": 10316,
+  "record_regenerated": true
+}

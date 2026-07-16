@@ -1,0 +1,70 @@
+data:
+  class_mapping_path: outputs/master_splits/seed42
+  expected_num_classes: 500
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  seed: 42
+  split_dir: outputs/ref/seed42
+  split_seed: 42
+  stage: preliminary
+  test_dir: test
+  train_dir: train
+  train_seed: 42
+  use_full_training_set: false
+  val_ratio: 0.1
+eval:
+  batch_size: 256
+experiment:
+  augmentation_preset: a0
+  head_type: linear
+  id: S_PEFT_E1_LN_1E6
+  mode: dev
+loss:
+  name: gce
+  probability_epsilon: 1.0e-07
+  q: 0.5
+mixup:
+  alpha: 0.2
+  enabled: true
+  probability: 0.2
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: false
+  num_classes: 500
+  train_ln_post: false
+  train_visual_proj: false
+  unfreeze_last_n_blocks: 0
+  use_cached_features: false
+output:
+  log_dir: outputs/s_peft/e1_ln_1e6/seed42/logs
+  submission_dir: outputs/s_peft/e1_ln_1e6/seed42/submissions
+peft:
+  backbone_lr: 1.0e-06
+  backbone_weight_decay: 0.01
+  type: visual_layernorm_only
+runtime:
+  augmentation_preset: a0
+  experiment_id: S_PEFT_E1_LN_1E6
+  head_type: linear
+  mode: dev
+  use_cached_features: false
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  early_stop_patience: 5
+  epochs: 15
+  image_size: 224
+  lr: 0.0001
+  max_grad_norm: 1.0
+  min_lr_ratio: 0.01
+  num_workers: 8
+  save_dir: outputs/s_peft/e1_ln_1e6/seed42/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001

@@ -1,0 +1,12 @@
+{
+  "checkpoint": "/home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/s_peft/e2_ln_5e7/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "b3aaf1da15eb3d8158856706e63c3781bd5099373f97f46112450fd4ed773ca0",
+  "checkpoint_epoch": 3,
+  "checkpoint_best_val_acc": 0.7312911981388135,
+  "record_micro_accuracy": 0.7312911981388135,
+  "record_macro_accuracy": 0.7308671599948487,
+  "record_bottom10_accuracy": 0.3369323308270677,
+  "record_n_correct": 7544,
+  "record_n_total": 10316,
+  "record_regenerated": true
+}

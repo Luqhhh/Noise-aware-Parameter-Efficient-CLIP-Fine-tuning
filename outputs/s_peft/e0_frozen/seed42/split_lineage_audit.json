@@ -1,0 +1,12 @@
+{
+  "parent_experiment": "outputs/w1_ce5_gce05",
+  "parent_checkpoint": "outputs/w1_ce5_gce05/seed42/checkpoints/best.pt",
+  "parent_train_count": 91375,
+  "parent_val_count": 10316,
+  "child_train_count": 91375,
+  "child_val_count": 10316,
+  "child_val_in_parent_train": 0,
+  "child_val_in_parent_val": 10316,
+  "child_val_equals_parent_val": true,
+  "protocol_valid": true
+}

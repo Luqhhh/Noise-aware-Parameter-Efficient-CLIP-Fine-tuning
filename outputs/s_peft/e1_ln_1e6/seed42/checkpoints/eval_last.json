@@ -1,0 +1,6 @@
+{
+  "checkpoint": "/home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/s_peft/e1_ln_1e6/seed42/checkpoints/last.pt",
+  "checkpoint_sha256": "e285e4e9af56c80abffffc0f83d2abb82e9123f8be85735e243bdc47f3ca043e",
+  "checkpoint_epoch": 8,
+  "checkpoint_best_val_acc": 0.7317758821248546
+}

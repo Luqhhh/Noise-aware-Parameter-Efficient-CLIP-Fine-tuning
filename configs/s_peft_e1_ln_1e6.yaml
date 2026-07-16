@@ -1,0 +1,86 @@
+# S_PEFT_E1: LN-only PEFT, backbone_lr=1e-6 — continue from W1_CE5_GCE05 parent.
+#
+# Parent recipe (recorded for audit):
+#   parent_experiment_id:  W1_CE5_GCE05
+#   parent_checkpoint:     outputs/w1_ce5_gce05/seed42/checkpoints/best.pt
+#   parent_checkpoint_sha: cea35b25b1135c8ea32f1cfdf32e30eda077b6bd95b43bc95ceb5f61f1bf96a2
+#   parent_recipe:         W1_CE5_GCE05 (CE epochs 1-5, GCE q=0.5 epochs 6-50, no MixUp)
+#
+# Continuation recipe (new for E0/E1/E2):
+#   GCE q=0.5 only (no CE warmup repeat) + MixUp(alpha=0.2, probability=0.2)
+#
+# Purpose: test whether minimal LN-only backbone adaptation (lr=1e-6) improves
+# over paired frozen control E0.  All visual LayerNorms (ln_pre, ln_1/ln_2 in
+# each transformer block, ln_post) + classifier are trainable.  visual.proj and
+# all other backbone weights remain frozen.
+#
+# Run: python3 -m experiments.baseline.train --config configs/s_peft_e1_ln_1e6.yaml \
+#        --init-checkpoint outputs/w1_ce5_gce05/seed42/checkpoints/best.pt
+
+experiment:
+  id: S_PEFT_E1_LN_1E6
+  mode: dev
+  head_type: linear
+  augmentation_preset: a0
+
+data:
+  stage: preliminary
+  image_extensions: [.jpg, .jpeg, .png, .bmp, .webp]
+  seed: 42
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/ref/seed42
+  test_dir: test
+  train_dir: train
+  val_ratio: 0.1
+  expected_num_classes: 500
+  class_mapping_path: outputs/master_splits/seed42
+  use_full_training_set: false
+
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: false
+  num_classes: 500
+  use_cached_features: false
+  unfreeze_last_n_blocks: 0
+  train_ln_post: false
+  train_visual_proj: false
+
+peft:
+  type: visual_layernorm_only
+  backbone_lr: 0.000001
+  backbone_weight_decay: 0.01
+
+loss:
+  name: gce
+  q: 0.5
+  probability_epsilon: 1.0e-7
+
+mixup:
+  enabled: true
+  alpha: 0.2
+  probability: 0.2
+
+eval:
+  batch_size: 256
+
+output:
+  log_dir: outputs/s_peft/e1_ln_1e6/seed42/logs
+  submission_dir: outputs/s_peft/e1_ln_1e6/seed42/submissions
+
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 15
+  image_size: 224
+  lr: 0.0001
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/s_peft/e1_ln_1e6/seed42/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001
+  min_lr_ratio: 0.01
+  early_stop_patience: 5
