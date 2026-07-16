@@ -60,32 +60,56 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 ### 6. 平台结果总览
 
-| 实验 | 平台分数 | vs ref (D3) | vs gce_q07 (B2) | 推理策略 |
-|------|---------|-------------|-----------------|----------|
-| ref（原 D3_STRICT） | 57.3397% | — | — | 单视图 |
-| ref + Flip TTA | 58.3090% | +0.9693pp | — | 2-view mean logits |
-| **gce_q07（原 B2_GCE07）** | **58.9578%** | +1.6181pp | — | 单视图 |
-| **gce_q07 + Flip TTA** | **59.4064%** | **+2.0667pp** | **+0.4486pp** | 2-view mean logits |
+| 实验 | 平台分数 | vs ref (D3) | 推理策略 |
+|------|---------|-------------|----------|
+| **S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5)** | **60.4758%** | **+3.14pp** | 2-view Flip TTA |
+| w1_gce05_mixup (MixUp + GCE q=0.5) | 60.3637% | +3.02pp | 2-view Flip TTA |
+| w1_ce5_gce05 (CE5 warmup + GCE q=0.5) | 60.2500% | +2.91pp | 2-view Flip TTA |
+| b2_gce05 (纯 GCE q=0.5) | 60.1594% | +2.82pp | 2-view Flip TTA |
+| gce_q07 (GCE q=0.7) | 59.4064% | +2.07pp | 2-view Flip TTA |
+| ref（D3_STRICT） | 57.3397% | — | 单视图 |
+| ref + Flip TTA | 58.3090% | +0.97pp | 2-view Flip TTA |
 
 **基线定义：**
-- **训练基线**：gce_q07 单视图 = 58.9578% —— 新训练方法与此比较
-- **提交基线**：gce_q07 + Flip TTA = 59.4064% —— 最终提交方案
+- **平台 TTA 基线**：S_MIXUP_CE5 + Flip TTA = **60.4758%**
+- **平台 Bare 基线**：w1_gce05_mixup 单视图 = 59.86%
+- **训练基线**：b2_gce05 (GCE q=0.5) 单视图 —— 新训练方法与此比较
 
-**结论：** Horizontal-flip TTA 在 gce_q07 上进一步带来 +0.4486pp 平台收益。后续新训练方法应先与单视图 gce_q07 比较，只有训练方法本身有效才叠加 TTA。
+**核心发现：**
+- CE warmup 本地 +3.65pp 但平台 Bare 完全持平（59.61% vs 59.62%），本地分数无法预测平台表现
+- MixUp 是唯一将本地增益传递到平台的方法：MixUp 本地 71.16% < CE5 73.14%，但平台 Bare 59.86% > 59.61%
+- CE5 warmup + MixUp 组合产生平台协同效应：本地 70.25% 低于两个父实验，但平台 TTA 60.48% 超越两者
+- Horizontal-flip TTA 持续提供 +0.4-0.6pp 平台增益
+- 冻结 CLIP + 线性头框架下，平台天花板约 60-61%，突破需要 PEFT 或噪声抑制方法
 
 ### 7. 本地评估与待完成
 
 **已完成 (strict protocol, seed=42, reeval from best.pt):**
 
-| Experiment | Local Micro | Local Macro | vs ref | Platform |
+| Experiment | Local Micro | Local Macro | Best Epoch | Platform TTA |
 |---|---|---|---|---|
-| ref（原 D3_STRICT） | 70.6572% | 70.6100% | — | 57.3397% |
-| gce_q07（原 B2_GCE07） | 69.5909% | 69.5304% | −1.0663pp | **58.9578%** |
-| pw_v1（原 B3_PROTO_STATIC） | 70.1919% | 70.1440% | −0.4653pp | **58.0526%** |
-| ft_frozen（原 F0_STRICT） | 70.6378% | 70.5939% | −0.0194pp | — |
-| ft_lnpost（原 F1_STRICT） | 70.7832% | 70.7458% | +0.1260pp | — |
+| w1_ce5_gce05（CE5 warmup） | 73.14% | 73.09% | — | 60.25% |
+| w1_gce05_mixup（MixUp） | 71.16% | 71.12% | 46 | 60.36% |
+| ref（D3_STRICT） | 70.66% | 70.61% | 49 | 57.34% |
+| S_MIXUP_CE5（warmup+MixUp） | 70.25% | 70.19% | 43 | **60.48%** |
+| gce_q07（B2_GCE07） | 69.59% | 69.53% | 41 | 59.41% |
+| b2_gce05（GCE q=0.5） | 69.49% | 69.49% | — | 60.16% |
 
-> ⚠️ **Important**: The local strict validation accuracy (70.66%) is NOT a platform score estimate. The 13.32pp gap between local strict validation and the official platform score is expected due to the competition's private test set distribution.
+> ⚠️ **Important**: 本地 val 不能预测平台表现。CE5 warmup 本地最高（73.14%）但平台 Bare 与纯 GCE q=0.5 持平（59.61% vs 59.62%）。S_MIXUP_CE5 本地最低（70.25%）但平台 TTA 最高（60.48%）。所有模型选择必须以平台 Bare 为准，本地分数仅作辅助诊断。
+
+**Platform Submissions (updated 2026-07-16):**
+
+| Submission | Platform | vs ref | 推理 |
+|------------|---------|--------|------|
+| S_MIXUP_CE5 + Flip TTA | **60.4758%** | **+3.14pp** | 2-view Flip TTA |
+| w1_gce05_mixup + Flip TTA | 60.3637% | +3.02pp | 2-view Flip TTA |
+| w1_ce5_gce05 + Flip TTA | 60.2500% | +2.91pp | 2-view Flip TTA |
+| b2_gce05 + Flip TTA | 60.1594% | +2.82pp | 2-view Flip TTA |
+| gce_q07 + Flip TTA | 59.4064% | +2.07pp | 2-view Flip TTA |
+| ref（D3_STRICT） | 57.3397% | — | 单视图 |
+| ref + Flip TTA | 58.3090% | +0.97pp | 2-view Flip TTA |
+
+**已关闭方向**：Dropout、ColorJitter/RandomErasing、Cosine Head、Label Smoothing、Head EMA、EMA Loss、Prototype Weighting、CE 下部分解冻、Head-only EMA Teacher + Consistency、GCE q=0.9、4-view TTA、vertical flip
 
 ## 项目结构
 
