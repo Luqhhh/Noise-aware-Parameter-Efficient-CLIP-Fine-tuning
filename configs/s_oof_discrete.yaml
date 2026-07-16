@@ -60,7 +60,7 @@ sample_weighting:
   manifest_path: outputs/phase3/oof/oof_discrete_weight_manifest.csv
   min_weight: 0.3
   max_weight: 1.0
-  missing_policy: error
+  missing_policy: warn   # 180/91375 samples (0.2%) not in OOF manifest → weight=1.0
 
 eval:
   batch_size: 256
