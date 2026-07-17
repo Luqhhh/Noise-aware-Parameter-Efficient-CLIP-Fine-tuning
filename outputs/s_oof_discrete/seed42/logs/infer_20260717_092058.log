@@ -1,0 +1,14 @@
+2026-07-17 09:20:58 | INFO | Config: configs/s_oof_discrete.yaml
+2026-07-17 09:20:58 | INFO | Checkpoint: outputs/s_oof_discrete/seed42/checkpoints/best.pt
+2026-07-17 09:20:58 | INFO | Device: cuda
+2026-07-17 09:20:58 | INFO | Head type: linear
+2026-07-17 09:21:05 | INFO | Loaded checkpoint from epoch 41
+2026-07-17 09:21:05 | INFO | Checkpoint best val acc: 0.6864948653361752
+2026-07-17 09:21:05 | INFO | Loaded idx_to_class mapping from checkpoint metadata.
+2026-07-17 09:21:05 | INFO | idx_to_class mapping has 500 entries.
+2026-07-17 09:21:06 | INFO | Test set: 24967 images, 98 batches
+2026-07-17 09:21:39 | INFO | Raw predictions saved to: outputs/s_oof_discrete/seed42/submissions/pred_raw.csv
+2026-07-17 09:21:39 | INFO | Total predictions: 24967
+2026-07-17 09:21:39 | INFO | Unique predicted classes: 499 / 500
+2026-07-17 09:21:39 | INFO | Prediction label lengths: {4: 24967}
+2026-07-17 09:21:39 | INFO | Inference complete.

@@ -1,0 +1,19 @@
+{
+  "baseline_micro": 0.6864948653361752,
+  "baseline_macro": 0.6864714622497559,
+  "baseline_median": 0.699999988079071,
+  "baseline_bottom10": 0.3115714192390442,
+  "tta_micro": 0.690176322418136,
+  "tta_macro": 0.6901761889457703,
+  "tta_median": 0.7142857313156128,
+  "tta_bottom10": 0.31019049882888794,
+  "prediction_change_rate": 0.06200348769618291,
+  "total_samples": 10322,
+  "correct_samples_baseline": 7086,
+  "correct_samples_tta": 7124,
+  "checkpoint": "outputs/s_oof_discrete/seed42/checkpoints/best.pt",
+  "checkpoint_epoch": 41,
+  "checkpoint_best_val_acc": 0.6864948653361752,
+  "config": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/configs/s_oof_discrete.yaml",
+  "tta_strategy": "horizontal_flip"
+}

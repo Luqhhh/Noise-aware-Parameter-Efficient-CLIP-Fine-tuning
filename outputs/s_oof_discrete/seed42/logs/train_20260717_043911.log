@@ -1,0 +1,128 @@
+2026-07-17 04:39:11 | INFO | Using device: cuda
+2026-07-17 04:39:11 | INFO | Configuration: configs/s_oof_discrete.yaml
+2026-07-17 04:39:11 | INFO | Train seed: 42
+2026-07-17 04:39:11 | INFO | Resolved runtime: experiment_id=S_OOF_DISCRETE, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-17 04:39:17 | INFO | Total parameters:     88,105,716
+2026-07-17 04:39:17 | INFO | Trainable parameters: 256,500
+2026-07-17 04:39:24 | INFO | Using config epochs: 50 (dev mode)
+2026-07-17 04:39:39 | INFO | Loss: gce (reduction=mean)
+2026-07-17 04:39:39 | INFO | Optimizer parameter groups:
+2026-07-17 04:39:39 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-17 04:39:39 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-17 04:39:39 | INFO |   Trainable head params:       256,500
+2026-07-17 04:39:39 | INFO |   Trainable visual params:           0
+2026-07-17 04:39:39 | INFO | Starting training: 50 epochs, 713 batches/epoch
+2026-07-17 04:39:39 | INFO | Warmup steps: 1426, Total steps: 35650, Cosine steps: 34224
+2026-07-17 04:39:39 | INFO | AMP: True
+2026-07-17 04:39:39 | INFO | ============================================================
+2026-07-17 04:45:32 | INFO | Epoch   1/50 | Train Loss: 1.8725 | Train Acc: 0.1586 | Val Loss: 1.7678 | Val Acc: 0.2505 | head_lr: 2.50e-03 | bb_lr: 0.00e+00 | Time: 5m 52s
+2026-07-17 04:45:32 | INFO |   >> New best RAW! Val Acc: 0.2505
+2026-07-17 04:51:16 | INFO | Epoch   2/50 | Train Loss: 1.4071 | Train Acc: 0.3845 | Val Loss: 1.1840 | Val Acc: 0.5063 | head_lr: 5.00e-03 | bb_lr: 0.00e+00 | Time: 5m 41s
+2026-07-17 04:51:16 | INFO |   >> New best RAW! Val Acc: 0.5063
+2026-07-17 04:56:57 | INFO | Epoch   3/50 | Train Loss: 0.8986 | Train Acc: 0.5695 | Val Loss: 0.9526 | Val Acc: 0.5791 | head_lr: 4.99e-03 | bb_lr: 0.00e+00 | Time: 5m 38s
+2026-07-17 04:56:57 | INFO |   >> New best RAW! Val Acc: 0.5791
+2026-07-17 05:02:36 | INFO | Epoch   4/50 | Train Loss: 0.7259 | Train Acc: 0.6151 | Val Loss: 0.8633 | Val Acc: 0.6031 | head_lr: 4.98e-03 | bb_lr: 0.00e+00 | Time: 5m 35s
+2026-07-17 05:02:36 | INFO |   >> New best RAW! Val Acc: 0.6031
+2026-07-17 05:08:19 | INFO | Epoch   5/50 | Train Loss: 0.6413 | Train Acc: 0.6398 | Val Loss: 0.8115 | Val Acc: 0.6198 | head_lr: 4.95e-03 | bb_lr: 0.00e+00 | Time: 5m 41s
+2026-07-17 05:08:19 | INFO |   >> New best RAW! Val Acc: 0.6198
+2026-07-17 05:14:10 | INFO | Epoch   6/50 | Train Loss: 0.5948 | Train Acc: 0.6533 | Val Loss: 0.7752 | Val Acc: 0.6287 | head_lr: 4.92e-03 | bb_lr: 0.00e+00 | Time: 5m 47s
+2026-07-17 05:14:10 | INFO |   >> New best RAW! Val Acc: 0.6287
+2026-07-17 05:19:58 | INFO | Epoch   7/50 | Train Loss: 0.5515 | Train Acc: 0.6705 | Val Loss: 0.7482 | Val Acc: 0.6375 | head_lr: 4.87e-03 | bb_lr: 0.00e+00 | Time: 5m 46s
+2026-07-17 05:19:58 | INFO |   >> New best RAW! Val Acc: 0.6375
+2026-07-17 05:25:46 | INFO | Epoch   8/50 | Train Loss: 0.5213 | Train Acc: 0.6801 | Val Loss: 0.7281 | Val Acc: 0.6429 | head_lr: 4.81e-03 | bb_lr: 0.00e+00 | Time: 5m 45s
+2026-07-17 05:25:46 | INFO |   >> New best RAW! Val Acc: 0.6429
+2026-07-17 05:31:30 | INFO | Epoch   9/50 | Train Loss: 0.5064 | Train Acc: 0.6867 | Val Loss: 0.7101 | Val Acc: 0.6478 | head_lr: 4.74e-03 | bb_lr: 0.00e+00 | Time: 5m 40s
+2026-07-17 05:31:30 | INFO |   >> New best RAW! Val Acc: 0.6478
+2026-07-17 05:37:16 | INFO | Epoch  10/50 | Train Loss: 0.4928 | Train Acc: 0.6943 | Val Loss: 0.6967 | Val Acc: 0.6537 | head_lr: 4.67e-03 | bb_lr: 0.00e+00 | Time: 5m 43s
+2026-07-17 05:37:16 | INFO |   >> New best RAW! Val Acc: 0.6537
+2026-07-17 05:42:59 | INFO | Epoch  11/50 | Train Loss: 0.4598 | Train Acc: 0.7047 | Val Loss: 0.6847 | Val Acc: 0.6578 | head_lr: 4.58e-03 | bb_lr: 0.00e+00 | Time: 5m 39s
+2026-07-17 05:42:59 | INFO |   >> New best RAW! Val Acc: 0.6578
+2026-07-17 05:48:35 | INFO | Epoch  12/50 | Train Loss: 0.4421 | Train Acc: 0.7154 | Val Loss: 0.6749 | Val Acc: 0.6621 | head_lr: 4.49e-03 | bb_lr: 0.00e+00 | Time: 5m 33s
+2026-07-17 05:48:35 | INFO |   >> New best RAW! Val Acc: 0.6621
+2026-07-17 05:54:09 | INFO | Epoch  13/50 | Train Loss: 0.4313 | Train Acc: 0.7197 | Val Loss: 0.6658 | Val Acc: 0.6632 | head_lr: 4.39e-03 | bb_lr: 0.00e+00 | Time: 5m 31s
+2026-07-17 05:54:09 | INFO |   >> New best RAW! Val Acc: 0.6632
+2026-07-17 05:59:49 | INFO | Epoch  14/50 | Train Loss: 0.4263 | Train Acc: 0.7235 | Val Loss: 0.6585 | Val Acc: 0.6655 | head_lr: 4.28e-03 | bb_lr: 0.00e+00 | Time: 5m 36s
+2026-07-17 05:59:49 | INFO |   >> New best RAW! Val Acc: 0.6655
+2026-07-17 06:05:29 | INFO | Epoch  15/50 | Train Loss: 0.4209 | Train Acc: 0.7268 | Val Loss: 0.6524 | Val Acc: 0.6681 | head_lr: 4.16e-03 | bb_lr: 0.00e+00 | Time: 5m 37s
+2026-07-17 06:05:29 | INFO |   >> New best RAW! Val Acc: 0.6681
+2026-07-17 06:11:05 | INFO | Epoch  16/50 | Train Loss: 0.4044 | Train Acc: 0.7349 | Val Loss: 0.6470 | Val Acc: 0.6704 | head_lr: 4.03e-03 | bb_lr: 0.00e+00 | Time: 5m 34s
+2026-07-17 06:11:05 | INFO |   >> New best RAW! Val Acc: 0.6704
+2026-07-17 06:16:43 | INFO | Epoch  17/50 | Train Loss: 0.4116 | Train Acc: 0.7311 | Val Loss: 0.6418 | Val Acc: 0.6717 | head_lr: 3.90e-03 | bb_lr: 0.00e+00 | Time: 5m 35s
+2026-07-17 06:16:43 | INFO |   >> New best RAW! Val Acc: 0.6717
+2026-07-17 06:22:25 | INFO | Epoch  18/50 | Train Loss: 0.3939 | Train Acc: 0.7425 | Val Loss: 0.6375 | Val Acc: 0.6730 | head_lr: 3.76e-03 | bb_lr: 0.00e+00 | Time: 5m 40s
+2026-07-17 06:22:25 | INFO |   >> New best RAW! Val Acc: 0.6730
+2026-07-17 06:28:04 | INFO | Epoch  19/50 | Train Loss: 0.4018 | Train Acc: 0.7385 | Val Loss: 0.6326 | Val Acc: 0.6755 | head_lr: 3.62e-03 | bb_lr: 0.00e+00 | Time: 5m 36s
+2026-07-17 06:28:04 | INFO |   >> New best RAW! Val Acc: 0.6755
+2026-07-17 06:33:38 | INFO | Epoch  20/50 | Train Loss: 0.3831 | Train Acc: 0.7481 | Val Loss: 0.6299 | Val Acc: 0.6759 | head_lr: 3.47e-03 | bb_lr: 0.00e+00 | Time: 5m 30s
+2026-07-17 06:33:38 | INFO |   >> New best RAW! Val Acc: 0.6759
+2026-07-17 06:39:15 | INFO | Epoch  21/50 | Train Loss: 0.3759 | Train Acc: 0.7513 | Val Loss: 0.6263 | Val Acc: 0.6757 | head_lr: 3.32e-03 | bb_lr: 0.00e+00 | Time: 5m 34s
+2026-07-17 06:39:15 | INFO |   >> No improvement for 1/10 epochs
+2026-07-17 06:44:49 | INFO | Epoch  22/50 | Train Loss: 0.3847 | Train Acc: 0.7488 | Val Loss: 0.6245 | Val Acc: 0.6762 | head_lr: 3.17e-03 | bb_lr: 0.00e+00 | Time: 5m 33s
+2026-07-17 06:44:49 | INFO |   >> New best RAW! Val Acc: 0.6762
+2026-07-17 06:50:25 | INFO | Epoch  23/50 | Train Loss: 0.3827 | Train Acc: 0.7512 | Val Loss: 0.6217 | Val Acc: 0.6791 | head_lr: 3.01e-03 | bb_lr: 0.00e+00 | Time: 5m 33s
+2026-07-17 06:50:25 | INFO |   >> New best RAW! Val Acc: 0.6791
+2026-07-17 06:56:04 | INFO | Epoch  24/50 | Train Loss: 0.3635 | Train Acc: 0.7576 | Val Loss: 0.6193 | Val Acc: 0.6801 | head_lr: 2.85e-03 | bb_lr: 0.00e+00 | Time: 5m 36s
+2026-07-17 06:56:04 | INFO |   >> New best RAW! Val Acc: 0.6801
+2026-07-17 07:01:42 | INFO | Epoch  25/50 | Train Loss: 0.3610 | Train Acc: 0.7614 | Val Loss: 0.6172 | Val Acc: 0.6799 | head_lr: 2.69e-03 | bb_lr: 0.00e+00 | Time: 5m 35s
+2026-07-17 07:01:42 | INFO |   >> No improvement for 1/10 epochs
+2026-07-17 07:07:07 | INFO | Epoch  26/50 | Train Loss: 0.3666 | Train Acc: 0.7596 | Val Loss: 0.6149 | Val Acc: 0.6807 | head_lr: 2.52e-03 | bb_lr: 0.00e+00 | Time: 5m 24s
+2026-07-17 07:07:07 | INFO |   >> New best RAW! Val Acc: 0.6807
+2026-07-17 07:12:42 | INFO | Epoch  27/50 | Train Loss: 0.3667 | Train Acc: 0.7612 | Val Loss: 0.6136 | Val Acc: 0.6812 | head_lr: 2.36e-03 | bb_lr: 0.00e+00 | Time: 5m 32s
+2026-07-17 07:12:42 | INFO |   >> New best RAW! Val Acc: 0.6812
+2026-07-17 07:18:15 | INFO | Epoch  28/50 | Train Loss: 0.3698 | Train Acc: 0.7637 | Val Loss: 0.6123 | Val Acc: 0.6813 | head_lr: 2.20e-03 | bb_lr: 0.00e+00 | Time: 5m 29s
+2026-07-17 07:18:15 | INFO |   >> New best RAW! Val Acc: 0.6813
+2026-07-17 07:23:47 | INFO | Epoch  29/50 | Train Loss: 0.3550 | Train Acc: 0.7697 | Val Loss: 0.6103 | Val Acc: 0.6814 | head_lr: 2.04e-03 | bb_lr: 0.00e+00 | Time: 5m 30s
+2026-07-17 07:23:47 | INFO |   >> New best RAW! Val Acc: 0.6814
+2026-07-17 07:29:24 | INFO | Epoch  30/50 | Train Loss: 0.3512 | Train Acc: 0.7676 | Val Loss: 0.6095 | Val Acc: 0.6803 | head_lr: 1.88e-03 | bb_lr: 0.00e+00 | Time: 5m 34s
+2026-07-17 07:29:24 | INFO |   >> No improvement for 1/10 epochs
+2026-07-17 07:34:58 | INFO | Epoch  31/50 | Train Loss: 0.3535 | Train Acc: 0.7684 | Val Loss: 0.6081 | Val Acc: 0.6818 | head_lr: 1.73e-03 | bb_lr: 0.00e+00 | Time: 5m 33s
+2026-07-17 07:34:58 | INFO |   >> New best RAW! Val Acc: 0.6818
+2026-07-17 07:40:35 | INFO | Epoch  32/50 | Train Loss: 0.3445 | Train Acc: 0.7757 | Val Loss: 0.6063 | Val Acc: 0.6833 | head_lr: 1.58e-03 | bb_lr: 0.00e+00 | Time: 5m 33s
+2026-07-17 07:40:35 | INFO |   >> New best RAW! Val Acc: 0.6833
+2026-07-17 07:46:09 | INFO | Epoch  33/50 | Train Loss: 0.3630 | Train Acc: 0.7664 | Val Loss: 0.6057 | Val Acc: 0.6843 | head_lr: 1.43e-03 | bb_lr: 0.00e+00 | Time: 5m 31s
+2026-07-17 07:46:09 | INFO |   >> New best RAW! Val Acc: 0.6843
+2026-07-17 07:51:55 | INFO | Epoch  34/50 | Train Loss: 0.3506 | Train Acc: 0.7717 | Val Loss: 0.6049 | Val Acc: 0.6828 | head_lr: 1.29e-03 | bb_lr: 0.00e+00 | Time: 5m 42s
+2026-07-17 07:51:55 | INFO |   >> No improvement for 1/10 epochs
+2026-07-17 07:57:31 | INFO | Epoch  35/50 | Train Loss: 0.3555 | Train Acc: 0.7719 | Val Loss: 0.6045 | Val Acc: 0.6831 | head_lr: 1.15e-03 | bb_lr: 0.00e+00 | Time: 5m 35s
+2026-07-17 07:57:31 | INFO |   >> No improvement for 2/10 epochs
+2026-07-17 08:02:46 | INFO | Epoch  36/50 | Train Loss: 0.3454 | Train Acc: 0.7749 | Val Loss: 0.6034 | Val Acc: 0.6852 | head_lr: 1.02e-03 | bb_lr: 0.00e+00 | Time: 5m 14s
+2026-07-17 08:02:46 | INFO |   >> New best RAW! Val Acc: 0.6852
+2026-07-17 08:08:02 | INFO | Epoch  37/50 | Train Loss: 0.3442 | Train Acc: 0.7753 | Val Loss: 0.6029 | Val Acc: 0.6858 | head_lr: 8.93e-04 | bb_lr: 0.00e+00 | Time: 5m 13s
+2026-07-17 08:08:02 | INFO |   >> New best RAW! Val Acc: 0.6858
+2026-07-17 08:13:18 | INFO | Epoch  38/50 | Train Loss: 0.3458 | Train Acc: 0.7769 | Val Loss: 0.6024 | Val Acc: 0.6849 | head_lr: 7.75e-04 | bb_lr: 0.00e+00 | Time: 5m 13s
+2026-07-17 08:13:18 | INFO |   >> No improvement for 1/10 epochs
+2026-07-17 08:18:33 | INFO | Epoch  39/50 | Train Loss: 0.3430 | Train Acc: 0.7772 | Val Loss: 0.6021 | Val Acc: 0.6843 | head_lr: 6.64e-04 | bb_lr: 0.00e+00 | Time: 5m 14s
+2026-07-17 08:18:33 | INFO |   >> No improvement for 2/10 epochs
+2026-07-17 08:23:49 | INFO | Epoch  40/50 | Train Loss: 0.3326 | Train Acc: 0.7786 | Val Loss: 0.6017 | Val Acc: 0.6864 | head_lr: 5.61e-04 | bb_lr: 0.00e+00 | Time: 5m 15s
+2026-07-17 08:23:49 | INFO |   >> New best RAW! Val Acc: 0.6864
+2026-07-17 08:29:13 | INFO | Epoch  41/50 | Train Loss: 0.3540 | Train Acc: 0.7744 | Val Loss: 0.6013 | Val Acc: 0.6865 | head_lr: 4.67e-04 | bb_lr: 0.00e+00 | Time: 5m 21s
+2026-07-17 08:29:13 | INFO |   >> New best RAW! Val Acc: 0.6865
+2026-07-17 08:34:29 | INFO | Epoch  42/50 | Train Loss: 0.3455 | Train Acc: 0.7786 | Val Loss: 0.6013 | Val Acc: 0.6858 | head_lr: 3.82e-04 | bb_lr: 0.00e+00 | Time: 5m 14s
+2026-07-17 08:34:29 | INFO |   >> No improvement for 1/10 epochs
+2026-07-17 08:39:42 | INFO | Epoch  43/50 | Train Loss: 0.3432 | Train Acc: 0.7767 | Val Loss: 0.6011 | Val Acc: 0.6857 | head_lr: 3.05e-04 | bb_lr: 0.00e+00 | Time: 5m 12s
+2026-07-17 08:39:42 | INFO |   >> No improvement for 2/10 epochs
+2026-07-17 08:44:55 | INFO | Epoch  44/50 | Train Loss: 0.3617 | Train Acc: 0.7734 | Val Loss: 0.6008 | Val Acc: 0.6859 | head_lr: 2.38e-04 | bb_lr: 0.00e+00 | Time: 5m 12s
+2026-07-17 08:44:55 | INFO |   >> No improvement for 3/10 epochs
+2026-07-17 08:50:10 | INFO | Epoch  45/50 | Train Loss: 0.3366 | Train Acc: 0.7809 | Val Loss: 0.6007 | Val Acc: 0.6856 | head_lr: 1.81e-04 | bb_lr: 0.00e+00 | Time: 5m 13s
+2026-07-17 08:50:10 | INFO |   >> No improvement for 4/10 epochs
+2026-07-17 08:55:24 | INFO | Epoch  46/50 | Train Loss: 0.3353 | Train Acc: 0.7809 | Val Loss: 0.6006 | Val Acc: 0.6857 | head_lr: 1.34e-04 | bb_lr: 0.00e+00 | Time: 5m 12s
+2026-07-17 08:55:24 | INFO |   >> No improvement for 5/10 epochs
+2026-07-17 09:00:46 | INFO | Epoch  47/50 | Train Loss: 0.3372 | Train Acc: 0.7815 | Val Loss: 0.6006 | Val Acc: 0.6855 | head_lr: 9.76e-05 | bb_lr: 0.00e+00 | Time: 5m 20s
+2026-07-17 09:00:46 | INFO |   >> No improvement for 6/10 epochs
+2026-07-17 09:06:08 | INFO | Epoch  48/50 | Train Loss: 0.3305 | Train Acc: 0.7826 | Val Loss: 0.6006 | Val Acc: 0.6854 | head_lr: 7.12e-05 | bb_lr: 0.00e+00 | Time: 5m 20s
+2026-07-17 09:06:08 | INFO |   >> No improvement for 7/10 epochs
+2026-07-17 09:11:24 | INFO | Epoch  49/50 | Train Loss: 0.3400 | Train Acc: 0.7783 | Val Loss: 0.6005 | Val Acc: 0.6859 | head_lr: 5.53e-05 | bb_lr: 0.00e+00 | Time: 5m 14s
+2026-07-17 09:11:24 | INFO |   >> No improvement for 8/10 epochs
+2026-07-17 09:16:36 | INFO | Epoch  50/50 | Train Loss: 0.3336 | Train Acc: 0.7829 | Val Loss: 0.6005 | Val Acc: 0.6860 | head_lr: 5.00e-05 | bb_lr: 0.00e+00 | Time: 5m 11s
+2026-07-17 09:16:36 | INFO |   >> No improvement for 9/10 epochs
+2026-07-17 09:16:37 | INFO | ============================================================
+2026-07-17 09:16:37 | INFO | Training complete! Total time: 4h 36m 57s
+2026-07-17 09:16:37 | INFO | Best validation accuracy: 0.6865
+2026-07-17 09:16:37 | INFO | Best model saved to: outputs/s_oof_discrete/seed42/checkpoints/best.pt
+2026-07-17 09:16:37 | INFO | Training log saved to: outputs/s_oof_discrete/seed42/logs/train_log.csv
+2026-07-17 09:16:38 | INFO | Reloaded best checkpoint for post-training evaluation: outputs/s_oof_discrete/seed42/checkpoints/best.pt (epoch=41, best_val_acc=0.68649487)
+2026-07-17 09:16:38 | INFO | Running post-training per-class evaluation...
+2026-07-17 09:17:17 | INFO | Eval results saved to: outputs/s_oof_discrete/seed42/checkpoints/eval_results.json
+2026-07-17 09:17:17 | INFO | Artifact manifest saved to: outputs/s_oof_discrete/seed42/checkpoints/artifact_manifest.json
+2026-07-17 09:17:17 | INFO | Per-class metrics saved to: outputs/s_oof_discrete/seed42/checkpoints/per_class_metrics.csv
+2026-07-17 09:17:57 | INFO | Prediction records saved to: outputs/s_oof_discrete/seed42/checkpoints/prediction_records.csv

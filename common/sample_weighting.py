@@ -270,7 +270,7 @@ class OOFManifestProvider(BaseWeightProvider):
     def get_weights(self, sample_paths, labels, epoch, per_sample_loss=None):
         w_vals = []
         for p in sample_paths:
-            entry = self._weights.get(p)
+            entry = self._weights.get(str(Path(p).resolve()))
             if entry is None:
                 if self._missing == "error":
                     raise KeyError(f"OOF weight missing for: {p}")

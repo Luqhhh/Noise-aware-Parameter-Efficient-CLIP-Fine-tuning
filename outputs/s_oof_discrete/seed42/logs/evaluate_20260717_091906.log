@@ -1,0 +1,22 @@
+2026-07-17 09:19:06 | INFO | Config: configs/s_oof_discrete.yaml
+2026-07-17 09:19:06 | INFO | Checkpoint: outputs/s_oof_discrete/seed42/checkpoints/best.pt
+2026-07-17 09:19:06 | INFO | Seed: 42
+2026-07-17 09:19:06 | INFO | Device: cuda
+2026-07-17 09:19:06 | INFO | Head type: linear
+2026-07-17 09:19:13 | INFO | Loaded checkpoint from epoch 41
+2026-07-17 09:19:13 | INFO | Checkpoint best val acc: 0.6864948653361752
+2026-07-17 09:19:14 | INFO | Checkpoint SHA-256: 3072bcc05ca2f28feb630b3d42724e3ec3724ff7ea0a700e36ab6e7f90ebc1c2
+2026-07-17 09:19:14 | INFO | Val CSV SHA-256: 607e019165912bb0639efb456b7e8dea122b3e8579a2344dedb8109798921eae
+2026-07-17 09:19:15 | INFO | Validation set: 10322 samples, 41 batches
+2026-07-17 09:19:54 | INFO | ==================================================
+2026-07-17 09:19:54 | INFO | Evaluation Results:
+2026-07-17 09:19:54 | INFO |   Total samples:              10322
+2026-07-17 09:19:54 | INFO |   Correct samples:            7086
+2026-07-17 09:19:54 | INFO |   Top-1 Accuracy (micro):     0.6865 (68.65%)
+2026-07-17 09:19:54 | INFO |   Macro Accuracy:             0.6865 (68.65%)
+2026-07-17 09:19:54 | INFO |   Median Per-Class Accuracy:  0.7000 (70.00%)
+2026-07-17 09:19:54 | INFO |   Bottom-10%% Accuracy:        0.3116 (31.16%)
+2026-07-17 09:19:54 | INFO |   Micro-Macro Gap:            +0.0000 (+0.00%)
+2026-07-17 09:19:54 | INFO |   Loss:                       0.6013
+2026-07-17 09:19:54 | INFO | ==================================================
+2026-07-17 09:19:54 | INFO | Eval results saved to: outputs/s_oof_discrete/seed42/checkpoints/reeval_best.json

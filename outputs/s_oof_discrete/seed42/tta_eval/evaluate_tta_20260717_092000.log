@@ -1,0 +1,26 @@
+2026-07-17 09:20:00 | INFO | Config: configs/s_oof_discrete.yaml
+2026-07-17 09:20:00 | INFO | Checkpoint: outputs/s_oof_discrete/seed42/checkpoints/best.pt
+2026-07-17 09:20:00 | INFO | TTA strategy: horizontal_flip
+2026-07-17 09:20:00 | INFO | Output dir: outputs/s_oof_discrete/seed42/tta_eval
+2026-07-17 09:20:00 | INFO | Seed: 42
+2026-07-17 09:20:00 | INFO | Device: cuda
+2026-07-17 09:20:08 | INFO | Loaded checkpoint from epoch 41
+2026-07-17 09:20:08 | INFO | Checkpoint best val acc: 0.6864948653361752
+2026-07-17 09:20:09 | INFO | Validation set: 10322 samples, 41 batches
+2026-07-17 09:20:51 | INFO | ==================================================
+2026-07-17 09:20:51 | INFO | TTA Evaluation Results:
+2026-07-17 09:20:51 | INFO |   Total samples:                10322
+2026-07-17 09:20:51 | INFO |   Baseline correct:             7086
+2026-07-17 09:20:51 | INFO |   TTA correct:                  7124
+2026-07-17 09:20:51 | INFO |   Baseline Top-1 (micro):       0.6865 (68.65%)
+2026-07-17 09:20:51 | INFO |   TTA Top-1 (micro):            0.6902 (69.02%)
+2026-07-17 09:20:51 | INFO |   Baseline Macro:               0.6865 (68.65%)
+2026-07-17 09:20:51 | INFO |   TTA Macro:                    0.6902 (69.02%)
+2026-07-17 09:20:51 | INFO |   Baseline Median:              0.7000 (70.00%)
+2026-07-17 09:20:51 | INFO |   TTA Median:                   0.7143 (71.43%)
+2026-07-17 09:20:51 | INFO |   Baseline Bottom-10%%:          0.3116 (31.16%)
+2026-07-17 09:20:51 | INFO |   TTA Bottom-10%%:               0.3102 (31.02%)
+2026-07-17 09:20:51 | INFO |   Prediction Change Rate:       0.0620 (6.20%)
+2026-07-17 09:20:51 | INFO | ==================================================
+2026-07-17 09:20:51 | INFO | Results saved to: outputs/s_oof_discrete/seed42/tta_eval/results.json
+2026-07-17 09:20:51 | INFO | Per-class delta CSV saved to: outputs/s_oof_discrete/seed42/tta_eval/per_class_delta.csv

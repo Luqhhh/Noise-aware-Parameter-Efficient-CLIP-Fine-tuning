@@ -1,0 +1,10 @@
+{
+  "experiment_id": "TA1_TTA_FLIP",
+  "checkpoint": "outputs/s_oof_discrete/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "3072bcc05ca2f28feb630b3d42724e3ec3724ff7ea0a700e36ab6e7f90ebc1c2",
+  "checkpoint_epoch": 41,
+  "tta_strategy": "horizontal_flip",
+  "num_predictions": 24967,
+  "fallback_images": 0,
+  "output_dir": "outputs/s_oof_discrete/seed42/submissions_tta"
+}
