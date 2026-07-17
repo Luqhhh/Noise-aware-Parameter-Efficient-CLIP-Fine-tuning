@@ -29,6 +29,9 @@ class TrustedSubsetConfig:
     require_prototype_top1_matches_label: bool = True
     reject_cross_class_duplicate_conflict: bool = True
 
+    # ── V3: OOF single-threshold trusted subset ──
+    p_oof_label_min: float = 0.60  # OOF prob of original label (top 60% ≈ p≥0.598)
+
     # ── V2: continuous trust-weighted & class-balanced metrics ──
     class_balanced_top_k: int = 5
     prototype_margin_ref: float = 0.05  # reference for w_proto normalization
@@ -41,6 +44,7 @@ REJECTION_LABELS = {
     "low_clip_flip_cosine": "CLIP flip cosine below threshold",
     "cross_class_duplicate_conflict": "Cross-class duplicate conflict detected",
     "missing_conflict_metadata": "Conflict metadata not available — partial assessment",
+    "low_oof_probability": "OOF probability of original label below threshold",
 }
 
 
@@ -160,6 +164,97 @@ def build_trusted_subset(
         all_reasons.extend(r)
     from collections import Counter
     summary["rejection_reason_counts"] = dict(Counter(all_reasons))
+
+    return df, summary
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# V3: OOF single-threshold trusted subset
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def build_trusted_subset_oof(
+    df: pd.DataFrame,
+    config: TrustedSubsetConfig = TrustedSubsetConfig(),
+) -> Tuple[pd.DataFrame, dict]:
+    """Build trusted validation subset using OOF p(original_label) threshold.
+
+    Uses a single model-agnostic signal: the OOF (out-of-fold) predicted
+    probability of the original (noisy) label.  This is a genuinely independent
+    quality estimate because OOF predictions come from models that never
+    trained on the samples they scored.
+
+    A sample is trusted when ``p_original_label >= p_oof_label_min``.
+
+    Args:
+        df: DataFrame with required column ``p_original_label`` (float in [0,1])
+            plus ``noisy_label`` for per-class summary stats.
+        config: TrustedSubsetConfig with ``p_oof_label_min`` threshold.
+
+    Returns:
+        manifest: Copy of df with added columns:
+            trusted_v1 (bool), rejection_reasons (str).
+        summary: Dict with coverage, counts, per-class stats.
+    """
+    df = df.copy()
+    n_total = len(df)
+
+    if "p_original_label" not in df.columns:
+        raise ValueError(
+            "DataFrame must contain 'p_original_label' column for OOF-based "
+            "trusted subset. Ensure the OOF quality manifest is loaded."
+        )
+
+    # ── Single rule: p_original_label >= threshold ──
+    below_threshold = df["p_original_label"] < config.p_oof_label_min
+
+    reasons = pd.Series([[] for _ in range(n_total)], dtype=object)
+    for i in df.index[below_threshold]:
+        reasons.iloc[i] = ["low_oof_probability"]
+
+    trusted = reasons.apply(lambda r: len(r) == 0)
+    rejection_str = reasons.apply(lambda r: ";".join(r) if r else "")
+
+    df["trusted_v1"] = trusted
+    df["rejection_reasons"] = rejection_str
+
+    # ── Build summary ──
+    trusted_count = trusted.sum()
+    coverage = trusted_count / n_total if n_total > 0 else 0.0
+
+    represented_classes = df[trusted]["noisy_label"].nunique() if trusted_count > 0 else 0
+    total_classes = df["noisy_label"].nunique()
+
+    per_class = df.groupby("noisy_label")["trusted_v1"].agg(["sum", "count"])
+    per_class.columns = ["trusted", "total"]
+    per_class["coverage"] = per_class["trusted"] / per_class["total"]
+
+    per_class_trusted = per_class["trusted"].astype(int).to_dict()
+
+    summary = {
+        "method": "oof_single_threshold",
+        "p_oof_label_min": config.p_oof_label_min,
+        "total_samples": n_total,
+        "trusted_count": int(trusted_count),
+        "rejected_count": int(n_total - trusted_count),
+        "coverage": float(coverage),
+        "represented_classes": int(represented_classes),
+        "total_classes": int(total_classes),
+        "missing_classes": int(total_classes - represented_classes),
+        "per_class_trusted": per_class_trusted,
+        "min_trusted_per_class": int(per_class["trusted"].min()) if len(per_class) > 0 else 0,
+        "median_trusted_per_class": float(per_class["trusted"].median()) if len(per_class) > 0 else 0.0,
+        "p10_trusted_per_class": float(per_class["trusted"].quantile(0.10)) if len(per_class) > 0 else 0.0,
+        "p90_trusted_per_class": float(per_class["trusted"].quantile(0.90)) if len(per_class) > 0 else 0.0,
+        "rejection_reason_counts": {},
+    }
+
+    # Count rejection reasons
+    all_reasons_list = []
+    for r in reasons:
+        all_reasons_list.extend(r)
+    from collections import Counter
+    summary["rejection_reason_counts"] = dict(Counter(all_reasons_list))
 
     return df, summary
 

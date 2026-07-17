@@ -11,7 +11,9 @@ import numpy as np
 import pandas as pd
 
 from common.trusted_subset import (
+    TrustedSubsetConfig,
     build_trusted_subset,
+    build_trusted_subset_oof,
     compute_class_balanced_trusted_accuracy,
     compute_trust_weighted_accuracy,
 )
@@ -79,8 +81,17 @@ def evaluate_candidate(
     signal_path: Path,
     output_dir: Path,
     parent_prediction_path: Path | None = None,
+    method: str = "v1",
+    oof_quality_path: Path | None = None,
+    p_oof_label_min: float = 0.60,
 ) -> dict:
-    """Join fixed signals with candidate predictions and write audit artifacts."""
+    """Join fixed signals with candidate predictions and write audit artifacts.
+
+    Args:
+        method: "v1" for legacy 5-signal AND, "oof" for p_OOF(label) single threshold.
+        oof_quality_path: Path to sample_quality.csv (required when method="oof").
+        p_oof_label_min: OOF probability threshold (default 0.60, top ~60%).
+    """
     signals = _load_unique_csv(signal_path, SIGNAL_COLUMNS, "signal metrics")
     predictions = _load_unique_csv(
         prediction_path, PREDICTION_COLUMNS, "prediction records"
@@ -113,7 +124,27 @@ def evaluate_candidate(
     merged["correct"] = (
         merged["pred_label"].astype(int) == merged["noisy_label"].astype(int)
     )
-    trusted_manifest, trusted_summary = build_trusted_subset(merged)
+
+    # ── Build trusted subset ──
+    if method == "oof":
+        if oof_quality_path is None:
+            raise ValueError("--oof-quality is required when method='oof'")
+        oof_quality = pd.read_csv(oof_quality_path)
+        if "p_original_label" not in oof_quality.columns:
+            raise ValueError(
+                f"OOF quality file missing 'p_original_label' column. "
+                f"Found: {sorted(oof_quality.columns)}"
+            )
+        oof_quality["sample_key"] = oof_quality["image_path"].map(stable_sample_key)
+        oof_view = oof_quality[["sample_key", "p_original_label"]].copy()
+        merged = merged.merge(
+            oof_view, on="sample_key", how="inner", validate="one_to_one"
+        )
+        config = TrustedSubsetConfig(p_oof_label_min=p_oof_label_min)
+        trusted_manifest, trusted_summary = build_trusted_subset_oof(merged, config)
+    else:
+        trusted_manifest, trusted_summary = build_trusted_subset(merged)
+
     trusted_mask = trusted_manifest["trusted_v1"].astype(bool)
     rejected_mask = ~trusted_mask
 
@@ -186,6 +217,23 @@ def evaluate_candidate(
         if not rejected_frame.empty
         else None
     )
+    rejected_macro = (
+        _macro_accuracy(rejected_frame, "correct")
+        if not rejected_frame.empty
+        else None
+    )
+    rejected_bottom10 = (
+        _bottom10_accuracy(rejected_frame, "correct")
+        if not rejected_frame.empty
+        else None
+    )
+    trust_reject_gap = (
+        trusted_micro - rejected_micro
+        if trusted_micro is not None and rejected_micro is not None
+        and not (isinstance(trusted_micro, float) and np.isnan(trusted_micro))
+        and not (isinstance(rejected_micro, float) and np.isnan(rejected_micro))
+        else None
+    )
 
     per_class = (
         merged.groupby("noisy_label")["correct"]
@@ -203,6 +251,17 @@ def evaluate_candidate(
         )
     )
     per_class = per_class.join(trusted_per_class, how="left")
+    rejected_per_class = (
+        rejected_frame.groupby("noisy_label")["correct"]
+        .agg(["count", "mean"])
+        .rename(
+            columns={
+                "count": "rejected_count",
+                "mean": "rejected_accuracy",
+            }
+        )
+    )
+    per_class = per_class.join(rejected_per_class, how="left")
     per_class["trust_weighted_accuracy"] = pd.Series(
         {
             int(class_id): accuracy
@@ -229,6 +288,9 @@ def evaluate_candidate(
         "trusted_class_balanced": balanced["macro_accuracy"],
         "trust_weighted_accuracy": weighted["accuracy"],
         "rejected_micro": rejected_micro,
+        "rejected_macro": rejected_macro,
+        "rejected_bottom10": rejected_bottom10,
+        "trust_reject_gap": trust_reject_gap,
         "prediction_change_vs_parent": prediction_change,
         "trusted_coverage": trusted_summary["coverage"],
         "trusted_represented_classes": trusted_summary["represented_classes"],
@@ -259,9 +321,13 @@ def evaluate_candidate(
     (output_dir / "trusted_metrics.json").write_text(
         json.dumps(metrics, indent=2), encoding="utf-8"
     )
+    protocol_version = (
+        "trusted_validation_oof_v1" if method == "oof"
+        else "trusted_validation_v1_v2_fixed_signals"
+    )
     audit = {
         "experiment_id": experiment_id,
-        "protocol": "trusted_validation_v1_v2_fixed_signals",
+        "protocol": protocol_version,
         "coverage": len(merged) / len(signals) if len(signals) else 0.0,
         "all_samples_matched_once": len(merged) == len(signals),
         "labels_match": True,
@@ -288,6 +354,23 @@ def main() -> None:
     )
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--parent-predictions")
+    parser.add_argument(
+        "--method",
+        choices=["v1", "oof"],
+        default="v1",
+        help="Trusted subset method: v1 (5-signal AND, default) or oof (p_OOF(label) threshold)",
+    )
+    parser.add_argument(
+        "--oof-quality",
+        default=None,
+        help="Path to sample_quality.csv with p_original_label column (required for --method oof)",
+    )
+    parser.add_argument(
+        "--p-oof-label-min",
+        type=float,
+        default=0.60,
+        help="OOF probability threshold for trusted samples (default: 0.60)",
+    )
     args = parser.parse_args()
 
     metrics = evaluate_candidate(
@@ -298,6 +381,11 @@ def main() -> None:
         parent_prediction_path=(
             Path(args.parent_predictions) if args.parent_predictions else None
         ),
+        method=args.method,
+        oof_quality_path=(
+            Path(args.oof_quality) if args.oof_quality else None
+        ),
+        p_oof_label_min=args.p_oof_label_min,
     )
     print(json.dumps(metrics, indent=2))
 

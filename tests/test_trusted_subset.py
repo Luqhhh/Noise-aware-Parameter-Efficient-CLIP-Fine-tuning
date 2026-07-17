@@ -2,7 +2,11 @@
 import pandas as pd
 import numpy as np
 import pytest
-from common.trusted_subset import TrustedSubsetConfig, build_trusted_subset
+from common.trusted_subset import (
+    TrustedSubsetConfig,
+    build_trusted_subset,
+    build_trusted_subset_oof,
+)
 
 
 @pytest.fixture
@@ -135,6 +139,94 @@ class TestBuildTrustedSubset:
         sample_df["cross_class_duplicate_conflict"] = False
         manifest, _ = build_trusted_subset(sample_df, cfg)
         assert manifest["trusted_v1"].sum() == len(sample_df)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# V3: OOF single-threshold trusted subset
+# ═══════════════════════════════════════════════════════════════════════
+
+
+@pytest.fixture
+def sample_df_oof():
+    """DataFrame with p_original_label for OOF-based trusted subset."""
+    n = 100
+    rng = np.random.default_rng(42)
+    df = pd.DataFrame({
+        "sample_index": range(n),
+        "image_path": [f"img_{i}.jpg" for i in range(n)],
+        "noisy_label": rng.integers(0, 10, n),
+        "p_original_label": rng.uniform(0.0, 1.0, n),
+    })
+    return df
+
+
+class TestBuildTrustedSubsetOof:
+    def test_p_oof_above_threshold_is_trusted(self, sample_df_oof):
+        """Samples with p >= threshold should be trusted."""
+        cfg = TrustedSubsetConfig(p_oof_label_min=0.60)
+        sample_df_oof["p_original_label"] = 0.80
+        manifest, summary = build_trusted_subset_oof(sample_df_oof, cfg)
+        assert manifest["trusted_v1"].sum() == len(sample_df_oof)
+        assert summary["trusted_count"] == len(sample_df_oof)
+        assert summary["rejected_count"] == 0
+
+    def test_p_oof_below_threshold_is_rejected(self, sample_df_oof):
+        """Samples below threshold should be rejected with reason."""
+        cfg = TrustedSubsetConfig(p_oof_label_min=0.60)
+        sample_df_oof["p_original_label"] = 0.30
+        manifest, summary = build_trusted_subset_oof(sample_df_oof, cfg)
+        assert manifest["trusted_v1"].sum() == 0
+        assert summary["rejected_count"] == len(sample_df_oof)
+        assert all("low_oof_probability" in r for r in manifest["rejection_reasons"])
+
+    def test_boundary_threshold(self, sample_df_oof):
+        """p exactly at threshold should be trusted (≥ is inclusive)."""
+        cfg = TrustedSubsetConfig(p_oof_label_min=0.60)
+        sample_df_oof["p_original_label"] = 0.60
+        manifest, _ = build_trusted_subset_oof(sample_df_oof, cfg)
+        assert manifest["trusted_v1"].sum() == len(sample_df_oof)
+
+    def test_mixed_trusted_and_rejected(self, sample_df_oof):
+        """Half above, half below threshold."""
+        cfg = TrustedSubsetConfig(p_oof_label_min=0.60)
+        n = len(sample_df_oof)
+        sample_df_oof["p_original_label"] = [0.80 if i < n//2 else 0.30 for i in range(n)]
+        manifest, summary = build_trusted_subset_oof(sample_df_oof, cfg)
+        assert summary["trusted_count"] == n // 2
+        assert summary["rejected_count"] == n - n // 2
+
+    def test_coverage_reported(self, sample_df_oof):
+        cfg = TrustedSubsetConfig(p_oof_label_min=0.60)
+        manifest, summary = build_trusted_subset_oof(sample_df_oof, cfg)
+        assert "coverage" in summary
+        assert 0 <= summary["coverage"] <= 1
+
+    def test_per_class_stats(self, sample_df_oof):
+        cfg = TrustedSubsetConfig(p_oof_label_min=0.60)
+        manifest, summary = build_trusted_subset_oof(sample_df_oof, cfg)
+        assert "represented_classes" in summary
+        assert "per_class_trusted" in summary
+        assert "missing_classes" in summary
+
+    def test_summary_records_method_and_threshold(self, sample_df_oof):
+        cfg = TrustedSubsetConfig(p_oof_label_min=0.45)
+        manifest, summary = build_trusted_subset_oof(sample_df_oof, cfg)
+        assert summary["method"] == "oof_single_threshold"
+        assert summary["p_oof_label_min"] == 0.45
+
+    def test_missing_column_raises(self, sample_df_oof):
+        cfg = TrustedSubsetConfig()
+        df_no_col = sample_df_oof.drop(columns=["p_original_label"])
+        with pytest.raises(ValueError, match="p_original_label"):
+            build_trusted_subset_oof(df_no_col, cfg)
+
+    def test_default_threshold(self):
+        cfg = TrustedSubsetConfig()
+        assert cfg.p_oof_label_min == 0.60
+
+    def test_override_threshold(self):
+        cfg = TrustedSubsetConfig(p_oof_label_min=0.75)
+        assert cfg.p_oof_label_min == 0.75
 
 
 # ═══════════════════════════════════════════════════════════════════════
