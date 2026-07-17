@@ -1,20 +1,19 @@
-# S_PEFT_E2: LN-only PEFT, backbone_lr=5e-7 — continue from W1_CE5_GCE05 parent.
+# S_PEFT_E2: LN-only PEFT, backbone_lr=5e-7 — continue from W1_GCE05_MIXUP parent.
 #
 # Parent recipe (recorded for audit):
-#   parent_experiment_id:  W1_CE5_GCE05
-#   parent_checkpoint:     outputs/w1_ce5_gce05/seed42/checkpoints/best.pt
-#   parent_checkpoint_sha: cea35b25b1135c8ea32f1cfdf32e30eda077b6bd95b43bc95ceb5f61f1bf96a2
-#   parent_recipe:         W1_CE5_GCE05 (CE epochs 1-5, GCE q=0.5 epochs 6-50, no MixUp)
+#   parent_experiment_id:  W1_GCE05_MIXUP
+#   parent_checkpoint:     outputs/w1_gce05_mixup/seed42/checkpoints/best.pt
+#   parent_recipe:         GCE q=0.5 + MixUp(alpha=0.2, probability=0.2)
 #
 # Continuation recipe (new for E0/E1/E2):
-#   GCE q=0.5 only (no CE warmup repeat) + MixUp(alpha=0.2, probability=0.2)
+#   GCE q=0.5 only + MixUp(alpha=0.2, probability=0.2)
 #
 # Purpose: learning-rate control for E1 — test whether E1 degradation (if any)
 # is caused by backbone_lr=1e-6 being too large for LN-only adaptation.
 # All visual LayerNorms + classifier are trainable at backbone_lr=5e-7.
 #
 # Run: python3 -m experiments.baseline.train --config configs/s_peft_e2_ln_5e7.yaml \
-#        --init-checkpoint outputs/w1_ce5_gce05/seed42/checkpoints/best.pt
+#        --init-checkpoint outputs/w1_gce05_mixup/seed42/checkpoints/best.pt
 
 experiment:
   id: S_PEFT_E2_LN_5E7

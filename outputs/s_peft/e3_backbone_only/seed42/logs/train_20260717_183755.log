@@ -1,0 +1,51 @@
+2026-07-17 18:37:56 | INFO | Using device: cuda
+2026-07-17 18:37:56 | INFO | Configuration: configs/s_peft_e3_backbone_only.yaml
+2026-07-17 18:37:56 | INFO | Train seed: 42
+2026-07-17 18:37:56 | INFO | Resolved runtime: experiment_id=S_PEFT_E3_BACKBONE_ONLY, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-17 18:37:58 | INFO | Total parameters:     88,105,716
+2026-07-17 18:37:58 | INFO | Trainable parameters: 256,500
+2026-07-17 18:37:58 | INFO | After PEFT (visual_layernorm_only): total=88,105,716, trainable=39,936
+2026-07-17 18:38:02 | INFO | Using config epochs: 5 (dev mode)
+2026-07-17 18:38:02 | INFO | Loss: gce (reduction=mean)
+2026-07-17 18:38:02 | INFO | Optimizer parameter groups:
+2026-07-17 18:38:02 | INFO |   head        :          0 params, lr=1.00e-04, wd=1.00e-04
+2026-07-17 18:38:02 | INFO |   backbone    :     39,936 params, lr=1.00e-06, wd=1.00e-02
+2026-07-17 18:38:02 | INFO |   TOTAL       :     39,936 optimizer params
+2026-07-17 18:38:02 | INFO |   Trainable head params:             0
+2026-07-17 18:38:02 | INFO |   Trainable visual params:      39,936
+2026-07-17 18:38:02 | INFO | Initializing model weights from: outputs/w1_gce05_mixup/seed42/checkpoints/best.pt
+2026-07-17 18:38:02 | INFO | Model weights loaded with exact key match.
+2026-07-17 18:38:02 | INFO | Running split lineage audit...
+2026-07-17 18:38:02 | INFO |   Parent: outputs/w1_gce05_mixup
+2026-07-17 18:38:02 | INFO |   Parent split: outputs/ref/seed42
+2026-07-17 18:38:02 | INFO |   Child split:  outputs/ref/seed42
+2026-07-17 18:38:02 | INFO | Split lineage audit: protocol_valid = True
+2026-07-17 18:38:02 | INFO | ============================================================
+2026-07-17 18:38:02 | INFO | Epoch-0 validation gate: verifying loaded checkpoint
+2026-07-17 18:38:21 | INFO | Epoch 0   | Val Loss: 0.5622 | Val Acc: 0.7116
+2026-07-17 18:38:21 | INFO | Epoch-0 validation gate PASSED: delta=0.000000 <= 0.0005
+2026-07-17 18:38:21 | INFO | ============================================================
+2026-07-17 18:38:21 | INFO | Starting training: 5 epochs, 714 batches/epoch
+2026-07-17 18:38:21 | INFO | Warmup steps: 714, Total steps: 3570, Cosine steps: 2856
+2026-07-17 18:38:21 | INFO | AMP: True
+2026-07-17 18:38:21 | INFO | ============================================================
+2026-07-17 18:41:05 | INFO | Epoch   1/5 | Train Loss: 0.4708 | Train Acc: 0.7959 | Val Loss: 0.5618 | Val Acc: 0.7116 | head_lr: 1.00e-04 | bb_lr: 1.00e-06 | Time: 2m 44s
+2026-07-17 18:41:05 | INFO |   >> New best RAW! Val Acc: 0.7116
+2026-07-17 18:43:52 | INFO | Epoch   2/5 | Train Loss: 0.4660 | Train Acc: 0.7978 | Val Loss: 0.5611 | Val Acc: 0.7115 | head_lr: 8.55e-05 | bb_lr: 8.55e-07 | Time: 2m 45s
+2026-07-17 18:43:52 | INFO |   >> No improvement for 1/3 epochs
+2026-07-17 18:46:38 | INFO | Epoch   3/5 | Train Loss: 0.4680 | Train Acc: 0.7960 | Val Loss: 0.5606 | Val Acc: 0.7111 | head_lr: 5.05e-05 | bb_lr: 5.05e-07 | Time: 2m 45s
+2026-07-17 18:46:38 | INFO |   >> No improvement for 2/3 epochs
+2026-07-17 18:49:22 | INFO | Epoch   4/5 | Train Loss: 0.4719 | Train Acc: 0.7941 | Val Loss: 0.5604 | Val Acc: 0.7116 | head_lr: 1.55e-05 | bb_lr: 1.55e-07 | Time: 2m 43s
+2026-07-17 18:49:22 | INFO |   >> No improvement for 3/3 epochs
+2026-07-17 18:49:23 | INFO | Early stopping triggered at epoch 4 (no improvement for 3 epochs). Best val acc: 0.7116 at epoch 1.
+2026-07-17 18:49:23 | INFO | ============================================================
+2026-07-17 18:49:23 | INFO | Training complete! Total time: 11m 2s
+2026-07-17 18:49:23 | INFO | Best validation accuracy: 0.7116
+2026-07-17 18:49:23 | INFO | Best model saved to: outputs/s_peft/e3_backbone_only/seed42/checkpoints/best.pt
+2026-07-17 18:49:23 | INFO | Training log saved to: outputs/s_peft/e3_backbone_only/seed42/logs/train_log.csv
+2026-07-17 18:49:23 | INFO | Reloaded best checkpoint for post-training evaluation: outputs/s_peft/e3_backbone_only/seed42/checkpoints/best.pt (epoch=1, best_val_acc=0.71161303)
+2026-07-17 18:49:23 | INFO | Running post-training per-class evaluation...
+2026-07-17 18:49:44 | INFO | Eval results saved to: outputs/s_peft/e3_backbone_only/seed42/checkpoints/eval_results.json
+2026-07-17 18:49:44 | INFO | Artifact manifest saved to: outputs/s_peft/e3_backbone_only/seed42/checkpoints/artifact_manifest.json
+2026-07-17 18:49:44 | INFO | Per-class metrics saved to: outputs/s_peft/e3_backbone_only/seed42/checkpoints/per_class_metrics.csv
+2026-07-17 18:51:18 | INFO | Prediction records saved to: outputs/s_peft/e3_backbone_only/seed42/checkpoints/prediction_records.csv

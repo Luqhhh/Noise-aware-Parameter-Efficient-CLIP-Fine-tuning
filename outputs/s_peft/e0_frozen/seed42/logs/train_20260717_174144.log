@@ -1,0 +1,4 @@
+2026-07-17 17:41:44 | INFO | Using device: cuda
+2026-07-17 17:41:44 | INFO | Configuration: configs/s_peft_e0_frozen.yaml
+2026-07-17 17:41:44 | INFO | Train seed: 42
+2026-07-17 17:41:44 | INFO | Resolved runtime: experiment_id=S_PEFT_E0_FROZEN, mode=dev, head_type=linear, augmentation=a0, cached=False

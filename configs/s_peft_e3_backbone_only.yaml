@@ -1,23 +1,25 @@
-# S_PEFT_E1: LN-only PEFT, backbone_lr=1e-6 — continue from W1_GCE05_MIXUP parent.
+# S_PEFT_E3: Backbone-only LayerNorm — continue from W1_GCE05_MIXUP parent.
 #
 # Parent recipe (recorded for audit):
 #   parent_experiment_id:  W1_GCE05_MIXUP
 #   parent_checkpoint:     outputs/w1_gce05_mixup/seed42/checkpoints/best.pt
 #   parent_recipe:         GCE q=0.5 + MixUp(alpha=0.2, probability=0.2)
 #
-# Continuation recipe (new for E0/E1/E2):
-#   GCE q=0.5 only + MixUp(alpha=0.2, probability=0.2)
+# Purpose: causal diagnostic — isolate whether noise-supervised LN-only backbone
+# training degrades visual representations independently, or whether degradation
+# requires classifier/backbone joint optimisation (or LR coupling).
 #
-# Purpose: test whether minimal LN-only backbone adaptation (lr=1e-6) improves
-# over paired frozen control E0.  All visual LayerNorms (ln_pre, ln_1/ln_2 in
-# each transformer block, ln_post) + classifier are trainable.  visual.proj and
-# all other backbone weights remain frozen.
+# Interpretation table (from plan §6.8):
+#   E3 degrades same as E1  → noise supervision directly damages visual reps
+#   E3 stable, E1 degrades  → classifier/backbone joint opt or LR coupling issue
+#   E3 improves             → visual adaptation may work, classifier update masked gains
+#   E3 unchanged, drift≈0   → LR/gradient too small, PEFT not actually happening
 #
-# Run: python3 -m experiments.baseline.train --config configs/s_peft_e1_ln_1e6.yaml \
+# Run: python3 -m experiments.baseline.train --config configs/s_peft_e3_backbone_only.yaml \
 #        --init-checkpoint outputs/w1_gce05_mixup/seed42/checkpoints/best.pt
 
 experiment:
-  id: S_PEFT_E1_LN_1E6
+  id: S_PEFT_E3_BACKBONE_ONLY
   mode: dev
   head_type: linear
   augmentation_preset: a0
@@ -50,6 +52,7 @@ peft:
   type: visual_layernorm_only
   backbone_lr: 0.000001
   backbone_weight_decay: 0.01
+  freeze_classifier: true
 
 loss:
   name: gce
@@ -65,21 +68,21 @@ eval:
   batch_size: 256
 
 output:
-  log_dir: outputs/s_peft/e1_ln_1e6/seed42/logs
-  submission_dir: outputs/s_peft/e1_ln_1e6/seed42/submissions
+  log_dir: outputs/s_peft/e3_backbone_only/seed42/logs
+  submission_dir: outputs/s_peft/e3_backbone_only/seed42/submissions
 
 train:
   amp: true
   batch_size: 128
   device: cuda
-  epochs: 15
+  epochs: 5
   image_size: 224
   lr: 0.0001
   max_grad_norm: 1.0
   num_workers: 8
-  save_dir: outputs/s_peft/e1_ln_1e6/seed42/checkpoints
+  save_dir: outputs/s_peft/e3_backbone_only/seed42/checkpoints
   scheduler: cosine
-  warmup_epochs: 2
+  warmup_epochs: 1
   weight_decay: 0.0001
   min_lr_ratio: 0.01
-  early_stop_patience: 5
+  early_stop_patience: 3

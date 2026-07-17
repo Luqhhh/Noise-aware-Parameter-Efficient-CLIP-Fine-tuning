@@ -78,9 +78,13 @@ def apply_peft(
 
     lora_layers = []
 
-    # ── Step 2: always unfreeze classifier head ────────────────────────
-    for param in model.classifier.parameters():
-        param.requires_grad = True
+    # ── Step 2: unfreeze classifier head (unless explicitly frozen for diagnostics) ──
+    freeze_classifier = peft_cfg.get("freeze_classifier", False)
+    if not freeze_classifier:
+        for param in model.classifier.parameters():
+            param.requires_grad = True
+    else:
+        logger.info("PEFT: classifier frozen (freeze_classifier=True)")
 
     # ── Step 3: dispatch by type ───────────────────────────────────────
     if peft_type == "linear_head_only":

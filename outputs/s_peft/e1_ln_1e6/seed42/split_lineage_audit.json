@@ -1,6 +1,6 @@
 {
-  "parent_experiment": "outputs/w1_ce5_gce05",
-  "parent_checkpoint": "outputs/w1_ce5_gce05/seed42/checkpoints/best.pt",
+  "parent_experiment": "outputs/w1_gce05_mixup",
+  "parent_checkpoint": "outputs/w1_gce05_mixup/seed42/checkpoints/best.pt",
   "parent_train_count": 91375,
   "parent_val_count": 10316,
   "child_train_count": 91375,

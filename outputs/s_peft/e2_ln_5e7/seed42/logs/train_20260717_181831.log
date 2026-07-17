@@ -1,0 +1,55 @@
+2026-07-17 18:18:31 | INFO | Using device: cuda
+2026-07-17 18:18:31 | INFO | Configuration: configs/s_peft_e2_ln_5e7.yaml
+2026-07-17 18:18:31 | INFO | Train seed: 42
+2026-07-17 18:18:31 | INFO | Resolved runtime: experiment_id=S_PEFT_E2_LN_5E7, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-17 18:18:34 | INFO | Total parameters:     88,105,716
+2026-07-17 18:18:34 | INFO | Trainable parameters: 256,500
+2026-07-17 18:18:34 | INFO | After PEFT (visual_layernorm_only): total=88,105,716, trainable=296,436
+2026-07-17 18:18:36 | INFO | Using config epochs: 15 (dev mode)
+2026-07-17 18:18:36 | INFO | Loss: gce (reduction=mean)
+2026-07-17 18:18:36 | INFO | Optimizer parameter groups:
+2026-07-17 18:18:36 | INFO |   head        :    256,500 params, lr=1.00e-04, wd=1.00e-04
+2026-07-17 18:18:36 | INFO |   backbone    :     39,936 params, lr=5.00e-07, wd=1.00e-02
+2026-07-17 18:18:36 | INFO |   TOTAL       :    296,436 optimizer params
+2026-07-17 18:18:36 | INFO |   Trainable head params:       256,500
+2026-07-17 18:18:36 | INFO |   Trainable visual params:      39,936
+2026-07-17 18:18:36 | INFO | Initializing model weights from: outputs/w1_gce05_mixup/seed42/checkpoints/best.pt
+2026-07-17 18:18:37 | INFO | Model weights loaded with exact key match.
+2026-07-17 18:18:37 | INFO | Running split lineage audit...
+2026-07-17 18:18:37 | INFO |   Parent: outputs/w1_gce05_mixup
+2026-07-17 18:18:37 | INFO |   Parent split: outputs/ref/seed42
+2026-07-17 18:18:37 | INFO |   Child split:  outputs/ref/seed42
+2026-07-17 18:18:37 | INFO | Split lineage audit: protocol_valid = True
+2026-07-17 18:18:37 | INFO | ============================================================
+2026-07-17 18:18:37 | INFO | Epoch-0 validation gate: verifying loaded checkpoint
+2026-07-17 18:18:57 | INFO | Epoch 0   | Val Loss: 0.5622 | Val Acc: 0.7116
+2026-07-17 18:18:57 | INFO | Epoch-0 validation gate PASSED: delta=0.000000 <= 0.0005
+2026-07-17 18:18:57 | INFO | ============================================================
+2026-07-17 18:18:57 | INFO | Starting training: 15 epochs, 714 batches/epoch
+2026-07-17 18:18:57 | INFO | Warmup steps: 1428, Total steps: 10710, Cosine steps: 9282
+2026-07-17 18:18:57 | INFO | AMP: True
+2026-07-17 18:18:57 | INFO | ============================================================
+2026-07-17 18:21:39 | INFO | Epoch   1/15 | Train Loss: 0.4709 | Train Acc: 0.7959 | Val Loss: 0.5621 | Val Acc: 0.7121 | head_lr: 5.00e-05 | bb_lr: 2.50e-07 | Time: 2m 42s
+2026-07-17 18:21:39 | INFO |   >> New best RAW! Val Acc: 0.7121
+2026-07-17 18:24:22 | INFO | Epoch   2/15 | Train Loss: 0.4667 | Train Acc: 0.7977 | Val Loss: 0.5618 | Val Acc: 0.7115 | head_lr: 1.00e-04 | bb_lr: 5.00e-07 | Time: 2m 41s
+2026-07-17 18:24:22 | INFO |   >> No improvement for 1/5 epochs
+2026-07-17 18:27:01 | INFO | Epoch   3/15 | Train Loss: 0.4689 | Train Acc: 0.7956 | Val Loss: 0.5614 | Val Acc: 0.7114 | head_lr: 9.86e-05 | bb_lr: 4.93e-07 | Time: 2m 37s
+2026-07-17 18:27:01 | INFO |   >> No improvement for 2/5 epochs
+2026-07-17 18:29:39 | INFO | Epoch   4/15 | Train Loss: 0.4728 | Train Acc: 0.7940 | Val Loss: 0.5610 | Val Acc: 0.7114 | head_lr: 9.43e-05 | bb_lr: 4.72e-07 | Time: 2m 37s
+2026-07-17 18:29:39 | INFO |   >> No improvement for 3/5 epochs
+2026-07-17 18:32:22 | INFO | Epoch   5/15 | Train Loss: 0.4673 | Train Acc: 0.7967 | Val Loss: 0.5606 | Val Acc: 0.7114 | head_lr: 8.76e-05 | bb_lr: 4.38e-07 | Time: 2m 42s
+2026-07-17 18:32:22 | INFO |   >> No improvement for 4/5 epochs
+2026-07-17 18:35:12 | INFO | Epoch   6/15 | Train Loss: 0.4731 | Train Acc: 0.7947 | Val Loss: 0.5603 | Val Acc: 0.7114 | head_lr: 7.86e-05 | bb_lr: 3.93e-07 | Time: 2m 48s
+2026-07-17 18:35:12 | INFO |   >> No improvement for 5/5 epochs
+2026-07-17 18:35:13 | INFO | Early stopping triggered at epoch 6 (no improvement for 5 epochs). Best val acc: 0.7121 at epoch 1.
+2026-07-17 18:35:13 | INFO | ============================================================
+2026-07-17 18:35:13 | INFO | Training complete! Total time: 16m 15s
+2026-07-17 18:35:13 | INFO | Best validation accuracy: 0.7121
+2026-07-17 18:35:13 | INFO | Best model saved to: outputs/s_peft/e2_ln_5e7/seed42/checkpoints/best.pt
+2026-07-17 18:35:13 | INFO | Training log saved to: outputs/s_peft/e2_ln_5e7/seed42/logs/train_log.csv
+2026-07-17 18:35:13 | INFO | Reloaded best checkpoint for post-training evaluation: outputs/s_peft/e2_ln_5e7/seed42/checkpoints/best.pt (epoch=1, best_val_acc=0.71209771)
+2026-07-17 18:35:13 | INFO | Running post-training per-class evaluation...
+2026-07-17 18:35:32 | INFO | Eval results saved to: outputs/s_peft/e2_ln_5e7/seed42/checkpoints/eval_results.json
+2026-07-17 18:35:33 | INFO | Artifact manifest saved to: outputs/s_peft/e2_ln_5e7/seed42/checkpoints/artifact_manifest.json
+2026-07-17 18:35:33 | INFO | Per-class metrics saved to: outputs/s_peft/e2_ln_5e7/seed42/checkpoints/per_class_metrics.csv
+2026-07-17 18:37:29 | INFO | Prediction records saved to: outputs/s_peft/e2_ln_5e7/seed42/checkpoints/prediction_records.csv

@@ -6,63 +6,85 @@ Supplementary Experiments — 完整修订方案
 
 ---
 
-0. 当前状态（2026-07-16）
+0. 当前状态（2026-07-17）
    0.1 当前最佳结果
-   方法 平台 Bare 平台 Flip TTA 本地 Val
-   **CE5 warmup + MixUp + GCE q=0.5** (S_MIXUP_CE5) — 60.48% 70.25%
-   MixUp + GCE q=0.5 59.86% 60.36% 71.16%
-   CE 5 epoch → GCE q=0.5 59.61% 60.25% 73.14%
-   纯 GCE q=0.5 59.62% 60.16% 69.49%
-   纯 GCE q=0.7 58.96% 59.41% 69.59%
-   当前平台最佳基线：
 
-```text
-S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5) + Flip TTA = 60.48%
-```
+   **平台最佳（截至 2026-07-17）：**
 
-当前 Bare 最佳基线：
+   | 方法 | 平台 Bare | 平台 TTA | 本地 Val |
+   |:--|:--:|:--:|:--:|
+   | **MixUp + GCE q=0.5** (W1_GCE05_MIXUP) | **59.86%** | **60.36%** | 71.16% |
+   | S_MIXUP_CE5 (CE5 warmup + MixUp) | 59.70% | 60.48% | 70.25% |
+   | CE 5 epoch → GCE q=0.5 | 59.61% | 60.25% | 73.14% |
+   | 纯 GCE q=0.5 | 59.62% | 60.16% | 69.49% |
+   | S_OOF_DISCRETE (OOF trust-weighted) | 59.28% | 59.28% | 68.65% |
 
-```text
-MixUp + GCE q=0.5 = 59.86%
-```
+   当前 Bare 最佳：**W1_GCE05_MIXUP (59.86%)**
+   当前 TTA 最佳：**S_MIXUP_CE5 (60.48%)** — 但 Bare 未通过，按计划不视为训练策略有效。
 
-**S_MIXUP_CE5 平台结果（2026-07-16）：**
-- Bare: 59.6988%（-0.16pp vs MixUp bare 59.86%）
-- TTA: 60.4758%（+0.12pp vs MixUp TTA 60.36%）
-- **结论：Bare 未超过父基线，按计划成功标准不视为训练策略有效。**
+   **Batch 1 — MixUp 参数消融（全部完成, 2026-07-17）：**
 
-**w1_ce5_gce05 跨 seed 验证（2026-07-16）：**
+   | 实验 | α | p | 本地 Val | vs 父基线 | 判定 |
+   |:--|:--:|:--:|:--:|:--:|:--|
+   | W1_GCE05_MIXUP (父基线) | 0.2 | 0.2 | **71.16%** | — | 最优 |
+   | S_MIXUP_A01 | 0.1 | 0.2 | 70.29% | −0.87pp | eliminated |
+   | S_MIXUP_A04 | 0.4 | 0.2 | 70.42% | −0.74pp | eliminated |
+   | S_MIXUP_P04 | 0.2 | 0.4 | 70.41% | −0.75pp | eliminated |
+   | S_MIXUP_CE5 | 0.2 | 0.2 | 70.25% | −0.91pp | eliminated |
 
-| seed | 本地 micro | 平台 TTA |
-|:--|:--:|:--:|
-| 42 | 73.14% | 60.25% |
-| 3407 | 70.28% | 60.1033% |
-| 差距 | -2.86pp | -0.15pp |
+   结论：α=0.2, p=0.2 确认为冻结 MixUp 最优配置。按 §13.1 关闭 MixUp 参数搜索。
 
-- 跨 seed 平台稳定性远好于本地（0.15pp vs 2.86pp），本地 val 波动被严重夸大
-- 两个 seed 平台 TTA 均低于 MixUp 基线（60.36%），确认 CE warmup 无独立平台贡献
-```
+   **Batch 2 — PEFT E0–E3（父模型: W1_GCE05_MIXUP, 71.16%; 2026-07-17）：**
+
+   | 实验 | 配置 | Gate | Best Val | vs E0 | 判定 |
+   |:--|:--|:--:|:--:|:--:|:--|
+   | E0 (Frozen Control) | 冻结 CLIP, 仅训练 head | ✓ Δ=0 | 71.17% | — | baseline |
+   | E1 (LN, bb_lr=1e-6) | LN-only, head+backbone | ✓ Δ=0 | 71.18% | +0.01pp | no gain |
+   | E2 (LN, bb_lr=5e-7) | LN-only, 更低 backbone LR | ✓ Δ=0 | 71.21% | +0.04pp | no gain |
+   | E3 (BB-only LN) | LN-only, classifier 冻结 | ✓ Δ=0 | 71.16% | −0.01pp | neutral |
+
+   结论：四组全部在 ±0.05pp 内，无可测差异。E3 诊断：LN-only backbone 训练
+   既不破坏也不改善表征，feature drift 极小不足以改变分类决策。
+   按 §13.3 关闭普通 PEFT；E4 (FeatDistill) / E5 (seed 3407) / LoRA (§9) 均不执行。
+
+   **P2 — OOF 路线（2026-07-17）：**
+
+   | 实验 | 平台 Bare | 平台 TTA | 本地 Val | 判定 |
+   |:--|:--:|:--:|:--:|:--|
+   | S_OOF_DISCRETE (OOF trust-weighted) | 59.28% | 59.28% | 68.65% | eliminated |
+
+   OOF trust-weighted 训练未产生平台增益（Bare 低于父基线 0.58pp）。
+   Trusted Validation 分析发现 **rejected accuracy 是有效诊断指标**：
+   CE warmup 在 rejected 样本上 accuracy 更高（更拟合噪声），MixUp 的 rejected
+   accuracy 更低（更抗拒噪声拟合），与平台 Bare 排序一致。详见 §7 补充分析。
+
 
 0.2 已确认的核心现象
 本地原始验证准确率不能可靠预测平台表现。
-CE warmup 使本地验证分数提高约 3.65pp；
-平台 Bare 与纯 GCE q=0.5 基本持平；
+CE warmup 使本地验证分数提高约 3.65pp；平台 Bare 与纯 GCE q=0.5 基本持平；
 MixUp 本地分数低于 CE warmup，却取得当前平台最优。
 当前瓶颈主要是泛化评价不一致，而不是训练集拟合不足。
-约 11–13pp 的 local-platform gap 表明：本地验证标签质量、评价目标和平台人工精标测试集之间存在显著不一致。该差距不能简单全部归因于视觉分布漂移，还可能来自：
-本地验证标签仍含噪；
-私有测试集经过人工精确标注；
-类别均衡方式不同；
-本地指标奖励对网络标签模式的拟合。
-冻结 CLIP + 线性分类头已接近当前特征空间的局部上限。
-Loss、普通增强、Head EMA、Cosine Head、继续训练等方向多数只能产生极小收益或负收益。
-普通无保护 PEFT 暂未证明有效。
-CE 下 `ln_post + visual.proj` 平台负收益；
-GCE 下 LN-only、LN+Proj 出现本地退化趋势；
-当前不能假设 “GCE+MixUp 已足以保护可训练 backbone”。
-Teacher-Student head-only 一致性路线已关闭。
-C-EXP-7 没有产生明确收益，但时序一致性和样本可信度建模仍值得通过 ELR、OOF 等更直接的方法验证。
+约 11–13pp 的 local-platform gap 表明本地验证标签质量、评价目标和平台人工精标
+测试集之间存在显著不一致。
 
+**MixUp 参数消融（Batch 1 完成）：** α=0.2, p=0.2 确认为最优。α=0.1（弱混合）、
+α=0.4（强混合）、p=0.4（高频混合）、CE5 warmup 四种变体本地 Val 均显著低于父基线。
+强混合会破坏细粒度结构（A04 本地 −0.74pp），弱混合正则化不足（A01 本地 −0.87pp）。
+
+**PEFT LN-only 确认无效（Batch 2 完成）：** 在正确的 MixUp 父模型上重跑 E0–E3，
+四组全部在 ±0.05pp 内，所有 epoch-0 gate 通过（Δ=0）。E3（backbone-only LN,
+classifier 冻结）既不退化也不改善——说明 LN 的 feature drift 极小（cos_dist < 1e-4），
+不足以改变分类决策。按计划规则关闭普通 PEFT，不执行 E4/E5/LoRA。
+
+**OOF trust-weighted 训练无平台增益（Batch 3 完成）：** S_OOF_DISCRETE
+Bare = TTA = 59.28%，低于父基线 MixUp bare 59.86%。OOF 信号作为训练干预手段
+暂未证明有效。但 Trusted Validation 分析发现 rejected accuracy 是有效诊断指标：
+模型在低 OOF 可信样本上 accuracy 越低 → 越抗拒拟合噪声 → 平台 Bare 越高。
+已将 rejected accuracy 集成到 evaluate_candidate 输出中。
+
+冻结 CLIP + 线性分类头已接近当前特征空间的局部上限（平台 Bare ~60%）。
+Loss、普通增强、Head EMA、Cosine Head、继续训练、MixUp 参数搜索、普通 PEFT、
+OOF 降权训练等方向均未能突破该上限。
 ---
 
 1. 总体目标与优先级
@@ -1176,23 +1198,38 @@ OOF/PEFT 后达到 64%–66%：
 
 ---
 
-15. 推荐的实验登记表
-    experiment_id parent seed status raw_micro macro bottom10 trusted drift_mean platform_bare platform_tta decision
-    S_MIXUP_CE5 frozen baseline 42 planned — — — — N/A — — —
-    S_MIXUP_A01 frozen baseline 42 planned — — — — N/A — — —
-    S_MIXUP_A04 frozen baseline 42 planned — — — — N/A — — —
-    S_MIXUP_P04 frozen baseline 42 planned — — — — N/A — — —
-    S_ELR_BASE best frozen 42 planned — — — — N/A — — —
-    S_PEFT_E0_FROZEN best frozen 42 planned — — — — 0 — — —
-    S_PEFT_E1_LN_1E6 best frozen 42 planned — — — — — — — —
-    S_PEFT_E2_LN_5E7 best frozen 42 planned — — — — — — — —
-    S_PEFT_E3_BACKBONE_ONLY best frozen 42 planned — — — — — — — —
-    S_PEFT_E4_LN_FEATDISTILL best frozen 42 blocked — — — — — — — wait E1/E2
-    S_PEFT_E5_SEED3407 best E1–E4 3407 blocked — — — — — — — wait gate
-    S_OOF_FROZEN_WEIGHTED best frozen 42 blocked — — — — N/A — — wait OOF
-    S_OOF_PEFT_WEIGHTED best PEFT 42 blocked — — — — — — — wait 2×2
-    S_PEFT_LORA_R4 validated PEFT 42 blocked — — — — — — — wait LoRA gate
+15. 推荐的实验登记表（更新至 2026-07-17）
 
+   **Batch 1 — MixUp 参数消融：**
+   | experiment_id | parent | seed | status | raw_micro | platform_bare | platform_tta | decision |
+   |:--|:--|:--:|:--:|:--:|:--:|:--:|:--|
+   | S_MIXUP_CE5 | frozen baseline | 42 | done | 70.25% | 59.70% | 60.48% | eliminated |
+   | S_MIXUP_A01 | frozen baseline | 42 | done | 70.29% | — | — | eliminated |
+   | S_MIXUP_A04 | frozen baseline | 42 | done | 70.42% | — | — | eliminated |
+   | S_MIXUP_P04 | frozen baseline | 42 | done | 70.41% | — | — | eliminated |
+
+   **Batch 2 — PEFT E0–E3（父模型: W1_GCE05_MIXUP）：**
+   | experiment_id | parent | seed | status | raw_micro | vs E0 | decision |
+   |:--|:--|:--:|:--:|:--:|:--:|:--|
+   | S_PEFT_E0_FROZEN | W1_GCE05_MIXUP | 42 | done | 71.17% | — | baseline |
+   | S_PEFT_E1_LN_1E6 | W1_GCE05_MIXUP | 42 | done | 71.18% | +0.01pp | no gain |
+   | S_PEFT_E2_LN_5E7 | W1_GCE05_MIXUP | 42 | done | 71.21% | +0.04pp | no gain |
+   | S_PEFT_E3_BACKBONE_ONLY | W1_GCE05_MIXUP | 42 | done | 71.16% | −0.01pp | neutral |
+   | S_PEFT_E4_LN_FEATDISTILL | — | — | closed | — | — | PEFT ineffective |
+   | S_PEFT_E5_SEED3407 | — | — | closed | — | — | no candidate |
+   | S_PEFT_LORA_R4 | — | — | closed | — | — | LoRA gate failed |
+
+   **P2 — OOF 路线：**
+   | experiment_id | parent | seed | status | raw_micro | platform_bare | platform_tta | decision |
+   |:--|:--|:--:|:--:|:--:|:--:|:--:|:--|
+   | S_OOF_DISCRETE | W1_GCE05_MIXUP | 42 | done | 68.65% | 59.28% | 59.28% | eliminated |
+
+   **未执行 / 已关闭：**
+   | experiment_id | status | reason |
+   |:--|:--|:--|
+   | S_ELR_BASE | planned | 未执行，待决策 |
+   | S_OOF × PEFT 2×2 (O0–O3) | blocked | PEFT 无效，OOF 训练无效 |
+   | GCE q=0.4/0.6 补充搜索 | not started | P4 优先级，算力空闲时 |
 ---
 
 16. 最终推荐
