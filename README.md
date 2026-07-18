@@ -110,9 +110,9 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | b2_gce05（GCE q=0.5） | 69.49% | 69.49% | 50 | 59.62% | 60.16% |
 | s_d3_mixup（MixUp d3 control） | 69.47% | 69.47% | 40 | 59.86% | — |
 | s_oof_zero_0001（OOF p<0.001） | 69.37% | 69.37% | 44 | **59.96%** | 60.28% |
-| s_oof_zero_001（OOF p<0.01） | 69.02% | 69.01% | 37 | — | 59.92% |
+| s_oof_zero_001（OOF p<0.01） | 69.02% | 69.01% | 37 | 59.38% | 59.92% |
 | s_oof_discrete（OOF 3-tier） | 68.65% | — | 41 | 59.28% | 59.28% |
-| s_elr_base（GCE+MixUp+ELR） | 68.20% | 68.21% | 19 | — | — |
+| s_elr_base（GCE+MixUp+ELR） | 68.20% | 68.21% | 19 | 58.59% | 59.14% |
 
 > ⚠️ **Important**: 本地 val 不能预测平台表现。OOF zero-weight 本地 69.37%（低于 MixUp 71.16%）但平台 Bare 59.96% 超越 MixUp 59.86%。所有模型选择必须以平台 Bare 为准，本地分数仅作辅助诊断。
 
@@ -189,7 +189,7 @@ E0_STRICT: clean rerun completed (50 epochs, best epoch 47, no early stop).
 
 **Key changes from original:**
 - Master split rebuilt with `duplicate_grouping_enabled: true` (SHA-256 group-aware) — **0 cross-boundary SHA-256 groups** (was 192 groups / 391 leaked images)
-- All experiments share `outputs/master_splits/seed42/` for train/val
+- All experiments share `outputs/data/master_splits/seed42/` for train/val
 - D3 train-only cleaning (CLIP centroid arbitration, content-based removal list)
 - Parent-child split audit + epoch-0 validation gate
 - Old F1 80.13% deprecated due to 88% validation leakage; output dirs deleted

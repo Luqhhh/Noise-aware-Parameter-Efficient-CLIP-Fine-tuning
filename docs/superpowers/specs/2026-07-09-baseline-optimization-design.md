@@ -51,7 +51,7 @@
 
 **Files**: `scripts/check_data.py`
 
-**Acceptance criteria**: With `--config configs/baseline.yaml`, logs go to `outputs/baseline/logs/` not `outputs/logs/`
+**Acceptance criteria**: With `--config configs/baseline.yaml`, logs go to `outputs/baselines/baseline/logs/` not `outputs/logs/`
 
 ### B2 — AMP Device-Aware Autocast (P1)
 

@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 def test_mapping_roundtrip():
     """class_to_idx and idx_to_class should be inverses of each other."""
-    split_dir = Path("outputs/baseline/splits")
+    split_dir = Path("outputs/baselines/baseline/splits")
     if not split_dir.exists():
         return  # Skip if splits haven't been generated
 

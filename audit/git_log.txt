@@ -1,0 +1,10 @@
+59ed8cc chore: remove acceptance artifacts and unreferenced files
+a8cb40c feat: final Task 0-5 acceptance — all P0 resolved, dry-runs verified
+0cfd5f7 fix: P0 — OOF fold-safe kNN, original artifact preserved, all tests pass
+e29f8f0 fix: full remediation — knn_top1_agreement, all tests pass, all dry-runs pass
+df7aaac fix: 11 audit corrections — roles, knn_agreement direction, funnel, tests, runtime audit
+78210dd fix: cl_knn_drop selector — correct knn_agreement condition, add relabel v2
+10aba4c feat: Tasks 0-5 — noise-robust infrastructure, confident joint, consensus selection, Wave A configs
+f5c6a7b results: add S_OOF_ZERO_010
+c42a77a results: add S_OOF_ZERO_005
+bfcb537 docs: sync all tracking docs with latest platform scores, fix final_fit bugs

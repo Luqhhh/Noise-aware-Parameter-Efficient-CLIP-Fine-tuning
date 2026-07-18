@@ -263,6 +263,182 @@ def _check_splits_exist(split_dir: str) -> bool:
     return all((split_dir / f).exists() for f in required)
 
 
+def _count_raw_train_images(train_dir: str) -> int:
+    """Count images in raw train/ directory (for informational logging)."""
+    import os
+    IMG_EXT = {'.jpg', '.jpeg', '.png', '.bmp', '.webp'}
+    count = 0
+    for root, _dirs, files in os.walk(train_dir):
+        for f in files:
+            if os.path.splitext(f.lower())[1] in IMG_EXT:
+                count += 1
+    return count
+
+
+def _runtime_manifest_audit(
+    train_dataset,
+    weight_provider,
+    mode: str,
+    save_dir: Path,
+):
+    """Verify dataset paths match manifest before epoch 1 (fail-closed).
+
+    Reads manifest directly via ManifestLoader and compares with
+    actual dataset.samples / dataset.labels.
+    """
+    import json
+    import pandas as pd
+    from common.manifest_loader import ManifestLoader, canonical_image_path
+
+    if weight_provider is None:
+        return
+    missing_policy = getattr(weight_provider, "_missing", None)
+    if missing_policy is None:
+        return
+    if missing_policy != "error":
+        raise ValueError(
+            f"missing_weight_policy must be 'error', got '{missing_policy}'"
+        )
+
+    # 1. Get dataset paths/labels from dataset metadata (no image loading)
+    ds_samples = getattr(train_dataset, "samples", None)
+    ds_labels_list = getattr(train_dataset, "labels", None)
+    if ds_samples is None or ds_labels_list is None:
+        train_logger.warning("Dataset has no .samples/.labels — skipping runtime audit")
+        return
+
+    ds_paths = set(ds_samples)
+    ds_label_map = dict(zip(ds_samples, ds_labels_list))
+    n_dataset = len(ds_paths)
+
+    # 2. Read manifest directly
+    manifest_csv = getattr(weight_provider, "_loader", None)
+    if manifest_csv is not None:
+        manifest_path = manifest_csv._path
+    else:
+        train_logger.warning("Cannot locate manifest file — skipping runtime audit")
+        return
+    manifest_df = pd.read_csv(manifest_path)
+    manifest_paths = set(manifest_df["image_path"])
+    manifest_label_map = dict(
+        zip(manifest_df["image_path"], manifest_df["original_label"])
+    )
+    manifest_roles = {}
+    if "training_role" in manifest_df.columns:
+        manifest_roles = dict(
+            zip(manifest_df["image_path"], manifest_df["training_role"])
+        )
+    manifest_weights = dict(
+        zip(manifest_df["image_path"], manifest_df["sample_weight"])
+    )
+
+    # 3. Bidirectional comparison
+    missing_in_manifest = ds_paths - manifest_paths
+    extra_in_manifest = manifest_paths - ds_paths
+    dup_in_manifest = manifest_df["image_path"].duplicated().sum()
+
+    # 4. original_label mismatches
+    label_mismatches = 0
+    for p in ds_paths & manifest_paths:
+        if int(ds_label_map[p]) != int(manifest_label_map[p]):
+            label_mismatches += 1
+
+    # 5. Role stats
+    role_counts = {"clean": 0, "rejected": 0, "pseudo": 0}
+    for p in ds_paths & manifest_paths:
+        role = manifest_roles.get(p, "clean")
+        if role in role_counts:
+            role_counts[role] += 1
+
+    # 6. Per-class rates
+    num_classes = 500
+    class_total = {c: 0 for c in range(num_classes)}
+    class_reject = {c: 0 for c in range(num_classes)}
+    class_pseudo = {c: 0 for c in range(num_classes)}
+    for p in ds_paths & manifest_paths:
+        c = int(ds_label_map[p])
+        class_total[c] += 1
+        if manifest_weights.get(p, 1.0) == 0.0:
+            class_reject[c] += 1
+        if manifest_roles.get(p, "") == "pseudo":
+            class_pseudo[c] += 1
+
+    max_class_drop = max(
+        class_reject[c] / max(class_total[c], 1) for c in range(num_classes)
+    )
+    max_class_relabel = max(
+        class_pseudo[c] / max(class_total[c], 1) for c in range(num_classes)
+    )
+    zero_clean = sorted(
+        c for c in range(num_classes)
+        if class_total[c] > 0
+        and (class_total[c] - class_reject[c] - class_pseudo[c]) == 0
+    )
+
+    audit = {
+        "dataset_sample_count": n_dataset,
+        "manifest_row_count": len(manifest_df),
+        "missing_in_manifest": len(missing_in_manifest),
+        "extra_in_manifest": len(extra_in_manifest),
+        "duplicate_manifest_paths": int(dup_in_manifest),
+        "original_label_mismatches": label_mismatches,
+        "coverage": 1.0 if len(missing_in_manifest) == 0 else (n_dataset - len(missing_in_manifest)) / n_dataset,
+        "missing_policy": missing_policy,
+        "clean_count": role_counts["clean"],
+        "rejected_count": role_counts["rejected"],
+        "pseudo_count": role_counts["pseudo"],
+        "global_reject_rate": role_counts["rejected"] / max(n_dataset, 1),
+        "global_relabel_rate": role_counts["pseudo"] / max(n_dataset, 1),
+        "max_class_drop_rate": max_class_drop,
+        "max_source_class_relabel_rate": max_class_relabel,
+        "classes_with_zero_clean": zero_clean,
+    }
+
+    audit_path = save_dir / "manifest_runtime_audit.json"
+    save_dir.mkdir(parents=True, exist_ok=True)
+    audit_path.write_text(json.dumps(audit, indent=2))
+
+    # Fail-closed checks
+    errors = []
+    if audit["missing_in_manifest"] > 0:
+        errors.append(
+            f"{audit['missing_in_manifest']} dataset images missing from manifest"
+        )
+    if audit["extra_in_manifest"] > 0:
+        errors.append(
+            f"{audit['extra_in_manifest']} manifest images not in dataset"
+        )
+    if audit["duplicate_manifest_paths"] > 0:
+        errors.append(
+            f"{audit['duplicate_manifest_paths']} duplicate manifest paths"
+        )
+    if audit["original_label_mismatches"] > 0:
+        errors.append(
+            f"{audit['original_label_mismatches']} original_label mismatches"
+        )
+    if audit["coverage"] < 1.0:
+        errors.append(f"Coverage {audit['coverage']:.4f} < 1.0")
+    if audit["missing_policy"] != "error":
+        errors.append(f"missing_policy is '{missing_policy}', not 'error'")
+    if len(audit["classes_with_zero_clean"]) > 0:
+        errors.append(
+            f"Classes with zero clean samples: {audit['classes_with_zero_clean']}"
+        )
+
+    if errors:
+        raise ValueError(
+            f"Runtime manifest audit FAILED ({len(errors)} errors):\n  "
+            + "\n  ".join(errors)
+        )
+
+    train_logger.info(
+        "Runtime manifest audit PASSED: %d samples, coverage=1.0, "
+        "clean=%d rejected=%d pseudo=%d, max_class_drop=%.4f",
+        n_dataset, role_counts["clean"], role_counts["rejected"],
+        role_counts["pseudo"], max_class_drop,
+    )
+
+
 def _prepare_fresh_run_artifacts(
     save_dir: Path,
     log_dir: Path,
@@ -427,6 +603,52 @@ def _unpack_batch(
     return inputs, labels, is_cached, paths
 
 
+def _reduce_weighted_mixup(
+    loss_a: torch.Tensor,
+    loss_b: torch.Tensor,
+    weights: torch.Tensor,
+    permutation: torch.Tensor,
+    lam: float,
+    normalize_by_weight_sum: bool,
+) -> torch.Tensor:
+    """Reduce a MixUp dual-loss with per-sample weights.
+
+    ``weights[i]`` zeroes sample ``i``'s contribution to both the primary
+    term and the paired term (via ``weights[permutation]``).
+    """
+    wa = weights
+    wb = weights[permutation]
+    numerator = lam * wa * loss_a + (1.0 - lam) * wb * loss_b
+    if normalize_by_weight_sum:
+        denominator = lam * wa + (1.0 - lam) * wb
+        return numerator.sum() / denominator.sum().clamp_min(1e-8)
+    return numerator.mean()
+
+
+def _get_batch_weights(
+    paths: tuple,
+    labels: torch.Tensor,
+    sample_weights,
+    normalize_by_weight_sum: bool,
+    missing_policy: str,
+    device: torch.device,
+    epoch: int = 0,
+) -> torch.Tensor:
+    """Return per-sample weight tensor of shape (B,) for the current batch.
+
+    ``sample_weights`` may be:
+      - ``None`` → all-ones weights
+      - ``BaseWeightProvider`` → ``get_weights()`` per batch
+    """
+    if sample_weights is None:
+        return labels.new_ones(labels.size(0))
+    if hasattr(sample_weights, "get_weights"):
+        return sample_weights.get_weights(
+            list(paths), labels, epoch,
+        )
+    return labels.new_ones(labels.size(0))
+
+
 def _apply_sample_weights(
     loss_per_sample: torch.Tensor,
     paths: tuple,
@@ -545,6 +767,10 @@ def train_one_epoch(
     for batch_idx, batch_data in enumerate(pbar):
         inputs, labels, is_cached, paths = _unpack_batch(batch_data, device)
 
+        # ── Apply training labels from manifest (hard relabel) ──
+        if paths is not None and weight_provider is not None:
+            labels = weight_provider.get_training_labels(list(paths), labels)
+
         # ── MixUp data augmentation ──
         mixup_applied = False
         labels_a = labels_b = labels
@@ -552,7 +778,7 @@ def train_one_epoch(
             mixup_alpha = mixup_cfg.get("alpha", 0.2)
             mixup_prob = mixup_cfg.get("probability", 0.2)
             if not is_cached:  # MixUp only for online image batches
-                inputs, labels_a, labels_b, lam = mixup_batch(
+                inputs, labels_a, labels_b, lam, mix_perm = mixup_batch(
                     inputs, labels, alpha=mixup_alpha, probability=mixup_prob,
                 )
                 mixup_applied = lam < 1.0
@@ -570,14 +796,19 @@ def train_one_epoch(
                 if mixup_applied:
                     loss_per_sample_a = criterion(logits, labels_a)
                     loss_per_sample_b = criterion(logits, labels_b)
-                    loss_per_sample = (
-                        lam * loss_per_sample_a + (1.0 - lam) * loss_per_sample_b
-                    )
                 else:
                     loss_per_sample = criterion(logits, labels)
 
             if mixup_applied:
-                loss = reduce_loss(loss_per_sample)
+                _w = _get_batch_weights(
+                    paths, labels, weight_provider or sample_weights,
+                    normalize_by_weight_sum, missing_policy, device,
+                    epoch=epoch,
+                )
+                loss = _reduce_weighted_mixup(
+                    loss_per_sample_a, loss_per_sample_b, _w, mix_perm,
+                    lam, normalize_by_weight_sum,
+                )
             else:
                 loss = _apply_sample_weights(
                     loss_per_sample, paths, weight_provider or sample_weights,
@@ -642,14 +873,19 @@ def train_one_epoch(
             if mixup_applied:
                 loss_per_sample_a = criterion(logits, labels_a)
                 loss_per_sample_b = criterion(logits, labels_b)
-                loss_per_sample = (
-                    lam * loss_per_sample_a + (1.0 - lam) * loss_per_sample_b
-                )
             else:
                 loss_per_sample = criterion(logits, labels)
 
             if mixup_applied:
-                loss = reduce_loss(loss_per_sample)
+                _w = _get_batch_weights(
+                    paths, labels, weight_provider or sample_weights,
+                    normalize_by_weight_sum, missing_policy, device,
+                    epoch=epoch,
+                )
+                loss = _reduce_weighted_mixup(
+                    loss_per_sample_a, loss_per_sample_b, _w, mix_perm,
+                    lam, normalize_by_weight_sum,
+                )
             else:
                 loss = _apply_sample_weights(
                     loss_per_sample, paths, weight_provider or sample_weights,
@@ -1309,15 +1545,54 @@ def main():
             f"{len(train_loader)} batches"
         )
     elif mode == "final_fit":
-        # final_fit: no split, use full dataset, no validation
-        train_logger.info("final_fit mode: loading full dataset (no val split).")
-        train_dataset = TrainImageDataset(
-            data_root=config["data"]["train_dir"],
-            split_csv=None,
-            class_to_idx=class_to_idx,
-            transform=train_transform,
-            return_path=True,
-        )
+        # final_fit: combine train+val from split_dir to use all clean
+        # d3_strict images while excluding strict-cleaning-excluded samples.
+        train_csv = Path(split_dir) / "train.csv"
+        val_csv = Path(split_dir) / "val.csv"
+        if train_csv.exists() and val_csv.exists():
+            import pandas as pd
+            train_df = pd.read_csv(train_csv)
+            val_df = pd.read_csv(val_csv)
+            combined_df = pd.concat([train_df, val_df], ignore_index=True)
+
+            # Write combined CSV to save_dir
+            save_dir = Path(config["train"]["save_dir"])
+            save_dir.mkdir(parents=True, exist_ok=True)
+            combined_csv = str(save_dir / "final_fit_combined.csv")
+            combined_df.to_csv(combined_csv, index=False)
+
+            train_logger.info(
+                "final_fit mode: combined %d train + %d val = %d total samples from %s",
+                len(train_df), len(val_df), len(combined_df), split_dir,
+            )
+            train_logger.info(
+                "Excluded ~%d images not in any d3_strict split "
+                "(strict-cleaning excluded / cross-class duplicates).",
+                _count_raw_train_images(config["data"]["train_dir"]) - len(combined_df),
+            )
+
+            train_dataset = TrainImageDataset(
+                data_root=config["data"]["train_dir"],
+                split_csv=combined_csv,
+                class_to_idx=class_to_idx,
+                transform=train_transform,
+                return_path=True,
+            )
+        else:
+            train_logger.warning(
+                "final_fit mode: splits not found in %s, "
+                "falling back to raw directory scan. "
+                "This may include strict-cleaning-excluded images "
+                "that should NOT be trained on.",
+                split_dir,
+            )
+            train_dataset = TrainImageDataset(
+                data_root=config["data"]["train_dir"],
+                split_csv=None,
+                class_to_idx=class_to_idx,
+                transform=train_transform,
+                return_path=True,
+            )
 
         train_seed_val = config["data"].get("train_seed", config["data"].get("seed", 42))
         g = torch.Generator()
@@ -1747,6 +2022,12 @@ def main():
     # Training log CSV
     log_file = Path(config["output"]["log_dir"]) / "train_log.csv"
     log_header = not log_file.exists()
+
+    # Runtime manifest audit: verify dataset paths match manifest before epoch 1
+    _runtime_manifest_audit(
+        train_dataset, weight_provider, mode,
+        Path(config["train"]["save_dir"]),
+    )
 
     # Training loop
     train_logger.info(

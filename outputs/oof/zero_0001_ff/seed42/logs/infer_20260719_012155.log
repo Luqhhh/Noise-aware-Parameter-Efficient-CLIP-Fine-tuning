@@ -1,0 +1,14 @@
+2026-07-19 01:21:55 | INFO | Config: configs/s_oof_zero_0001_ff.yaml
+2026-07-19 01:21:55 | INFO | Checkpoint: outputs/oof/zero_0001_ff/seed42/checkpoints/last.pt
+2026-07-19 01:21:55 | INFO | Device: cuda
+2026-07-19 01:21:55 | INFO | Head type: linear
+2026-07-19 01:21:59 | INFO | Loaded checkpoint from epoch 50
+2026-07-19 01:21:59 | INFO | Checkpoint best val acc: 0.0
+2026-07-19 01:21:59 | INFO | Loaded idx_to_class mapping from checkpoint metadata.
+2026-07-19 01:21:59 | INFO | idx_to_class mapping has 500 entries.
+2026-07-19 01:21:59 | INFO | Test set: 24967 images, 98 batches
+2026-07-19 01:22:18 | INFO | Raw predictions saved to: outputs/oof/zero_0001_ff/seed42/submissions/pred_raw.csv
+2026-07-19 01:22:18 | INFO | Total predictions: 24967
+2026-07-19 01:22:18 | INFO | Unique predicted classes: 499 / 500
+2026-07-19 01:22:18 | INFO | Prediction label lengths: {4: 24967}
+2026-07-19 01:22:18 | INFO | Inference complete.

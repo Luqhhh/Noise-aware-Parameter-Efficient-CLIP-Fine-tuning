@@ -30,7 +30,7 @@ def mixup_batch(
     labels: torch.Tensor,
     alpha: float = 0.2,
     probability: float = 1.0,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, float]:
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, float, torch.Tensor]:
     """Apply MixUp to a batch with probability *probability*.
 
     When MixUp is NOT applied, returns ``(images, labels, labels, 1.0)`` so the
@@ -50,16 +50,18 @@ def mixup_batch(
         - *labels_b*: (B,) — second component labels
         - *lam*: float — weight for the first component (lam >= 0.5)
     """
+    identity = torch.arange(images.size(0), device=images.device)
+
     if alpha <= 0 or probability <= 0:
-        return images, labels, labels, 1.0
+        return images, labels, labels, 1.0, identity
 
     # Probabilistic application
     if np.random.random() > probability:
-        return images, labels, labels, 1.0
+        return images, labels, labels, 1.0, identity
 
     batch_size = images.size(0)
     if batch_size < 2:
-        return images, labels, labels, 1.0
+        return images, labels, labels, 1.0, identity
 
     # Sample lambda
     lam = float(np.random.beta(alpha, alpha))
@@ -72,4 +74,4 @@ def mixup_batch(
     # Mix images
     mixed_images = lam * images + (1.0 - lam) * images[index]
 
-    return mixed_images, labels, labels[index], lam
+    return mixed_images, labels, labels[index], lam, index

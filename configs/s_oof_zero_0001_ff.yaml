@@ -1,11 +1,14 @@
 # S_OOF_ZERO_0001_FINAL_FIT: Full-train mode, no val split
-# Uses the OOF zero-weight manifest (p<0.001 → w=0, rest w=1.0)
-# and trains on ALL d3_strict train samples (91,196) for 50 epochs
-# with no early stopping — since OOF already excluded noise, the
-# model should not overfit to garbage labels.
+# Loads d3_strict/train.csv + d3_strict/val.csv combined (~101,517 images),
+# excluding strict-cleaning-excluded samples (~1,700 cross-class duplicates).
+#
+# Weighting:
+#   - d3_strict train (91,195): OOF zero-weight manifest (p<0.001 → w=0)
+#   - d3_strict val (10,322):  no OOF available → default w=1.0 with log warning
+#   - strict-cleaning-excluded: NOT loaded (correct — these are known noisy)
 #
 # Compared to dev mode (69.37% val, best epoch 44/50):
-#   +9.5K extra training samples (no val holdout)
+#   +10K extra training samples (val fold re-absorbed)
 #   no val for checkpoint selection → use last.pt
 #   TTA will be applied to last.pt for platform submission
 #
@@ -24,12 +27,12 @@ data:
   seed: 42
   split_seed: 42
   train_seed: 42
-  split_dir: outputs/d3_strict/seed42
+  split_dir: outputs/data/d3_strict/seed42
   test_dir: test
   train_dir: train
   val_ratio: 0.1
   expected_num_classes: 500
-  class_mapping_path: outputs/master_splits/seed42
+  class_mapping_path: outputs/data/master_splits/seed42
   use_full_training_set: true
 
 model:
@@ -54,17 +57,17 @@ mixup:
 
 sample_weighting:
   type: oof_manifest
-  manifest_path: outputs/phase3/oof/oof_zero_weight_manifest_thresh0.001.csv
+  manifest_path: outputs/phase/phase3/oof/oof_zero_weight_manifest_thresh0.001_full.csv
   min_weight: 0.0
   max_weight: 1.0
-  missing_weight_policy: warn
+  missing_weight_policy: error
 
 eval:
   batch_size: 256
 
 output:
-  log_dir: outputs/s_oof_zero_0001_ff/seed42/logs
-  submission_dir: outputs/s_oof_zero_0001_ff/seed42/submissions
+  log_dir: outputs/oof/zero_0001_ff/seed42/logs
+  submission_dir: outputs/oof/zero_0001_ff/seed42/submissions
 
 train:
   amp: true
@@ -75,7 +78,7 @@ train:
   lr: 0.005
   max_grad_norm: 1.0
   num_workers: 8
-  save_dir: outputs/s_oof_zero_0001_ff/seed42/checkpoints
+  save_dir: outputs/oof/zero_0001_ff/seed42/checkpoints
   scheduler: cosine
   warmup_epochs: 2
   weight_decay: 0.0001

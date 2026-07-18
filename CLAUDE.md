@@ -28,20 +28,20 @@ python3 scripts/check_data.py --config configs/baseline.yaml
 # Train/val split (required before first training run)
 python3 scripts/split_data.py --config configs/baseline.yaml
 
-# Training (resume with --resume outputs/baseline/checkpoints/last.pt)
+# Training (resume with --resume outputs/baselines/baseline/checkpoints/last.pt)
 python3 -m experiments.baseline.train --config configs/baseline.yaml
 
 # Evaluate on validation set
-python3 -m experiments.baseline.evaluate --config configs/baseline.yaml --ckpt outputs/baseline/checkpoints/best.pt
+python3 -m experiments.baseline.evaluate --config configs/baseline.yaml --ckpt outputs/baselines/baseline/checkpoints/best.pt
 
-# Test-set inference → produces outputs/baseline/submissions/pred_raw.csv
-python3 -m experiments.baseline.infer --config configs/baseline.yaml --ckpt outputs/baseline/checkpoints/best.pt
+# Test-set inference → produces outputs/baselines/baseline/submissions/pred_raw.csv
+python3 -m experiments.baseline.infer --config configs/baseline.yaml --ckpt outputs/baselines/baseline/checkpoints/best.pt
 
 # Generate submission files (pred_results.csv + submission.zip)
-python3 -m common.submission --raw outputs/baseline/submissions/pred_raw.csv --out_dir outputs/baseline/submissions
+python3 -m common.submission --raw outputs/baselines/baseline/submissions/pred_raw.csv --out_dir outputs/baselines/baseline/submissions
 
 # Validate submission before uploading
-python3 scripts/check_submission.py --test_dir /path/to/test --csv outputs/baseline/submissions/pred_results.csv --zip outputs/baseline/submissions/submission.zip
+python3 scripts/check_submission.py --test_dir /path/to/test --csv outputs/baselines/baseline/submissions/pred_results.csv --zip outputs/baselines/baseline/submissions/submission.zip
 ```
 
 ## Adding a New Experiment
@@ -59,7 +59,7 @@ python3 scripts/check_submission.py --test_dir /path/to/test --csv outputs/basel
 
 **Submission format:** `pred_results.csv` must have format `image_name.jpg, 0001` (comma + space, 4-digit zero-padded label). The check script validates 9 criteria: filename, line count, field count, image name existence, duplicates, coverage, label format, label range, zip contents.
 
-**Data split convention (2026-07-17):** All new experiments MUST use `outputs/d3_strict/seed42` as `split_dir`. This is the group-aware split that prevents cross-class duplicate leakage by enforcing same-SHA-256 images to stay in the same fold. The older `outputs/ref/seed42` split is deprecated — do not use it for new configs. All OOF weight manifests are tied to d3_strict, and using ref would cause manifest key mismatches.
+**Data split convention (2026-07-17):** All new experiments MUST use `outputs/data/d3_strict/seed42` as `split_dir`. This is the group-aware split that prevents cross-class duplicate leakage by enforcing same-SHA-256 images to stay in the same fold. The older `outputs/baselines/ref/seed42` split is deprecated — do not use it for new configs. All OOF weight manifests are tied to d3_strict, and using ref would cause manifest key mismatches.
 
 **Sample weight interface:** `TrainImageDataset` returns `(image, label, image_path)` and has `get_sample_weights()` method. This is intentional — future noise-robust methods can use `image_path` to assign per-sample weights without changing the dataset code.
 

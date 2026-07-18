@@ -1,0 +1,32 @@
+{
+  "control": {
+    "batches": 15,
+    "first_loss": 6.37646484375,
+    "last_loss": 5.946732044219971,
+    "relabel_applied": 0,
+    "rejected_count": 6354,
+    "pseudo_count": 0,
+    "nan_loss": 0,
+    "nan_grad": 0
+  },
+  "cl_knn_drop": {
+    "batches": 15,
+    "first_loss": 6.30023193359375,
+    "last_loss": 5.959442138671875,
+    "relabel_applied": 0,
+    "rejected_count": 991,
+    "pseudo_count": 0,
+    "nan_loss": 0,
+    "nan_grad": 0
+  },
+  "relabel_top100": {
+    "batches": 15,
+    "first_loss": 6.35614013671875,
+    "last_loss": 6.353307723999023,
+    "relabel_applied": 1,
+    "rejected_count": 0,
+    "pseudo_count": 100,
+    "nan_loss": 0,
+    "nan_grad": 0
+  }
+}

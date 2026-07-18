@@ -1,0 +1,72 @@
+# NR_CONSENSUS_RELABEL_V2_TOP300: V2 consensus relabel (top-300 high-confidence)
+# Manifest: outputs/phase4/purification/nr_consensus_relabel_v2_top300/purification_manifest.csv
+
+experiment:
+  id: NR_CONSENSUS_RELABEL_V2_TOP300
+  mode: dev
+  head_type: linear
+  augmentation_preset: a0
+
+data:
+  stage: preliminary
+  seed: 42
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/data/d3_strict/seed42
+  train_dir: train
+  test_dir: test
+  val_ratio: 0.1
+  expected_num_classes: 500
+  class_mapping_path: outputs/data/master_splits/seed42
+  use_full_training_set: false
+
+model:
+  clip_model_name: ViT-B/32
+  freeze_clip: true
+  num_classes: 500
+  use_cached_features: false
+  unfreeze_last_n_blocks: 0
+  train_ln_post: false
+  train_visual_proj: false
+
+loss:
+  name: gce
+  q: 0.5
+  probability_epsilon: 1.0e-7
+
+mixup:
+  enabled: true
+  alpha: 0.2
+  probability: 0.2
+
+sample_weighting:
+  type: relabel_manifest
+  manifest_path: outputs/phase4/purification/nr_consensus_relabel_v2_top300/purification_manifest.csv
+  min_weight: 0.0
+  max_weight: 1.0
+  hard_relabel: true
+  normalize_by_weight_sum: true
+  missing_weight_policy: error
+
+eval:
+  batch_size: 256
+
+output:
+  log_dir: outputs/oof/nr_consensus_relabel_v2_top300/seed42/logs
+  submission_dir: outputs/oof/nr_consensus_relabel_v2_top300/seed42/submissions
+
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 50
+  image_size: 224
+  lr: 0.005
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/oof/nr_consensus_relabel_v2_top300/seed42/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001
+  min_lr_ratio: 0.01
+  early_stop_patience: 10

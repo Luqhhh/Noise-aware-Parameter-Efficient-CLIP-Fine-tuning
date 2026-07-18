@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 def test_submission_format():
     """Each line of pred_results.csv must match 'image_name.jpg, 0001' format."""
-    submission_path = Path("outputs/baseline/submissions/pred_results.csv")
+    submission_path = Path("outputs/baselines/baseline/submissions/pred_results.csv")
     if not submission_path.exists():
         return
 

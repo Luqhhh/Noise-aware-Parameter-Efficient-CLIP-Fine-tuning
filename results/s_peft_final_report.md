@@ -5,7 +5,7 @@ Generated: 2026-07-16
 ## Parent
 
 - experiment_id: W1_CE5_GCE05
-- checkpoint: outputs/w1_ce5_gce05/seed42/checkpoints/best.pt
+- checkpoint: outputs/gce/ce5_gce_q05/seed42/checkpoints/best.pt
 - checkpoint SHA-256: cea35b25b1135c8ea32f1cfdf32e30eda077b6bd95b43bc95ceb5f61f1bf96a2
 - parent_recipe: CE epochs 1-5, GCE q=0.5 epochs 6-50, no MixUp
 - metrics: micro=0.7314, macro=0.7309, bottom-10%=0.3367
@@ -19,7 +19,7 @@ Generated: 2026-07-16
 - warmup_epochs: 2
 - epochs: 15
 - early_stop_patience: 5
-- split: outputs/ref/seed42 (seed=42)
+- split: outputs/baselines/ref/seed42 (seed=42)
 
 ## Experiment Configurations
 
@@ -47,8 +47,8 @@ This configuration is incompatible with `peft.type: visual_layernorm_only`:
 - Optimizer state showed 0/52 backbone params ever stepped
 
 Invalid directories archived as:
-- outputs/s_peft/e1_ln_1e6_invalid_freeze_clip_true/
-- outputs/s_peft/e2_ln_5e7_invalid_freeze_clip_true/
+- outputs/peft/s_peft/e1_ln_1e6_invalid_freeze_clip_true/
+- outputs/peft/s_peft/e2_ln_5e7_invalid_freeze_clip_true/
 
 Root cause recorded as: "E1/E2 configs with freeze_clip=true + peft visual_layernorm_only — PEFT
 interface lacks a conflict gate for this combination."
@@ -107,7 +107,7 @@ interface lacks a conflict gate for this combination."
 ## Prediction Records Audit
 
 All three prediction_records.csv contain exactly 10,316 unique samples matching
-val.csv (outputs/ref/seed42/val.csv). Zero duplicates, zero missing, zero extras.
+val.csv (outputs/baselines/ref/seed42/val.csv). Zero duplicates, zero missing, zero extras.
 
 Regenerated 2026-07-16 from best.pt (SHA-256 verified) via deterministic inference.
 Per-class metrics recomputed and verified. All McNemar pairwise identities hold.
@@ -149,7 +149,7 @@ Configs:
   configs/s_peft_e2_ln_5e7.yaml
 
 Text results (per experiment):
-  outputs/s_peft/{e0_frozen,e1_ln_1e6,e2_ln_5e7}/seed42/checkpoints/
+  outputs/peft/s_peft/{e0_frozen,e1_ln_1e6,e2_ln_5e7}/seed42/checkpoints/
     eval_results.json
     artifact_manifest.json
     per_class_metrics.csv
@@ -158,12 +158,12 @@ Text results (per experiment):
     config_snapshot_*.yaml
     reeval_best.json
     eval_last.json
-  outputs/s_peft/{e0_frozen,e1_ln_1e6,e2_ln_5e7}/seed42/
+  outputs/peft/s_peft/{e0_frozen,e1_ln_1e6,e2_ln_5e7}/seed42/
     split_lineage_audit.json
 
 Excluded from commit:
   *.pt (best.pt, best_raw.pt, last.pt)
   *.log, train_log.csv
   submission.zip
-  outputs/s_peft/e*_invalid_freeze_clip_true/ (archived, not committed)
+  outputs/peft/s_peft/e*_invalid_freeze_clip_true/ (archived, not committed)
   scripts/s_peft_queue.sh, scripts/s_peft_rerun.sh (local temporary scripts)

@@ -106,6 +106,13 @@ def validate_config(config: dict) -> List[str]:
                 f"Unknown sample_weighting.type: {sw_type}. "
                 f"Known: {sorted(KNOWN_WEIGHT_TYPES)}"
             )
+        # Reject old field name — the code looks for missing_weight_policy,
+        # so missing_policy would silently fall back to "error".
+        if "missing_policy" in sw:
+            raise ValueError(
+                "sample_weighting.missing_policy is deprecated. "
+                "Use missing_weight_policy instead."
+            )
 
     # ── peft section ──
     peft = config.get("peft", {})

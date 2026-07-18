@@ -1,0 +1,11 @@
+{
+  "clean_count": 91095,
+  "rejected_count": 0,
+  "pseudo_count": 100,
+  "global_reject_rate": 0.0,
+  "global_relabel_rate": 0.0010965513460167772,
+  "max_class_reject_rate": 0.0,
+  "max_class_relabel_rate": 0.027777777777777776,
+  "classes_with_zero_clean_samples": [],
+  "manifest_coverage": 1.0
+}

@@ -1,0 +1,22 @@
+2026-07-16 14:48:30 | INFO | Config: configs/s_mixup_ce5.yaml
+2026-07-16 14:48:30 | INFO | Checkpoint: outputs/s_mixup_ce5/seed42/checkpoints/best.pt
+2026-07-16 14:48:30 | INFO | Seed: 42
+2026-07-16 14:48:30 | INFO | Device: cuda
+2026-07-16 14:48:30 | INFO | Head type: linear
+2026-07-16 14:48:33 | INFO | Loaded checkpoint from epoch 43
+2026-07-16 14:48:33 | INFO | Checkpoint best val acc: 0.7025009693679721
+2026-07-16 14:48:33 | INFO | Checkpoint SHA-256: df84242190bcdd466d35f6f9716bf844b26017967937e915aa04175a91b68d7d
+2026-07-16 14:48:33 | INFO | Val CSV SHA-256: 70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c
+2026-07-16 14:48:34 | INFO | Validation set: 10316 samples, 41 batches
+2026-07-16 14:48:53 | INFO | ==================================================
+2026-07-16 14:48:53 | INFO | Evaluation Results:
+2026-07-16 14:48:53 | INFO |   Total samples:              10316
+2026-07-16 14:48:53 | INFO |   Correct samples:            7247
+2026-07-16 14:48:53 | INFO |   Top-1 Accuracy (micro):     0.7025 (70.25%)
+2026-07-16 14:48:53 | INFO |   Macro Accuracy:             0.7019 (70.19%)
+2026-07-16 14:48:53 | INFO |   Median Per-Class Accuracy:  0.7500 (75.00%)
+2026-07-16 14:48:53 | INFO |   Bottom-10%% Accuracy:        0.3098 (30.98%)
+2026-07-16 14:48:53 | INFO |   Micro-Macro Gap:            +0.0006 (+0.06%)
+2026-07-16 14:48:53 | INFO |   Loss:                       1.5462
+2026-07-16 14:48:53 | INFO | ==================================================
+2026-07-16 14:48:53 | INFO | Eval results saved to: outputs/s_mixup_ce5/seed42/checkpoints/reeval_best.json

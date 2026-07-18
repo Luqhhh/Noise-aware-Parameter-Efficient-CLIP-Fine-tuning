@@ -325,7 +325,7 @@ data:
   train_dir: train
   val_ratio: 0.1
   expected_num_classes: 500
-  class_mapping_path: outputs/metadata
+  class_mapping_path: outputs/data/metadata
   use_full_training_set: false
 
 model:

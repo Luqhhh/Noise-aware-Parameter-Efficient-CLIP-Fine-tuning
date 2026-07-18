@@ -20,12 +20,12 @@ data:
   seed: 42
   split_seed: 42
   train_seed: 42
-  split_dir: outputs/d3_strict/seed42
+  split_dir: outputs/data/d3_strict/seed42
   test_dir: test
   train_dir: train
   val_ratio: 0.1
   expected_num_classes: 500
-  class_mapping_path: outputs/master_splits/seed42
+  class_mapping_path: outputs/data/master_splits/seed42
   use_full_training_set: false
 
 model:
@@ -50,7 +50,7 @@ mixup:
 
 sample_weighting:
   type: oof_manifest
-  manifest_path: outputs/phase3/oof/oof_zero_weight_manifest_thresh0.100.csv
+  manifest_path: outputs/phase/phase3/oof/oof_zero_weight_manifest_thresh0.100.csv
   min_weight: 0.0
   max_weight: 1.0
   missing_policy: error
@@ -59,8 +59,8 @@ eval:
   batch_size: 256
 
 output:
-  log_dir: outputs/s_oof_zero_010/seed42/logs
-  submission_dir: outputs/s_oof_zero_010/seed42/submissions
+  log_dir: outputs/oof/zero_010/seed42/logs
+  submission_dir: outputs/oof/zero_010/seed42/submissions
 
 train:
   amp: true
@@ -71,7 +71,7 @@ train:
   lr: 0.005
   max_grad_norm: 1.0
   num_workers: 8
-  save_dir: outputs/s_oof_zero_010/seed42/checkpoints
+  save_dir: outputs/oof/zero_010/seed42/checkpoints
   scheduler: cosine
   warmup_epochs: 2
   weight_decay: 0.0001

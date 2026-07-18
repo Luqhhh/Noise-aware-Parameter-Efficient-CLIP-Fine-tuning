@@ -1019,8 +1019,8 @@ The CSV header is: `experiment_id,parent_experiment,wave,priority,commit_sha,con
 Append these two rows:
 
 ```
-w2_ema_loss,gce_q07,W2,P0,605a262,configs/w2_ema_loss.yaml,outputs/w2_ema_loss/seed42,42,42,gce,q=0.7,ema_loss (momentum=0.9 warmup=5 classwise min=0.4 max=1.0),a0,false,256500,41,572232e5c42e96c3f0df59abe2da433deef293195f253bdbd243e8b0f0751d49,,,,0.6942,,,,,,,,0.593864,0.016467,-0.004486,local_rejected,W2_EMA_LOSS: platform 59.3864% (flat vs gce_q07+TTA 59.4064%); EMA loss provides no generalization gain; no multi-seed
-w2_proto_min04,gce_q07,W2,P0,b0dd852,configs/w2_proto_min04.yaml,outputs/w2_proto_min04/seed42,42,42,gce,q=0.7,static_manifest (prototype min=0.4),a0,false,256500,37,1a7f95021efe3491eaf91a2b99b028b2218b63ec031acc3e27196c02f1a99b1b,,,,0.6876,,,,,,,,0.588216,0.010819,-0.010362,closed,W2_PROTO_MIN04: platform 58.82% (-0.58pp vs baseline); prototype weighting HURTS under GCE; CLOSED
+w2_ema_loss,gce_q07,W2,P0,605a262,configs/w2_ema_loss.yaml,outputs/ema/loss/seed42,42,42,gce,q=0.7,ema_loss (momentum=0.9 warmup=5 classwise min=0.4 max=1.0),a0,false,256500,41,572232e5c42e96c3f0df59abe2da433deef293195f253bdbd243e8b0f0751d49,,,,0.6942,,,,,,,,0.593864,0.016467,-0.004486,local_rejected,W2_EMA_LOSS: platform 59.3864% (flat vs gce_q07+TTA 59.4064%); EMA loss provides no generalization gain; no multi-seed
+w2_proto_min04,gce_q07,W2,P0,b0dd852,configs/w2_proto_min04.yaml,outputs/proto/min04/seed42,42,42,gce,q=0.7,static_manifest (prototype min=0.4),a0,false,256500,37,1a7f95021efe3491eaf91a2b99b028b2218b63ec031acc3e27196c02f1a99b1b,,,,0.6876,,,,,,,,0.588216,0.010819,-0.010362,closed,W2_PROTO_MIN04: platform 58.82% (-0.58pp vs baseline); prototype weighting HURTS under GCE; CLOSED
 ```
 
 - [ ] **Step 2: Verify CSV integrity**

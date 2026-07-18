@@ -820,7 +820,7 @@ analysis/trusted_validation/
 analysis/oof/
 analysis/relabel/
 tools/protocol_audit/
-outputs/analysis/
+outputs/data/analysis/
 tests/test_oof_*.py
 tests/test_relabel_*.py
 ```

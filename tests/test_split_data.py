@@ -22,7 +22,7 @@ def test_image_scan_does_not_duplicate_lowercase_files(tmp_path):
 
 def test_split_coverage():
     """Train + val should cover all samples (no overlap, no missing)."""
-    split_dir = Path("outputs/baseline/splits")
+    split_dir = Path("outputs/baselines/baseline/splits")
     if not split_dir.exists():
         return
 

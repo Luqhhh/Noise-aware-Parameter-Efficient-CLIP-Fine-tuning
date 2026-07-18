@@ -66,7 +66,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 **Files:**
 - Create: `scripts/build_master_split.py`
-- Create: `outputs/master_splits/seed42/split_manifest.json`
+- Create: `outputs/data/master_splits/seed42/split_manifest.json`
 
 **Interfaces:**
 - Produces: `master_splits/seed42/train.csv`, `master_splits/seed42/val.csv`, `master_splits/seed42/split_manifest.json`
@@ -83,7 +83,7 @@ experiments MUST reference. No experiment is allowed to generate its
 own split after this exists.
 
 Usage:
-    python scripts/build_master_split.py --train-dir train --output-root outputs/master_splits --seed 42 --val-ratio 0.1
+    python scripts/build_master_split.py --train-dir train --output-root outputs/data/master_splits --seed 42 --val-ratio 0.1
 """
 
 import argparse
@@ -108,7 +108,7 @@ def sha256_file(path: Path) -> str:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--train-dir", default="train")
-    parser.add_argument("--output-root", default="outputs/master_splits")
+    parser.add_argument("--output-root", default="outputs/data/master_splits")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--val-ratio", type=float, default=0.1)
     args = parser.parse_args()
@@ -192,10 +192,10 @@ if __name__ == "__main__":
 - [ ] **Step 2: Run the script**
 
 ```bash
-python scripts/build_master_split.py --train-dir train --output-root outputs/master_splits --seed 42 --val-ratio 0.1
+python scripts/build_master_split.py --train-dir train --output-root outputs/data/master_splits --seed 42 --val-ratio 0.1
 ```
 
-Expected: creates `outputs/master_splits/seed42/` with train.csv, val.csv, class_to_idx.json, idx_to_class.json, split_manifest.json.
+Expected: creates `outputs/data/master_splits/seed42/` with train.csv, val.csv, class_to_idx.json, idx_to_class.json, split_manifest.json.
 
 - [ ] **Step 3: Verify split integrity**
 
@@ -204,7 +204,7 @@ python -c "
 import pandas as pd
 from pathlib import Path
 
-d = Path('outputs/master_splits/seed42')
+d = Path('outputs/data/master_splits/seed42')
 train = pd.read_csv(d / 'train.csv')
 val = pd.read_csv(d / 'val.csv')
 
@@ -235,16 +235,16 @@ print(f'OK: {len(t)} train + {len(v)} val, disjoint, 500 classes each')
 GIT_COMMIT=$(git rev-parse HEAD)
 python -c "
 import json
-m = json.load(open('outputs/master_splits/seed42/split_manifest.json'))
+m = json.load(open('outputs/data/master_splits/seed42/split_manifest.json'))
 m['created_by_git_commit'] = '$GIT_COMMIT'
-json.dump(m, open('outputs/master_splits/seed42/split_manifest.json', 'w'), indent=2)
+json.dump(m, open('outputs/data/master_splits/seed42/split_manifest.json', 'w'), indent=2)
 "
 ```
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add scripts/build_master_split.py outputs/master_splits/
+git add scripts/build_master_split.py outputs/data/master_splits/
 git commit -m "feat: build canonical master split (seed=42)
 
 Train: 93102, Val: 10116, 500 classes, SHA256-fixed.
@@ -539,8 +539,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - Create: `configs/f1_strict.yaml`
 
 **Interfaces:**
-- All configs share: `split_dir: outputs/master_splits/seed42`
-- D3, F0, F1 configs reference: `parent_split_dir: outputs/master_splits/seed42`
+- All configs share: `split_dir: outputs/data/master_splits/seed42`
+- D3, F0, F1 configs reference: `parent_split_dir: outputs/data/master_splits/seed42`
 
 - [ ] **Step 1: Create `configs/e0_strict.yaml`**
 
@@ -565,12 +565,12 @@ data:
   seed: 42
   split_seed: 42
   train_seed: 42
-  split_dir: outputs/master_splits/seed42
+  split_dir: outputs/data/master_splits/seed42
   test_dir: test
   train_dir: train
   val_ratio: 0.1
   expected_num_classes: 500
-  class_mapping_path: outputs/master_splits/seed42
+  class_mapping_path: outputs/data/master_splits/seed42
   use_full_training_set: false
 
 model:
@@ -616,15 +616,15 @@ experiment:
 
 data:
   train_dir: train_dedup       # <-- different train source
-  split_dir: outputs/master_splits/seed42  # <-- same val split
-  class_mapping_path: outputs/master_splits/seed42
+  split_dir: outputs/data/master_splits/seed42  # <-- same val split
+  class_mapping_path: outputs/data/master_splits/seed42
 
 train:
-  save_dir: outputs/d3_strict/seed42/checkpoints
+  save_dir: outputs/data/d3_strict/seed42/checkpoints
 
 output:
-  log_dir: outputs/d3_strict/seed42/logs
-  submission_dir: outputs/d3_strict/seed42/submissions
+  log_dir: outputs/data/d3_strict/seed42/logs
+  submission_dir: outputs/data/d3_strict/seed42/submissions
 
 # D3 cleaning runs only on master-train
 # Output: d3_train_clean.csv is the training dataset
@@ -649,8 +649,8 @@ data:
   seed: 42
   split_seed: 42
   train_seed: 42
-  split_dir: outputs/master_splits/seed42
-  class_mapping_path: outputs/master_splits/seed42
+  split_dir: outputs/data/master_splits/seed42
+  class_mapping_path: outputs/data/master_splits/seed42
 
 model:
   clip_model_name: ViT-B/32
@@ -686,8 +686,8 @@ data:
   seed: 42
   split_seed: 42
   train_seed: 42
-  split_dir: outputs/master_splits/seed42
-  class_mapping_path: outputs/master_splits/seed42
+  split_dir: outputs/data/master_splits/seed42
+  class_mapping_path: outputs/data/master_splits/seed42
 
 model:
   clip_model_name: ViT-B/32
@@ -717,7 +717,7 @@ train:
 git add configs/e0_strict.yaml configs/d3_strict.yaml configs/f0_strict.yaml configs/f1_strict.yaml
 git commit -m "feat: add strict configs referencing unified master split
 
-All experiments now use outputs/master_splits/seed42 for train/val.
+All experiments now use outputs/data/master_splits/seed42 for train/val.
 D3 uses same val as E0 for fair comparison.
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
@@ -818,9 +818,9 @@ Master-val is NEVER touched.
 
 Usage:
     python scripts/d3_train_only_clean.py \
-        --master-split outputs/master_splits/seed42 \
+        --master-split outputs/data/master_splits/seed42 \
         --train-dir train \
-        --output outputs/d3_strict/seed42
+        --output outputs/data/d3_strict/seed42
 """
 
 import argparse
@@ -914,8 +914,8 @@ The existing `build_dedup_cache.py` already has SHA-256 duplicate scanning + CLI
 ```bash
 python -c "
 import pandas as pd
-master_val = pd.read_csv('outputs/master_splits/seed42/val.csv')
-d3_val = pd.read_csv('outputs/d3_strict/seed42/val.csv')
+master_val = pd.read_csv('outputs/data/master_splits/seed42/val.csv')
+d3_val = pd.read_csv('outputs/data/d3_strict/seed42/val.csv')
 assert master_val.equals(d3_val), 'D3 modified the validation set!'
 # Also verify no master-val images appear in removal list
 "
@@ -942,7 +942,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 **Checkpoints to create:**
 - `outputs/e0_strict/seed42/checkpoints/best.pt`
-- `outputs/d3_strict/seed42/checkpoints/best.pt`
+- `outputs/data/d3_strict/seed42/checkpoints/best.pt`
 
 - [ ] **Step 1: Run E0-strict**
 
@@ -957,12 +957,12 @@ Expected: training completes, `eval_results.json` written with `best_val_acc`.
 Prepare D3 clean training data first:
 ```bash
 # Build dedup cache for train-only
-python scripts/build_dedup_cache.py --train-dir train --split-csv outputs/master_splits/seed42/train.csv --output cache/d3_strict
+python scripts/build_dedup_cache.py --train-dir train --split-csv outputs/data/master_splits/seed42/train.csv --output cache/d3_strict
 ```
 
 Then train:
 ```bash
-python3 -m experiments.baseline.train --config configs/d3_strict.yaml 2>&1 | tee outputs/d3_strict/seed42/logs/run.log
+python3 -m experiments.baseline.train --config configs/d3_strict.yaml 2>&1 | tee outputs/data/d3_strict/seed42/logs/run.log
 ```
 
 - [ ] **Step 3: Compare E0 vs D3 on same validation set**
@@ -971,7 +971,7 @@ python3 -m experiments.baseline.train --config configs/d3_strict.yaml 2>&1 | tee
 python -c "
 import json
 e0 = json.load(open('outputs/e0_strict/seed42/checkpoints/eval_results.json'))
-d3 = json.load(open('outputs/d3_strict/seed42/checkpoints/eval_results.json'))
+d3 = json.load(open('outputs/data/d3_strict/seed42/checkpoints/eval_results.json'))
 delta = d3['best_val_acc'] - e0['best_val_acc']
 print(f'E0-strict: {e0[\"best_val_acc\"]:.4f}')
 print(f'D3-strict: {d3[\"best_val_acc\"]:.4f}')
@@ -986,7 +986,7 @@ else:
 - [ ] **Step 4: Commit results**
 
 ```bash
-git add outputs/e0_strict/ outputs/d3_strict/
+git add outputs/e0_strict/ outputs/data/d3_strict/
 git commit -m "results: E0-strict + D3-strict on unified master split (seed=42)
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
@@ -1001,7 +1001,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ```bash
 python3 -m experiments.baseline.train \
     --config configs/f0_strict.yaml \
-    --init-checkpoint outputs/d3_strict/seed42/checkpoints/best.pt \
+    --init-checkpoint outputs/data/d3_strict/seed42/checkpoints/best.pt \
     2>&1 | tee outputs/f0_strict/seed42/logs/run.log
 ```
 
@@ -1012,7 +1012,7 @@ Verify epoch-0 gate passes and split audit passes.
 ```bash
 python -c "
 import json
-d3 = json.load(open('outputs/d3_strict/seed42/checkpoints/eval_results.json'))
+d3 = json.load(open('outputs/data/d3_strict/seed42/checkpoints/eval_results.json'))
 f0 = json.load(open('outputs/f0_strict/seed42/checkpoints/eval_results.json'))
 delta = f0['best_val_acc'] - d3['best_val_acc']
 print(f'D3: {d3[\"best_val_acc\"]:.4f}')
@@ -1040,7 +1040,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ```bash
 python3 -m experiments.baseline.train \
     --config configs/f1_strict.yaml \
-    --init-checkpoint outputs/d3_strict/seed42/checkpoints/best.pt \
+    --init-checkpoint outputs/data/d3_strict/seed42/checkpoints/best.pt \
     2>&1 | tee outputs/f1_strict/seed42/logs/run.log
 ```
 
@@ -1055,7 +1055,7 @@ Verify:
 python -c "
 import json
 e0 = json.load(open('outputs/e0_strict/seed42/checkpoints/eval_results.json'))
-d3 = json.load(open('outputs/d3_strict/seed42/checkpoints/eval_results.json'))
+d3 = json.load(open('outputs/data/d3_strict/seed42/checkpoints/eval_results.json'))
 f0 = json.load(open('outputs/f0_strict/seed42/checkpoints/eval_results.json'))
 f1 = json.load(open('outputs/f1_strict/seed42/checkpoints/eval_results.json'))
 
@@ -1102,8 +1102,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - [ ] **Step 1: Generate seed=3407 and seed=2026 master splits**
 
 ```bash
-python scripts/build_master_split.py --train-dir train --output-root outputs/master_splits --seed 3407 --val-ratio 0.1
-python scripts/build_master_split.py --train-dir train --output-root outputs/master_splits --seed 2026 --val-ratio 0.1
+python scripts/build_master_split.py --train-dir train --output-root outputs/data/master_splits --seed 3407 --val-ratio 0.1
+python scripts/build_master_split.py --train-dir train --output-root outputs/data/master_splits --seed 2026 --val-ratio 0.1
 ```
 
 - [ ] **Step 2: Run E0-strict on seeds 3407, 2026**
@@ -1112,7 +1112,7 @@ python scripts/build_master_split.py --train-dir train --output-root outputs/mas
 for seed in 3407 2026; do
     python3 -m experiments.baseline.train \
         --config configs/e0_strict.yaml \
-        --override data.split_dir outputs/master_splits/seed${seed} \
+        --override data.split_dir outputs/data/master_splits/seed${seed} \
         --override output.log_dir outputs/e0_strict/seed${seed}/logs \
         --override train.save_dir outputs/e0_strict/seed${seed}/checkpoints
 done

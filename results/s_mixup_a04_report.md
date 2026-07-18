@@ -5,7 +5,7 @@
 **运行**: commit `7ef3fd2`，seed42，独立从头训练（无 init checkpoint），单 GPU RTX 4060。
 **训练**: early stop @ epoch 47/50（patience 10），best epoch 37，总耗时 2h 19m 44s。
 **验收**: 2026-07-16 训练结束附近 WSL 断开，2026-07-17 完成中断恢复审计
-（详见 `outputs/s_mixup_a04/recovery_audit_20260717.md`）：训练完整正常结束，
+（详见 `outputs/mixup/alpha_04/recovery_audit_20260717.md`）：训练完整正常结束，
 checkpoint/optimizer 全 tensor finite，产物齐全。
 
 ## 官方本地指标（AMP 口径 — 与训练时 checkpoint 选择路径一致）

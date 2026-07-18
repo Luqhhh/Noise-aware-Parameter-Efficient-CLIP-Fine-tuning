@@ -2578,7 +2578,7 @@ data:
   image_extensions: [.jpg, .jpeg, .png, .bmp, .webp]
   split_seed: 42
   train_seed: 42
-  split_dir: outputs/baseline/splits
+  split_dir: outputs/baselines/baseline/splits
   test_dir: data/preliminary/test
   train_dir: data/preliminary/train
   val_ratio: 0.1
@@ -2601,8 +2601,8 @@ eval:
   batch_size: 256
 
 output:
-  log_dir: outputs/baseline/logs
-  submission_dir: outputs/baseline/submissions
+  log_dir: outputs/baselines/baseline/logs
+  submission_dir: outputs/baselines/baseline/submissions
 
 train:
   amp: true
@@ -2613,7 +2613,7 @@ train:
   lr: 0.001
   max_grad_norm: 1.0
   num_workers: 8
-  save_dir: outputs/baseline/checkpoints
+  save_dir: outputs/baselines/baseline/checkpoints
   scheduler: cosine
   warmup_epochs: 1
   weight_decay: 0.0001

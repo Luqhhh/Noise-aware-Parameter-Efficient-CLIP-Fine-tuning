@@ -1,0 +1,29 @@
+{
+  "clean": {
+    "path": "train_dedup/0000/038a9fbb15124c17a119b819e787eb5b.jpg",
+    "original_label": 0,
+    "training_target": 0,
+    "sample_weight": 1.0,
+    "training_role": "clean",
+    "relabel_applied": false
+  },
+  "pseudo": {
+    "path": "train_dedup/0003/5713b6673f6c4ef983a5c8aac0b7a166.jpg",
+    "original_label": 3,
+    "training_target": 110,
+    "sample_weight": 1.0,
+    "training_role": "pseudo",
+    "relabel_applied": true
+  },
+  "rejected": {
+    "path": "train_dedup/0001/435fe27cae0b436d80a5b70ba66306b8.jpg",
+    "original_label": 1,
+    "training_target": 1,
+    "sample_weight": 0.0,
+    "training_role": "rejected",
+    "mixup_supervision_contribution": 0.0,
+    "mixup_zero_gradient_verified": true
+  },
+  "mixup_rejected_zero_gradient": true,
+  "pseudo_relabel_applied_verified": true
+}

@@ -7,12 +7,12 @@ online score so the submission is fully reproducible and auditable.
 Usage:
     python scripts/build_submission_manifest.py \
       --experiment-id ref \
-      --checkpoint outputs/ref/seed42/checkpoints/best.pt \
-      --eval-results outputs/ref/seed42/checkpoints/reeval_best.json \
-      --prediction-csv outputs/ref/seed42/submissions/pred_results.csv \
-      --submission-zip outputs/ref/seed42/submissions/submission.zip \
+      --checkpoint outputs/baselines/ref/seed42/checkpoints/best.pt \
+      --eval-results outputs/baselines/ref/seed42/checkpoints/reeval_best.json \
+      --prediction-csv outputs/baselines/ref/seed42/submissions/pred_results.csv \
+      --submission-zip outputs/baselines/ref/seed42/submissions/submission.zip \
       --online-accuracy 0.573397 \
-      --output outputs/ref/seed42/submissions/submission_manifest.json
+      --output outputs/baselines/ref/seed42/submissions/submission_manifest.json
 """
 
 import argparse

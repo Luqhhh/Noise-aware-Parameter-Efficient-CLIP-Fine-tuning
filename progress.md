@@ -90,15 +90,15 @@
 - Related 12 tests pass; all 91,195 real strict-train paths now load weights (min 0.3, max 1.0, mean 0.634606).
 - Next: restart training from epoch 1 and continue through evaluation and both submission variants.
 
-## 2026-07-18 S_ELR_BASE
+## 2026-07-18 S_ELR_BASE 平台结果
 
-- Latest `main` is `873d959`; S_ELR_BASE config was read and resolved before launch.
-- Planned output root: `outputs/s_elr_base/seed42`; training command uses the project venv and `configs/s_elr_base.yaml`.
-- User requested persistent memory plus hourly monitoring instead of per-epoch queries.
-- Pending: launch service, monitor hourly, then post-process normal and horizontal-flip TTA submissions and validate both.
+- S_ELR_BASE TTA = 59.14%，本地 68.20%。
+- 比 OOF zero-weight（60.28%）低 1.14pp——ELR 的 EMA 引导不如直接按 OOF 置信度剔除噪声。
+- registry、phase3_experiments.csv 已更新。
 
 ## 2026-07-18 S_OOF_ZERO_001 平台结果
 
-- S_OOF_ZERO_001 TTA 平台分 = 59.92%，比 S_OOF_ZERO_0001（60.28%）低 0.36pp。
-- 0.01 阈值排除 12% 样本 vs 0.001 阈值排除 7%——更宽阈值排除了更多有用数据，效果更差。
-- registry 和 phase3_experiments.csv 已更新。
+- S_OOF_ZERO_001 bare = 59.38%（-0.58pp vs 0.001 threshold 59.96%）
+- S_OOF_ZERO_001 TTA = 59.92%（-0.36pp vs 0.001 threshold 60.28%）
+- 0.01 阈值排除 12% 样本 vs 0.001 阈值排除 7%——更宽阈值在 bare 和 TTA 上均更差。
+- registry、phase3_experiments.csv、README 已更新。

@@ -1,0 +1,10 @@
+2026-07-16 13:02:05 | INFO | Config: configs/c_exp5_ln_only.yaml
+2026-07-16 13:02:05 | INFO | Checkpoint: outputs/c_exp5_ln_only/seed42/checkpoints/best.pt
+2026-07-16 13:02:05 | INFO | Seed: 42
+2026-07-16 13:02:05 | INFO | Device: cuda
+2026-07-16 13:02:05 | INFO | Head type: linear
+2026-07-16 13:02:10 | INFO | Loaded checkpoint from epoch 1
+2026-07-16 13:02:10 | INFO | Checkpoint best val acc: 0.7309034509499807
+2026-07-16 13:02:10 | INFO | Checkpoint SHA-256: 769b3d2a4ea35d32c8c77f55d10b78e4d97e62c03d7a285549fdc10226ea1b09
+2026-07-16 13:02:10 | INFO | Val CSV SHA-256: 70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c
+2026-07-16 13:02:11 | INFO | Validation set: 10316 samples, 41 batches

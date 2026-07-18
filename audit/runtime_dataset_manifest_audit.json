@@ -1,0 +1,6 @@
+{
+  "manifest": "outputs/phase4/purification/nr_consensus_relabel_v2_top100/purification_manifest.csv",
+  "errors": [],
+  "warnings": [],
+  "passed": true
+}

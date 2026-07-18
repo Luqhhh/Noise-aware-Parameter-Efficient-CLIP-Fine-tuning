@@ -24,12 +24,13 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from pathlib import Path
 from typing import Dict, Optional
 
 import numpy as np
 import torch
 import torch.nn.functional as F
+
+from common.manifest_loader import canonical_image_path
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,18 @@ class BaseWeightProvider(ABC):
         per_sample_loss: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """Return weight tensor of shape (batch_size,)."""
+
+    def get_training_labels(
+        self,
+        sample_paths: list,
+        original_labels: torch.Tensor,
+    ) -> torch.Tensor:
+        """Return batch training labels (may differ from original when relabel enabled)."""
+        return original_labels
+
+    def get_roles(self, sample_paths: list) -> list:
+        """Return list of training roles (clean, rejected, pseudo)."""
+        return ["clean"] * len(sample_paths)
 
     def state_dict(self) -> dict:
         """State for checkpoint serialisation (stateful providers only)."""
@@ -107,6 +120,7 @@ class StaticManifestProvider(BaseWeightProvider):
 
         self._normalize = normalize_by_weight_sum
         self._missing = missing_policy
+        self._warned_missing: bool = False
         logger.info(
             "StaticManifestProvider: %d weights loaded from %s",
             len(self._weights), manifest_path,
@@ -114,14 +128,25 @@ class StaticManifestProvider(BaseWeightProvider):
 
     def get_weights(self, sample_paths, labels, epoch, per_sample_loss=None):
         w_vals = []
+        missing = []
         for p in sample_paths:
             entry = self._weights.get(p)
             if entry is None:
                 if self._missing == "error":
                     raise KeyError(f"Sample weight missing for: {p}")
                 w_vals.append(1.0)
+                missing.append(p)
             else:
                 w_vals.append(entry)
+
+        if missing and not self._warned_missing:
+            self._warned_missing = True
+            logger.warning(
+                "StaticManifestProvider: %d/%d samples missing from manifest "
+                "— assigned default weight 1.0. First 5: %s",
+                len(missing), len(sample_paths), missing[:5],
+            )
+
         return torch.tensor(w_vals, device=labels.device, dtype=torch.float32)
 
 
@@ -178,6 +203,7 @@ class PrototypeProvider(BaseWeightProvider):
         self._classwise_percentile = classwise_percentile
         self._normalize = normalize_by_weight_sum
         self._missing = missing_policy
+        self._warned_missing: bool = False
 
         # Diagnostics
         w_vals = np.array(list(self._weights.values()))
@@ -198,14 +224,25 @@ class PrototypeProvider(BaseWeightProvider):
 
     def get_weights(self, sample_paths, labels, epoch, per_sample_loss=None):
         w_vals = []
+        missing = []
         for p in sample_paths:
             entry = self._weights.get(p)
             if entry is None:
                 if self._missing == "error":
                     raise KeyError(f"Prototype weight missing for: {p}")
                 w_vals.append(1.0)
+                missing.append(p)
             else:
                 w_vals.append(entry)
+
+        if missing and not self._warned_missing:
+            self._warned_missing = True
+            logger.warning(
+                "PrototypeProvider: %d/%d samples missing from manifest "
+                "— assigned default weight 1.0. First 5: %s",
+                len(missing), len(sample_paths), missing[:5],
+            )
+
         return torch.tensor(w_vals, device=labels.device, dtype=torch.float32)
 
 
@@ -241,16 +278,16 @@ class OOFManifestProvider(BaseWeightProvider):
 
         self._weights: Dict[str, float] = {}
         self._training_labels: Dict[str, int] = {}
+        self._warned_missing: bool = False
+        self._missing = missing_policy
         for _, row in df.iterrows():
             raw_path = str(row["image_path"])
-            # Resolve symlinks and relative prefixes so manifest keys
-            # match the absolute paths produced by TrainImageDataset.
-            resolved = str(Path(raw_path).resolve())
+            key = canonical_image_path(raw_path)
             w = float(row["sample_weight"])
             w = max(min_weight, min(max_weight, w))
-            self._weights[resolved] = w
+            self._weights[key] = w
             # Weight-only mode: keep original label
-            self._training_labels[resolved] = int(row["original_label"])
+            self._training_labels[key] = int(row["original_label"])
 
         self._min_weight = min_weight
         self._max_weight = max_weight
@@ -269,14 +306,40 @@ class OOFManifestProvider(BaseWeightProvider):
 
     def get_weights(self, sample_paths, labels, epoch, per_sample_loss=None):
         w_vals = []
+        missing = []
         for p in sample_paths:
-            entry = self._weights.get(str(Path(p).resolve()))
+            entry = self._weights.get(canonical_image_path(p))
             if entry is None:
                 if self._missing == "error":
                     raise KeyError(f"OOF weight missing for: {p}")
                 w_vals.append(1.0)
+                missing.append(p)
             else:
                 w_vals.append(entry)
+
+        # One-time warning: log missing count and first few examples
+        if missing and not self._warned_missing:
+            self._warned_missing = True
+            n_missing = len(missing)
+            n_total = len(sample_paths)
+            preview = missing[:5]
+            logger.warning(
+                "OOFManifestProvider: %d/%d samples (%.1f%%) missing from OOF "
+                "manifest — assigned default weight 1.0. "
+                "This is expected for validation-set images in final_fit mode, "
+                "but unexpected for d3_strict training images. "
+                "First 5: %s",
+                n_missing, n_total, 100 * n_missing / n_total, preview,
+            )
+            if n_missing > 0:
+                logger.info(
+                    "OOFManifestProvider: total weights: min=%.4f max=%.4f "
+                    "mean=%.4f (missing assigned 1.0, %.1f%% of batch)",
+                    min(w_vals), max(w_vals),
+                    sum(w_vals) / len(w_vals),
+                    100 * n_missing / n_total,
+                )
+
         return torch.tensor(w_vals, device=labels.device, dtype=torch.float32)
 
     def get_training_label(self, image_path: str, original_label: int) -> int:
@@ -321,11 +384,12 @@ class RelabelManifestProvider(BaseWeightProvider):
 
         self._weights: Dict[str, float] = {}
         self._training_labels: Dict[str, int] = {}
+        self._roles: Dict[str, str] = {}
         self._hard_relabel = hard_relabel
         n_relabeled = 0
 
         for _, row in df.iterrows():
-            path = str(row["image_path"])
+            path = canonical_image_path(str(row["image_path"]))
             w = float(row["sample_weight"])
             w = max(min_weight, min(max_weight, w))
             self._weights[path] = w
@@ -335,12 +399,18 @@ class RelabelManifestProvider(BaseWeightProvider):
             else:
                 self._training_labels[path] = int(row["original_label"])
 
+            role = str(row.get("training_role", "clean"))
+            if role not in ("clean", "rejected", "pseudo"):
+                role = "clean"
+            self._roles[path] = role
+
             if int(row["training_label"]) != int(row["original_label"]):
                 n_relabeled += 1
 
         self._min_weight = min_weight
         self._max_weight = max_weight
         self._missing = missing_policy
+        self._warned_missing: bool = False
         self._manifest_sha256 = self._loader.sha256
 
         w_vals = np.array(list(self._weights.values()))
@@ -357,19 +427,67 @@ class RelabelManifestProvider(BaseWeightProvider):
 
     def get_weights(self, sample_paths, labels, epoch, per_sample_loss=None):
         w_vals = []
+        missing = []
         for p in sample_paths:
-            entry = self._weights.get(p)
+            key = canonical_image_path(p)
+            entry = self._weights.get(key)
             if entry is None:
                 if self._missing == "error":
                     raise KeyError(f"Relabel weight missing for: {p}")
                 w_vals.append(1.0)
+                missing.append(p)
             else:
                 w_vals.append(entry)
+
+        if missing and not self._warned_missing:
+            self._warned_missing = True
+            logger.warning(
+                "RelabelManifestProvider: %d/%d samples missing from manifest "
+                "— assigned default weight 1.0. First 5: %s",
+                len(missing), len(sample_paths), missing[:5],
+            )
+
         return torch.tensor(w_vals, device=labels.device, dtype=torch.float32)
 
     def get_training_label(self, image_path: str, original_label: int) -> int:
         """Return the (possibly relabeled) training label for a sample."""
         return self._training_labels.get(image_path, original_label)
+
+    def get_training_labels(
+        self,
+        sample_paths: list,
+        original_labels: torch.Tensor,
+    ) -> torch.Tensor:
+        """Return batch training labels, applying relabel decisions if enabled."""
+        values = []
+        for path, original in zip(sample_paths, original_labels.tolist()):
+            key = canonical_image_path(path)
+            if key in self._training_labels:
+                values.append(self._training_labels[key])
+            else:
+                if self._missing == "error":
+                    raise KeyError(f"Relabel label missing for: {path}")
+                values.append(int(original))
+        return torch.tensor(
+            values, device=original_labels.device, dtype=torch.long,
+        )
+
+    def get_roles(self, sample_paths: list) -> list:
+        """Return training roles from manifest (clean/rejected/pseudo).
+
+        Uses the training_role column saved at load time.
+        Missing entries fail with error policy — coverage must be 100%.
+        """
+        roles = []
+        for path in sample_paths:
+            key = canonical_image_path(path)
+            role = self._roles.get(key)
+            if role is None:
+                if self._missing == "error":
+                    raise KeyError(f"Role missing for: {path}")
+                role = "clean"
+            roles.append(role)
+        return roles
 
 
 # ──────────────────────────────────────────────────────────────────────

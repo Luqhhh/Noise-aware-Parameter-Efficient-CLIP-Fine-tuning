@@ -17,6 +17,16 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+
+def canonical_image_path(value: str) -> str:
+    """Return a stable absolute key for an image path.
+
+    Expands user home, resolves symlinks and relative components,
+    and returns a str suitable as a dict key across providers.
+    """
+    return str(Path(value).expanduser().resolve())
+
+
 REQUIRED_COLUMNS = [
     "sample_id",
     "image_path",
@@ -34,6 +44,13 @@ OPTIONAL_COLUMNS = [
     "prototype_margin",
     "knn_agreement",
     "flip_consistency",
+    "training_role",
+    "selection_reason",
+    "suggested_label",
+    "prototype_top1",
+    "knn_top1",
+    "top1_margin",
+    "duplicate_conflict_flag",
 ]
 
 

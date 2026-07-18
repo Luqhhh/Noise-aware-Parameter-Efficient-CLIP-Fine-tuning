@@ -18,12 +18,12 @@ data:
   - .webp
   split_seed: 42
   train_seed: 42
-  split_dir: outputs/aug_a1/splits
+  split_dir: outputs/archive/aug_a1/splits
   test_dir: test
   train_dir: train
   val_ratio: 0.1
   expected_num_classes: 500
-  class_mapping_path: outputs/metadata
+  class_mapping_path: outputs/data/metadata
   use_full_training_set: false
 
 model:
@@ -37,8 +37,8 @@ eval:
   batch_size: 256
 
 output:
-  log_dir: outputs/aug_a1/logs
-  submission_dir: outputs/aug_a1/submissions
+  log_dir: outputs/archive/aug_a1/logs
+  submission_dir: outputs/archive/aug_a1/submissions
 
 train:
   amp: true
@@ -49,7 +49,7 @@ train:
   lr: 0.003
   max_grad_norm: 1.0
   num_workers: 8
-  save_dir: outputs/aug_a1/checkpoints
+  save_dir: outputs/archive/aug_a1/checkpoints
   scheduler: cosine
   warmup_epochs: 1
   weight_decay: 0.0001

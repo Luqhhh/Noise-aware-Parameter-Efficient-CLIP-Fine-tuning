@@ -1,0 +1,16 @@
+{
+  "sample_count": 91195,
+  "fold_count": 3,
+  "query_reference_policy": "other_folds_only",
+  "self_neighbor_possible": false,
+  "same_fold_reference_possible": false,
+  "k": 10,
+  "knn_original_label_agreement_defined": true,
+  "knn_top1_agreement_defined": true,
+  "min_knn_top1_agreement": 0.1000000014901161,
+  "max_knn_top1_agreement": 1.0,
+  "distinct_queries_sampled": 20,
+  "all_neighbors_other_fold": 1,
+  "missing_rows": 0,
+  "duplicate_paths": 0
+}

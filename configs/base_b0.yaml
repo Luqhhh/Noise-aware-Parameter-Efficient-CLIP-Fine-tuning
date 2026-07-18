@@ -20,12 +20,12 @@ data:
   - .webp
   split_seed: 42
   train_seed: 42
-  split_dir: outputs/base_b0/splits
+  split_dir: outputs/baselines/base_b0/splits
   test_dir: test
   train_dir: train
   val_ratio: 0.1
   expected_num_classes: 500
-  class_mapping_path: outputs/metadata
+  class_mapping_path: outputs/data/metadata
   use_full_training_set: false
 
 model:
@@ -39,8 +39,8 @@ eval:
   batch_size: 256
 
 output:
-  log_dir: outputs/base_b0/logs
-  submission_dir: outputs/base_b0/submissions
+  log_dir: outputs/baselines/base_b0/logs
+  submission_dir: outputs/baselines/base_b0/submissions
 
 train:
   amp: true
@@ -51,7 +51,7 @@ train:
   lr: 0.001
   max_grad_norm: 1.0
   num_workers: 8
-  save_dir: outputs/base_b0/checkpoints
+  save_dir: outputs/baselines/base_b0/checkpoints
   scheduler: cosine
   warmup_epochs: 1
   weight_decay: 0.0001

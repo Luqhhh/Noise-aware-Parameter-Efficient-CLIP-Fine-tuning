@@ -21,3 +21,7 @@ configs/*.local.yaml
 
 # Worktrees
 .claude/worktrees/
+audit/*.zip
+audit/*.patch
+task0_5_final_acceptance.zip
+task0_5_final_acceptance/

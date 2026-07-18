@@ -7,8 +7,8 @@ Archived: 2026-07-16
 
 | Directory | Config | Problem |
 |---|---|---|
-| outputs/s_peft/e1_ln_1e6_invalid_freeze_clip_true/ | freeze_clip: true + peft: visual_layernorm_only | LN gradients blocked |
-| outputs/s_peft/e2_ln_5e7_invalid_freeze_clip_true/ | freeze_clip: true + peft: visual_layernorm_only | LN gradients blocked |
+| outputs/peft/s_peft/e1_ln_1e6_invalid_freeze_clip_true/ | freeze_clip: true + peft: visual_layernorm_only | LN gradients blocked |
+| outputs/peft/s_peft/e2_ln_5e7_invalid_freeze_clip_true/ | freeze_clip: true + peft: visual_layernorm_only | LN gradients blocked |
 
 ## Root Cause
 
@@ -31,7 +31,7 @@ experiments produced identical metrics (micro=0.73207).
 ## Remediation
 
 Configs corrected to `freeze_clip: false`. Training re-run successfully.
-Valid results at `outputs/s_peft/e1_ln_1e6/` and `outputs/s_peft/e2_ln_5e7/`.
+Valid results at `outputs/peft/s_peft/e1_ln_1e6/` and `outputs/peft/s_peft/e2_ln_5e7/`.
 
 ## Public Interface Gap
 

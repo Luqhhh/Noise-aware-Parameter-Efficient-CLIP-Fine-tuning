@@ -5,7 +5,7 @@
 # All CLIP visual params FROZEN — only linear head trains.
 #
 # Run: python3 -m experiments.baseline.train --config configs/c_exp7_teacher.yaml \
-#        --init-checkpoint outputs/w1_gce05_mixup/seed42/checkpoints/best.pt
+#        --init-checkpoint outputs/mixup/gce05_mixup/seed42/checkpoints/best.pt
 
 experiment:
   id: C_EXP7_TEACHER
@@ -24,12 +24,12 @@ data:
   seed: 42
   split_seed: 42
   train_seed: 42
-  split_dir: outputs/ref/seed42
+  split_dir: outputs/baselines/ref/seed42
   test_dir: test
   train_dir: train
   val_ratio: 0.1
   expected_num_classes: 500
-  class_mapping_path: outputs/master_splits/seed42
+  class_mapping_path: outputs/data/master_splits/seed42
   use_full_training_set: false
 
 model:
@@ -59,8 +59,8 @@ eval:
   batch_size: 256
 
 output:
-  log_dir: outputs/c_exp7_teacher/seed42/logs
-  submission_dir: outputs/c_exp7_teacher/seed42/submissions
+  log_dir: outputs/ema/teacher/seed42/logs
+  submission_dir: outputs/ema/teacher/seed42/submissions
 
 train:
   amp: true
@@ -71,7 +71,7 @@ train:
   lr: 0.0001
   max_grad_norm: 1.0
   num_workers: 8
-  save_dir: outputs/c_exp7_teacher/seed42/checkpoints
+  save_dir: outputs/ema/teacher/seed42/checkpoints
   scheduler: cosine
   warmup_epochs: 2
   weight_decay: 0.0001

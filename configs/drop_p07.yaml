@@ -18,7 +18,7 @@ data:
   train_dir: train_dedup
   val_ratio: 0.1
   expected_num_classes: 500
-  class_mapping_path: outputs/metadata
+  class_mapping_path: outputs/data/metadata
   use_full_training_set: false
 model:
   clip_model_name: ViT-B/32
@@ -33,8 +33,8 @@ cache:
 eval:
   batch_size: 256
 output:
-  log_dir: outputs/drop_p07/logs
-  submission_dir: outputs/drop_p07/submissions
+  log_dir: outputs/archive/drop_p07/logs
+  submission_dir: outputs/archive/drop_p07/submissions
 train:
   amp: true
   batch_size: 128
@@ -44,7 +44,7 @@ train:
   lr: 0.005
   max_grad_norm: 1.0
   num_workers: 8
-  save_dir: outputs/drop_p07/checkpoints
+  save_dir: outputs/archive/drop_p07/checkpoints
   scheduler: cosine
   warmup_epochs: 1
   weight_decay: 0.0001
