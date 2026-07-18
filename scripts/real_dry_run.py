@@ -5,7 +5,7 @@ import yaml, torch, torch.nn as nn
 from torch.utils.data import DataLoader
 import numpy as np
 
-REPO = Path("/home/lux1/noise")
+REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from common.dataset import TrainImageDataset, seed_worker
@@ -57,14 +57,9 @@ def dry_run(config_path, output_log, n_batches=10):
     sw_cfg = config.get("sample_weighting", {})
     weight_provider = build_weight_provider(config, num_train_samples=len(train_dataset)) if sw_cfg.get("type") else None
 
-    # Manifest stats
+    # Manifest stats (initial detection only; full audit below)
     manifest_path = sw_cfg.get("manifest_path", "")
-    manifest_loaded = False
-    if manifest_path and Path(REPO / manifest_path).exists():
-        import pandas as pd
-        m = pd.read_csv(REPO / manifest_path)
-        roles = m.get("training_role", pd.Series())
-        manifest_loaded = True
+    manifest_loaded = bool(manifest_path and (REPO / manifest_path).exists())
 
     mixup_cfg = config.get("mixup", {})
     normalize_by_weight_sum = sw_cfg.get("normalize_by_weight_sum", True)
@@ -80,22 +75,37 @@ def dry_run(config_path, output_log, n_batches=10):
         "nan_grad": 0,
         "manifest_loaded": manifest_loaded,
     }
-    if manifest_loaded:
-        import pandas as pd
-        m = pd.read_csv(REPO / manifest_path)
-        results["total_rows"] = len(m)
-        has_role = "training_role" in m.columns
-        if has_role:
-            results["clean_count"] = int((m.training_role == "clean").sum())
-            results["rejected_count"] = int((m.training_role == "rejected").sum())
-            results["pseudo_count"] = int((m.training_role == "pseudo").sum())
+
+    # Runtime manifest audit (fail-closed)
+    if weight_provider is not None and manifest_loaded:
+        import logging
+        from experiments.baseline.train import _runtime_manifest_audit
+        audit_logger = logging.getLogger("dry_run_audit")
+        audit_logger.setLevel(logging.INFO)
+        if not audit_logger.handlers:
+            h = logging.StreamHandler()
+            h.setLevel(logging.INFO)
+            audit_logger.addHandler(h)
+
+        save_dir = REPO / "outputs" / "dry_run_audit"
+        _runtime_manifest_audit(
+            train_dataset, weight_provider, "dev", save_dir, audit_logger,
+        )
+
+        # Read back audit for coverage stats
+        import json as _json
+        audit_path = save_dir / "manifest_runtime_audit.json"
+        if audit_path.exists():
+            audit = _json.loads(audit_path.read_text())
+            results["coverage"] = audit["coverage"]
+            results["clean_count"] = audit["clean_count"]
+            results["rejected_count"] = audit["rejected_count"]
+            results["pseudo_count"] = audit["pseudo_count"]
+            results["audit_errors"] = 0
         else:
-            # Old format — sample_weight determines role
-            n_zero = int((m.sample_weight == 0.0).sum())
-            n_clean = len(m) - n_zero
-            results["clean_count"] = n_clean
-            results["rejected_count"] = n_zero
-            results["pseudo_count"] = 0
+            results["coverage"] = 0.0
+            results["audit_errors"] = 1
+    elif manifest_loaded:
         results["coverage"] = 1.0
 
     head.train()
@@ -161,7 +171,7 @@ def dry_run(config_path, output_log, n_batches=10):
         if batch_idx == 0 or batch_idx == n_batches - 1:
             print(f"  batch {batch_idx+1}/{n_batches}: loss={loss.item():.4f}, relabel_changed={results['relabel_applied']}, mixup={mixup_applied}", flush=True)
 
-    results["effective_samples"] = results.get("total_rows", len(train_dataset)) - results.get("rejected_count", 0)
+    results["effective_samples"] = len(train_dataset) - results.get("rejected_count", 0)
     results["max_class_drop_rate"] = 0.0
     if manifest_loaded and results["rejected_count"] > 0:
         m = pd.read_csv(REPO / manifest_path)
