@@ -1880,6 +1880,7 @@ def main():
         # Track best epoch (raw + EMA)
         is_best_raw = False
         is_best_ema = False
+        is_best = False
         if val_acc is not None:
             if val_acc > best_raw_acc:
                 best_raw_acc = val_acc

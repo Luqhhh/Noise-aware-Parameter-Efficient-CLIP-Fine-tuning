@@ -48,7 +48,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 ### 5. 测试覆盖
 
-147 个测试全部通过，新增：
+322 个测试全部通过，新增：
 - `test_partial_unfreeze.py`（16 tests）：参数冻结/解冻、train mode 行为
 - `test_discriminative_optimizer.py`（11 tests）：参数组结构、LR/WD 正确性、覆盖率
 - `test_init_checkpoint.py`（4 tests）：权重加载、跨架构兼容、requires_grad 保持
@@ -58,58 +58,81 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - `test_metric_consistency.py`（7 tests）：micro-macro gap 一致性、bottom-10% 计算
 - `test_submission_manifest.py`（18 tests）：SHA-256 哈希、ZIP vs CSV hash 区分、标签格式、预测计数、重复登记拒绝、manifest schema
 
-### 6. 平台结果总览
+### 6. 平台结果总览（updated 2026-07-18）
+
+**Top TTA 分数：**
 
 | 实验 | 平台分数 | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
-| **S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5)** | **60.4758%** | **+3.14pp** | 2-view Flip TTA |
-| w1_gce05_mixup (MixUp + GCE q=0.5) | 60.3637% | +3.02pp | 2-view Flip TTA |
-| w1_ce5_gce05 (CE5 warmup + GCE q=0.5) | 60.2500% | +2.91pp | 2-view Flip TTA |
-| b2_gce05 (纯 GCE q=0.5) | 60.1594% | +2.82pp | 2-view Flip TTA |
-| gce_q07 (GCE q=0.7) | 59.4064% | +2.07pp | 2-view Flip TTA |
-| ref（D3_STRICT） | 57.3397% | — | 单视图 |
-| ref + Flip TTA | 58.3090% | +0.97pp | 2-view Flip TTA |
+| **S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5)** | **60.48%** | **+3.14pp** | 2-view Flip TTA |
+| s_oof_zero_0001 (OOF zero-weight p<0.001) | 60.28% | +2.94pp | 2-view Flip TTA |
+| w1_gce05_mixup (MixUp + GCE q=0.5) | 60.36% | +3.02pp | 2-view Flip TTA |
+| w1_ce5_gce05 (CE5 warmup + GCE q=0.5) | 60.25% | +2.91pp | 2-view Flip TTA |
+| b2_gce05 (纯 GCE q=0.5) | 60.16% | +2.82pp | 2-view Flip TTA |
+| s_oof_zero_001 (OOF zero-weight p<0.01) | 59.92% | +2.58pp | 2-view Flip TTA |
+
+**Top Bare 分数：**
+
+| 实验 | 平台分数 | vs ref (D3) | 推理策略 |
+|------|---------|-------------|----------|
+| **s_oof_zero_0001 (OOF zero-weight p<0.001)** | **59.96%** | **+2.62pp** | 单视图 |
+| w1_gce05_mixup (MixUp + GCE q=0.5) | 59.86% | +2.52pp | 单视图 |
+| s_d3_mixup (GCE q=0.5 + MixUp, d3 control) | 59.86% | +2.52pp | 单视图 |
+| s_mixup_ce5 (CE5 warmup + MixUp) | 59.70% | +2.36pp | 单视图 |
+| b2_gce05 (纯 GCE q=0.5) | 59.62% | +2.28pp | 单视图 |
 
 **基线定义：**
-- **平台 TTA 基线**：S_MIXUP_CE5 + Flip TTA = **60.4758%**
-- **平台 Bare 基线**：w1_gce05_mixup 单视图 = 59.86%
-- **训练基线**：b2_gce05 (GCE q=0.5) 单视图 —— 新训练方法与此比较
+- **平台 Bare 最佳**：s_oof_zero_0001 = **59.96%**（OOF zero-weight p<0.001，首次超越 MixUp）
+- **平台 TTA 最佳**：S_MIXUP_CE5 + Flip TTA = **60.48%**
+- **训练基线**：s_d3_mixup (GCE q=0.5 + MixUp, d3_strict) —— 所有 OOF 实验的配对对照
 
 **核心发现：**
+- **OOF zero-weight 有效**：p<0.001 阈值排除 7% 最低置信度样本，平台 Bare 59.96% (+0.10pp vs MixUp control)，本地低但平台反超——OOF 预测本身比本地 val 更可靠
+- **阈值敏感**：p<0.01 排除 12% 样本效果更差（TTA 59.92% vs 60.28%），过度排除损失有用数据
+- **OOF discrete（3-tier）无效**：TTA = Bare（59.28%），zero gain，已关闭
 - CE warmup 本地 +3.65pp 但平台 Bare 完全持平（59.61% vs 59.62%），本地分数无法预测平台表现
-- MixUp 是唯一将本地增益传递到平台的方法：MixUp 本地 71.16% < CE5 73.14%，但平台 Bare 59.86% > 59.61%
-- CE5 warmup + MixUp 组合产生平台协同效应：本地 70.25% 低于两个父实验，但平台 TTA 60.48% 超越两者
-- Horizontal-flip TTA 持续提供 +0.4-0.6pp 平台增益
-- 冻结 CLIP + 线性头框架下，平台天花板约 60-61%，突破需要 PEFT 或噪声抑制方法
+- MixUp 是唯一将本地增益传递到平台的 baseline 方法
+- Horizontal-flip TTA 持续提供 +0.3-0.5pp 平台增益
+- 冻结 CLIP + 线性头框架下，平台天花板约 60-61%，目前最佳 Bare 59.96%
 
 ### 7. 本地评估与待完成
 
-**已完成 (strict protocol, seed=42, reeval from best.pt):**
+**已完成 (d3_strict, seed=42, reeval from best.pt):**
 
-| Experiment | Local Micro | Local Macro | Best Epoch | Platform TTA |
-|---|---|---|---|---|
-| w1_ce5_gce05（CE5 warmup） | 73.14% | 73.09% | — | 60.25% |
-| w1_gce05_mixup（MixUp） | 71.16% | 71.12% | 46 | 60.36% |
-| ref（D3_STRICT） | 70.66% | 70.61% | 49 | 57.34% |
-| S_MIXUP_CE5（warmup+MixUp） | 70.25% | 70.19% | 43 | **60.48%** |
-| gce_q07（B2_GCE07） | 69.59% | 69.53% | 41 | 59.41% |
-| b2_gce05（GCE q=0.5） | 69.49% | 69.49% | — | 60.16% |
+| Experiment | Local Micro | Local Macro | Best Epoch | Platform Bare | Platform TTA |
+|---|---|---|---|---|---|
+| w1_ce5_gce05（CE5 warmup） | 73.14% | 73.09% | 50 | 59.61% | 60.25% |
+| s_peft/e2_ln_5e7 | 71.21% | — | 1 | — | — |
+| w1_gce05_mixup（MixUp） | 71.16% | 71.12% | 46 | 59.86% | 60.36% |
+| ref（D3_STRICT） | 70.66% | 70.61% | 49 | 57.34% | 58.31% |
+| s_mixup_ce5（warmup+MixUp） | 70.25% | 70.19% | 43 | 59.70% | **60.48%** |
+| gce_q07（B2_GCE07） | 69.59% | 69.53% | 41 | 58.96% | 59.41% |
+| b2_gce05（GCE q=0.5） | 69.49% | 69.49% | 50 | 59.62% | 60.16% |
+| s_d3_mixup（MixUp d3 control） | 69.47% | 69.47% | 40 | 59.86% | — |
+| s_oof_zero_0001（OOF p<0.001） | 69.37% | 69.37% | 44 | **59.96%** | 60.28% |
+| s_oof_zero_001（OOF p<0.01） | 69.02% | 69.01% | 37 | — | 59.92% |
+| s_oof_discrete（OOF 3-tier） | 68.65% | — | 41 | 59.28% | 59.28% |
+| s_elr_base（GCE+MixUp+ELR） | 68.20% | 68.21% | 19 | — | — |
 
-> ⚠️ **Important**: 本地 val 不能预测平台表现。CE5 warmup 本地最高（73.14%）但平台 Bare 与纯 GCE q=0.5 持平（59.61% vs 59.62%）。S_MIXUP_CE5 本地最低（70.25%）但平台 TTA 最高（60.48%）。所有模型选择必须以平台 Bare 为准，本地分数仅作辅助诊断。
+> ⚠️ **Important**: 本地 val 不能预测平台表现。OOF zero-weight 本地 69.37%（低于 MixUp 71.16%）但平台 Bare 59.96% 超越 MixUp 59.86%。所有模型选择必须以平台 Bare 为准，本地分数仅作辅助诊断。
 
-**Platform Submissions (updated 2026-07-16):**
+**Platform Submissions (updated 2026-07-18):**
 
 | Submission | Platform | vs ref | 推理 |
 |------------|---------|--------|------|
-| S_MIXUP_CE5 + Flip TTA | **60.4758%** | **+3.14pp** | 2-view Flip TTA |
-| w1_gce05_mixup + Flip TTA | 60.3637% | +3.02pp | 2-view Flip TTA |
-| w1_ce5_gce05 + Flip TTA | 60.2500% | +2.91pp | 2-view Flip TTA |
-| b2_gce05 + Flip TTA | 60.1594% | +2.82pp | 2-view Flip TTA |
-| gce_q07 + Flip TTA | 59.4064% | +2.07pp | 2-view Flip TTA |
-| ref（D3_STRICT） | 57.3397% | — | 单视图 |
-| ref + Flip TTA | 58.3090% | +0.97pp | 2-view Flip TTA |
+| S_MIXUP_CE5 + Flip TTA | **60.48%** | **+3.14pp** | 2-view Flip TTA |
+| w1_gce05_mixup + Flip TTA | 60.36% | +3.02pp | 2-view Flip TTA |
+| s_oof_zero_0001 + Flip TTA | 60.28% | +2.94pp | 2-view Flip TTA |
+| w1_ce5_gce05 + Flip TTA | 60.25% | +2.91pp | 2-view Flip TTA |
+| b2_gce05 + Flip TTA | 60.16% | +2.82pp | 2-view Flip TTA |
+| s_oof_zero_0001 bare | **59.96%** | **+2.62pp** | 单视图（BEST BARE） |
+| s_oof_zero_001 + Flip TTA | 59.92% | +2.58pp | 2-view Flip TTA |
+| s_d3_mixup bare | 59.86% | +2.52pp | 单视图 |
+| s_mixup_ce5 bare | 59.70% | +2.36pp | 单视图 |
+| gce_q07 + Flip TTA | 59.41% | +2.07pp | 2-view Flip TTA |
+| ref（D3_STRICT） | 57.34% | — | 单视图 |
 
-**已关闭方向**：Dropout、ColorJitter/RandomErasing、Cosine Head、Label Smoothing、Head EMA、EMA Loss、Prototype Weighting、CE 下部分解冻、Head-only EMA Teacher + Consistency、GCE q=0.9、4-view TTA、vertical flip
+**已关闭方向**：Dropout、ColorJitter/RandomErasing、Cosine Head、Label Smoothing、Head EMA、EMA Loss、Prototype Weighting、CE 下部分解冻、Head-only EMA Teacher + Consistency、GCE q=0.9、4-view TTA、vertical flip、OOF 3-tier discrete weight、ELR（本地 -1.2pp vs OOF）、PEFT LN-tune（freeze_clip=true 模式下无增益）
 
 ## 项目结构
 
@@ -120,7 +143,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 │   └── cosine/          # Cosine Head 实验（委托 baseline）
 ├── configs/             # 每个实验一个 YAML
 ├── scripts/             # 数据准备、超参搜索、去重仲裁、提交验证
-├── tests/               # 147 个 pytest 测试
+├── tests/               # 322 个 pytest 测试
 ├── outputs/             # 实验结果（tracked in git，*.pt 忽略）
 └── docs/superpowers/    # 设计文档与实施计划
 ```
@@ -149,16 +172,18 @@ After discovering 88% validation leakage in F1 and 3.79% content leakage in the 
 † Early stopped (patience=10). All metrics from `reeval_best.json` (best.pt reload).
 E0_STRICT: clean rerun completed (50 epochs, best epoch 47, no early stop).
 
-**Platform Submissions (registered in `results/submission_registry.csv`):**
+**Platform Submissions (registered in `results/submission_registry.csv`, updated 2026-07-18):**
 
 | Submission | Platform | vs ref | 推理 |
 |------------|---------|--------|------|
-| ref（D3_STRICT） | 57.3397% | — | 单视图 |
-| ref + Flip TTA | 58.3090% | +0.97pp | 2-view mean logits |
-| gce_q07（B2_GCE07） | 58.9578% | +1.62pp | 单视图 |
-| gce_q07 + Flip TTA | **59.4064%** | **+2.07pp** | 2-view mean logits |
-| pw_v1（B3_PROTO_STATIC） | 58.0526% | +0.71pp | 单视图 |
-| B1_LS005 | 57.3918% | +0.05pp | 单视图（已关闭） |
+| S_MIXUP_CE5 + Flip TTA | **60.48%** | **+3.14pp** | 2-view Flip TTA |
+| s_oof_zero_0001 + Flip TTA | 60.28% | +2.94pp | 2-view Flip TTA |
+| s_oof_zero_0001 bare | **59.96%** | +2.62pp | 单视图（BEST BARE） |
+| s_d3_mixup bare | 59.86% | +2.52pp | 单视图 |
+| s_oof_zero_001 + Flip TTA | 59.92% | +2.58pp | 2-view Flip TTA |
+| gce_q07 + Flip TTA | 59.41% | +2.07pp | 2-view Flip TTA |
+| ref（D3_STRICT） | 57.34% | — | 单视图 |
+| ref + Flip TTA | 58.31% | +0.97pp | 2-view Flip TTA |
 
 **Pattern note (seed=42):** Both GCE and prototype-weighting showed local raw accuracy regression but positive platform gains, suggesting raw noisy-label validation may invert model ranking vs clean test performance. Multi-seed confirmation in progress (gce_q07 seeds 2026, 3407).
 

@@ -96,3 +96,9 @@
 - Planned output root: `outputs/s_elr_base/seed42`; training command uses the project venv and `configs/s_elr_base.yaml`.
 - User requested persistent memory plus hourly monitoring instead of per-epoch queries.
 - Pending: launch service, monitor hourly, then post-process normal and horizontal-flip TTA submissions and validate both.
+
+## 2026-07-18 S_OOF_ZERO_001 平台结果
+
+- S_OOF_ZERO_001 TTA 平台分 = 59.92%，比 S_OOF_ZERO_0001（60.28%）低 0.36pp。
+- 0.01 阈值排除 12% 样本 vs 0.001 阈值排除 7%——更宽阈值排除了更多有用数据，效果更差。
+- registry 和 phase3_experiments.csv 已更新。
