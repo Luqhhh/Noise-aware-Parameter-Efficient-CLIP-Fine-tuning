@@ -1,0 +1,17 @@
+{
+  "checkpoint": "outputs/s_elr_base/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "cd5f12ab6a89d297dfe95a520aa06c7fdc98091f252e90ca638eedc36de69581",
+  "val_csv": "outputs/d3_strict/seed42/val.csv",
+  "val_csv_sha256": "607e019165912bb0639efb456b7e8dea122b3e8579a2344dedb8109798921eae",
+  "config": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/configs/s_elr_base.yaml",
+  "micro_accuracy": 0.682038364658012,
+  "macro_accuracy": 0.6820666790008545,
+  "median_per_class_accuracy": 0.7142857313156128,
+  "bottom_10_percent_accuracy": 0.29904764890670776,
+  "micro_macro_gap": -2.831434284245038e-05,
+  "loss": 0.6540753659156144,
+  "total_samples": 10322,
+  "correct_samples": 7040,
+  "checkpoint_epoch": 19,
+  "checkpoint_best_val_acc": 0.682038364658012
+}
