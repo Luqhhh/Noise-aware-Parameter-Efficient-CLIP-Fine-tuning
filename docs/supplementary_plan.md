@@ -15,6 +15,7 @@ Supplementary Experiments — 完整修订方案
    |:--|:--:|:--:|:--:|
    | **MixUp + GCE q=0.5** (W1_GCE05_MIXUP) | **59.86%** | **60.36%** | 71.16% |
    | S_MIXUP_CE5 (CE5 warmup + MixUp) | 59.70% | 60.48% | 70.25% |
+   | **S_OOF_ZERO_0001** (binary zero p<0.001) | **59.96%** | **60.28%** | 69.37% |
    | CE 5 epoch → GCE q=0.5 | 59.61% | 60.25% | 73.14% |
    | 纯 GCE q=0.5 | 59.62% | 60.16% | 69.49% |
    | S_OOF_DISCRETE (OOF trust-weighted) | 59.28% | 59.28% | 68.65% |
@@ -47,16 +48,16 @@ Supplementary Experiments — 完整修订方案
    既不破坏也不改善表征，feature drift 极小不足以改变分类决策。
    按 §13.3 关闭普通 PEFT；E4 (FeatDistill) / E5 (seed 3407) / LoRA (§9) 均不执行。
 
-   **P2 — OOF 路线（2026-07-17）：**
+   **P2 — OOF 路线（2026-07-18）：**
 
    | 实验 | 平台 Bare | 平台 TTA | 本地 Val | 判定 |
    |:--|:--:|:--:|:--:|:--|
-   | S_OOF_DISCRETE (OOF trust-weighted) | 59.28% | 59.28% | 68.65% | eliminated |
+   | S_OOF_DISCRETE (3-tier tertile) | 59.28% | 59.28% | 68.65% | eliminated |
+   | **S_OOF_ZERO_0001** (binary, p<0.001) | **59.96%** | **60.28%** | 69.37% | pending d3 control |
 
-   OOF trust-weighted 训练未产生平台增益（Bare 低于父基线 0.58pp）。
-   Trusted Validation 分析发现 **rejected accuracy 是有效诊断指标**：
-   CE warmup 在 rejected 样本上 accuracy 更高（更拟合噪声），MixUp 的 rejected
-   accuracy 更低（更抗拒噪声拟合），与平台 Bare 排序一致。详见 §7 补充分析。
+   Bare=59.96% 超过 W1_GCE05_MIXUP bare 59.86%（+0.10pp）。
+   bare-tta gap 仅 0.32pp（MixUp 为 0.50pp），模型更稳定。
+   需等 S_D3_MIXUP bare 做同 split 验证。
 
 
 0.2 已确认的核心现象

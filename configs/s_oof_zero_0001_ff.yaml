@@ -1,0 +1,83 @@
+# S_OOF_ZERO_0001_FINAL_FIT: Full-train mode, no val split
+# Uses the OOF zero-weight manifest (p<0.001 → w=0, rest w=1.0)
+# and trains on ALL d3_strict train samples (91,196) for 50 epochs
+# with no early stopping — since OOF already excluded noise, the
+# model should not overfit to garbage labels.
+#
+# Compared to dev mode (69.37% val, best epoch 44/50):
+#   +9.5K extra training samples (no val holdout)
+#   no val for checkpoint selection → use last.pt
+#   TTA will be applied to last.pt for platform submission
+#
+# Parent: S_OOF_ZERO_0001 (dev mode, bare=59.96%, TTA=60.28%)
+# Run: python3 -m experiments.baseline.train --config configs/s_oof_zero_0001_ff.yaml
+
+experiment:
+  id: S_OOF_ZERO_0001_FF
+  mode: final_fit
+  head_type: linear
+  augmentation_preset: a0
+
+data:
+  stage: preliminary
+  image_extensions: [.jpg, .jpeg, .png, .bmp, .webp]
+  seed: 42
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/d3_strict/seed42
+  test_dir: test
+  train_dir: train
+  val_ratio: 0.1
+  expected_num_classes: 500
+  class_mapping_path: outputs/master_splits/seed42
+  use_full_training_set: true
+
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+  use_cached_features: false
+  unfreeze_last_n_blocks: 0
+  train_ln_post: false
+  train_visual_proj: false
+
+loss:
+  name: gce
+  q: 0.5
+  probability_epsilon: 1.0e-7
+
+mixup:
+  enabled: true
+  alpha: 0.2
+  probability: 0.2
+
+sample_weighting:
+  type: oof_manifest
+  manifest_path: outputs/phase3/oof/oof_zero_weight_manifest_thresh0.001.csv
+  min_weight: 0.0
+  max_weight: 1.0
+  missing_policy: error
+
+eval:
+  batch_size: 256
+
+output:
+  log_dir: outputs/s_oof_zero_0001_ff/seed42/logs
+  submission_dir: outputs/s_oof_zero_0001_ff/seed42/submissions
+
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 50
+  image_size: 224
+  lr: 0.005
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/s_oof_zero_0001_ff/seed42/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001
+  min_lr_ratio: 0.01
+  early_stop_patience: 10

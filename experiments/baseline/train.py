@@ -1417,11 +1417,16 @@ def main():
             import pandas as pd
             try:
                 manifest_df = pd.read_csv(manifest_path)
+                # Match by stable key (class/filename) — paths may differ
+                # between train_dedup/ (manifest) and /home/.../train/ (val).
+                def _stable_key(p: str) -> str:
+                    parts = str(p).replace("\\", "/").split("/")
+                    return "/".join(parts[-2:])
                 w_map = dict(zip(
-                    manifest_df["image_path"].apply(lambda p: str(Path(p).resolve())),
+                    manifest_df["image_path"].apply(_stable_key),
                     manifest_df["sample_weight"],
                 ))
-                val_paths = [str(Path(p).resolve()) for p in val_loader.dataset.samples]
+                val_paths = [_stable_key(str(p)) for p in val_loader.dataset.samples]
                 val_weights = torch.tensor(
                     [w_map.get(p, 1.0) for p in val_paths],
                     dtype=torch.float32,

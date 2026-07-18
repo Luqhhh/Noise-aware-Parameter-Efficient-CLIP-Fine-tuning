@@ -1,0 +1,14 @@
+2026-07-18 16:57:15 | INFO | Config: configs/s_d3_mixup.yaml
+2026-07-18 16:57:15 | INFO | Checkpoint: outputs/s_d3_mixup/seed42/checkpoints/best.pt
+2026-07-18 16:57:15 | INFO | Device: cuda
+2026-07-18 16:57:15 | INFO | Head type: linear
+2026-07-18 16:57:19 | INFO | Loaded checkpoint from epoch 40
+2026-07-18 16:57:19 | INFO | Checkpoint best val acc: 0.6947297035458244
+2026-07-18 16:57:19 | INFO | Loaded idx_to_class mapping from checkpoint metadata.
+2026-07-18 16:57:19 | INFO | idx_to_class mapping has 500 entries.
+2026-07-18 16:57:19 | INFO | Test set: 24967 images, 98 batches
+2026-07-18 16:57:41 | INFO | Raw predictions saved to: outputs/s_d3_mixup/seed42/submissions/pred_raw.csv
+2026-07-18 16:57:41 | INFO | Total predictions: 24967
+2026-07-18 16:57:41 | INFO | Unique predicted classes: 499 / 500
+2026-07-18 16:57:41 | INFO | Prediction label lengths: {4: 24967}
+2026-07-18 16:57:41 | INFO | Inference complete.

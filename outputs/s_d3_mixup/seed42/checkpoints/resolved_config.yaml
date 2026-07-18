@@ -1,0 +1,91 @@
+experiment:
+  id: S_D3_MIXUP
+  mode: dev
+  head_type: linear
+  augmentation_preset: a0
+  parent: null
+  wave: null
+  seed: 42
+data:
+  stage: preliminary
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  seed: 42
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/d3_strict/seed42
+  test_dir: test
+  train_dir: train
+  val_ratio: 0.1
+  expected_num_classes: 500
+  class_mapping_path: outputs/master_splits/seed42
+  use_full_training_set: false
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+  use_cached_features: false
+  unfreeze_last_n_blocks: 0
+  train_ln_post: false
+  train_visual_proj: false
+loss:
+  name: gce
+  q: 0.5
+  probability_epsilon: 1.0e-07
+mixup:
+  enabled: true
+  alpha: 0.2
+  probability: 0.2
+eval:
+  batch_size: 256
+output:
+  log_dir: outputs/s_d3_mixup/seed42/logs
+  submission_dir: outputs/s_d3_mixup/seed42/submissions
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 50
+  image_size: 224
+  lr: 0.005
+  max_grad_norm: 1.0
+  num_workers: 8
+  save_dir: outputs/s_d3_mixup/seed42/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001
+  min_lr_ratio: 0.01
+  early_stop_patience: 10
+  pin_memory: true
+runtime:
+  experiment_id: S_D3_MIXUP
+  mode: dev
+  augmentation_preset: a0
+  head_type: linear
+  use_cached_features: false
+sample_weighting:
+  type: none
+  min_weight: 0.4
+  max_weight: 1.0
+  normalize_by_weight_sum: true
+  missing_weight_policy: error
+head_ema:
+  enabled: false
+  decay: 0.99
+  warmup_epochs: 5
+  selection_source: raw
+peft:
+  type: linear_head_only
+teacher:
+  enabled: false
+  ema_decay: 0.999
+  confidence_threshold: 0.8
+  consistency_weight: 1.0
+  ramp_epochs: 10
+cache:
+  enabled: false
