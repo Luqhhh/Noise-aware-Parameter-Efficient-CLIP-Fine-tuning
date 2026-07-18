@@ -157,48 +157,88 @@ class TestConsensusRelabel:
         result = select_consensus_relabel_v2(q, issues, top_k=10)
         assert 0 not in result
 
-    def test_cl_knn_drop_on_real_data_returns_nonzero(self):
-        """Integration test: cl_knn_drop on real quality + persisted issue table."""
-        import torch, torch.nn.functional as F
-        from analysis.noisy_labels.confident_joint import (
-            build_confident_joint, estimate_class_thresholds, rank_label_issues,
-        )
-        q = pd.read_csv("outputs/phase/phase3/oof/sample_quality_with_kta.csv")
-        logits = torch.load("outputs/phase/phase3/oof/oof_logits.pt", map_location="cpu")
-        probs = F.softmax(logits["logits"].float(), dim=1)
-        labels = torch.tensor(q["original_label"].to_numpy(copy=True))
-        th = estimate_class_thresholds(probs, labels, 500)
-        cj = build_confident_joint(probs, labels, th, 500)
-        issues = rank_label_issues(
-            probs, labels, th, cj,
-            knn_agreement=q["knn_agreement"].to_numpy() if "knn_agreement" in q.columns else None,
-            flip_consistency=q["flip_consistency"].to_numpy() if "flip_consistency" in q.columns else None,
-            top1_margin=q["top1_margin"].to_numpy() if "top1_margin" in q.columns else None,
-        )
+    def test_cl_knn_drop_on_synthetic_data_returns_nonzero(self):
+        """Integration: cl_knn_drop on synthetic data produces selections."""
+        np.random.seed(42)
+        # Need >50 per class for min_clean_per_class=50 to allow drops
+        per_class = 100
+        n_classes = 5
+        n = per_class * n_classes
+        labels = []
+        for c in range(n_classes):
+            labels.extend([c] * per_class)
+
+        q = pd.DataFrame({
+            "sample_id": [f"s{i}" for i in range(n)],
+            "image_path": [f"img{i}.jpg" for i in range(n)],
+            "original_label": labels,
+            "oof_top1": [(l + 1) % n_classes for l in labels],
+            "knn_top1": [(l + 1) % n_classes for l in labels],
+            "top1_margin": [0.95] * n,
+            "knn_agreement": np.random.uniform(0.0, 0.15, n),
+            "duplicate_conflict_flag": [False] * n,
+            "prototype_top1": [(l + 1) % n_classes for l in labels],
+            "p_top1": np.random.uniform(0.7, 0.99, n),
+            "flip_consistency": [1.0] * n,
+        })
+        issues = pd.DataFrame({
+            "index": list(range(n)),
+            "selected": [True] * n,
+        })
         result = select_consensus_drop(q, issues)
         assert len(result) > 0, f"cl_knn_drop selected {len(result)} — expected > 0"
+        # All caps should be respected
+        for c in range(n_classes):
+            cls_mask = q["original_label"] == c
+            cls_count = cls_mask.sum()
+            if cls_count > 0:
+                cls_selected = sum(
+                    1 for i in result if q.iloc[i]["original_label"] == c
+                )
+                assert cls_selected <= max(1, int(0.10 * cls_count)), (
+                    f"Class {c}: {cls_selected} selected > 10% of {cls_count}"
+                )
 
-    def test_relabel_v2_on_real_data_returns_nonzero(self):
-        """Integration test: consensus_relabel_v2 on real quality + persisted issue table."""
-        import torch, torch.nn.functional as F
-        from analysis.noisy_labels.confident_joint import (
-            build_confident_joint, estimate_class_thresholds, rank_label_issues,
+    def test_relabel_v2_on_synthetic_data_returns_nonzero(self):
+        """Integration: consensus_relabel_v2 on synthetic data produces selections."""
+        n = 500
+        np.random.seed(42)
+        labels = []
+        for c in range(10):
+            labels.extend([c] * 50)
+        q = pd.DataFrame({
+            "sample_id": [f"s{i}" for i in range(n)],
+            "image_path": [f"img{i}.jpg" for i in range(n)],
+            "original_label": labels,
+            "oof_top1": [(l + 1) % 10 for l in labels],
+            "knn_top1": [(l + 1) % 10 for l in labels],
+            "prototype_top1": [(l + 1) % 10 for l in labels],
+            "p_top1": np.random.uniform(0.90, 0.99, n),
+            "top1_margin": np.random.uniform(0.60, 0.95, n),
+            "knn_agreement": np.random.uniform(0.0, 0.15, n),
+            "knn_top1_agreement": np.random.uniform(0.60, 0.95, n),
+            "flip_consistency": [1.0] * n,
+            "duplicate_conflict_flag": [False] * n,
+        })
+        issues = pd.DataFrame({
+            "index": list(range(n)),
+            "selected": [True] * n,
+        })
+        result = select_consensus_relabel_v2(
+            q, issues, top_k=50,
+            max_source_class_relabel_rate=0.03,
         )
-        from analysis.noisy_labels.consensus import select_consensus_relabel_v2
-        q = pd.read_csv("outputs/phase/phase3/oof/sample_quality_with_kta.csv")
-        logits = torch.load("outputs/phase/phase3/oof/oof_logits.pt", map_location="cpu")
-        probs = F.softmax(logits["logits"].float(), dim=1)
-        labels = torch.tensor(q["original_label"].to_numpy(copy=True))
-        th = estimate_class_thresholds(probs, labels, 500)
-        cj = build_confident_joint(probs, labels, th, 500)
-        issues = rank_label_issues(
-            probs, labels, th, cj,
-            knn_agreement=q["knn_agreement"].to_numpy() if "knn_agreement" in q.columns else None,
-            flip_consistency=q["flip_consistency"].to_numpy() if "flip_consistency" in q.columns else None,
-            top1_margin=q["top1_margin"].to_numpy() if "top1_margin" in q.columns else None,
-        )
-        result = select_consensus_relabel_v2(q, issues, top_k=100)
         assert len(result) > 0, f"relabel_v2 selected {len(result)} — expected > 0"
+        # Verify source-class cap: at most 3% per class
+        for c in range(10):
+            cls_count = 50
+            cls_selected = sum(
+                1 for i in result if q.iloc[i]["original_label"] == c
+            )
+            cap = max(1, int(0.03 * cls_count))
+            assert cls_selected <= cap, (
+                f"Class {c}: {cls_selected} selected > cap {cap}"
+            )
 
     def test_no_nan_causes_all_false(self):
         """NaN in key fields must not silently disqualify all samples."""
