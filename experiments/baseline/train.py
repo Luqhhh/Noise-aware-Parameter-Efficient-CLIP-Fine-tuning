@@ -612,7 +612,9 @@ def train_one_epoch(
                         loss = loss + ramp_w * cons_weight * cons_loss
 
                 # ── ELR temporal consistency ──
-                if elr_hook is not None:
+                # §5.4: MixUp batches use mixed inputs — targets don't
+                # correspond to single real samples, so skip ELR update.
+                if elr_hook is not None and not mixup_applied:
                     elr_hook.update(paths, logits.detach())
                     elr_w = elr_hook.rampup_weight(epoch)
                     if elr_w > 0:
@@ -681,7 +683,9 @@ def train_one_epoch(
                         loss = loss + ramp_w * cons_weight * cons_loss
 
                 # ── ELR temporal consistency ──
-                if elr_hook is not None:
+                # §5.4: MixUp batches use mixed inputs — targets don't
+                # correspond to single real samples, so skip ELR update.
+                if elr_hook is not None and not mixup_applied:
                     elr_hook.update(paths, logits.detach())
                     elr_w = elr_hook.rampup_weight(epoch)
                     if elr_w > 0:
@@ -762,8 +766,13 @@ def validate(
     criterion: nn.Module,
     device: torch.device,
     config: Dict[str, Any],
+    val_weights: Optional[torch.Tensor] = None,
 ) -> tuple:
     """Run validation.
+
+    Args:
+        val_weights: Optional per-sample weight tensor of shape (N,).
+            Samples with weight == 0 are excluded from loss and accuracy.
 
     Returns:
         Tuple of (avg_loss, accuracy).
@@ -777,7 +786,7 @@ def validate(
 
     pbar = tqdm(loader, desc=" " * 16 + "[Val]  ", dynamic_ncols=True)
 
-    for batch_data in pbar:
+    for batch_idx, batch_data in enumerate(pbar):
         inputs, labels, is_cached, _paths = _unpack_batch(batch_data, device)
 
         if use_amp:
@@ -792,11 +801,25 @@ def validate(
         if loss.ndim > 0:
             loss = loss.mean()
 
-        batch_size = inputs.size(0)
-        total_loss += loss.item() * batch_size
-        preds = logits.argmax(dim=1)
-        correct += (preds == labels).sum().item()
-        total += batch_size
+        # Apply val weights: mask out zero-weight samples
+        if val_weights is not None:
+            batch_size = inputs.size(0)
+            start_idx = batch_idx * loader.batch_size
+            end_idx = min(start_idx + batch_size, len(val_weights))
+            batch_weights = val_weights[start_idx:end_idx].to(device)
+            mask = batch_weights > 0
+            n_kept = mask.sum().item()
+            if n_kept > 0:
+                total_loss += loss.item() * n_kept
+                preds = logits.argmax(dim=1)
+                correct += (preds[mask] == labels[mask]).sum().item()
+                total += n_kept
+        else:
+            batch_size = inputs.size(0)
+            total_loss += loss.item() * batch_size
+            preds = logits.argmax(dim=1)
+            correct += (preds == labels).sum().item()
+            total += batch_size
 
         pbar.set_postfix(
             {
@@ -1385,6 +1408,33 @@ def main():
 
     use_sample_weights = not isinstance(weight_provider, NoneWeightProvider)
 
+    # Build val weights from the same manifest (for OOF zero-weight filtering)
+    val_weights = None
+    if use_sample_weights and val_loader is not None:
+        sw_cfg = config.get("sample_weighting", {})
+        manifest_path = sw_cfg.get("manifest_path")
+        if manifest_path and Path(manifest_path).suffix == ".csv":
+            import pandas as pd
+            try:
+                manifest_df = pd.read_csv(manifest_path)
+                w_map = dict(zip(
+                    manifest_df["image_path"].apply(lambda p: str(Path(p).resolve())),
+                    manifest_df["sample_weight"],
+                ))
+                val_paths = [str(Path(p).resolve()) for p in val_loader.dataset.samples]
+                val_weights = torch.tensor(
+                    [w_map.get(p, 1.0) for p in val_paths],
+                    dtype=torch.float32,
+                )
+                n_zero_val = (val_weights == 0).sum().item()
+                train_logger.info(
+                    "Val weights from manifest: %d/%d zeroed (%.1f%%)",
+                    n_zero_val, len(val_weights),
+                    100.0 * n_zero_val / max(len(val_weights), 1),
+                )
+            except Exception as e:
+                train_logger.warning("Failed to build val weights from manifest: %s", e)
+
     if use_sample_weights:
         loss_cfg = config.get("loss", {}).copy()
         loss_cfg["reduction"] = "none"
@@ -1739,13 +1789,13 @@ def main():
         ema_val_acc = None
         if val_loader is not None:
             val_loss, val_acc = validate(
-                model, val_loader, criterion, device, config
+                model, val_loader, criterion, device, config, val_weights=val_weights
             )
             # EMA validation (separate path — no swap, uses get_ema_model)
             if ema_hook is not None:
                 ema_model = ema_hook.get_ema_model()
                 ema_val_loss, ema_val_acc = validate(
-                    ema_model, val_loader, criterion, device, config
+                    ema_model, val_loader, criterion, device, config, val_weights=val_weights
                 )
 
         epoch_time = time.time() - epoch_start

@@ -1,0 +1,45 @@
+2026-07-18 13:58:32 | INFO | Using device: cuda
+2026-07-18 13:58:32 | INFO | Configuration: configs/s_oof_zero_0001.yaml
+2026-07-18 13:58:32 | INFO | Train seed: 42
+2026-07-18 13:58:32 | INFO | Resolved runtime: experiment_id=S_OOF_ZERO_0001, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-18 13:58:35 | INFO | Total parameters:     88,105,716
+2026-07-18 13:58:35 | INFO | Trainable parameters: 256,500
+2026-07-18 13:58:37 | INFO | Using config epochs: 50 (dev mode)
+2026-07-18 13:58:45 | INFO | Val weights from manifest: 0/10322 zeroed (0.0%)
+2026-07-18 13:58:45 | INFO | Loss: gce (reduction=mean)
+2026-07-18 13:58:45 | INFO | Optimizer parameter groups:
+2026-07-18 13:58:45 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-18 13:58:45 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-18 13:58:45 | INFO |   Trainable head params:       256,500
+2026-07-18 13:58:45 | INFO |   Trainable visual params:           0
+2026-07-18 13:58:46 | INFO | Restored weight provider state.
+2026-07-18 13:58:46 | INFO | Resumed from epoch 43, best val acc: 0.6933
+2026-07-18 13:58:46 | INFO | Starting training: 50 epochs, 713 batches/epoch
+2026-07-18 13:58:46 | INFO | Warmup steps: 1426, Total steps: 35650, Cosine steps: 34224
+2026-07-18 13:58:46 | INFO | AMP: True
+2026-07-18 13:58:46 | INFO | ============================================================
+2026-07-18 14:01:22 | INFO | Epoch  44/50 | Train Loss: 0.3788 | Train Acc: 0.7963 | Val Loss: 0.5961 | Val Acc: 0.6937 | head_lr: 2.38e-04 | bb_lr: 0.00e+00 | Time: 2m 36s
+2026-07-18 14:01:22 | INFO |   >> New best RAW! Val Acc: 0.6937
+2026-07-18 14:04:15 | INFO | Epoch  45/50 | Train Loss: 0.3733 | Train Acc: 0.7983 | Val Loss: 0.5960 | Val Acc: 0.6936 | head_lr: 1.81e-04 | bb_lr: 0.00e+00 | Time: 2m 51s
+2026-07-18 14:04:15 | INFO |   >> No improvement for 1/10 epochs
+2026-07-18 14:07:10 | INFO | Epoch  46/50 | Train Loss: 0.3725 | Train Acc: 0.7960 | Val Loss: 0.5959 | Val Acc: 0.6936 | head_lr: 1.34e-04 | bb_lr: 0.00e+00 | Time: 2m 53s
+2026-07-18 14:07:10 | INFO |   >> No improvement for 2/10 epochs
+2026-07-18 14:10:06 | INFO | Epoch  47/50 | Train Loss: 0.3775 | Train Acc: 0.7949 | Val Loss: 0.5959 | Val Acc: 0.6934 | head_lr: 9.76e-05 | bb_lr: 0.00e+00 | Time: 2m 55s
+2026-07-18 14:10:06 | INFO |   >> No improvement for 3/10 epochs
+2026-07-18 14:13:04 | INFO | Epoch  48/50 | Train Loss: 0.3732 | Train Acc: 0.7977 | Val Loss: 0.5958 | Val Acc: 0.6931 | head_lr: 7.12e-05 | bb_lr: 0.00e+00 | Time: 2m 57s
+2026-07-18 14:13:04 | INFO |   >> No improvement for 4/10 epochs
+2026-07-18 14:16:03 | INFO | Epoch  49/50 | Train Loss: 0.3803 | Train Acc: 0.7950 | Val Loss: 0.5958 | Val Acc: 0.6934 | head_lr: 5.53e-05 | bb_lr: 0.00e+00 | Time: 2m 58s
+2026-07-18 14:16:03 | INFO |   >> No improvement for 5/10 epochs
+2026-07-18 14:19:05 | INFO | Epoch  50/50 | Train Loss: 0.3707 | Train Acc: 0.7998 | Val Loss: 0.5958 | Val Acc: 0.6934 | head_lr: 5.00e-05 | bb_lr: 0.00e+00 | Time: 3m 1s
+2026-07-18 14:19:05 | INFO |   >> No improvement for 6/10 epochs
+2026-07-18 14:19:06 | INFO | ============================================================
+2026-07-18 14:19:06 | INFO | Training complete! Total time: 20m 20s
+2026-07-18 14:19:06 | INFO | Best validation accuracy: 0.6937
+2026-07-18 14:19:06 | INFO | Best model saved to: outputs/s_oof_zero_0001/seed42/checkpoints/best.pt
+2026-07-18 14:19:06 | INFO | Training log saved to: outputs/s_oof_zero_0001/seed42/logs/train_log.csv
+2026-07-18 14:19:06 | INFO | Reloaded best checkpoint for post-training evaluation: outputs/s_oof_zero_0001/seed42/checkpoints/best.pt (epoch=44, best_val_acc=0.69366402)
+2026-07-18 14:19:06 | INFO | Running post-training per-class evaluation...
+2026-07-18 14:19:27 | INFO | Eval results saved to: outputs/s_oof_zero_0001/seed42/checkpoints/eval_results.json
+2026-07-18 14:19:28 | INFO | Artifact manifest saved to: outputs/s_oof_zero_0001/seed42/checkpoints/artifact_manifest.json
+2026-07-18 14:19:28 | INFO | Per-class metrics saved to: outputs/s_oof_zero_0001/seed42/checkpoints/per_class_metrics.csv
+2026-07-18 14:19:52 | INFO | Prediction records saved to: outputs/s_oof_zero_0001/seed42/checkpoints/prediction_records.csv

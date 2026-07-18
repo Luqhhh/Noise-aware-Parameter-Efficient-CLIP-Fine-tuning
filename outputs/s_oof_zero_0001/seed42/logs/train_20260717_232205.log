@@ -1,0 +1,7 @@
+2026-07-17 23:22:05 | INFO | Using device: cuda
+2026-07-17 23:22:05 | INFO | Configuration: configs/s_oof_zero_0001.yaml
+2026-07-17 23:22:05 | INFO | Train seed: 42
+2026-07-17 23:22:05 | INFO | Resolved runtime: experiment_id=S_OOF_ZERO_0001, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-17 23:22:08 | INFO | Total parameters:     88,105,716
+2026-07-17 23:22:08 | INFO | Trainable parameters: 256,500
+2026-07-17 23:22:10 | INFO | Using config epochs: 50 (dev mode)

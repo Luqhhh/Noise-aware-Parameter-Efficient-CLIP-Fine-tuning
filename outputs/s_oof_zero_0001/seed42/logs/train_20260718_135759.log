@@ -1,0 +1,20 @@
+2026-07-18 13:57:59 | INFO | Using device: cuda
+2026-07-18 13:57:59 | INFO | Configuration: configs/s_oof_zero_0001.yaml
+2026-07-18 13:57:59 | INFO | Train seed: 42
+2026-07-18 13:57:59 | INFO | Resolved runtime: experiment_id=S_OOF_ZERO_0001, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-18 13:58:02 | INFO | Total parameters:     88,105,716
+2026-07-18 13:58:02 | INFO | Trainable parameters: 256,500
+2026-07-18 13:58:05 | INFO | Using config epochs: 50 (dev mode)
+2026-07-18 13:58:15 | INFO | Val weights from manifest: 0/10322 zeroed (0.0%)
+2026-07-18 13:58:15 | INFO | Loss: gce (reduction=mean)
+2026-07-18 13:58:15 | INFO | Optimizer parameter groups:
+2026-07-18 13:58:15 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-18 13:58:15 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-18 13:58:15 | INFO |   Trainable head params:       256,500
+2026-07-18 13:58:15 | INFO |   Trainable visual params:           0
+2026-07-18 13:58:15 | INFO | Restored weight provider state.
+2026-07-18 13:58:15 | INFO | Resumed from epoch 43, best val acc: 0.6933
+2026-07-18 13:58:15 | INFO | Starting training: 50 epochs, 713 batches/epoch
+2026-07-18 13:58:15 | INFO | Warmup steps: 1426, Total steps: 35650, Cosine steps: 34224
+2026-07-18 13:58:15 | INFO | AMP: True
+2026-07-18 13:58:15 | INFO | ============================================================

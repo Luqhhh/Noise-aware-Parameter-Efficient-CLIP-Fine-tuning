@@ -1,0 +1,22 @@
+{
+  "experiment_id": "W1_GCE05_MIXUP",
+  "raw_micro": 0.7216201423097974,
+  "raw_macro": 0.7149599936784921,
+  "raw_bottom10": 0.31608700673251755,
+  "trusted_micro": 0.9948877122512324,
+  "trusted_macro": 0.993531213969722,
+  "trusted_class_balanced": 0.916,
+  "trust_weighted_accuracy": 0.9733408328783977,
+  "rejected_micro": 0.31246582832148717,
+  "rejected_macro": 0.3330253215557987,
+  "rejected_bottom10": 0.0,
+  "trust_reject_gap": 0.6824218839297452,
+  "prediction_change_vs_parent": null,
+  "trusted_coverage": 0.5995621237000547,
+  "trusted_represented_classes": 496,
+  "trusted_total_classes": 500,
+  "class_balanced_classes": 500,
+  "class_balanced_samples_used": 2500,
+  "trust_effective_samples": 1650.4233170453588,
+  "sample_count": 9135
+}

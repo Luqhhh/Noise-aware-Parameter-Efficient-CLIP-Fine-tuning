@@ -150,6 +150,7 @@ LoRA rank、alpha、block、dropout 搜索；
 data:
   official_stage_data_only: true
   split_seed: 42
+  split_dir: outputs/d3_strict/seed42  # mandatory for all new experiments
   duplicate_group_aware_split: true
 
 model:
@@ -163,6 +164,9 @@ model:
 测试集不得参与训练、自监督或超参数选择；
 重复图片或冲突图片必须按 group 划分，禁止跨 train/val 泄漏；
 最终提交必须来自单模型和单一推理流程。
+   **2026-07-17 决议：所有新实验统一使用 `split_dir: outputs/d3_strict/seed42`。**
+   `outputs/ref/seed42` 已弃用。原因：d3_strict 的 group-aware 分法防止同图跨 train/val 泄漏，
+   且所有 OOF weight manifest 绑定 d3_strict 的 train 集。
 2.2 Seed 协议
 
 ```text

@@ -1,0 +1,22 @@
+{
+  "experiment_id": "W1_CE5_GCE05",
+  "raw_micro": 0.7443897099069513,
+  "raw_macro": 0.7377553739518136,
+  "raw_bottom10": 0.3417625804707848,
+  "trusted_micro": 0.9972612744203031,
+  "trusted_macro": 0.996099923821698,
+  "trusted_class_balanced": 0.9244,
+  "trust_weighted_accuracy": 0.9769989157702189,
+  "rejected_micro": 0.3657736468015309,
+  "rejected_macro": 0.3945618860603318,
+  "rejected_bottom10": 0.007172161172161172,
+  "trust_reject_gap": 0.6314876276187722,
+  "prediction_change_vs_parent": null,
+  "trusted_coverage": 0.5995621237000547,
+  "trusted_represented_classes": 496,
+  "trusted_total_classes": 500,
+  "class_balanced_classes": 500,
+  "class_balanced_samples_used": 2500,
+  "trust_effective_samples": 1650.4233170453588,
+  "sample_count": 9135
+}
