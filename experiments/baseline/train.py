@@ -280,6 +280,7 @@ def _runtime_manifest_audit(
     weight_provider,
     mode: str,
     save_dir: Path,
+    audit_logger: logging.Logger,
 ):
     """Verify dataset paths match manifest before epoch 1 (fail-closed).
 
@@ -304,7 +305,7 @@ def _runtime_manifest_audit(
     ds_samples = getattr(train_dataset, "samples", None)
     ds_labels_list = getattr(train_dataset, "labels", None)
     if ds_samples is None or ds_labels_list is None:
-        train_logger.warning("Dataset has no .samples/.labels — skipping runtime audit")
+        audit_logger.warning("Dataset has no .samples/.labels — skipping runtime audit")
         return
 
     ds_paths = set(ds_samples)
@@ -316,7 +317,7 @@ def _runtime_manifest_audit(
     if manifest_csv is not None:
         manifest_path = manifest_csv._path
     else:
-        train_logger.warning("Cannot locate manifest file — skipping runtime audit")
+        audit_logger.warning("Cannot locate manifest file — skipping runtime audit")
         return
     manifest_df = pd.read_csv(manifest_path)
     manifest_paths = set(manifest_df["image_path"])
@@ -431,7 +432,7 @@ def _runtime_manifest_audit(
             + "\n  ".join(errors)
         )
 
-    train_logger.info(
+    audit_logger.info(
         "Runtime manifest audit PASSED: %d samples, coverage=1.0, "
         "clean=%d rejected=%d pseudo=%d, max_class_drop=%.4f",
         n_dataset, role_counts["clean"], role_counts["rejected"],
@@ -2027,6 +2028,7 @@ def main():
     _runtime_manifest_audit(
         train_dataset, weight_provider, mode,
         Path(config["train"]["save_dir"]),
+        train_logger,
     )
 
     # Training loop
