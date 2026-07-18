@@ -242,3 +242,30 @@ class TestConsensusRelabel:
         issues = pd.DataFrame({"index": [0], "selected": [True]})
         result = select_consensus_relabel_v2(q, issues, top_k=10)
         assert 0 not in result
+
+    def test_source_class_cap_enforced(self):
+        """When all candidates come from one source class, cap limits selection."""
+        n = 200
+        q = pd.DataFrame({
+            "sample_id": [f"s{i}" for i in range(n)],
+            "image_path": [f"img{i}.jpg" for i in range(n)],
+            "original_label": [5] * n,
+            "oof_top1": [3] * n,
+            "knn_top1": [3] * n,
+            "prototype_top1": [3] * n,
+            "p_top1": [0.95] * n,
+            "top1_margin": [0.80] * n,
+            "knn_agreement": [0.10] * n,
+            "knn_top1_agreement": [0.85] * n,
+            "flip_consistency": [1.0] * n,
+            "duplicate_conflict_flag": [False] * n,
+        })
+        issues = pd.DataFrame({"index": list(range(n)), "selected": [True] * n})
+        result = select_consensus_relabel_v2(
+            q, issues, top_k=100,
+            max_source_class_relabel_rate=0.03,
+        )
+        # 3% of 200 = 6 → at most 6 from class 5
+        assert len(result) <= 6, (
+            f"Expected <= 6 due to 3% source-class cap, got {len(result)}"
+        )

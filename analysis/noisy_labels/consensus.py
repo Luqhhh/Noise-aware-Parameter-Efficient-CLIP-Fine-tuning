@@ -92,6 +92,7 @@ def select_consensus_relabel_v2(
     quality: pd.DataFrame,
     issues: pd.DataFrame,
     top_k: int = 100,
+    max_source_class_relabel_rate: float = 0.03,
 ) -> set:
     """Select top-k high-confidence relabel candidates.
 
@@ -194,7 +195,29 @@ def select_consensus_relabel_v2(
         candidates.append((i, score))
 
     candidates.sort(key=lambda x: x[1], reverse=True)
-    return set(idx for idx, _ in candidates[:top_k])
+
+    # Per-source-class cap
+    n = len(quality)
+    class_counts = quality["original_label"].value_counts().reindex(
+        range(NUM_CLASSES), fill_value=0
+    )
+    class_cap = {
+        c: max(1, int(np.floor(max_source_class_relabel_rate * class_counts[c])))
+        for c in range(NUM_CLASSES)
+    }
+    class_used = {c: 0 for c in range(NUM_CLASSES)}
+
+    selected = set()
+    for idx, score in candidates:
+        if len(selected) >= top_k:
+            break
+        orig = int(quality.iloc[idx]["original_label"])
+        if class_used[orig] >= class_cap[orig]:
+            continue
+        selected.add(idx)
+        class_used[orig] += 1
+
+    return selected
 
 
 def _apply_caps(
