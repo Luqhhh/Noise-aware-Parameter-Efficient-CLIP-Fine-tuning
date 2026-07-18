@@ -1629,6 +1629,7 @@ def main():
         train_loader, val_loader = _build_dataloaders_online(
             config, train_transform, val_transform, class_to_idx, split_dir
         )
+        train_dataset = train_loader.dataset
 
     # Training setup
     train_cfg = config["train"]
