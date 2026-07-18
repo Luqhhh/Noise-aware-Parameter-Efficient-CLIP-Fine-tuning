@@ -1,0 +1,65 @@
+# E20: strict epoch-35/44 linear-head soup + 7 visual prototypes + flip TTA.
+# The sibling Aegis project holds the immutable source artifacts; every source
+# hash is recorded in docs/e20_e21_posthoc.md.
+
+experiment:
+  id: E20_E2_SOUP35_44_K7P4
+  mode: dev
+  head_type: linear
+  augmentation_preset: a0
+
+data:
+  stage: preliminary
+  seed: 42
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/d3_strict/seed42
+  class_mapping_path: outputs/master_splits/seed42
+  train_dir: train
+  test_dir: test
+  val_ratio: 0.1
+  expected_num_classes: 500
+  use_full_training_set: false
+
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+  use_cached_features: false
+  unfreeze_last_n_blocks: 0
+  train_ln_post: false
+  train_visual_proj: false
+
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  epochs: 1
+  lr: 0.005
+  weight_decay: 0.0001
+  num_workers: 8
+
+eval:
+  batch_size: 256
+
+output:
+  log_dir: outputs/e20_posthoc/seed42/logs
+  submission_dir: outputs/e20_posthoc/seed42/submissions
+
+posthoc:
+  first_checkpoint: ../AegisCLIP-Noise-Robust/outputs/E2_MIXUP_CE5_REPLICA/seed42/snapshots/best_epoch_035.pt
+  second_checkpoint: ../AegisCLIP-Noise-Robust/outputs/E2_MIXUP_CE5_REPLICA/seed42/snapshots/best_epoch_044.pt
+  soup_alpha: 0.4
+  feature_cache_dir: ../AegisCLIP-Noise-Robust/artifacts/stages/preliminary/features/clip_vit_b32_openai
+  flipped_feature_cache_dir: ../AegisCLIP-Noise-Robust/artifacts/stages/preliminary/features/clip_vit_b32_openai_hflip
+  fit_csv: ../AegisCLIP-Noise-Robust/artifacts/stages/preliminary/seed42/train.csv
+  prototypes_per_class: 7
+  aggregation: max
+  softmax_temperature: 0.05
+  prototype_alpha: 0.4
+  candidate_scale: 58.307098388671875
+  random_state: 42
+  tta_fusion: mean_probabilities
+  tta_temperature: 1.0
+  output_checkpoint: outputs/e20_posthoc/seed42/checkpoints/best.pt

@@ -29,6 +29,7 @@ KNOWN_TOP_KEYS = {
     "mixup",
     "elr",
     "cache",
+    "posthoc",
     "runtime",       # written back by resolve_runtime_args
 }
 
