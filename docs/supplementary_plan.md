@@ -6,22 +6,35 @@ Supplementary Experiments — 完整修订方案
 
 ---
 
-0. 当前状态（2026-07-17）
+0. 当前状态（2026-07-18）
    0.1 当前最佳结果
 
-   **平台最佳（截至 2026-07-17）：**
+   **平台最佳（截至 2026-07-18）：**
 
-   | 方法 | 平台 Bare | 平台 TTA | 本地 Val |
-   |:--|:--:|:--:|:--:|
-   | **MixUp + GCE q=0.5** (W1_GCE05_MIXUP) | **59.86%** | **60.36%** | 71.16% |
-   | S_MIXUP_CE5 (CE5 warmup + MixUp) | 59.70% | 60.48% | 70.25% |
-   | **S_OOF_ZERO_0001** (binary zero p<0.001) | **59.96%** | **60.28%** | 69.37% |
-   | CE 5 epoch → GCE q=0.5 | 59.61% | 60.25% | 73.14% |
-   | 纯 GCE q=0.5 | 59.62% | 60.16% | 69.49% |
-   | S_OOF_DISCRETE (OOF trust-weighted) | 59.28% | 59.28% | 68.65% |
+   | 方法 | 平台 Bare | 平台 TTA | 本地 Val | Split |
+   |:--|:--:|:--:|:--:|:--:|
+   | **S_OOF_ZERO_0001** (binary zero p<0.001) | **59.96%** | **60.28%** | 69.37% | d3 |
+   | S_D3_MIXUP (d3_strict 无权重控制) | 59.86% | — | 69.47% | d3 |
+   | **W1_GCE05_MIXUP** (MixUp + GCE q=0.5) | **59.86%** | **60.36%** | 71.16% | ref |
+   | S_MIXUP_CE5 (CE5 warmup + MixUp) | 59.70% | 60.48% | 70.25% | ref |
+   | CE 5 epoch → GCE q=0.5 | 59.61% | 60.25% | 73.14% | ref |
+   | 纯 GCE q=0.5 | 59.62% | 60.16% | 69.49% | ref |
+   | S_OOF_DISCRETE (3-tier OOF weight) | 59.28% | 59.28% | 68.65% | d3 |
+   | S_OOF_ZERO_001 (binary zero p<0.01) | — | — | 69.02% | d3 |
 
-   当前 Bare 最佳：**W1_GCE05_MIXUP (59.86%)**
-   当前 TTA 最佳：**S_MIXUP_CE5 (60.48%)** — 但 Bare 未通过，按计划不视为训练策略有效。
+   当前 Bare 最佳：**S_OOF_ZERO_0001 (59.96%)** ← 首个 Bare 显著超过 MixUp 基线的 OOF 方法
+   当前 TTA 最佳：**S_MIXUP_CE5 (60.48%)** — 但 Bare 未通过 gate，不视为训练策略有效
+
+   **d3_strict 控制对比（2026-07-18）：**
+
+   | 实验 (d3_strict) | 排除 | Bare | vs D3_MIXUP | 判定 |
+   |:--|:--:|:--:|:--:|:--|
+   | S_D3_MIXUP | 0% | 59.86% | — | 控制基线 |
+   | **S_OOF_ZERO_0001** | 7% (p<0.001) | **59.96%** | **+0.10pp** | **confirmed — 首个有效 OOF 改进** |
+   | S_OOF_ZERO_001 | 12% (p<0.01) | — | — | pending |
+   | S_OOF_DISCRETE | 3-tier | 59.28% | −0.58pp | eliminated |
+
+   OOF binary hard-zero (p<0.001, 7% 排除) 在同 split 配对控制下验证有效。
 
    **Batch 1 — MixUp 参数消融（全部完成, 2026-07-17）：**
 
@@ -52,12 +65,17 @@ Supplementary Experiments — 完整修订方案
 
    | 实验 | 平台 Bare | 平台 TTA | 本地 Val | 判定 |
    |:--|:--:|:--:|:--:|:--|
+   | **S_OOF_ZERO_0001** (binary, p<0.001) | **59.96%** | **60.28%** | 69.37% | **confirmed — +0.10pp over control** |
+   | S_OOF_ZERO_001 (binary, p<0.01) | — | — | 69.02% | pending |
    | S_OOF_DISCRETE (3-tier tertile) | 59.28% | 59.28% | 68.65% | eliminated |
-   | **S_OOF_ZERO_0001** (binary, p<0.001) | **59.96%** | **60.28%** | 69.37% | pending d3 control |
+   | S_OOF_ZERO_005 (binary, p<0.05) | — | — | — | config ready |
+   | S_OOF_ZERO_010 (binary, p<0.10) | — | — | — | config ready |
+   | S_OOF_ZERO_0001_FF (final_fit) | — | — | — | config ready |
 
-   Bare=59.96% 超过 W1_GCE05_MIXUP bare 59.86%（+0.10pp）。
-   bare-tta gap 仅 0.32pp（MixUp 为 0.50pp），模型更稳定。
-   需等 S_D3_MIXUP bare 做同 split 验证。
+   OOF binary zero p<0.001 是同 split 控制下首个验证有效的改进：
+   - Bare +0.10pp over D3_MIXUP paired control
+   - Bare-TTA gap 仅 0.32pp（MixUp 为 0.50pp），模型更稳定
+   - 3-tier 软降权无效；binary 硬排除方向正确
 
 
 0.2 已确认的核心现象
