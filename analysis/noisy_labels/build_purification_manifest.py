@@ -158,7 +158,13 @@ def _build_partition_metrics(df: pd.DataFrame) -> dict:
     }
 
 
-def _write_outputs(df: pd.DataFrame, output_dir: Path, mode: str):
+def _write_outputs(
+    df: pd.DataFrame,
+    output_dir: Path,
+    mode: str,
+    confident_joint: np.ndarray | None = None,
+    issues: pd.DataFrame | None = None,
+):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # purification_manifest.csv
@@ -184,13 +190,25 @@ def _write_outputs(df: pd.DataFrame, output_dir: Path, mode: str):
         **metrics,
     }
 
-    # Save confident joint
-    cj_path = output_dir / "confident_joint.npy"
-    if "cj" in dir():
-        np.save(cj_path, cj)
+    # Save confident joint matrix
+    if confident_joint is not None:
+        cj_path = output_dir / "confident_joint.npy"
+        np.save(cj_path, confident_joint)
         audit["confident_joint_path"] = str(cj_path)
+        audit["confident_joint_sha256"] = _sha256(cj_path)
     else:
         audit["confident_joint_path"] = None
+        audit["confident_joint_sha256"] = None
+
+    # Save confident-joint issue table
+    if issues is not None:
+        issues_path = output_dir / "confident_joint_issues.csv"
+        issues.to_csv(issues_path, index=False)
+        audit["confident_joint_issues_path"] = str(issues_path)
+        audit["confident_joint_issues_sha256"] = _sha256(issues_path)
+    else:
+        audit["confident_joint_issues_path"] = None
+        audit["confident_joint_issues_sha256"] = None
 
     # Save artifact manifest
     import hashlib, json as _json
@@ -226,6 +244,9 @@ def main():
     parser.add_argument("--target-relabel-fraction", type=float, default=0.01)
     args = parser.parse_args()
 
+    _cj = None
+    _issues = None
+
     quality, probs = _load_quality_data(args.sample_quality, args.oof_logits)
     output_dir = Path(args.output_dir)
 
@@ -235,6 +256,7 @@ def main():
         num_classes = int(labels.max()) + 1
         thresholds = estimate_class_thresholds(probs, labels, num_classes)
         cj = build_confident_joint(probs, labels, thresholds, num_classes)
+        _cj = cj
 
         knn = quality["knn_agreement"].to_numpy(copy=True) if "knn_agreement" in quality.columns else None
         flip = quality["flip_consistency"].to_numpy(copy=True) if "flip_consistency" in quality.columns else None
@@ -248,6 +270,7 @@ def main():
             flip_consistency=flip,
             top1_margin=margin,
         )
+        _issues = issues
 
         if args.mode == "cl_knn_drop":
             selected = select_consensus_drop(quality, issues)
@@ -285,6 +308,7 @@ def main():
         num_classes = int(labels.max()) + 1
         thresholds = estimate_class_thresholds(probs, labels, num_classes)
         cj = build_confident_joint(probs, labels, thresholds, num_classes)
+        _cj = cj
 
         knn = quality["knn_agreement"].to_numpy(copy=True) if "knn_agreement" in quality.columns else None
         flip = quality["flip_consistency"].to_numpy(copy=True) if "flip_consistency" in quality.columns else None
@@ -298,6 +322,7 @@ def main():
             flip_consistency=flip,
             top1_margin=margin,
         )
+        _issues = issues
 
         # For v2: if fraction > 1, treat as absolute count; otherwise as fraction
         if args.target_relabel_fraction >= 1:
@@ -354,7 +379,8 @@ def main():
                 })
         df = pd.DataFrame(rows)
 
-    _write_outputs(df, output_dir, args.mode)
+    _write_outputs(df, output_dir, args.mode,
+                   confident_joint=_cj, issues=_issues)
 
 
 if __name__ == "__main__":

@@ -115,3 +115,41 @@ class TestBuilderInvariants:
             class_rows = df[df["original_label"] == c]
             rejected = (class_rows["training_role"] == "rejected").sum()
             assert rejected / len(class_rows) <= max_reject_rate
+
+
+def test_write_outputs_persists_confident_joint(tmp_path):
+    """_write_outputs saves confident_joint.npy and issues CSV when provided."""
+    import numpy as np
+    from analysis.noisy_labels.build_purification_manifest import _write_outputs
+
+    n = 10
+    df = pd.DataFrame({
+        "sample_id": [f"s{i}" for i in range(n)],
+        "image_path": [f"img{i}.jpg" for i in range(n)],
+        "original_label": [i % 5 for i in range(n)],
+        "training_label": [i % 5 for i in range(n)],
+        "sample_weight": [1.0] * n,
+        "quality_score": [0.9] * n,
+        "training_role": ["clean"] * n,
+    })
+
+    cj = np.zeros((5, 5), dtype=np.int64)
+    cj[0, 1] = 3
+    issues = pd.DataFrame({
+        "index": [0, 1, 2],
+        "selected": [True, True, False],
+        "score": [0.8, 0.7, 0.3],
+    })
+
+    _write_outputs(df, tmp_path, "cl_classwise_drop",
+                   confident_joint=cj, issues=issues)
+
+    assert (tmp_path / "confident_joint.npy").exists()
+    assert (tmp_path / "confident_joint_issues.csv").exists()
+
+    loaded_cj = np.load(tmp_path / "confident_joint.npy")
+    assert loaded_cj.shape == (5, 5)
+    assert loaded_cj[0, 1] == 3
+
+    loaded_issues = pd.read_csv(tmp_path / "confident_joint_issues.csv")
+    assert len(loaded_issues) == 3
