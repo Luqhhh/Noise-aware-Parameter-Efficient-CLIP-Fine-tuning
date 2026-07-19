@@ -118,3 +118,9 @@
 - freeze_clip=false, lora_lr=1e-5, 训练 6 epoch（early stop at epoch 6）
 - 首次 LoRA PEFT 平台测试结果
 - local micro=69.40%, best epoch=1
+
+## 2026-07-19 A0 (NR_CTRL_FIXED) TTA 平台结果
+
+- A0 TTA = **60.30%**（2-view Flip TTA）
+- ⚠️ 此结果为 pre-fix 版本：rejected 样本（7%）通过 MixUp 污染 clean 样本
+- 需要 rerun with `reject_policy: drop`
