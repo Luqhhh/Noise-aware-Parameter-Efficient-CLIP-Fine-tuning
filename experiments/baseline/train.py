@@ -1684,6 +1684,65 @@ def main():
         )
         train_dataset = train_loader.dataset
 
+    # ── Reject policy: physically drop rejected samples from dataset ──
+    # When reject_policy="drop", samples with training_role="rejected" are
+    # removed from the dataset BEFORE DataLoader construction.  This prevents
+    # rejected pixel data from leaking into clean samples via MixUp.
+    sw_cfg_pre = config.get("sample_weighting", {})
+    reject_policy = sw_cfg_pre.get("reject_policy", "weight_zero")
+    if reject_policy == "drop":
+        import pandas as _pd
+        from common.manifest_loader import canonical_image_path as _canon
+
+        _manifest_path = sw_cfg_pre.get("manifest_path")
+        if not _manifest_path:
+            raise ValueError(
+                "reject_policy='drop' requires manifest_path in sample_weighting"
+            )
+        _mf = _pd.read_csv(_manifest_path)
+        if "training_role" not in _mf.columns:
+            raise ValueError(
+                "Manifest has no training_role column — "
+                "reject_policy='drop' requires role annotations"
+            )
+        _rejected_paths = set(
+            _mf[_mf["training_role"] == "rejected"]["image_path"]
+            .astype(str).map(_canon)
+        )
+        _old_n = len(train_dataset)
+        _keep = []
+        for _i, _p in enumerate(train_dataset.samples):
+            if _canon(str(_p)) not in _rejected_paths:
+                _keep.append(_i)
+        train_dataset.samples = [train_dataset.samples[_i] for _i in _keep]
+        train_dataset.labels = [train_dataset.labels[_i] for _i in _keep]
+        _dropped = _old_n - len(_keep)
+        train_logger.info(
+            "Reject policy 'drop': removed %d rejected samples "
+            "(%d → %d remaining)",
+            _dropped, _old_n, len(_keep),
+        )
+
+        # Rebuild DataLoader with filtered dataset
+        _train_seed = config["data"].get("train_seed", config["data"].get("seed", 42))
+        _g = torch.Generator()
+        _g.manual_seed(_train_seed)
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=config["train"]["batch_size"],
+            shuffle=True,
+            num_workers=config["train"]["num_workers"],
+            pin_memory=config["train"].get("pin_memory", True),
+            timeout=120,
+            drop_last=False,
+            worker_init_fn=seed_worker,
+            generator=_g,
+        )
+        train_logger.info(
+            "DataLoader rebuilt with %d samples (%d batches)",
+            len(train_dataset), len(train_loader),
+        )
+
     # Training setup
     train_cfg = config["train"]
 

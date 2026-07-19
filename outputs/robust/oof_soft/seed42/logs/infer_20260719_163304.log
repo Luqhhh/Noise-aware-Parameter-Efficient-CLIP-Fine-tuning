@@ -1,0 +1,4 @@
+2026-07-19 16:33:04 | INFO | Config: configs/robust_oof_soft.yaml
+2026-07-19 16:33:04 | INFO | Checkpoint: outputs/robust/oof_soft/seed42/checkpoints/best.pt
+2026-07-19 16:33:04 | INFO | Device: cuda
+2026-07-19 16:33:04 | INFO | Head type: linear

@@ -54,6 +54,7 @@ sample_weighting:
   min_weight: 0.0
   max_weight: 1.0
   missing_policy: error
+  reject_policy: drop
 
 eval:
   batch_size: 256

@@ -1,0 +1,6 @@
+2026-07-19 14:48:05 | INFO | Using device: cuda
+2026-07-19 14:48:05 | INFO | Configuration: configs/nr_ctrl_oof_zero_0001_fixed.yaml
+2026-07-19 14:48:05 | INFO | Train seed: 42
+2026-07-19 14:48:05 | INFO | Resolved runtime: experiment_id=NR_CTRL_OOF_ZERO_0001_FIXED, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-19 14:48:07 | INFO | Total parameters:     88,105,716
+2026-07-19 14:48:07 | INFO | Trainable parameters: 256,500
