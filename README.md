@@ -64,8 +64,8 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | 实验 | 平台分数 | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
-| **nr_ctrl_fixed (A0, reject_policy=drop)** | **60.31%** | **+3.03pp** | 2-view Flip TTA |
 | s_oof_zero_0001_ff (OOF zero p<0.001, final_fit) | 60.51% | +3.17pp | 2-view Flip TTA |
+| **nr_ctrl_fixed (A0, reject_policy=drop)** | **60.31%** | **+3.03pp** | 2-view Flip TTA |
 | S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5) | 60.48% | +3.14pp | 2-view Flip TTA |
 | w1_gce05_mixup (MixUp + GCE q=0.5) | 60.36% | +3.02pp | 2-view Flip TTA |
 | s_oof_zero_0001 (OOF zero-weight p<0.001) | 60.28% | +2.94pp | 2-view Flip TTA |
