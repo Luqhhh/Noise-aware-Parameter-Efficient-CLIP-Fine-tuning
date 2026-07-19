@@ -11,5 +11,8 @@
   "max_class_relabel_rate": 0.027777777777777776,
   "classes_with_zero_clean_samples": [],
   "manifest_coverage": 1.0,
-  "confident_joint_path": null
+  "confident_joint_path": "outputs/phase4/purification/nr_consensus_relabel_v2_top100/confident_joint.npy",
+  "confident_joint_sha256": "ad57951acee2da6b13b2e4f63b8c1f65a27a327a5e14f297c50c222a843543d1",
+  "confident_joint_issues_path": "outputs/phase4/purification/nr_consensus_relabel_v2_top100/confident_joint_issues.csv",
+  "confident_joint_issues_sha256": "7ad199aa05ac63c33767195b05ee2682641a9dbb1cf673fbd2f8bbd8bee23bf0"
 }
