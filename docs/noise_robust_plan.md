@@ -45,6 +45,7 @@
 | Wave A | `NR_CL_CLASSWISE_DROP` | class-conditional confident-joint prune，按类限额删除 | 42 | 通过本地安全 gate 后 Bare 提交 |
 | Wave A | `NR_CL_KNN_DROP` | confident issue ∩ OOF/kNN 共识删除 | 42 | 通过本地安全 gate 后 Bare 提交 |
 | Wave A | `NR_CONSENSUS_RELABEL_1P` | 三信号共识、高置信、全局最多 1% hard relabel | 42 | 通过本地安全 gate 后 Bare 提交 |
+| Wave A+ | `NR_COMBINED_CLEAN_CORE` | 噪声分层：A2 全局黑名单 + A3 高置信重标 + A1 按类软降权 | 42 | Wave A 独立验证通过后执行 |
 | Wave B | `NR_REJECT_CONSISTENCY` | rejected 样本仅做 teacher/student flip consistency | 42 | 仅当最佳 drop 候选有平台正收益 |
 | Wave B | `NR_REJECT_PSEUDO_1P` | clean supervised + 1% pseudo-label supervised，rejected 其余为 0 权重 | 42 | 仅当 relabel1p 或 drop 有正收益 |
 | Wave B | `NR_REJECT_SSL_COMBINED` | consistency + 1% pseudo-label | 42 | 仅当前两项至少一项正收益 |
@@ -57,6 +58,52 @@
 - Wave A 最多提交 2 个候选：优先 `NR_CL_KNN_DROP` 和 `NR_CONSENSUS_RELABEL_1P`；`NR_CL_CLASSWISE_DROP` 主要用于机制对照，只有审计明显优于二者时才提交。
 - Wave B 每次只提交一个最强候选，不进行 consistency weight 大网格。
 - 所有 TTA 必须等对应 Bare 已达到当前有效基线后再生成/提交。
+
+### Wave A 结果与噪声分层策略（2026-07-19 更新）
+
+Wave A 三个实验揭示了不同精度的噪声处理层级：
+
+| 实验 | 操作 | 数量 | 精度 | TTA |
+|------|------|------|------|------|
+| A2 `NR_CL_KNN_DROP` | 三方共识删除 | 991 (1.1%) | 极高（CL+OOF+kNN 一致） | **61.21%** |
+| A3 `NR_CONSENSUS_RELABEL_TOP100` | 高置信重标 | 100 (0.1%) | 高（≥3/5 辅助信号） | pending |
+| A1 `NR_CL_CLASSWISE_DROP` | 按类限额删除 | 8,680 (9.5%) | 中（仅 CL 统计） | pending |
+
+三者处理的样本群体近乎互斥：
+
+- A2 和 A3 的核心条件互斥：A2 要求 `knn_agreement ≤ 0.20`（邻居反对原标签），A3 要求 `knn_top1_agreement ≥ 0.60`（邻居支持新标签）。
+- A1 覆盖更广但精度较低，会同时删除一些 A2 的目标（交集约 991 中的大部分）。
+
+**噪声分层处理策略（NR_COMBINED_CLEAN_CORE）：**
+
+```
+第一层（全局黑名单）：A2 kNN 三方共识 → 永久删除 991 个
+    ↓  已固化为 outputs/phase4/global_rejected_paths.txt
+第二层（高置信重标）：A3 共识 relabel → 100 个改标签
+    ↓  仅限三方信号 + ≥3/5 辅助条件
+第三层（按类软降权）：A1 classwise → 其余可疑样本降权
+    ↓  每类 ≤10%，按 CL confidence 排序
+剩余：clean 样本正常训练
+```
+
+此策略的优势：
+- 不浪费数据（A2 只删 1.1%，A3 改标签利用）
+- 精度递增（先删确认错的，再改有把握的，再降权不确定的）
+- 互不冲突（三层作用于不同的信号阈值区间）
+
+计划新增实验 `NR_COMBINED_CLEAN_CORE` 实现此策略，在 Wave A 独立验证完成后执行。
+
+### 全局黑名单机制（2026-07-19 实施）
+
+**文件**：`outputs/phase4/global_rejected_paths.txt`（991 个 canonical 路径）
+
+**来源**：A2 `NR_CL_KNN_DROP` 的 `training_role=rejected` 样本，由 CL + OOF + kNN 三方共识自动判定。
+
+**生效方式**：`experiments/baseline/train.py:main()` 在构建 DataLoader 前自动读取并过滤。对所有实验透明生效，无需任何 config 配置。
+
+**合规性**：满足 Global Constraints 第 21 条——黑名单完全由脚本自动生成，未人工查看图片。路径列表通过 `canonical_image_path()` 规范化，与 Dataset 使用相同的规范化函数，确保匹配。
+
+**升级策略**：如果未来有更强共识方法产生新的 rejected 集合，可以通过重新生成 `global_rejected_paths.txt` 来替换。该文件为纯文本，SHA-256 可审计。
 
 ---
 
