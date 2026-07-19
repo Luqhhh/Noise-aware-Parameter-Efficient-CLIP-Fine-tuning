@@ -282,11 +282,21 @@ def _runtime_manifest_audit(
     mode: str,
     save_dir: Path,
     audit_logger: logging.Logger,
+    reject_policy: str = "weight_zero",
 ):
     """Verify dataset paths match manifest before epoch 1 (fail-closed).
 
-    Reads manifest directly via ManifestLoader and compares with
-    actual dataset.samples / dataset.labels.
+    Supports two reject strategies:
+
+    - ``weight_zero`` (default): rejected samples stay in dataset with
+      weight=0.  Full 1:1 correspondence required between dataset and
+      manifest.
+
+    - ``drop``: rejected samples are physically removed from the dataset
+      before the DataLoader is built.  The audit verifies that:
+      1. The dataset contains ONLY clean + pseudo manifest rows
+      2. NO rejected rows remain in the dataset
+      3. Clean/pseudo rows are in 1:1 correspondence with the dataset
     """
     import json
     import pandas as pd
@@ -347,10 +357,8 @@ def _runtime_manifest_audit(
         zip(manifest_df["_canonical_path"], manifest_df["sample_weight"])
     )
 
-    # Rejected samples are expected to be physically dropped from the
-    # dataset when reject_policy='drop'.  Exclude them from the
-    # bidirectional comparison so they don't show up as "extra".
-    # Supports both new format (training_role) and old format (sample_weight=0).
+    # 3. Identify rejected / kept partitions
+    # Support both new format (training_role) and old format (sample_weight=0).
     if manifest_roles:
         _rejected_in_manifest = {
             p for p, r in manifest_roles.items() if r == "rejected"
@@ -361,34 +369,45 @@ def _runtime_manifest_audit(
         }
     _kept_manifest_paths = manifest_paths - _rejected_in_manifest
 
-    # 3. Bidirectional comparison (on kept paths only)
-    missing_in_manifest = ds_paths - _kept_manifest_paths
-    extra_in_manifest = _kept_manifest_paths - ds_paths
+    # 4. Bidirectional comparison — strategy depends on reject_policy
+    if reject_policy == "drop":
+        # Phase 1: dataset must contain ONLY clean + pseudo manifest rows
+        _rejected_left_in_dataset = ds_paths & _rejected_in_manifest
+        # Phase 2: clean/pseudo manifest rows must be 1:1 with dataset
+        missing_in_manifest = ds_paths - _kept_manifest_paths
+        extra_in_manifest = _kept_manifest_paths - ds_paths
+    else:
+        # weight_zero: full 1:1 correspondence required
+        missing_in_manifest = ds_paths - manifest_paths
+        extra_in_manifest = manifest_paths - ds_paths
+        _rejected_left_in_dataset = set()
+
     dup_in_manifest = (
         manifest_df["image_path"].duplicated().sum()
         + dup_manifest_canonical
     )
 
-    # 4. original_label mismatches
+    # 5. original_label mismatches (on kept paths only)
     label_mismatches = 0
-    for p in ds_paths & manifest_paths:
+    for p in ds_paths & _kept_manifest_paths:
         if int(ds_label_map[p]) != int(manifest_label_map[p]):
             label_mismatches += 1
 
-    # 5. Role stats
+    # 6. Role stats
     role_counts = {"clean": 0, "rejected": 0, "pseudo": 0}
-    for p in ds_paths & manifest_paths:
+    for p in ds_paths:
         role = manifest_roles.get(p, "clean")
         if role in role_counts:
             role_counts[role] += 1
 
-    # 6. Per-class rates
+    # 7. Per-class rates (computed over full manifest for completeness)
     num_classes = 500
+    n_full = len(manifest_paths)
     class_total = {c: 0 for c in range(num_classes)}
     class_reject = {c: 0 for c in range(num_classes)}
     class_pseudo = {c: 0 for c in range(num_classes)}
-    for p in ds_paths & manifest_paths:
-        c = int(ds_label_map[p])
+    for p in manifest_paths:
+        c = int(manifest_label_map[p])
         class_total[c] += 1
         if manifest_weights.get(p, 1.0) == 0.0:
             class_reject[c] += 1
@@ -410,8 +429,11 @@ def _runtime_manifest_audit(
     audit = {
         "dataset_sample_count": n_dataset,
         "manifest_row_count": len(manifest_df),
+        "manifest_rejected_count": len(_rejected_in_manifest),
+        "reject_policy": reject_policy,
         "missing_in_manifest": len(missing_in_manifest),
         "extra_in_manifest": len(extra_in_manifest),
+        "rejected_left_in_dataset": len(_rejected_left_in_dataset),
         "duplicate_manifest_paths": int(dup_in_manifest),
         "original_label_mismatches": label_mismatches,
         "coverage": 1.0 if len(missing_in_manifest) == 0 else (n_dataset - len(missing_in_manifest)) / n_dataset,
@@ -419,8 +441,8 @@ def _runtime_manifest_audit(
         "clean_count": role_counts["clean"],
         "rejected_count": role_counts["rejected"],
         "pseudo_count": role_counts["pseudo"],
-        "global_reject_rate": role_counts["rejected"] / max(n_dataset, 1),
-        "global_relabel_rate": role_counts["pseudo"] / max(n_dataset, 1),
+        "global_reject_rate": role_counts["rejected"] / max(len(_kept_manifest_paths), 1),
+        "global_relabel_rate": role_counts["pseudo"] / max(len(_kept_manifest_paths), 1),
         "max_class_drop_rate": max_class_drop,
         "max_source_class_relabel_rate": max_class_relabel,
         "classes_with_zero_clean": zero_clean,
@@ -439,6 +461,11 @@ def _runtime_manifest_audit(
     if audit["extra_in_manifest"] > 0:
         errors.append(
             f"{audit['extra_in_manifest']} manifest images not in dataset"
+        )
+    if audit["rejected_left_in_dataset"] > 0:
+        errors.append(
+            f"{audit['rejected_left_in_dataset']} rejected samples still in dataset "
+            f"(reject_policy='drop' should have removed them)"
         )
     if audit["duplicate_manifest_paths"] > 0:
         errors.append(
@@ -465,9 +492,10 @@ def _runtime_manifest_audit(
 
     audit_logger.info(
         "Runtime manifest audit PASSED: %d samples, coverage=1.0, "
-        "clean=%d rejected=%d pseudo=%d, max_class_drop=%.4f",
+        "clean=%d rejected=%d pseudo=%d, max_class_drop=%.4f, "
+        "reject_policy=%s",
         n_dataset, role_counts["clean"], role_counts["rejected"],
-        role_counts["pseudo"], max_class_drop,
+        role_counts["pseudo"], max_class_drop, reject_policy,
     )
 
 
@@ -2159,10 +2187,14 @@ def main():
     log_header = not log_file.exists()
 
     # Runtime manifest audit: verify dataset paths match manifest before epoch 1
+    _reject_policy = config.get("sample_weighting", {}).get(
+        "reject_policy", "weight_zero"
+    )
     _runtime_manifest_audit(
         train_dataset, weight_provider, mode,
         Path(config["train"]["save_dir"]),
         train_logger,
+        reject_policy=_reject_policy,
     )
 
     # Training loop

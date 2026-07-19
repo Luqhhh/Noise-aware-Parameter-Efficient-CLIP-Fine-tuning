@@ -1,5 +1,5 @@
 {
-  "dataset_sample_count": 91195,
+  "dataset_sample_count": 84841,
   "manifest_row_count": 91195,
   "missing_in_manifest": 0,
   "extra_in_manifest": 0,
@@ -7,12 +7,12 @@
   "original_label_mismatches": 0,
   "coverage": 1.0,
   "missing_policy": "error",
-  "clean_count": 91195,
+  "clean_count": 84841,
   "rejected_count": 0,
   "pseudo_count": 0,
   "global_reject_rate": 0.0,
   "global_relabel_rate": 0.0,
-  "max_class_drop_rate": 0.4166666666666667,
+  "max_class_drop_rate": 0.0,
   "max_source_class_relabel_rate": 0.0,
   "classes_with_zero_clean": []
 }

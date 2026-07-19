@@ -49,6 +49,7 @@ sample_weighting:
   hard_relabel: false
   normalize_by_weight_sum: true
   missing_weight_policy: error
+  reject_policy: drop
 eval:
   batch_size: 256
 output:
