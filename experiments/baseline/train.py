@@ -402,7 +402,6 @@ def _runtime_manifest_audit(
 
     # 7. Per-class rates (computed over full manifest for completeness)
     num_classes = 500
-    n_full = len(manifest_paths)
     class_total = {c: 0 for c in range(num_classes)}
     class_reject = {c: 0 for c in range(num_classes)}
     class_pseudo = {c: 0 for c in range(num_classes)}

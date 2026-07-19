@@ -100,19 +100,53 @@ def main():
     weight_provider = build_weight_provider(config, num_train_samples=len(train_dataset))
     logger.info("Weight provider: %s", type(weight_provider).__name__)
 
+    # ── Reject policy: mirror production path ──
+    sw_cfg_pre = config.get("sample_weighting", {})
+    reject_policy = sw_cfg_pre.get("reject_policy", "weight_zero")
+    if reject_policy == "drop":
+        import pandas as _pd
+        from common.manifest_loader import canonical_image_path as _canon
+        _manifest_path = sw_cfg_pre.get("manifest_path")
+        _mf = _pd.read_csv(_manifest_path)
+        if "training_role" in _mf.columns:
+            _rejected_mask = _mf["training_role"] == "rejected"
+        elif "sample_weight" in _mf.columns:
+            _rejected_mask = _mf["sample_weight"] == 0.0
+        else:
+            raise ValueError("reject_policy=drop requires training_role or sample_weight")
+        _rejected_paths = set(_mf[_rejected_mask]["image_path"].astype(str).map(_canon))
+        _old_n = len(train_dataset)
+        _keep = [i for i, p in enumerate(train_dataset.samples) if _canon(str(p)) not in _rejected_paths]
+        train_dataset.samples = [train_dataset.samples[i] for i in _keep]
+        train_dataset.labels = [train_dataset.labels[i] for i in _keep]
+        logger.info("Reject policy 'drop': %d → %d samples (%d rejected removed)",
+                     _old_n, len(_keep), _old_n - len(_keep))
+        # Rebuild loader
+        _g = torch.Generator().manual_seed(42)
+        loader = DataLoader(
+            train_dataset, batch_size=config["train"]["batch_size"],
+            shuffle=True, num_workers=min(4, config["train"].get("num_workers", 8)),
+            pin_memory=True, worker_init_fn=seed_worker, generator=_g,
+        )
+        logger.info("DataLoader rebuilt: %d batches", len(loader))
+
     # ── Runtime audit ──
     from experiments.baseline.train import _runtime_manifest_audit
     audit_dir = output_dir / "audit"
     audit_dir.mkdir(parents=True, exist_ok=True)
-    _runtime_manifest_audit(train_dataset, weight_provider, "dev", audit_dir, logger)
+    _runtime_manifest_audit(train_dataset, weight_provider, "dev", audit_dir, logger,
+                            reject_policy=reject_policy)
 
     audit = json.loads((audit_dir / "manifest_runtime_audit.json").read_text())
-    logger.info("Audit: coverage=%.4f missing=%d extra=%d mismatches=%d",
+    logger.info("Audit: coverage=%.4f missing=%d extra=%d mismatches=%d rejected_left=%d",
                  audit["coverage"], audit["missing_in_manifest"],
-                 audit["extra_in_manifest"], audit["original_label_mismatches"])
+                 audit["extra_in_manifest"], audit["original_label_mismatches"],
+                 audit.get("rejected_left_in_dataset", 0))
     assert audit["coverage"] == 1.0
     assert audit["missing_in_manifest"] == 0
     assert audit["extra_in_manifest"] == 0
+    assert audit.get("rejected_left_in_dataset", 0) == 0, \
+        f"Rejected samples left in dataset: {audit.get('rejected_left_in_dataset', 0)}"
 
     # ── Model head ──
     from experiments.baseline.model import build_model
