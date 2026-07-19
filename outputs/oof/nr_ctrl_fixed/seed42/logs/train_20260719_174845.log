@@ -1,0 +1,9 @@
+2026-07-19 17:48:45 | INFO | Using device: cuda
+2026-07-19 17:48:45 | INFO | Configuration: configs/nr_ctrl_oof_zero_0001_fixed.yaml
+2026-07-19 17:48:45 | INFO | Train seed: 42
+2026-07-19 17:48:45 | INFO | Resolved runtime: experiment_id=NR_CTRL_OOF_ZERO_0001_FIXED, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-19 17:48:48 | INFO | Total parameters:     88,105,716
+2026-07-19 17:48:48 | INFO | Trainable parameters: 256,500
+2026-07-19 17:49:16 | INFO | Reject policy 'drop': removed 6354 rejected samples (91195 → 84841 remaining)
+2026-07-19 17:49:16 | INFO | DataLoader rebuilt with 84841 samples (663 batches)
+2026-07-19 17:49:16 | INFO | Using config epochs: 50 (dev mode)

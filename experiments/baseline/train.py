@@ -1726,10 +1726,45 @@ def main():
         )
         train_dataset = train_loader.dataset
 
+    # ── Global blacklist: always exclude A2 kNN-consensus rejected paths ──
+    # The 991 samples identified by CL + OOF + kNN triple consensus as
+    # mislabeled are permanently excluded from all future experiments.
+    _global_blacklist = Path("outputs/phase4/global_rejected_paths.txt")
+    if _global_blacklist.exists():
+        from common.manifest_loader import canonical_image_path as _gcanon
+        _blacklist = set(_global_blacklist.read_text().strip().split("\n"))
+        _old_n = len(train_dataset)
+        _keep = [
+            i for i, p in enumerate(train_dataset.samples)
+            if _gcanon(str(p)) not in _blacklist
+        ]
+        train_dataset.samples = [train_dataset.samples[i] for i in _keep]
+        train_dataset.labels = [train_dataset.labels[i] for i in _keep]
+        _dropped = _old_n - len(_keep)
+        if _dropped > 0:
+            train_logger.info(
+                "Global blacklist: removed %d rejected samples (%d → %d)",
+                _dropped, _old_n, len(_keep),
+            )
+            _g = torch.Generator()
+            _g.manual_seed(config["data"].get("train_seed", config["data"].get("seed", 42)))
+            train_loader = DataLoader(
+                train_dataset,
+                batch_size=config["train"]["batch_size"],
+                shuffle=True,
+                num_workers=config["train"]["num_workers"],
+                pin_memory=config["train"].get("pin_memory", True),
+                timeout=120,
+                drop_last=False,
+                worker_init_fn=seed_worker,
+                generator=_g,
+            )
+            train_logger.info(
+                "DataLoader rebuilt: %d batches (after global blacklist)",
+                len(train_loader),
+            )
+
     # ── Reject policy: physically drop rejected samples from dataset ──
-    # When reject_policy="drop", samples with training_role="rejected" are
-    # removed from the dataset BEFORE DataLoader construction.  This prevents
-    # rejected pixel data from leaking into clean samples via MixUp.
     sw_cfg_pre = config.get("sample_weighting", {})
     reject_policy = sw_cfg_pre.get("reject_policy", "weight_zero")
     if reject_policy == "drop":

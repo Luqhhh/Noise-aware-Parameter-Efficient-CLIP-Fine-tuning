@@ -1,0 +1,57 @@
+2026-07-19 20:19:45 | INFO | Using device: cuda
+2026-07-19 20:19:45 | INFO | Configuration: configs/nr_cl_classwise_drop.yaml
+2026-07-19 20:19:45 | INFO | Train seed: 42
+2026-07-19 20:19:45 | INFO | Resolved runtime: experiment_id=NR_CL_CLASSWISE_DROP, mode=dev, head_type=linear, augmentation=a0, cached=False
+2026-07-19 20:19:48 | INFO | Total parameters:     88,105,716
+2026-07-19 20:19:48 | INFO | Trainable parameters: 256,500
+2026-07-19 20:20:06 | INFO | Reject policy 'drop': removed 8680 rejected samples (91195 → 82515 remaining)
+2026-07-19 20:20:06 | INFO | DataLoader rebuilt with 82515 samples (645 batches)
+2026-07-19 20:20:06 | INFO | Using config epochs: 50 (dev mode)
+2026-07-19 20:20:16 | INFO | Val weights from manifest: 0/10322 zeroed (0.0%)
+2026-07-19 20:20:16 | INFO | Loss: gce (reduction=mean)
+2026-07-19 20:20:16 | INFO | Optimizer parameter groups:
+2026-07-19 20:20:16 | INFO |   head        :    256,500 params, lr=5.00e-03, wd=1.00e-04
+2026-07-19 20:20:16 | INFO |   TOTAL       :    256,500 optimizer params
+2026-07-19 20:20:16 | INFO |   Trainable head params:       256,500
+2026-07-19 20:20:16 | INFO |   Trainable visual params:           0
+2026-07-19 20:20:25 | INFO | Runtime manifest audit PASSED: 82515 samples, coverage=1.0, clean=82515 rejected=0 pseudo=0, max_class_drop=0.1000, reject_policy=drop
+2026-07-19 20:20:25 | INFO | Starting training: 50 epochs, 645 batches/epoch
+2026-07-19 20:20:25 | INFO | Warmup steps: 1290, Total steps: 32250, Cosine steps: 30960
+2026-07-19 20:20:25 | INFO | AMP: True
+2026-07-19 20:20:25 | INFO | ============================================================
+2026-07-19 20:23:08 | INFO | Epoch   1/50 | Train Loss: 1.8763 | Train Acc: 0.1600 | Val Loss: 1.7793 | Val Acc: 0.2232 | head_lr: 2.50e-03 | bb_lr: 0.00e+00 | Time: 2m 43s
+2026-07-19 20:23:08 | INFO |   >> New best RAW! Val Acc: 0.2232
+2026-07-19 20:25:32 | INFO | Epoch   2/50 | Train Loss: 1.4524 | Train Acc: 0.3927 | Val Loss: 1.2036 | Val Acc: 0.4953 | head_lr: 5.00e-03 | bb_lr: 0.00e+00 | Time: 2m 22s
+2026-07-19 20:25:32 | INFO |   >> New best RAW! Val Acc: 0.4953
+2026-07-19 20:28:01 | INFO | Epoch   3/50 | Train Loss: 0.9839 | Train Acc: 0.6193 | Val Loss: 0.9590 | Val Acc: 0.5857 | head_lr: 4.99e-03 | bb_lr: 0.00e+00 | Time: 2m 26s
+2026-07-19 20:28:01 | INFO |   >> New best RAW! Val Acc: 0.5857
+2026-07-19 20:30:24 | INFO | Epoch   4/50 | Train Loss: 0.8042 | Train Acc: 0.6808 | Val Loss: 0.8643 | Val Acc: 0.6101 | head_lr: 4.98e-03 | bb_lr: 0.00e+00 | Time: 2m 21s
+2026-07-19 20:30:24 | INFO |   >> New best RAW! Val Acc: 0.6101
+2026-07-19 20:32:46 | INFO | Epoch   5/50 | Train Loss: 0.7135 | Train Acc: 0.7122 | Val Loss: 0.8093 | Val Acc: 0.6256 | head_lr: 4.95e-03 | bb_lr: 0.00e+00 | Time: 2m 20s
+2026-07-19 20:32:46 | INFO |   >> New best RAW! Val Acc: 0.6256
+2026-07-19 20:35:15 | INFO | Epoch   6/50 | Train Loss: 0.6548 | Train Acc: 0.7332 | Val Loss: 0.7727 | Val Acc: 0.6353 | head_lr: 4.92e-03 | bb_lr: 0.00e+00 | Time: 2m 27s
+2026-07-19 20:35:15 | INFO |   >> New best RAW! Val Acc: 0.6353
+2026-07-19 20:37:43 | INFO | Epoch   7/50 | Train Loss: 0.6145 | Train Acc: 0.7470 | Val Loss: 0.7472 | Val Acc: 0.6417 | head_lr: 4.87e-03 | bb_lr: 0.00e+00 | Time: 2m 26s
+2026-07-19 20:37:43 | INFO |   >> New best RAW! Val Acc: 0.6417
+2026-07-19 20:40:11 | INFO | Epoch   8/50 | Train Loss: 0.5802 | Train Acc: 0.7610 | Val Loss: 0.7263 | Val Acc: 0.6475 | head_lr: 4.81e-03 | bb_lr: 0.00e+00 | Time: 2m 26s
+2026-07-19 20:40:11 | INFO |   >> New best RAW! Val Acc: 0.6475
+2026-07-19 20:42:36 | INFO | Epoch   9/50 | Train Loss: 0.5538 | Train Acc: 0.7702 | Val Loss: 0.7098 | Val Acc: 0.6524 | head_lr: 4.74e-03 | bb_lr: 0.00e+00 | Time: 2m 24s
+2026-07-19 20:42:36 | INFO |   >> New best RAW! Val Acc: 0.6524
+2026-07-19 20:45:01 | INFO | Epoch  10/50 | Train Loss: 0.5389 | Train Acc: 0.7753 | Val Loss: 0.6960 | Val Acc: 0.6573 | head_lr: 4.67e-03 | bb_lr: 0.00e+00 | Time: 2m 23s
+2026-07-19 20:45:01 | INFO |   >> New best RAW! Val Acc: 0.6573
+2026-07-19 20:47:31 | INFO | Epoch  11/50 | Train Loss: 0.5220 | Train Acc: 0.7839 | Val Loss: 0.6846 | Val Acc: 0.6607 | head_lr: 4.58e-03 | bb_lr: 0.00e+00 | Time: 2m 29s
+2026-07-19 20:47:31 | INFO |   >> New best RAW! Val Acc: 0.6607
+2026-07-19 20:49:59 | INFO | Epoch  12/50 | Train Loss: 0.4995 | Train Acc: 0.7920 | Val Loss: 0.6753 | Val Acc: 0.6636 | head_lr: 4.49e-03 | bb_lr: 0.00e+00 | Time: 2m 26s
+2026-07-19 20:49:59 | INFO |   >> New best RAW! Val Acc: 0.6636
+2026-07-19 20:52:29 | INFO | Epoch  13/50 | Train Loss: 0.4747 | Train Acc: 0.8024 | Val Loss: 0.6671 | Val Acc: 0.6661 | head_lr: 4.39e-03 | bb_lr: 0.00e+00 | Time: 2m 28s
+2026-07-19 20:52:29 | INFO |   >> New best RAW! Val Acc: 0.6661
+2026-07-19 20:55:00 | INFO | Epoch  14/50 | Train Loss: 0.4617 | Train Acc: 0.8083 | Val Loss: 0.6602 | Val Acc: 0.6670 | head_lr: 4.28e-03 | bb_lr: 0.00e+00 | Time: 2m 29s
+2026-07-19 20:55:00 | INFO |   >> New best RAW! Val Acc: 0.6670
+2026-07-19 20:57:35 | INFO | Epoch  15/50 | Train Loss: 0.4550 | Train Acc: 0.8107 | Val Loss: 0.6539 | Val Acc: 0.6704 | head_lr: 4.16e-03 | bb_lr: 0.00e+00 | Time: 2m 32s
+2026-07-19 20:57:35 | INFO |   >> New best RAW! Val Acc: 0.6704
+2026-07-19 21:00:07 | INFO | Epoch  16/50 | Train Loss: 0.4501 | Train Acc: 0.8120 | Val Loss: 0.6483 | Val Acc: 0.6703 | head_lr: 4.03e-03 | bb_lr: 0.00e+00 | Time: 2m 30s
+2026-07-19 21:00:07 | INFO |   >> No improvement for 1/10 epochs
+2026-07-19 21:02:41 | INFO | Epoch  17/50 | Train Loss: 0.4375 | Train Acc: 0.8185 | Val Loss: 0.6422 | Val Acc: 0.6740 | head_lr: 3.90e-03 | bb_lr: 0.00e+00 | Time: 2m 33s
+2026-07-19 21:02:41 | INFO |   >> New best RAW! Val Acc: 0.6740
+2026-07-19 21:05:50 | INFO | Epoch  18/50 | Train Loss: 0.4325 | Train Acc: 0.8219 | Val Loss: 0.6386 | Val Acc: 0.6764 | head_lr: 3.76e-03 | bb_lr: 0.00e+00 | Time: 3m 6s
+2026-07-19 21:05:50 | INFO |   >> New best RAW! Val Acc: 0.6764
