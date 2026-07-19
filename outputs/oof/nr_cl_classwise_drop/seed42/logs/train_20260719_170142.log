@@ -14,3 +14,8 @@
 2026-07-19 17:02:00 | INFO |   TOTAL       :    256,500 optimizer params
 2026-07-19 17:02:00 | INFO |   Trainable head params:       256,500
 2026-07-19 17:02:00 | INFO |   Trainable visual params:           0
+2026-07-19 17:02:07 | INFO | Runtime manifest audit PASSED: 82515 samples, coverage=1.0, clean=82515 rejected=0 pseudo=0, max_class_drop=0.0000
+2026-07-19 17:02:08 | INFO | Starting training: 50 epochs, 645 batches/epoch
+2026-07-19 17:02:08 | INFO | Warmup steps: 1290, Total steps: 32250, Cosine steps: 30960
+2026-07-19 17:02:08 | INFO | AMP: True
+2026-07-19 17:02:08 | INFO | ============================================================

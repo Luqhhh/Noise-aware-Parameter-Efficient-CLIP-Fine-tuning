@@ -2,7 +2,7 @@
   "dataset_sample_count": 82515,
   "manifest_row_count": 91195,
   "missing_in_manifest": 0,
-  "extra_in_manifest": 8680,
+  "extra_in_manifest": 0,
   "duplicate_manifest_paths": 0,
   "original_label_mismatches": 0,
   "coverage": 1.0,
