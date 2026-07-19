@@ -102,3 +102,11 @@
 - S_OOF_ZERO_001 TTA = 59.92%（-0.36pp vs 0.001 threshold 60.28%）
 - 0.01 阈值排除 12% 样本 vs 0.001 阈值排除 7%——更宽阈值在 bare 和 TTA 上均更差。
 - registry、phase3_experiments.csv、README 已更新。
+
+## 2026-07-19 S_OOF_ZERO_0001_FF 平台结果
+
+- S_OOF_ZERO_0001_FF bare = **60.29%**（+0.33pp over dev mode 59.96%，**NEW BEST**，首次突破 60%）
+- S_OOF_ZERO_0001_FF TTA = **60.51%**（+0.23pp over dev mode TTA 60.28%，**NEW BEST**，首次突破 60.5%）
+- final_fit 全量训练（无验证集）带来显著升幅，验证了 full-data 策略
+- Bare-TTA gap 仅 0.22pp（dev mode 0.32pp），全量训练后模型更稳定
+- OOF binary zero p<0.001 路线确认为当前最强策略

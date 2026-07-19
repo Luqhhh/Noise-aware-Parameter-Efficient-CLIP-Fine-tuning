@@ -6,35 +6,38 @@ Supplementary Experiments — 完整修订方案
 
 ---
 
-0. 当前状态（2026-07-18）
+0. 当前状态（2026-07-19）
    0.1 当前最佳结果
 
-   **平台最佳（截至 2026-07-18）：**
+   **平台最佳（截至 2026-07-19）：**
 
    | 方法 | 平台 Bare | 平台 TTA | 本地 Val | Split |
    |:--|:--:|:--:|:--:|:--:|
-   | **S_OOF_ZERO_0001** (binary zero p<0.001) | **59.96%** | **60.28%** | 69.37% | d3 |
+   | **S_OOF_ZERO_0001_FF** (binary zero p<0.001, final_fit) | **60.29%** | **60.51%** | — | d3 |
+   | S_OOF_ZERO_0001 (binary zero p<0.001) | 59.96% | 60.28% | 69.37% | d3 |
    | S_D3_MIXUP (d3_strict 无权重控制) | 59.86% | — | 69.47% | d3 |
    | **W1_GCE05_MIXUP** (MixUp + GCE q=0.5) | **59.86%** | **60.36%** | 71.16% | ref |
    | S_MIXUP_CE5 (CE5 warmup + MixUp) | 59.70% | 60.48% | 70.25% | ref |
    | CE 5 epoch → GCE q=0.5 | 59.61% | 60.25% | 73.14% | ref |
    | 纯 GCE q=0.5 | 59.62% | 60.16% | 69.49% | ref |
    | S_OOF_DISCRETE (3-tier OOF weight) | 59.28% | 59.28% | 68.65% | d3 |
-   | S_OOF_ZERO_001 (binary zero p<0.01) | — | — | 69.02% | d3 |
+   | S_OOF_ZERO_001 (binary zero p<0.01) | 59.38% | 59.92% | 69.02% | d3 |
 
-   当前 Bare 最佳：**S_OOF_ZERO_0001 (59.96%)** ← 首个 Bare 显著超过 MixUp 基线的 OOF 方法
-   当前 TTA 最佳：**S_MIXUP_CE5 (60.48%)** — 但 Bare 未通过 gate，不视为训练策略有效
+   当前 Bare 最佳：**S_OOF_ZERO_0001_FF (60.29%)** ← final_fit 全量训练，首次突破 60% bare
+   当前 TTA 最佳：**S_OOF_ZERO_0001_FF (60.51%)** ← 首次突破 60.5% TTA
 
-   **d3_strict 控制对比（2026-07-18）：**
+   **d3_strict 控制对比（2026-07-19）：**
 
    | 实验 (d3_strict) | 排除 | Bare | vs D3_MIXUP | 判定 |
    |:--|:--:|:--:|:--:|:--|
    | S_D3_MIXUP | 0% | 59.86% | — | 控制基线 |
+   | **S_OOF_ZERO_0001_FF** | 7% (p<0.001) | **60.29%** | **+0.43pp** | **confirmed — final_fit 全量训练，首次突破 60% bare** |
    | **S_OOF_ZERO_0001** | 7% (p<0.001) | **59.96%** | **+0.10pp** | **confirmed — 首个有效 OOF 改进** |
-   | S_OOF_ZERO_001 | 12% (p<0.01) | — | — | pending |
+   | S_OOF_ZERO_001 | 12% (p<0.01) | 59.38% | −0.48pp | eliminated |
    | S_OOF_DISCRETE | 3-tier | 59.28% | −0.58pp | eliminated |
 
    OOF binary hard-zero (p<0.001, 7% 排除) 在同 split 配对控制下验证有效。
+   final_fit 全量训练进一步 +0.33pp bare / +0.23pp TTA，验证了 full-data 训练升幅。
 
    **Batch 1 — MixUp 参数消融（全部完成, 2026-07-17）：**
 
@@ -61,21 +64,22 @@ Supplementary Experiments — 完整修订方案
    既不破坏也不改善表征，feature drift 极小不足以改变分类决策。
    按 §13.3 关闭普通 PEFT；E4 (FeatDistill) / E5 (seed 3407) / LoRA (§9) 均不执行。
 
-   **P2 — OOF 路线（2026-07-18）：**
+   **P2 — OOF 路线（2026-07-19）：**
 
    | 实验 | 平台 Bare | 平台 TTA | 本地 Val | 判定 |
    |:--|:--:|:--:|:--:|:--|
+   | **S_OOF_ZERO_0001_FF** (binary, p<0.001, final_fit) | **60.29%** | **60.51%** | — | **confirmed — NEW BEST bare & TTA** |
    | **S_OOF_ZERO_0001** (binary, p<0.001) | **59.96%** | **60.28%** | 69.37% | **confirmed — +0.10pp over control** |
-   | S_OOF_ZERO_001 (binary, p<0.01) | — | — | 69.02% | pending |
+   | S_OOF_ZERO_001 (binary, p<0.01) | 59.38% | 59.92% | 69.02% | eliminated |
    | S_OOF_DISCRETE (3-tier tertile) | 59.28% | 59.28% | 68.65% | eliminated |
    | S_OOF_ZERO_005 (binary, p<0.05) | — | — | — | config ready |
    | S_OOF_ZERO_010 (binary, p<0.10) | — | — | — | config ready |
-   | S_OOF_ZERO_0001_FF (final_fit) | — | — | — | config ready |
 
-   OOF binary zero p<0.001 是同 split 控制下首个验证有效的改进：
-   - Bare +0.10pp over D3_MIXUP paired control
-   - Bare-TTA gap 仅 0.32pp（MixUp 为 0.50pp），模型更稳定
-   - 3-tier 软降权无效；binary 硬排除方向正确
+   OOF binary zero p<0.001 final_fit 是新的最强配置：
+   - Bare 60.29%：首个突破 60% 的方法，+0.33pp over dev mode
+   - TTA 60.51%：首个突破 60.5%，+0.23pp over dev mode TTA
+   - final_fit 全量训练带来显著升幅，验证了无验证集的 full-data 训练策略
+   - Bare-TTA gap 仅 0.22pp（dev mode 为 0.32pp），模型更稳定
 
 
 0.2 已确认的核心现象

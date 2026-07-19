@@ -97,3 +97,19 @@
 - ELR state is checkpoint-serializable in `common/elr.py`; no extra per-epoch external query is needed.
 - Long-run monitoring will be hourly via a persistent heartbeat; user-facing updates should report only the newest completed epoch and best validation metric.
 - Preserve existing dirty/untracked files and avoid staging or pushing this run unless the user later asks.
+
+## 2026-07-19: S_OOF_ZERO_0001_FF Final Fit 验证
+
+S_OOF_ZERO_0001_FF 是 S_OOF_ZERO_0001 的 final_fit 变体：
+- 相同 OOF manifest（p<0.001, 7% 排除）
+- 训练模式从 dev（train+val split）切换为 final_fit（全量训练集）
+- 全量样本数更多（train+val），无验证集
+
+平台结果：
+- Bare: 60.29%（+0.33pp vs dev mode 59.96%）— 首个突破 60% bare 的方法
+- TTA: 60.51%（+0.23pp vs dev mode 60.28%）— 首个突破 60.5% TTA 的方法
+
+结论：
+- final_fit 带来的全量训练升幅确认有效
+- OOF binary zero p<0.001 是当前最优噪声处理策略
+- 后续实验应优先考虑 final_fit 模式以获取完整数据利用
