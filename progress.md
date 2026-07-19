@@ -131,3 +131,10 @@
 - local micro = 69.33%, epoch = 50
 - vs pre-fix: bare 59.90% vs 旧版 invalid
 - reject_policy=drop 修复后，TTA 60.31% 验证了 MixUp 污染的修复
+
+## 2026-07-19 A2 (NR_CL_KNN_DROP) TTA 平台结果
+
+- A2 TTA = **61.21%**（NEW BEST, +0.11pp over AEGIS F1 61.10%）
+- CL+kNN consensus drop: 991 rejected (1.1%), reject_policy=drop
+- kNN other-fold-only, confident-joint + OOF/kNN agreement
+- 首次突破 61.2%

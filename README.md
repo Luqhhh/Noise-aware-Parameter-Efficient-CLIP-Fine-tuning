@@ -64,7 +64,8 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | 实验 | 平台分数 | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
-| **AEGIS F1 (visual LoRA, clean≥0.7, distill)** | **61.10%** | **+3.76pp** | Flip mean-prob T=0.5 |
+| **NR_CL_KNN_DROP (A2, kNN consensus drop)** | **61.21%** | **+3.87pp** | 2-view Flip TTA |
+| AEGIS F1 (visual LoRA, clean≥0.7, distill) | 61.10% | +3.76pp | Flip mean-prob T=0.5 |
 | s_oof_zero_0001_ff (OOF zero p<0.001, final_fit) | 60.51% | +3.17pp | 2-view Flip TTA |
 | S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5) | 60.48% | +3.14pp | 2-view Flip TTA |
 | w1_gce05_mixup (MixUp + GCE q=0.5) | 60.36% | +3.02pp | 2-view Flip TTA |
@@ -130,6 +131,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | Submission | Platform | vs ref | 推理 |
 |------------|---------|--------|------|
+| **NR_CL_KNN_DROP + Flip TTA** | **61.21%** | **+3.87pp** | 2-view Flip TTA（NEW BEST） |
 | **AEGIS F1 + Flip mean-prob T=0.5** | **61.10%** | **+3.76pp** | 2-view Flip TTA（NEW BEST） |
 | **AEGIS F1 bare** | **60.52%** | **+3.18pp** | 单视图（BEST BARE） |
 | s_oof_zero_0001_ff + Flip TTA | **60.51%** | **+3.17pp** | 2-view Flip TTA |
