@@ -72,6 +72,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | b2_gce05 (纯 GCE q=0.5) | 60.16% | +2.82pp | 2-view Flip TTA |
 | **robust_lora (LoRA rank=8, last_block)** | **60.24%** | **+2.90pp** | 2-view Flip TTA |
 | s_oof_zero_001 (OOF zero-weight p<0.01) | 59.92% | +2.58pp | 2-view Flip TTA |
+| robust_oof_soft (OOF soft target distillation) | 59.87% | +2.53pp | 2-view Flip TTA |
 
 **Top Bare 分数：**
 
@@ -117,6 +118,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | s_oof_zero_0001（OOF p<0.001） | 69.37% | 69.37% | 44 | **59.96%** | 60.28% |
 | s_oof_zero_001（OOF p<0.01） | 69.02% | 69.01% | 37 | 59.38% | 59.92% |
 | s_oof_discrete（OOF 3-tier） | 68.65% | — | 41 | 59.28% | 59.28% |
+| robust_oof_soft（OOF soft target distillation） | 69.29% | — | 37 | — | 59.87% |
 | s_elr_base（GCE+MixUp+ELR） | 68.20% | 68.21% | 19 | 58.59% | 59.14% |
 
 > ⚠️ **Important**: 本地 val 不能预测平台表现。OOF zero-weight 本地 69.37%（低于 MixUp 71.16%）但平台 Bare 59.96% 超越 MixUp 59.86%。所有模型选择必须以平台 Bare 为准，本地分数仅作辅助诊断。
