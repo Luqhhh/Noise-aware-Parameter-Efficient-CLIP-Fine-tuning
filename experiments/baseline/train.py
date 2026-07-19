@@ -347,9 +347,17 @@ def _runtime_manifest_audit(
         zip(manifest_df["_canonical_path"], manifest_df["sample_weight"])
     )
 
-    # 3. Bidirectional comparison
-    missing_in_manifest = ds_paths - manifest_paths
-    extra_in_manifest = manifest_paths - ds_paths
+    # Rejected samples are expected to be physically dropped from the
+    # dataset when reject_policy='drop'.  Exclude them from the
+    # bidirectional comparison so they don't show up as "extra".
+    _rejected_in_manifest = {
+        p for p, r in manifest_roles.items() if r == "rejected"
+    }
+    _kept_manifest_paths = manifest_paths - _rejected_in_manifest
+
+    # 3. Bidirectional comparison (on kept paths only)
+    missing_in_manifest = ds_paths - _kept_manifest_paths
+    extra_in_manifest = _kept_manifest_paths - ds_paths
     dup_in_manifest = (
         manifest_df["image_path"].duplicated().sum()
         + dup_manifest_canonical
