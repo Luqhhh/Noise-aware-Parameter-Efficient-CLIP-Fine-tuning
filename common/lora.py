@@ -57,8 +57,17 @@ class LoRALinear(nn.Module):
             base.bias.requires_grad_(False)
 
         # LoRA parameters
-        self.lora_A = nn.Parameter(torch.zeros(r, in_features))
-        self.lora_B = nn.Parameter(torch.zeros(out_features, r))
+        # Match the wrapped layer so applying PEFT after model construction
+        # does not leave adapter parameters on CPU while the CLIP backbone is
+        # already on CUDA (or in a non-default dtype).
+        param_device = base.weight.device
+        param_dtype = base.weight.dtype
+        self.lora_A = nn.Parameter(
+            torch.zeros(r, in_features, device=param_device, dtype=param_dtype)
+        )
+        self.lora_B = nn.Parameter(
+            torch.zeros(out_features, r, device=param_device, dtype=param_dtype)
+        )
         # Kaiming uniform init for A
         nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
         # Zero-init for B (so LoRA starts as identity perturbation)
@@ -67,11 +76,38 @@ class LoRALinear(nn.Module):
         self.lora_dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
         self._merged = False
 
+    @property
+    def weight(self) -> torch.Tensor:
+        """Expose the effective weight for callers that bypass ``forward``.
+
+        ``torch.nn.MultiheadAttention`` passes ``out_proj.weight`` directly to
+        ``multi_head_attention_forward`` instead of calling ``out_proj`` as a
+        module.  Returning the base weight plus the LoRA delta keeps that path
+        compatible and preserves gradients for the adapter parameters.
+        """
+        if self._merged:
+            return self.base.weight
+        delta = (self.lora_B @ self.lora_A) * self.scaling
+        return self.base.weight + delta
+
+    @property
+    def bias(self) -> Optional[torch.Tensor]:
+        """Delegate bias access for ``MultiheadAttention`` compatibility."""
+        return self.base.bias
+
+    @property
+    def in_features(self) -> int:
+        return self.base.in_features
+
+    @property
+    def out_features(self) -> int:
+        return self.base.out_features
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self._merged:
             return F.linear(x, self.base.weight, self.base.bias)
 
-        result = self.base(x)
+        result = F.linear(x, self.weight, self.bias)
         lora_out = self.lora_dropout(x) @ self.lora_A.T @ self.lora_B.T * self.scaling
         return result + lora_out
 

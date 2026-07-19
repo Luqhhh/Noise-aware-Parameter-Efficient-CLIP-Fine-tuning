@@ -31,6 +31,7 @@ from typing import Any, Dict, Optional
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -718,6 +719,36 @@ def _forward_inputs(
     return model(inputs)
 
 
+def _apply_oof_soft_targets(
+    loss: torch.Tensor,
+    logits: torch.Tensor,
+    paths,
+    weight_provider,
+    config: Dict[str, Any],
+    device: torch.device,
+) -> torch.Tensor:
+    """Blend weighted hard-label loss with fixed OOF soft-target loss."""
+    soft_cfg = config.get("soft_targets", {})
+    if (
+        not soft_cfg.get("enabled", False)
+        or paths is None
+        or not hasattr(weight_provider, "get_batch")
+    ):
+        return loss
+
+    temperature = float(soft_cfg.get("temperature", 1.5))
+    soft_weight = float(soft_cfg.get("loss_weight", 0.25))
+    if not 0.0 <= soft_weight <= 1.0:
+        raise ValueError(f"soft_targets.loss_weight must be in [0,1], got {soft_weight}")
+    targets, sample_weights = weight_provider.get_batch(
+        list(paths), device=device, temperature=temperature
+    )
+    log_probs = F.log_softmax(logits / temperature, dim=1)
+    soft_per_sample = -(targets * log_probs).sum(dim=1) * (temperature ** 2)
+    soft_loss = (soft_per_sample * sample_weights).sum() / sample_weights.sum().clamp_min(1e-8)
+    return (1.0 - soft_weight) * loss + soft_weight * soft_loss
+
+
 def train_one_epoch(
     model: nn.Module,
     loader: DataLoader,
@@ -816,6 +847,9 @@ def train_one_epoch(
                     normalize_by_weight_sum, missing_policy, device,
                     epoch=epoch, labels=labels,
                 )
+                loss = _apply_oof_soft_targets(
+                    loss, logits, paths, weight_provider, config, device
+                )
 
                 # ── Teacher–Student consistency loss (A-INFRA-7) ──
                 if teacher_hook is not None:
@@ -892,6 +926,9 @@ def train_one_epoch(
                     loss_per_sample, paths, weight_provider or sample_weights,
                     normalize_by_weight_sum, missing_policy, device,
                     epoch=epoch, labels=labels,
+                )
+                loss = _apply_oof_soft_targets(
+                    loss, logits, paths, weight_provider, config, device
                 )
 
                 # ── Teacher–Student consistency loss (A-INFRA-7) ──

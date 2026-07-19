@@ -861,6 +861,17 @@ def build_weight_provider(config: dict, num_train_samples: int = 0) -> BaseWeigh
             missing_policy=sw.get("missing_weight_policy", "error"),
         )
 
+    if sw_type == "oof_soft_targets":
+        from common.oof_targets import OOFSoftTargetProvider
+
+        return OOFSoftTargetProvider(
+            logits_path=sw["logits_path"],
+            quality_path=sw["quality_path"],
+            min_weight=sw.get("min_weight", 0.6),
+            max_weight=sw.get("max_weight", 1.0),
+            missing_policy=sw.get("missing_weight_policy", "error"),
+        )
+
     if sw_type == "relabel_manifest":
         return RelabelManifestProvider(
             manifest_path=sw["manifest_path"],

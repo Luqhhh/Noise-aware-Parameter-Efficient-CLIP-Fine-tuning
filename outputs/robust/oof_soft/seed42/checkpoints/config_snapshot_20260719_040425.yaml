@@ -1,0 +1,76 @@
+data:
+  class_mapping_path: outputs/data/master_splits/seed42
+  expected_num_classes: 500
+  image_extensions:
+  - .jpg
+  - .jpeg
+  - .png
+  - .bmp
+  - .webp
+  seed: 42
+  split_dir: outputs/data/d3_strict/seed42
+  split_seed: 42
+  stage: preliminary
+  test_dir: test
+  train_dir: train
+  train_seed: 42
+  use_full_training_set: false
+  val_ratio: 0.1
+eval:
+  batch_size: 256
+experiment:
+  augmentation_preset: a0
+  head_type: linear
+  id: ROBUST_OOF_SOFT
+  mode: confirm
+loss:
+  name: gce
+  probability_epsilon: 1.0e-07
+  q: 0.5
+mixup:
+  enabled: false
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: true
+  num_classes: 500
+  train_ln_post: false
+  train_visual_proj: false
+  unfreeze_last_n_blocks: 0
+  use_cached_features: false
+output:
+  log_dir: outputs/robust/oof_soft/seed42/logs
+  submission_dir: outputs/robust/oof_soft/seed42/submissions
+runtime:
+  augmentation_preset: a0
+  experiment_id: ROBUST_OOF_SOFT
+  head_type: linear
+  mode: confirm
+  use_cached_features: false
+sample_weighting:
+  logits_path: outputs/phase3/oof/oof_logits.pt
+  max_weight: 1.0
+  min_weight: 0.6
+  missing_weight_policy: error
+  normalize_by_weight_sum: true
+  quality_path: outputs/phase/phase3/oof/sample_quality.csv
+  type: oof_soft_targets
+soft_targets:
+  enabled: true
+  loss_weight: 0.25
+  temperature: 1.5
+train:
+  amp: true
+  batch_size: 128
+  device: cuda
+  early_stop_patience: 10
+  epochs: 50
+  image_size: 224
+  lr: 0.005
+  max_grad_norm: 1.0
+  min_lr_ratio: 0.01
+  num_workers: 8
+  save_dir: outputs/robust/oof_soft/seed42/checkpoints
+  scheduler: cosine
+  warmup_epochs: 2
+  weight_decay: 0.0001

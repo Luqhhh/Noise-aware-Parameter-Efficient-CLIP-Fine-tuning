@@ -25,6 +25,7 @@ KNOWN_TOP_KEYS = {
     "head_ema",
     "peft",
     "teacher",
+    "soft_targets",
     "mixup",
     "elr",
     "cache",
@@ -37,7 +38,7 @@ REQUIRED_TOP_KEYS = {"experiment", "data", "model", "train", "eval", "output"}
 # Known sample_weighting types
 KNOWN_WEIGHT_TYPES = {
     "none", "static_manifest", "ema_loss", "prototype",
-    "prototype_ema_hybrid", "oof_manifest", "relabel_manifest",
+    "prototype_ema_hybrid", "oof_manifest", "oof_soft_targets", "relabel_manifest",
 }
 
 # Known loss names
