@@ -1,0 +1,62 @@
+{
+  "precision": "FP32 (prediction_records.csv, torch.no_grad, no AMP autocast)",
+  "val_set": "outputs/data/d3_strict/seed42/val.csv",
+  "val_samples": 10322,
+  "val_csv_sha256": "607e019165912bb0639efb456b7e8dea122b3e8579a2344dedb8109798921eae",
+  "ctrl_ckpt_sha256": "5d19dbe5eab832d705dd85b894c7b76c4d872ad83008da88810871e3553fab4f",
+  "knn_ckpt_sha256": "74ad2856e4449a42397edbda599ae79e8a4c6a6fa923624ef4e91a35e20a2a4c",
+  "contingency": {
+    "both_correct": 7084,
+    "both_wrong": 3085,
+    "ctrl_only": 68,
+    "knn_only": 85,
+    "total": 10322,
+    "mismatch": 153
+  },
+  "correct": {
+    "ctrl": 7152,
+    "knn": 7169,
+    "delta": 17
+  },
+  "metrics": {
+    "ctrl_micro": 0.692888975,
+    "knn_micro": 0.6945359426,
+    "micro_delta_pp": 0.164697,
+    "ctrl_macro": 0.6929190476,
+    "knn_macro": 0.6945619048,
+    "macro_delta_pp": 0.164286,
+    "ctrl_bottom10": 0.2930952381,
+    "knn_bottom10": 0.2917142857,
+    "bottom10_delta_pp": -0.138095,
+    "ctrl_median": 0.7142857143,
+    "knn_median": 0.7142857143
+  },
+  "mcnemar": {
+    "discordant_pairs": 153,
+    "b_ctrl_only": 68,
+    "c_knn_only": 85,
+    "exact_p_value": 0.19566754746910364,
+    "significant_at_0_05": false
+  },
+  "verdict": "TIED \u2014 nominal micro delta (+0.165pp) not statistically significant (McNemar p=0.196)",
+  "data_retention": {
+    "ctrl_trained": 84841,
+    "knn_trained": 90204,
+    "ctrl_reject_pct": 6.97,
+    "knn_reject_pct": 1.09,
+    "knn_retains_more": 5363,
+    "note": "KNN-drop retains more data (98.91% vs 93.03%). Different rejection criteria produce different retained sets; this does NOT prove the kNN selector is superior."
+  },
+  "correction": {
+    "previous_commit": "4da0309",
+    "issue": "Mixed AMP eval_results.json micro (KNN=7168) with FP32 prediction_records.csv McNemar (KNN=7169)",
+    "fix": "All metrics now from prediction_records.csv (FP32) exclusively",
+    "knn_correct_was": 7168,
+    "knn_correct_now": 7169,
+    "delta_was": 16,
+    "delta_now": 17,
+    "micro_delta_pp_was": 0.155,
+    "micro_delta_pp_now": 0.164697,
+    "mcnemar_p_unchanged": true
+  }
+}
