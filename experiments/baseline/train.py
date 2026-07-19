@@ -322,7 +322,7 @@ def _runtime_manifest_audit(
     # 2. Read manifest directly
     manifest_csv = getattr(weight_provider, "_loader", None)
     if manifest_csv is not None:
-        manifest_path = manifest_csv._path
+        manifest_path = manifest_csv.path
     else:
         audit_logger.warning("Cannot locate manifest file — skipping runtime audit")
         return

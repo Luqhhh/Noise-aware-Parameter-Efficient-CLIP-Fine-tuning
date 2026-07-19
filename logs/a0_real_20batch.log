@@ -1,0 +1,53 @@
+2026-07-19 14:23:16,570 | INFO | === A0 Smoke Acceptance ===
+2026-07-19 14:23:16,570 | INFO | Config: configs/nr_ctrl_oof_zero_0001_fixed.yaml
+2026-07-19 14:23:16,570 | INFO | Max batches: 20
+2026-07-19 14:23:16,573 | INFO | Overrides: manifest=fixtures/a0_manifest_small.csv, split=/home/lux1/noise/fixtures, workers=0, epochs=1
+2026-07-19 14:23:16,830 | INFO | Device: cuda
+2026-07-19 14:23:16,831 | INFO | Loading CLIP ViT-B/32...
+2026-07-19 14:23:19,982 | INFO | CLIP loaded.
+2026-07-19 14:23:19,984 | INFO | Split CSV: 50 rows from /home/lux1/noise/fixtures/train_split_small.csv
+2026-07-19 14:23:19,986 | INFO | TrainImageDataset: 50 samples, 1 classes
+2026-07-19 14:23:19,986 | INFO | Dataset: 50 samples
+2026-07-19 14:23:19,986 | INFO | Dataset samples[:3]: [PosixPath('/home/lux1/noise/train/0138/47fda57a0bed4e91b7d61ba81fbf36b6.jpg'), PosixPath('/home/lux1/noise/train/0138/6d57f98a79194c4eb797b802ebc3f612.jpg'), PosixPath('/home/lux1/noise/train/0138/705a659fd18341cfa28630dd865b5a57.jpg')]
+2026-07-19 14:23:19,986 | INFO | Dataset labels[:3]: [0, 0, 0]
+2026-07-19 14:23:19,986 | INFO | DataLoader: 25 batches (batch_size=2)
+2026-07-19 14:23:19,988 | INFO | Manifest loaded: 50 samples, 18 columns, sha256=f274c66f14b7c2f3
+2026-07-19 14:23:19,990 | INFO | RelabelManifestProvider: 50 samples | hard_relabel=False | relabeled=0 (0.00%) | weight mean=0.8000 median=1.0000 | manifest_sha256=f274c66f14b7c2f3
+2026-07-19 14:23:19,990 | INFO | Weight provider: RelabelManifestProvider
+2026-07-19 14:23:19,990 | INFO | === Runtime Manifest Audit ===
+2026-07-19 14:23:19,996 | INFO | Runtime manifest audit PASSED: 50 samples, coverage=1.0, clean=40 rejected=10 pseudo=0, max_class_drop=0.2000
+2026-07-19 14:23:19,996 | INFO | Audit results:
+2026-07-19 14:23:19,996 | INFO |   dataset_sample_count: 50
+2026-07-19 14:23:19,996 | INFO |   manifest_row_count: 50
+2026-07-19 14:23:19,997 | INFO |   missing_in_manifest: 0
+2026-07-19 14:23:19,997 | INFO |   extra_in_manifest: 0
+2026-07-19 14:23:19,997 | INFO |   duplicate_manifest_paths: 0
+2026-07-19 14:23:19,997 | INFO |   original_label_mismatches: 0
+2026-07-19 14:23:19,997 | INFO |   coverage: 1.0
+2026-07-19 14:23:19,997 | INFO |   missing_policy: error
+2026-07-19 14:23:19,997 | INFO |   clean_count: 40
+2026-07-19 14:23:19,997 | INFO |   rejected_count: 10
+2026-07-19 14:23:19,997 | INFO |   pseudo_count: 0
+2026-07-19 14:23:19,997 | INFO |   global_reject_rate: 0.2
+2026-07-19 14:23:19,997 | INFO |   global_relabel_rate: 0.0
+2026-07-19 14:23:19,997 | INFO |   max_class_drop_rate: 0.2
+2026-07-19 14:23:19,997 | INFO |   max_source_class_relabel_rate: 0.0
+2026-07-19 14:23:19,997 | INFO |   classes_with_zero_clean: []
+2026-07-19 14:23:19,997 | INFO | Audit PASSED: coverage=1.0, missing=0, extra=0, mismatches=0
+2026-07-19 14:23:19,997 | INFO | Loading CLIP model: ViT-B/32
+2026-07-19 14:23:21,750 | INFO | CLIP image encoder fully frozen.
+2026-07-19 14:23:21,753 | INFO | Model built: 88,105,716 total params, 256,500 trainable params
+2026-07-19 14:23:21,753 | INFO | Model head built: 256500 trainable params
+2026-07-19 14:23:21,754 | INFO | === Training: 20 batches ===
+2026-07-19 14:23:21,959 | INFO | batch  1: loss=1.910663 mixup=False relabeled=0
+2026-07-19 14:23:22,008 | INFO | batch  2: loss=1.906188 mixup=True relabeled=0
+2026-07-19 14:23:22,030 | INFO | batch  3: loss=1.901309 mixup=False relabeled=0
+2026-07-19 14:23:22,430 | INFO | batch 20: loss=1.814175 mixup=True relabeled=0
+2026-07-19 14:23:22,468 | INFO | === Training Complete ===
+2026-07-19 14:23:22,468 | INFO | Completed batches: 20
+2026-07-19 14:23:22,468 | INFO | Average loss: 1.771038
+2026-07-19 14:23:22,468 | INFO | Non-finite loss count: 0 (nan=0, inf=0)
+2026-07-19 14:23:22,468 | INFO | Optimizer step count: 20
+2026-07-19 14:23:22,879 | INFO | Checkpoint saved: /home/lux1/noise/outputs/a0_smoke_audit/smoke_checkpoint.pt
+2026-07-19 14:23:23,021 | INFO | Checkpoint loaded successfully: batch=20
+2026-07-19 14:23:23,021 | INFO | === ALL CHECKS PASSED ===

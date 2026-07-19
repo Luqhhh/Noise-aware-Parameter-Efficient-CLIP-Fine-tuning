@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.1.0, pluggy-1.6.0
+rootdir: /home/lux1/noise
+collected 35 items
+
+tests/test_runtime_manifest_audit.py .........                           [ 25%]
+tests/test_a0_smoke.py .........                                         [ 51%]
+tests/test_relabel_training.py ......                                    [ 68%]
+tests/test_weighted_mixup.py ......                                      [ 85%]
+tests/test_manifest_path_resolution.py .....                             [100%]
+
+============================== 35 passed in 1.99s ==============================

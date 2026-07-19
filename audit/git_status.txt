@@ -1,2 +1,13 @@
+ M audit/git_head.txt
+ M audit/git_status.txt
  M experiments/baseline/train.py
-?? audit/
+ M tests/test_runtime_manifest_audit.py
+?? audit/a0_smoke_tests.txt
+?? audit/changed_files.txt
+?? audit/full_relevant_tests.txt
+?? audit/runtime_audit_tests.txt
+?? fixtures/
+?? logs/a0_real_20batch.log
+?? outputs/a0_smoke_audit/
+?? scripts/run_a0_acceptance.py
+?? tests/test_a0_smoke.py
