@@ -124,3 +124,10 @@
 - A0 TTA = **60.30%**（2-view Flip TTA）
 - ⚠️ 此结果为 pre-fix 版本：rejected 样本（7%）通过 MixUp 污染 clean 样本
 - 需要 rerun with `reject_policy: drop`
+
+## 2026-07-19 A0 fixed (reject_policy=drop) 平台结果
+
+- A0 bare = **59.90%**, TTA = **60.31%**（FIXED: reject_policy=drop, 6354 rejected 物理删除）
+- local micro = 69.33%, epoch = 50
+- vs pre-fix: bare 59.90% vs 旧版 invalid
+- reject_policy=drop 修复后，TTA 60.31% 验证了 MixUp 污染的修复

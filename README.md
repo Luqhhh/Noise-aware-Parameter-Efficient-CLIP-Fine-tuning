@@ -80,6 +80,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | 实验 | 平台分数 | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
 | **s_oof_zero_0001_ff (OOF zero p<0.001, final_fit)** | **60.29%** | **+2.95pp** | 单视图 |
+| **nr_ctrl_fixed (A0, reject_policy=drop)** | **59.90%** | **+2.56pp** | 单视图 |
 | s_oof_zero_0001 (OOF zero-weight p<0.001) | 59.96% | +2.62pp | 单视图 |
 | w1_gce05_mixup (MixUp + GCE q=0.5) | 59.86% | +2.52pp | 单视图 |
 | s_d3_mixup (GCE q=0.5 + MixUp, d3 control) | 59.86% | +2.52pp | 单视图 |
@@ -116,6 +117,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | s_oof_zero_0001_ff（OOF p<0.001, final_fit） | — | — | — | **60.29%** | **60.51%** |
 | nr_ctrl_fixed（A0 causal control, GCE+MixUp+OOF zero） | 62.81% | — | 4 | **60.24%** | — |
 | robust_lora（LoRA rank=8 last_block, freeze_clip=false） | 69.40% | — | 1 | — | **60.24%** |
+| nr_ctrl_fixed（A0, reject_policy=drop） | 69.33% | — | 50 | **59.90%** | 60.31% |
 | s_oof_zero_0001（OOF p<0.001） | 69.37% | 69.37% | 44 | **59.96%** | 60.28% |
 | s_oof_zero_001（OOF p<0.01） | 69.02% | 69.01% | 37 | 59.38% | 59.92% |
 | s_oof_discrete（OOF 3-tier） | 68.65% | — | 41 | 59.28% | 59.28% |
