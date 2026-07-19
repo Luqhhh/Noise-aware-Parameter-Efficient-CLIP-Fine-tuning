@@ -64,31 +64,31 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | 实验 | 平台分数 | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
+| **AEGIS F1 (visual LoRA, clean≥0.7, distill)** | **61.10%** | **+3.76pp** | Flip mean-prob T=0.5 |
 | s_oof_zero_0001_ff (OOF zero p<0.001, final_fit) | 60.51% | +3.17pp | 2-view Flip TTA |
-| **nr_ctrl_fixed (A0, reject_policy=drop)** | **60.31%** | **+3.03pp** | 2-view Flip TTA |
 | S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5) | 60.48% | +3.14pp | 2-view Flip TTA |
 | w1_gce05_mixup (MixUp + GCE q=0.5) | 60.36% | +3.02pp | 2-view Flip TTA |
+| nr_ctrl_fixed (A0, reject_policy=drop) | 60.31% | +3.03pp | 2-view Flip TTA |
 | s_oof_zero_0001 (OOF zero-weight p<0.001) | 60.28% | +2.94pp | 2-view Flip TTA |
 | w1_ce5_gce05 (CE5 warmup + GCE q=0.5) | 60.25% | +2.91pp | 2-view Flip TTA |
+| robust_lora (LoRA rank=8, last_block) | 60.24% | +2.90pp | 2-view Flip TTA |
 | b2_gce05 (纯 GCE q=0.5) | 60.16% | +2.82pp | 2-view Flip TTA |
-| **robust_lora (LoRA rank=8, last_block)** | **60.24%** | **+2.90pp** | 2-view Flip TTA |
 | s_oof_zero_001 (OOF zero-weight p<0.01) | 59.92% | +2.58pp | 2-view Flip TTA |
-| robust_oof_soft (OOF soft target distillation) | 59.87% | +2.53pp | 2-view Flip TTA |
 
 **Top Bare 分数：**
 
 | 实验 | 平台分数 | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
-| **s_oof_zero_0001_ff (OOF zero p<0.001, final_fit)** | **60.29%** | **+2.95pp** | 单视图 |
-| **nr_ctrl_fixed (A0, reject_policy=drop)** | **59.90%** | **+2.56pp** | 单视图 |
+| **AEGIS F1 (visual LoRA, clean≥0.7, distill)** | **60.52%** | **+3.18pp** | 单视图 |
+| s_oof_zero_0001_ff (OOF zero p<0.001, final_fit) | 60.29% | +2.95pp | 单视图 |
 | s_oof_zero_0001 (OOF zero-weight p<0.001) | 59.96% | +2.62pp | 单视图 |
+| nr_ctrl_fixed (A0, reject_policy=drop) | 59.90% | +2.56pp | 单视图 |
 | w1_gce05_mixup (MixUp + GCE q=0.5) | 59.86% | +2.52pp | 单视图 |
 | s_d3_mixup (GCE q=0.5 + MixUp, d3 control) | 59.86% | +2.52pp | 单视图 |
-| s_mixup_ce5 (CE5 warmup + MixUp) | 59.70% | +2.36pp | 单视图 |
 
 **基线定义：**
-- **平台 Bare 最佳**：s_oof_zero_0001_ff = **60.29%**（OOF zero p<0.001 final_fit，首个突破 60%）
-- **平台 TTA 最佳**：s_oof_zero_0001_ff + Flip TTA = **60.51%**（首个突破 60.5%）
+- **平台 Bare 最佳**：AEGIS F1 = **60.52%**（visual LoRA rank-8, clean filter, 首个突破 60.5%）
+- **平台 TTA 最佳**：AEGIS F1 + Flip TTA = **61.10%**（首个突破 61%）
 - **训练基线**：s_d3_mixup (GCE q=0.5 + MixUp, d3_strict) —— 所有 OOF 实验的配对对照
 
 **核心发现：**
