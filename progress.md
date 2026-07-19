@@ -111,9 +111,10 @@
 - Bare-TTA gap 仅 0.22pp（dev mode 0.32pp），全量训练后模型更稳定
 - OOF binary zero p<0.001 路线确认为当前最强策略
 
-## 2026-07-19 NR_CTRL_OOF_ZERO_0001_FIXED (A0) 平台结果
 
-- A0 bare = **60.24%**（+0.28pp over S_OOF_ZERO_0001 dev mode 59.96%）
-- 使用与 A0 原始 dev 模式相同的 manifest + GCE + MixUp
-- 结果接近 final_fit (60.29%)，验证了 causal control 的有效性
-- A0 dev mode 也达到 60%+ 水平
+## 2026-07-19 ROBUST_LORA TTA 平台结果
+
+- LoRA (rank=8, alpha=16, last_block_lora) TTA = **60.24%**
+- freeze_clip=false, lora_lr=1e-5, 训练 6 epoch（early stop at epoch 6）
+- 首次 LoRA PEFT 平台测试结果
+- local micro=69.40%, best epoch=1

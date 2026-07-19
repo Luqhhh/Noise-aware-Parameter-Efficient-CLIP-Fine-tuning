@@ -77,7 +77,6 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | 实验 | 平台分数 | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
 | **s_oof_zero_0001_ff (OOF zero p<0.001, final_fit)** | **60.29%** | **+2.95pp** | 单视图 |
-| **nr_ctrl_fixed (A0 causal control, GCE+MixUp+OOF zero)** | **60.24%** | **+2.90pp** | 单视图 |
 | s_oof_zero_0001 (OOF zero-weight p<0.001) | 59.96% | +2.62pp | 单视图 |
 | w1_gce05_mixup (MixUp + GCE q=0.5) | 59.86% | +2.52pp | 单视图 |
 | s_d3_mixup (GCE q=0.5 + MixUp, d3 control) | 59.86% | +2.52pp | 单视图 |
