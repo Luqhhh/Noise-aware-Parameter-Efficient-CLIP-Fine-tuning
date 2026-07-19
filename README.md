@@ -70,6 +70,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | s_oof_zero_0001 (OOF zero-weight p<0.001) | 60.28% | +2.94pp | 2-view Flip TTA |
 | w1_ce5_gce05 (CE5 warmup + GCE q=0.5) | 60.25% | +2.91pp | 2-view Flip TTA |
 | b2_gce05 (纯 GCE q=0.5) | 60.16% | +2.82pp | 2-view Flip TTA |
+| **robust_lora (LoRA rank=8, last_block)** | **60.24%** | **+2.90pp** | 2-view Flip TTA |
 | s_oof_zero_001 (OOF zero-weight p<0.01) | 59.92% | +2.58pp | 2-view Flip TTA |
 
 **Top Bare 分数：**
@@ -112,6 +113,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | s_d3_mixup（MixUp d3 control） | 69.47% | 69.47% | 40 | 59.86% | — |
 | s_oof_zero_0001_ff（OOF p<0.001, final_fit） | — | — | — | **60.29%** | **60.51%** |
 | nr_ctrl_fixed（A0 causal control, GCE+MixUp+OOF zero） | 62.81% | — | 4 | **60.24%** | — |
+| robust_lora（LoRA rank=8 last_block, freeze_clip=false） | 69.40% | — | 1 | — | **60.24%** |
 | s_oof_zero_0001（OOF p<0.001） | 69.37% | 69.37% | 44 | **59.96%** | 60.28% |
 | s_oof_zero_001（OOF p<0.01） | 69.02% | 69.01% | 37 | 59.38% | 59.92% |
 | s_oof_discrete（OOF 3-tier） | 68.65% | — | 41 | 59.28% | 59.28% |
@@ -129,6 +131,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | s_oof_zero_0001 + Flip TTA | 60.28% | +2.94pp | 2-view Flip TTA |
 | w1_ce5_gce05 + Flip TTA | 60.25% | +2.91pp | 2-view Flip TTA |
 | b2_gce05 + Flip TTA | 60.16% | +2.82pp | 2-view Flip TTA |
+| robust_lora + Flip TTA | 60.24% | +2.90pp | 2-view Flip TTA |
 | s_oof_zero_0001 bare | **59.96%** | **+2.62pp** | 单视图（BEST BARE） |
 | s_oof_zero_001 + Flip TTA | 59.92% | +2.58pp | 2-view Flip TTA |
 | s_d3_mixup bare | 59.86% | +2.52pp | 单视图 |
