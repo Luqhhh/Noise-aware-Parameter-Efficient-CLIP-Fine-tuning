@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aegis-clip"
+version = "0.1.0"
+description = "Auditable, noise-robust, parameter-efficient CLIP fine-tuning"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "torch==2.13.0",
+  "torchvision==0.28.0",
+  "numpy==2.5.1",
+  "pandas==3.0.3",
+  "Pillow==12.3.0",
+  "PyYAML==6.0.3",
+  "scikit-learn==1.9.0",
+  "tqdm==4.68.4",
+  "ftfy==6.3.1",
+  "regex==2026.6.28",
+  "clip @ git+https://github.com/openai/CLIP.git@d05afc436d78f1c48dc0dbf8e5980a9d471f35f6",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==9.1.1",
+]
+
+[project.scripts]
+aegis-prepare-stage = "aegis_clip.cli.prepare_stage:main"
+aegis-cache-features = "aegis_clip.cli.cache_features:main"
+aegis-build-groups = "aegis_clip.cli.build_groups:main"
+aegis-build-trust = "aegis_clip.cli.build_trust:main"
+aegis-train = "aegis_clip.cli.train:main"
+aegis-evaluate = "aegis_clip.cli.evaluate:main"
+aegis-infer = "aegis_clip.cli.infer:main"
+aegis-audit = "aegis_clip.cli.audit:main"
+aegis-audit-submission = "aegis_clip.cli.audit_submission:main"
+aegis-sweep-structural-head = "aegis_clip.cli.sweep_structural_head:main"
+aegis-sweep-tta-fusion = "aegis_clip.cli.sweep_tta_fusion:main"
+aegis-sweep-multiprototype-head = "aegis_clip.cli.sweep_multiprototype_head:main"
+aegis-build-multiprototype-checkpoint = "aegis_clip.cli.build_multiprototype_checkpoint:main"
+aegis-sweep-linear-soup = "aegis_clip.cli.sweep_linear_soup:main"
+
+[tool.setuptools.packages.find]
+include = ["aegis_clip*"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+markers = [
+  "gpu: requires a CUDA device",
+  "integration: end-to-end integration test",
+]

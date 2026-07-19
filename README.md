@@ -125,6 +125,8 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | Submission | Platform | vs ref | 推理 |
 |------------|---------|--------|------|
+| **AEGIS F1 + Flip mean-prob T=0.5** | **61.10%** | **+3.76pp** | 2-view Flip TTA（NEW BEST） |
+| **AEGIS F1 bare** | **60.52%** | **+3.18pp** | 单视图（BEST BARE） |
 | s_oof_zero_0001_ff + Flip TTA | **60.51%** | **+3.17pp** | 2-view Flip TTA |
 | S_MIXUP_CE5 + Flip TTA | **60.48%** | **+3.14pp** | 2-view Flip TTA |
 | w1_gce05_mixup + Flip TTA | 60.36% | +3.02pp | 2-view Flip TTA |
@@ -139,6 +141,8 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | gce_q07 + Flip TTA | 59.41% | +2.07pp | 2-view Flip TTA |
 | ref（D3_STRICT） | 57.34% | — | 单视图 |
 
+> `AEGIS F1` 指 `AEGIS_F1_VISUAL_LORA_CLEAN_CORE`，与下文因验证泄漏而废弃的旧 `F1-strict` 无关。完整配置、合规说明和哈希见 `docs/AEGIS_F1_VISUAL_LORA.md`；可复现代码快照位于 `reproducibility/aegis_f1/`。
+
 **已关闭方向**：Dropout、ColorJitter/RandomErasing、Cosine Head、Label Smoothing、Head EMA、EMA Loss、Prototype Weighting、CE 下部分解冻、Head-only EMA Teacher + Consistency、GCE q=0.9、4-view TTA、vertical flip、OOF 3-tier discrete weight、ELR（本地 -1.2pp vs OOF）、PEFT LN-tune（freeze_clip=true 模式下无增益）
 
 ## 项目结构
@@ -151,6 +155,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 ├── configs/             # 每个实验一个 YAML
 ├── scripts/             # 数据准备、超参搜索、去重仲裁、提交验证
 ├── tests/               # 322 个 pytest 测试
+├── reproducibility/     # 隔离的外部实验快照（含 AEGIS F1）
 ├── outputs/             # 实验结果（tracked in git，*.pt 忽略）
 └── docs/superpowers/    # 设计文档与实施计划
 ```
@@ -183,6 +188,8 @@ E0_STRICT: clean rerun completed (50 epochs, best epoch 47, no early stop).
 
 | Submission | Platform | vs ref | 推理 |
 |------------|---------|--------|------|
+| **AEGIS F1 + Flip mean-prob T=0.5** | **61.10%** | **+3.76pp** | 2-view Flip TTA（NEW BEST） |
+| **AEGIS F1 bare** | **60.52%** | **+3.18pp** | 单视图（BEST BARE） |
 | S_MIXUP_CE5 + Flip TTA | **60.48%** | **+3.14pp** | 2-view Flip TTA |
 | s_oof_zero_0001 + Flip TTA | 60.28% | +2.94pp | 2-view Flip TTA |
 | s_oof_zero_0001 bare | **59.96%** | +2.62pp | 单视图（BEST BARE） |

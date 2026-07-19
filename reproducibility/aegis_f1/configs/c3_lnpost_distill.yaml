@@ -1,0 +1,83 @@
+# C3 - conservative online PEFT of CLIP's final LayerNorm and projection.
+project:
+  experiment_id: C3_LNPOST_DISTILL
+  seed: 42
+  stage: preliminary
+
+data:
+  train_csv: ../artifacts/stages/preliminary/seed42/train.csv
+  val_csv: ../artifacts/stages/preliminary/seed42/val.csv
+  class_mapping: ../artifacts/stages/preliminary/seed42/class_to_idx.json
+  train_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/train
+  test_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/test
+  external_data: false
+  test_usage: inference_only
+  expected_official_train_samples: 103218
+  expected_test_samples: 24967
+
+features:
+  tensor_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/features.pt
+  paths_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/image_paths.json
+  manifest_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/manifest.json
+
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  num_classes: 500
+  feature_dim: 512
+  peft_mode: ln_post_proj
+  use_cached_training: false
+
+trust:
+  enabled: false
+  bundle_path: ../artifacts/trust/cvt_v1.pt
+  weighting_start_epoch: 1
+  correction_start_epoch: 0
+  minimum_sample_weight: 0.75
+  anchor_threshold: 0.80
+  gradient_projection:
+    enabled: false
+    start_epoch: 1
+    interval: 4
+    minimum_anchor_samples: 8
+
+loss:
+  name: gce
+  gce_q: 0.5
+  epsilon: 1.0e-7
+  ce_warmup_epochs: 0
+  class_prior_adjustment_tau: 0.0
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  feature_distillation_weight: 1.0
+  adaptive_cap:
+    enabled: false
+
+train:
+  device: cuda
+  deterministic: true
+  amp: true
+  epochs: 6
+  batch_size: 128
+  num_workers: 2
+  prefetch_factor: 1
+  loader_timeout: 120
+  pin_memory: false
+  head_lr: 0.00005
+  head_weight_decay: 0.0001
+  backbone_lr: 0.0000005
+  backbone_weight_decay: 0.01
+  lr_warmup_epochs: 1
+  max_grad_norm: 1.0
+  early_stop_patience: 3
+  init_checkpoint: ../outputs/B0_CACHED_NOMIX/seed42/checkpoints/best.pt
+
+evaluation:
+  batch_size: 256
+  inference_batch_size: 128
+  selector_metric: raw_micro
+  drift_budget: 0.01
+  drift_penalty: 0.5
+
+output:
+  root: ../outputs

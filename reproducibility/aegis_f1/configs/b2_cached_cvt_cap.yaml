@@ -1,0 +1,102 @@
+# B2 — B1 plus smooth adaptive extreme-loss suppression.
+project:
+  experiment_id: B2_CACHED_CVT_CAP
+  seed: 42
+  stage: preliminary
+
+data:
+  train_csv: ../artifacts/stages/preliminary/seed42/train.csv
+  val_csv: ../artifacts/stages/preliminary/seed42/val.csv
+  class_mapping: ../artifacts/stages/preliminary/seed42/class_to_idx.json
+  train_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/train
+  test_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/test
+  external_data: false
+  test_usage: inference_only
+  expected_official_train_samples: 103218
+  expected_test_samples: 24967
+
+features:
+  tensor_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/features.pt
+  paths_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/image_paths.json
+  manifest_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/manifest.json
+
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  num_classes: 500
+  feature_dim: 512
+  peft_mode: frozen
+  use_cached_training: true
+
+trust:
+  enabled: true
+  bundle_path: ../artifacts/trust/cvt_v1.pt
+  groups_path: ../artifacts/stages/preliminary/seed42/content_groups.json
+  weighting_start_epoch: 6
+  correction_start_epoch: 5
+  minimum_sample_weight: 0.75
+  anchor_threshold: 0.80
+  build:
+    folds: 5
+    seed: 42
+    prototype_temperature: 0.05
+    probe_temperature: 1.0
+    probe_epochs: 8
+    probe_batch_size: 2048
+    probe_lr: 0.05
+    probe_weight_decay: 0.0001
+    correction_confidence: 0.0
+    correction_confidence_quantile: 0.75
+    maximum_correction_alpha: 0.45
+    maximum_class_correction_rate: 0.20
+    early_cut_strength: 0.70
+    minimum_clean_probability: 0.05
+  gradient_projection:
+    enabled: false
+    start_epoch: 6
+    interval: 4
+    minimum_anchor_samples: 8
+
+loss:
+  name: gce
+  gce_q: 0.5
+  epsilon: 1.0e-7
+  ce_warmup_epochs: 5
+  class_prior_adjustment_tau: 0.0
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  feature_distillation_weight: 0.0
+  adaptive_cap:
+    enabled: true
+    start_epoch: 6
+    quantile: 0.90
+    momentum: 0.90
+    minimum: 0.05
+    maximum: 5.0
+
+train:
+  device: cuda
+  deterministic: true
+  amp: true
+  epochs: 50
+  batch_size: 128
+  num_workers: 0
+  loader_timeout: 0
+  pin_memory: false
+  head_lr: 0.005
+  head_weight_decay: 0.0001
+  backbone_lr: 0.0
+  backbone_weight_decay: 0.0
+  lr_warmup_epochs: 2
+  max_grad_norm: 1.0
+  early_stop_patience: 10
+
+evaluation:
+  batch_size: 256
+  inference_batch_size: 128
+  selector_metric: proxy_macro
+  drift_budget: 0.01
+  drift_penalty: 0.5
+
+output:
+  root: ../outputs

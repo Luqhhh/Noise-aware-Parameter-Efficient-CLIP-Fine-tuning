@@ -1,0 +1,85 @@
+# D1 - final fixed-epoch C1 adapter on all official training images.
+project:
+  experiment_id: D1_FULL_TRAIN_GATED_ADAPTER
+  seed: 42
+  stage: preliminary
+
+data:
+  train_csv: ../artifacts/stages/preliminary/final_full_train.csv
+  val_csv: ../artifacts/stages/preliminary/seed42/val.csv
+  class_mapping: ../artifacts/stages/preliminary/seed42/class_to_idx.json
+  train_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/train
+  test_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/test
+  external_data: false
+  test_usage: inference_only
+  expected_official_train_samples: 103218
+  expected_test_samples: 24967
+
+features:
+  tensor_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/features.pt
+  paths_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/image_paths.json
+  manifest_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/manifest.json
+
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  num_classes: 500
+  feature_dim: 512
+  peft_mode: feature_adapter
+  adapter_dim: 128
+  adapter_scale: 0.25
+  use_cached_training: true
+
+trust:
+  enabled: false
+  bundle_path: ../artifacts/trust/cvt_v1.pt
+  weighting_start_epoch: 1
+  correction_start_epoch: 0
+  minimum_sample_weight: 0.75
+  anchor_threshold: 0.80
+  gradient_projection:
+    enabled: false
+    start_epoch: 1
+    interval: 4
+    minimum_anchor_samples: 8
+
+loss:
+  name: gce
+  gce_q: 0.5
+  epsilon: 1.0e-7
+  ce_warmup_epochs: 0
+  class_prior_adjustment_tau: 0.0
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  feature_distillation_weight: 1.0
+  adaptive_cap:
+    enabled: false
+
+train:
+  device: cuda
+  deterministic: true
+  amp: true
+  epochs: 7
+  schedule_epochs: 30
+  batch_size: 128
+  num_workers: 0
+  loader_timeout: 0
+  pin_memory: false
+  head_lr: 0.0002
+  head_weight_decay: 0.0001
+  backbone_lr: 0.0
+  backbone_weight_decay: 0.0
+  lr_warmup_epochs: 1
+  max_grad_norm: 1.0
+  early_stop_patience: 0
+  init_checkpoint: ../outputs/D0_FULL_TRAIN_ANCHOR/seed42/checkpoints/last.pt
+
+evaluation:
+  batch_size: 256
+  inference_batch_size: 128
+  selector_metric: raw_micro
+  drift_budget: 0.03
+  drift_penalty: 0.25
+
+output:
+  root: ../outputs
