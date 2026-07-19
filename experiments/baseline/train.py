@@ -350,9 +350,15 @@ def _runtime_manifest_audit(
     # Rejected samples are expected to be physically dropped from the
     # dataset when reject_policy='drop'.  Exclude them from the
     # bidirectional comparison so they don't show up as "extra".
-    _rejected_in_manifest = {
-        p for p, r in manifest_roles.items() if r == "rejected"
-    }
+    # Supports both new format (training_role) and old format (sample_weight=0).
+    if manifest_roles:
+        _rejected_in_manifest = {
+            p for p, r in manifest_roles.items() if r == "rejected"
+        }
+    else:
+        _rejected_in_manifest = {
+            p for p, w in manifest_weights.items() if w == 0.0
+        }
     _kept_manifest_paths = manifest_paths - _rejected_in_manifest
 
     # 3. Bidirectional comparison (on kept paths only)
@@ -1708,13 +1714,20 @@ def main():
                 "reject_policy='drop' requires manifest_path in sample_weighting"
             )
         _mf = _pd.read_csv(_manifest_path)
-        if "training_role" not in _mf.columns:
+        # Support both manifest formats:
+        #   New: training_role column (clean/rejected/pseudo)
+        #   Old: sample_weight column (0.0 = rejected)
+        if "training_role" in _mf.columns:
+            _rejected_mask = _mf["training_role"] == "rejected"
+        elif "sample_weight" in _mf.columns:
+            _rejected_mask = _mf["sample_weight"] == 0.0
+        else:
             raise ValueError(
-                "Manifest has no training_role column — "
-                "reject_policy='drop' requires role annotations"
+                "Manifest has no training_role or sample_weight column — "
+                "reject_policy='drop' requires role or weight annotations"
             )
         _rejected_paths = set(
-            _mf[_mf["training_role"] == "rejected"]["image_path"]
+            _mf[_rejected_mask]["image_path"]
             .astype(str).map(_canon)
         )
         _old_n = len(train_dataset)
