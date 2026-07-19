@@ -202,3 +202,41 @@ class TestRuntimeManifestAudit:
 
         # Should not raise
         _runtime_manifest_audit(ds, None, "dev", save_dir, audit_logger)
+
+    def test_relative_manifest_path_matches_absolute_dataset_path(self, tmp_path):
+        """Relative manifest path matches absolute dataset path after canonicalization."""
+        import os
+        from experiments.baseline.train import _runtime_manifest_audit
+
+        cwd = str(Path.cwd())
+
+        ds = MagicMock()
+        ds.samples = [
+            f"{cwd}/train_dedup/0000/a.jpg",
+            f"{cwd}/train_dedup/0001/b.jpg",
+        ]
+        ds.labels = [5, 3]
+
+        # Manifest uses relative paths
+        manifest_csv = tmp_path / "manifest.csv"
+        pd.DataFrame({
+            "image_path": [
+                "train_dedup/0000/a.jpg",
+                "train_dedup/0001/b.jpg",
+            ],
+            "original_label": [5, 3],
+            "training_label": [5, 3],
+            "sample_weight": [1.0, 1.0],
+            "training_role": ["clean", "clean"],
+        }).to_csv(manifest_csv, index=False)
+
+        wp = MagicMock()
+        wp._missing = "error"
+        wp._loader._path = str(manifest_csv)
+
+        save_dir = tmp_path / "save"
+        audit_logger = logging.getLogger("test_audit")
+
+        # Must NOT raise — canonical paths should match
+        _runtime_manifest_audit(ds, wp, "dev", save_dir, audit_logger)
+        assert (save_dir / "manifest_runtime_audit.json").exists()

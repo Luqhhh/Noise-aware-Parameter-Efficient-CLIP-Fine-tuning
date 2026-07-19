@@ -309,8 +309,14 @@ def _runtime_manifest_audit(
         audit_logger.warning("Dataset has no .samples/.labels — skipping runtime audit")
         return
 
-    ds_paths = set(ds_samples)
-    ds_label_map = dict(zip(ds_samples, ds_labels_list))
+    # Canonicalize both sides so absolute/relative mismatches don't
+    # cause false positive missing / extra reports.
+    ds_records = [
+        (canonical_image_path(str(path)), int(label))
+        for path, label in zip(ds_samples, ds_labels_list)
+    ]
+    ds_paths = {path for path, _ in ds_records}
+    ds_label_map = dict(ds_records)
     n_dataset = len(ds_paths)
 
     # 2. Read manifest directly
@@ -321,23 +327,33 @@ def _runtime_manifest_audit(
         audit_logger.warning("Cannot locate manifest file — skipping runtime audit")
         return
     manifest_df = pd.read_csv(manifest_path)
-    manifest_paths = set(manifest_df["image_path"])
+    manifest_df["_canonical_path"] = (
+        manifest_df["image_path"].astype(str).map(canonical_image_path)
+    )
+
+    # Check for duplicate canonical paths
+    dup_manifest_canonical = manifest_df["_canonical_path"].duplicated().sum()
+
+    manifest_paths = set(manifest_df["_canonical_path"])
     manifest_label_map = dict(
-        zip(manifest_df["image_path"], manifest_df["original_label"])
+        zip(manifest_df["_canonical_path"], manifest_df["original_label"])
     )
     manifest_roles = {}
     if "training_role" in manifest_df.columns:
         manifest_roles = dict(
-            zip(manifest_df["image_path"], manifest_df["training_role"])
+            zip(manifest_df["_canonical_path"], manifest_df["training_role"])
         )
     manifest_weights = dict(
-        zip(manifest_df["image_path"], manifest_df["sample_weight"])
+        zip(manifest_df["_canonical_path"], manifest_df["sample_weight"])
     )
 
     # 3. Bidirectional comparison
     missing_in_manifest = ds_paths - manifest_paths
     extra_in_manifest = manifest_paths - ds_paths
-    dup_in_manifest = manifest_df["image_path"].duplicated().sum()
+    dup_in_manifest = (
+        manifest_df["image_path"].duplicated().sum()
+        + dup_manifest_canonical
+    )
 
     # 4. original_label mismatches
     label_mismatches = 0

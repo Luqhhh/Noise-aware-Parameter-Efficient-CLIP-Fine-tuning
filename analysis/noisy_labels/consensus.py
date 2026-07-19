@@ -202,7 +202,7 @@ def select_consensus_relabel_v2(
         range(NUM_CLASSES), fill_value=0
     )
     class_cap = {
-        c: max(1, int(np.floor(max_source_class_relabel_rate * class_counts[c])))
+        c: int(np.floor(max_source_class_relabel_rate * class_counts[c]))
         for c in range(NUM_CLASSES)
     }
     class_used = {c: 0 for c in range(NUM_CLASSES)}
