@@ -53,7 +53,7 @@ sample_weighting:
   manifest_path: outputs/phase/phase3/oof/oof_zero_weight_manifest_thresh0.050.csv
   min_weight: 0.0
   max_weight: 1.0
-  missing_policy: error
+  missing_weight_policy: error
   reject_policy: drop
 
 eval:

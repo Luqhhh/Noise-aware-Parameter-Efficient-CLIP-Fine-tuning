@@ -408,7 +408,8 @@ def _runtime_manifest_audit(
     for p in manifest_paths:
         c = int(manifest_label_map[p])
         class_total[c] += 1
-        if manifest_weights.get(p, 1.0) == 0.0:
+        if (manifest_weights.get(p, 1.0) == 0.0
+                or manifest_roles.get(p, "") == "rejected"):
             class_reject[c] += 1
         if manifest_roles.get(p, "") == "pseudo":
             class_pseudo[c] += 1

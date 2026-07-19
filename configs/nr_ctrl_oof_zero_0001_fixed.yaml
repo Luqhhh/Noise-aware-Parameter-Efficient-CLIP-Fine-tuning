@@ -46,7 +46,7 @@ mixup:
   probability: 0.2
 
 sample_weighting:
-  type: relabel_manifest
+  type: oof_manifest
   manifest_path: outputs/phase/phase3/oof/oof_zero_weight_manifest_thresh0.001.csv
   min_weight: 0.0
   max_weight: 1.0
