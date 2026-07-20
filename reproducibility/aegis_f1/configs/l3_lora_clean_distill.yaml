@@ -1,0 +1,95 @@
+# L3 — Full AEGIS F1 recipe on A2 parent (= A2_AEGIS_PARENT_SWAP equivalent)
+# Visual LoRA + clean≥0.70 + feature distillation λ=2.0
+# Answers: marginal contribution of feature distillation over clean filter (L2)
+project:
+  experiment_id: L3_LORA_CLEAN_DISTILL
+  seed: 42
+  stage: preliminary
+
+data:
+  train_csv: ../artifacts/stages/preliminary/seed42/train.csv
+  val_csv: ../artifacts/stages/preliminary/seed42/val.csv
+  class_mapping: ../artifacts/stages/preliminary/seed42/class_to_idx.json
+  train_root: ../../../train
+  test_root: ../../../test
+  train_augmentation: weak_rrc_flip
+  external_data: false
+  test_usage: inference_only
+  expected_official_train_samples: 103218
+  expected_test_samples: 24967
+
+features:
+  tensor_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/features.pt
+  paths_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/image_paths.json
+  manifest_path: ../artifacts/stages/preliminary/features/clip_vit_b32_openai/manifest.json
+
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  num_classes: 500
+  feature_dim: 512
+  peft_mode: visual_lora
+  use_cached_training: false
+  lora_last_n_blocks: 4
+  lora_rank: 8
+  lora_alpha: 8.0
+  lora_adapt_qv: true
+  lora_adapt_out: true
+
+trust:
+  enabled: true
+  bundle_path: ../artifacts/trust/cvt_v1.pt
+  weighting_start_epoch: 1
+  correction_start_epoch: 99
+  minimum_sample_weight: 1.0
+  selection_threshold: 0.70
+  rejected_sample_weight: 0.0
+  anchor_threshold: 0.80
+  gradient_projection:
+    enabled: false
+    start_epoch: 1
+    interval: 8
+    minimum_anchor_samples: 8
+
+loss:
+  name: gce
+  gce_q: 0.5
+  epsilon: 1.0e-7
+  ce_warmup_epochs: 0
+  class_prior_adjustment_tau: 0.0
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  feature_distillation_weight: 2.0
+  adaptive_cap:
+    enabled: false
+
+train:
+  device: cuda
+  deterministic: true
+  amp: true
+  epochs: 6
+  batch_size: 64
+  num_workers: 4
+  prefetch_factor: 1
+  loader_timeout: 120
+  pin_memory: true
+  head_lr: 0.00005
+  head_weight_decay: 0.0001
+  backbone_lr: 0.00002
+  backbone_weight_decay: 0.0
+  lr_warmup_epochs: 1
+  max_grad_norm: 1.0
+  early_stop_patience: 0
+  init_checkpoint: ../../../outputs/oof/nr_cl_knn_drop/seed42/checkpoints/best.pt
+
+evaluation:
+  batch_size: 128
+  inference_batch_size: 128
+  selector_metric: clean_core_micro
+  clean_core_threshold: 0.70
+  measure_flip_consistency: true
+  drift_budget: 0.01
+  drift_penalty: 2.0
+
+output:
+  root: ../outputs
