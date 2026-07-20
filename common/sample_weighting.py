@@ -391,6 +391,9 @@ class OOFManifestProvider(BaseWeightProvider):
 
         Rejected samples participate only in feature distillation.
         When *clean_prob_threshold* is None, all samples are treated as clean.
+
+        Raises:
+            KeyError: If any sample path is not found in the manifest.
         """
         if self._clean_prob_threshold is None:
             return torch.ones(len(sample_paths), dtype=torch.bool)
@@ -398,8 +401,13 @@ class OOFManifestProvider(BaseWeightProvider):
         mask = []
         for p in sample_paths:
             key = portable_image_key(p)
-            clean = self._is_clean.get(key, True)  # default clean if missing
-            mask.append(clean)
+            if key not in self._is_clean:
+                raise KeyError(
+                    f"Clean-mask key not found in OOF manifest: {p!r} "
+                    f"(portable key: {key!r}). All training images must "
+                    f"have a p_original_label entry."
+                )
+            mask.append(self._is_clean[key])
         return torch.tensor(mask, dtype=torch.bool)
 
     def uses_clean_prob_filter(self) -> bool:

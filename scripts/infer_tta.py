@@ -110,16 +110,19 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Device: {device}")
 
-    # Load model
-    from experiments.baseline.model import build_model
-    model, preprocess = build_model(config, device)
+    # Build model → apply PEFT → strict-load checkpoint
+    from common.model_loader import build_and_load_model
 
-    ckpt = torch.load(args.checkpoint, map_location=device)
-    model.load_state_dict(ckpt["model_state_dict"])
+    model, preprocess, load_info = build_and_load_model(
+        config, args.checkpoint, device,
+        build_model_fn=build_model, strict=True,
+    )
     model.to(device)
     model.eval()
+    logger.info(f"Loaded checkpoint epoch {load_info.get('checkpoint_epoch')}")
 
-    idx_to_class = ckpt.get("idx_to_class")
+    checkpoint = torch.load(args.checkpoint, map_location=device)
+    idx_to_class = checkpoint.get("idx_to_class")
     if idx_to_class is None:
         import json as _json
         with open(Path(config["data"]["split_dir"]) / "idx_to_class.json") as f:

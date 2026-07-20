@@ -5,7 +5,8 @@ Standard LoRA::
     h = W x + (alpha / r) * B A x
 
 where A ∈ R^{r × in}, B ∈ R^{out × r} are low-rank adapters.
-At init, A ∼ N(0, σ²) and B = 0 so the adapter is an identity perturbation.
+At init, A = 0 and B ∼ N(0, 1/√r) so the adapter is an identity
+perturbation (B @ A = 0 at step 0).
 
 Supports merge/unmerge for inference and state-dict round-trip for checkpointing.
 """
@@ -68,10 +69,10 @@ class LoRALinear(nn.Module):
         self.lora_B = nn.Parameter(
             torch.zeros(out_features, r, device=param_device, dtype=param_dtype)
         )
-        # Kaiming uniform init for A
-        nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
-        # Zero-init for B (so LoRA starts as identity perturbation)
-        nn.init.zeros_(self.lora_B)
+        # Zero-init for A, normal-init for B (plan: A=0, B~N(0,σ²)).
+        # B @ A = 0 at step 0 → identity perturbation, matching parent.
+        nn.init.zeros_(self.lora_A)
+        nn.init.normal_(self.lora_B, std=1.0 / math.sqrt(max(r, 1)))
 
         self.lora_dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
         self._merged = False

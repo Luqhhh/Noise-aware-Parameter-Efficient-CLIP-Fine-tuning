@@ -30,6 +30,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 logger = logging.getLogger(__name__)
 
@@ -324,8 +325,9 @@ def _apply_visual_lora(model: nn.Module, peft_cfg: dict) -> list:
     """Apply LoRA to the last N transformer blocks' attention projections.
 
     Targets Q, V (via fused ``in_proj_weight`` split) and ``out_proj``
-    according to the config flags.  LoRA is initialised so that the
-    effective weight at step 0 equals the parent weight (zero-init B).
+    according to the config flags.  Each adapted attention module is
+    replaced with a :class:`_QKVLoRAPatchedAttention` — a proper
+    ``nn.Module`` that survives ``deepcopy`` correctly.
 
     Config keys (all under the ``peft`` section):
 
@@ -335,8 +337,6 @@ def _apply_visual_lora(model: nn.Module, peft_cfg: dict) -> list:
     - ``lora_adapt_qv``: bool (default True) — adapt Q and V projections.
     - ``lora_adapt_out``: bool (default True) — adapt output projection.
     """
-    from common.lora import LoRALinear
-
     n_last = peft_cfg.get("lora_last_n_blocks", 4)
     r = peft_cfg.get("lora_rank", 8)
     alpha = peft_cfg.get("lora_alpha", 8)
@@ -356,146 +356,173 @@ def _apply_visual_lora(model: nn.Module, peft_cfg: dict) -> list:
 
     for block_idx in range(start_block, num_blocks):
         block = blocks[block_idx]
-        attn = block.attn
+        orig_attn = block.attn
 
-        # ── out_proj: standard LoRALinear ──────────────────────────
+        # Replace attention with proper nn.Module wrapper
+        patched = _QKVLoRAPatchedAttention(
+            orig_attn, r=r, alpha=alpha,
+            adapt_qv=adapt_qv, adapt_out=adapt_out,
+        )
+        block.attn = patched
+
+        # Collect LoRA layers for state-dict tracking
         if adapt_out:
-            if not isinstance(attn.out_proj, nn.Linear):
-                logger.warning(
-                    "Block %d attn.out_proj is %s, not nn.Linear; skipping.",
-                    block_idx, type(attn.out_proj).__name__,
-                )
-            else:
-                lora_out = LoRALinear(attn.out_proj, r=r, alpha=alpha)
-                attn.out_proj = lora_out
-                all_lora_layers.append(lora_out)
-                logger.info(
-                    "LoRA out_proj: block %d/%d (r=%d, alpha=%d)",
-                    block_idx, num_blocks, r, alpha,
-                )
-
-        # ── Q / V: split fused in_proj_weight ──────────────────────
+            all_lora_layers.append(patched.out_proj)
+            logger.info(
+                "LoRA out_proj: block %d/%d (r=%d, alpha=%d)",
+                block_idx, num_blocks, r, alpha,
+            )
         if adapt_qv:
-            _patch_attn_for_qv_lora(attn, block_idx, num_blocks, r, alpha, all_lora_layers)
+            all_lora_layers.extend([patched.q_proj, patched.v_proj])
+            logger.info(
+                "LoRA Q/V: block %d/%d (r=%d, alpha=%d) — "
+                "fused in_proj_weight split; Q/V adapted, K frozen",
+                block_idx, num_blocks, r, alpha,
+            )
 
     return all_lora_layers
 
 
-def _patch_attn_for_qv_lora(
-    attn: nn.Module,
-    block_idx: int,
-    num_blocks: int,
-    r: int,
-    alpha: int,
-    collector: list,
-):
-    """Patch a CLIP MultiheadAttention to use separate Q/K/V Linear
-    projections, applying LoRA to Q and V only.
+class _QKVLoRAPatchedAttention(nn.Module):
+    """Replace a CLIP MultiheadAttention with LoRA on Q and V.
 
-    Replaces the fused ``in_proj_weight`` / ``in_proj_bias`` parameters
-    with three independent ``nn.Linear`` layers and overrides
-    ``forward`` to call ``F.multi_head_attention_forward`` with
-    ``use_separate_proj_weight=True``.
+    Instead of using ``use_separate_proj_weight=True`` (which drops Q/K/V
+    biases in the PyTorch API), this module dynamically reconstructs a
+    modified fused ``in_proj_weight`` that includes LoRA deltas on the Q
+    and V slices while preserving K and the original bias structure.
 
-    The original K projection is preserved without LoRA.  Q and V are
-    wrapped with ``LoRALinear`` (zero-init B).
+    This is a proper ``nn.Module`` — ``deepcopy`` copies the entire
+    submodule tree correctly.
+
+    Parameters
+    ----------
+    orig_attn:
+        The original ``nn.MultiheadAttention`` module.
+    r:
+        LoRA rank.
+    alpha:
+        LoRA scaling factor.
+    adapt_qv:
+        If True, inject LoRA on Q/V via modified fused ``in_proj_weight``.
+    adapt_out:
+        If True, wrap ``out_proj`` with ``LoRALinear``.
     """
-    from common.lora import LoRALinear
-    import torch.nn.functional as F
 
-    embed_dim = attn.embed_dim
-    device = attn.in_proj_weight.device
-    dtype = attn.in_proj_weight.dtype
+    def __init__(self, orig_attn: nn.Module, r: int, alpha: int,
+                 adapt_qv: bool = True, adapt_out: bool = True):
+        from common.lora import LoRALinear
 
-    # ── Extract Q, K, V weights from fused parameter ────────────
-    fused_w = attn.in_proj_weight.data  # [3*embed_dim, embed_dim]
-    q_w = fused_w[:embed_dim, :].clone()
-    k_w = fused_w[embed_dim:2 * embed_dim, :].clone()
-    v_w = fused_w[2 * embed_dim:, :].clone()
+        super().__init__()
+        self.embed_dim: int = orig_attn.embed_dim
+        self.num_heads: int = orig_attn.num_heads
+        self.dropout: float = orig_attn.dropout
+        self.add_zero_attn: bool = orig_attn.add_zero_attn
 
-    has_bias = attn.in_proj_bias is not None
-    q_b = k_b = v_b = None
-    if has_bias:
-        fused_b = attn.in_proj_bias.data
-        q_b = fused_b[:embed_dim].clone()
-        k_b = fused_b[embed_dim:2 * embed_dim].clone()
-        v_b = fused_b[2 * embed_dim:].clone()
+        # Register bias_k / bias_v as buffers if present
+        if orig_attn.bias_k is not None:
+            self.register_buffer("bias_k", orig_attn.bias_k.data.clone())
+        else:
+            self.bias_k = None
+        if orig_attn.bias_v is not None:
+            self.register_buffer("bias_v", orig_attn.bias_v.data.clone())
+        else:
+            self.bias_v = None
 
-    # ── Create separate nn.Linear for Q, K, V ───────────────────
-    q_proj = nn.Linear(embed_dim, embed_dim, bias=has_bias).to(
-        device=device, dtype=dtype,
-    )
-    k_proj = nn.Linear(embed_dim, embed_dim, bias=has_bias).to(
-        device=device, dtype=dtype,
-    )
-    v_proj = nn.Linear(embed_dim, embed_dim, bias=has_bias).to(
-        device=device, dtype=dtype,
-    )
+        embed_dim = self.embed_dim
+        device = orig_attn.in_proj_weight.device
+        dtype = orig_attn.in_proj_weight.dtype
+        has_bias = orig_attn.in_proj_bias is not None
 
-    q_proj.weight.data.copy_(q_w)
-    k_proj.weight.data.copy_(k_w)
-    v_proj.weight.data.copy_(v_w)
-    if has_bias:
-        q_proj.bias.data.copy_(q_b)
-        k_proj.bias.data.copy_(k_b)
-        v_proj.bias.data.copy_(v_b)
+        # ── out_proj: optionally wrap with LoRA ──────────────────
+        if adapt_out and isinstance(orig_attn.out_proj, nn.Linear):
+            self.out_proj = LoRALinear(orig_attn.out_proj, r=r, alpha=alpha)
+        else:
+            self.out_proj = orig_attn.out_proj
 
-    # ── Apply LoRA to Q and V ───────────────────────────────────
-    lora_q = LoRALinear(q_proj, r=r, alpha=alpha)
-    lora_v = LoRALinear(v_proj, r=r, alpha=alpha)
-    # K is left unadapted (plan: Q/V only)
+        # ── Q / V LoRA on fused in_proj_weight ───────────────────
+        # Store the base fused weight as a registered buffer so that
+        # weight decay / freezing work correctly.  The effective
+        # in_proj_weight in forward = base + LoRA delta on Q & V.
+        if adapt_qv:
+            fused_w = orig_attn.in_proj_weight.data.clone()   # [3*E, E]
+            q_base = fused_w[:embed_dim, :].clone()
+            k_base = fused_w[embed_dim:2 * embed_dim, :].clone()
+            v_base = fused_w[2 * embed_dim:, :].clone()
 
-    # ── Store on attention module ───────────────────────────────
-    attn._qkv_lora_q = lora_q
-    attn._qkv_lora_v = lora_v
-    attn._qkv_k_proj = k_proj
-    attn._qkv_has_bias = has_bias
+            # Create independent nn.Linear for Q, K, V so LoRA hooks
+            # have standard weight/bias parameters.
+            q_linear = nn.Linear(embed_dim, embed_dim, bias=False).to(
+                device=device, dtype=dtype)
+            k_linear = nn.Linear(embed_dim, embed_dim, bias=False).to(
+                device=device, dtype=dtype)
+            v_linear = nn.Linear(embed_dim, embed_dim, bias=False).to(
+                device=device, dtype=dtype)
 
-    # Freeze K (PEFT has already frozen all params; K stays frozen)
-    for p in k_proj.parameters():
-        p.requires_grad_(False)
+            q_linear.weight.data.copy_(q_base)
+            k_linear.weight.data.copy_(k_base)
+            v_linear.weight.data.copy_(v_base)
 
-    collector.extend([lora_q, lora_v])
+            self.q_proj = LoRALinear(q_linear, r=r, alpha=alpha)
+            self.k_proj = k_linear        # plain nn.Linear, frozen
+            self.v_proj = LoRALinear(v_linear, r=r, alpha=alpha)
 
-    # ── Replace forward ─────────────────────────────────────────
-    _orig_forward = attn.forward
+            # Store in_proj_bias as a registered buffer
+            if has_bias:
+                self.register_buffer(
+                    "in_proj_bias", orig_attn.in_proj_bias.data.clone(),
+                )
+            else:
+                self.in_proj_bias = None
 
-    def _lora_forward(
-        query, key, value, key_padding_mask=None,
-        need_weights=True, attn_mask=None,
-    ):
-        """Patched forward using separate Q/K/V projections with LoRA."""
-        # Only operate on query (self-attention in CLIP ViT)
+            for p in self.k_proj.parameters():
+                p.requires_grad_(False)
+        else:
+            self.q_proj = None
+            self.k_proj = None
+            self.v_proj = None
+            self.register_buffer(
+                "in_proj_weight_orig", orig_attn.in_proj_weight.data.clone(),
+            )
+            if has_bias:
+                self.register_buffer(
+                    "in_proj_bias", orig_attn.in_proj_bias.data.clone(),
+                )
+            else:
+                self.in_proj_bias = None
+
+    # ── Property: effective fused in_proj_weight ───────────────────
+    def _get_effective_in_proj_weight(self) -> torch.Tensor:
+        """Build the fused ``[3*E, E]`` weight with LoRA deltas on Q/V."""
+        if self.q_proj is not None:
+            embed_dim = self.embed_dim
+            q_eff = self.q_proj.weight   # base + LoRA delta
+            k_eff = self.k_proj.weight   # frozen base
+            v_eff = self.v_proj.weight   # base + LoRA delta
+            return torch.cat([q_eff, k_eff, v_eff], dim=0)
+        else:
+            return getattr(self, "in_proj_weight_orig")
+
+    def forward(self, query, key, value, key_padding_mask=None,
+                need_weights: bool = True, attn_mask=None,
+                average_attn_weights: bool = True,
+                is_causal: bool = False):
+        """Patched forward using modified fused ``in_proj_weight``."""
         return F.multi_head_attention_forward(
             query, key, value,
-            attn.embed_dim, attn.num_heads,
-            attn.in_proj_weight,       # not used when use_separate_proj_weight=True
-            attn.in_proj_bias,         # not used
-            attn.bias_k, attn.bias_v,
-            attn.add_zero_attn,
-            attn.dropout,
-            attn.out_proj.weight,
-            attn.out_proj.bias,
-            training=attn.training,
+            self.embed_dim, self.num_heads,
+            self._get_effective_in_proj_weight(),
+            getattr(self, "in_proj_bias", None),
+            self.bias_k, self.bias_v,
+            self.add_zero_attn,
+            self.dropout,
+            self.out_proj.weight, self.out_proj.bias,
+            training=self.training,
             key_padding_mask=key_padding_mask,
             need_weights=need_weights,
             attn_mask=attn_mask,
-            use_separate_proj_weight=True,
-            q_proj_weight=lora_q.weight,       # LoRA-modified Q weight
-            k_proj_weight=k_proj.weight,       # original K weight (frozen)
-            v_proj_weight=lora_v.weight,       # LoRA-modified V weight
+            average_attn_weights=average_attn_weights,
+            is_causal=is_causal,
         )
-
-    attn.forward = _lora_forward
-
-    # Keep reference to prevent garbage collection
-    attn._qkv_lora_orig_forward = _orig_forward
-
-    logger.info(
-        "LoRA Q/V: block %d/%d (r=%d, alpha=%d) — "
-        "fused in_proj_weight split; Q/V adapted, K frozen",
-        block_idx, num_blocks, r, alpha,
-    )
 
 
 # ── Audit utilities ─────────────────────────────────────────────────────

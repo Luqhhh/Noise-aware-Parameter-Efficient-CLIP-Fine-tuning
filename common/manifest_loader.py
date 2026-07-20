@@ -35,9 +35,13 @@ def portable_image_key(value: str) -> str:
     conventions (``train/`` vs ``train_dedup/``), and absolute-path
     prefixes.
 
+    Both ``/`` and ``\\`` are treated as path separators.
+
     Raises:
         ValueError: If the path has fewer than two components.
     """
+    # Normalise backslash separators to forward slash
+    value = value.replace("\\", "/")
     p = Path(value)
     parts = p.parts
     if len(parts) < 2:

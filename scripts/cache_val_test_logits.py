@@ -141,22 +141,22 @@ def main():
     logger.info(f"Output dir: {args.output_dir}")
     logger.info(f"Device: {device}")
 
-    # ---- Build model ----
+    # ---- Build model → apply PEFT → strict-load checkpoint ----
     from experiments.baseline.model import build_model
+    from common.model_loader import build_and_load_model
 
-    model, preprocess = build_model(config, device)
-
-    # Load checkpoint weights
     ckpt_path = Path(args.checkpoint)
-    checkpoint = torch.load(str(ckpt_path), map_location=device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    logger.info(f"Loaded checkpoint from epoch {checkpoint.get('epoch', 'unknown')}")
-    logger.info(f"Checkpoint best val acc: {checkpoint.get('best_val_acc', 'N/A')}")
+    model, preprocess, load_info = build_and_load_model(
+        config, args.checkpoint, device,
+        build_model_fn=build_model, strict=True,
+    )
+    logger.info(f"Loaded checkpoint from epoch {load_info.get('checkpoint_epoch', 'unknown')}")
+    logger.info(f"Checkpoint best val acc: {load_info.get('parent_best_val_acc', 'N/A')}")
 
     model = model.to(device)
 
     # Compute streaming SHA-256 of the checkpoint file
-    ckpt_sha256 = _sha256_hex(ckpt_path)
+    ckpt_sha256 = load_info["checkpoint_sha256"]
     logger.info(f"Checkpoint SHA-256: {ckpt_sha256}")
 
     # ---- Batch size ----

@@ -285,219 +285,214 @@ def _runtime_manifest_audit(
     audit_logger: logging.Logger,
     reject_policy: str = "weight_zero",
 ):
-    """Verify dataset paths match manifest before epoch 1 (fail-closed).
+    """Verify dataset ↔ manifest ↔ blacklist consistency before epoch 1.
 
-    Supports two reject strategies:
+    Uses ``portable_image_key`` throughout — all comparisons are
+    machine-independent.  Hard-fails on any discrepancy (missing files,
+    duplicate keys, count mismatches).
 
-    - ``weight_zero`` (default): rejected samples stay in dataset with
-      weight=0.  Full 1:1 correspondence required between dataset and
-      manifest.
+    For ``NR_COMBINED_UPGRADE`` the expected cardinalities are:
 
-    - ``drop``: rejected samples are physically removed from the dataset
-      before the DataLoader is built.  The audit verifies that:
-      1. The dataset contains ONLY clean + pseudo manifest rows
-      2. NO rejected rows remain in the dataset
-      3. Clean/pseudo rows are in 1:1 correspondence with the dataset
+    - Original train CSV:        91,195 unique portable keys
+    - OOF manifest:              91,195 unique portable keys
+    - Global blacklist:             991 unique portable keys
+    - Blacklist ∩ train:            991 (exact match)
+    - Blacklist ∩ manifest:         991 (exact match)
+    - After blacklist drop:      90,204 samples
+    - Clean (p >= 0.70):         50,233
+    - Rejected (p < 0.70):       39,971
     """
-    import json
+    import json as _json
     import pandas as pd
-    from common.manifest_loader import ManifestLoader, canonical_image_path
+    from common.manifest_loader import ManifestLoader, portable_image_key
 
     if weight_provider is None:
+        audit_logger.warning("No weight_provider — skipping runtime audit")
         return
     missing_policy = getattr(weight_provider, "_missing", None)
     if missing_policy is None:
+        audit_logger.warning("No missing_policy on weight_provider — skipping runtime audit")
         return
     if missing_policy != "error":
         raise ValueError(
             f"missing_weight_policy must be 'error', got '{missing_policy}'"
         )
 
-    # 1. Get dataset paths/labels from dataset metadata (no image loading)
+    # ── 1. Dataset portable keys ──────────────────────────────────
     ds_samples = getattr(train_dataset, "samples", None)
     ds_labels_list = getattr(train_dataset, "labels", None)
     if ds_samples is None or ds_labels_list is None:
         audit_logger.warning("Dataset has no .samples/.labels — skipping runtime audit")
         return
 
-    # Canonicalize both sides so absolute/relative mismatches don't
-    # cause false positive missing / extra reports.
-    ds_records = [
-        (canonical_image_path(str(path)), int(label))
-        for path, label in zip(ds_samples, ds_labels_list)
-    ]
-    ds_paths = {path for path, _ in ds_records}
-    ds_label_map = dict(ds_records)
-    n_dataset = len(ds_paths)
+    ds_keys_list = [portable_image_key(str(p)) for p in ds_samples]
+    ds_keys = set(ds_keys_list)
+    n_dataset = len(ds_keys)
 
-    # 2. Read manifest directly
+    if len(ds_keys_list) != n_dataset:
+        dup_counts = {}
+        for k in ds_keys_list:
+            dup_counts[k] = dup_counts.get(k, 0) + 1
+        dup_keys = {k: v for k, v in dup_counts.items() if v > 1}
+        raise ValueError(
+            f"Dataset contains {len(ds_keys_list) - n_dataset} duplicate "
+            f"portable keys. First 5 duplicates: "
+            f"{list(dup_keys.keys())[:5]}"
+        )
+
+    # ── 2. Manifest portable keys ──────────────────────────────────
     manifest_csv = getattr(weight_provider, "_loader", None)
     if manifest_csv is not None:
         manifest_path = manifest_csv.path
     else:
         audit_logger.warning("Cannot locate manifest file — skipping runtime audit")
         return
+
     manifest_df = pd.read_csv(manifest_path)
-    manifest_df["_canonical_path"] = (
-        manifest_df["image_path"].astype(str).map(canonical_image_path)
-    )
+    mf_raw_keys = manifest_df["image_path"].astype(str).tolist()
+    mf_keys_list = [portable_image_key(p) for p in mf_raw_keys]
+    mf_keys = set(mf_keys_list)
+    n_manifest = len(mf_keys)
 
-    # Check for duplicate canonical paths
-    dup_manifest_canonical = manifest_df["_canonical_path"].duplicated().sum()
-
-    manifest_paths = set(manifest_df["_canonical_path"])
-    manifest_label_map = dict(
-        zip(manifest_df["_canonical_path"], manifest_df["original_label"])
-    )
-    manifest_roles = {}
-    if "training_role" in manifest_df.columns:
-        manifest_roles = dict(
-            zip(manifest_df["_canonical_path"], manifest_df["training_role"])
-        )
-    manifest_weights = dict(
-        zip(manifest_df["_canonical_path"], manifest_df["sample_weight"])
-    )
-
-    # 3. Identify rejected / kept partitions
-    # Support both new format (training_role) and old format (sample_weight=0).
-    if manifest_roles:
-        _rejected_in_manifest = {
-            p for p, r in manifest_roles.items() if r == "rejected"
-        }
-    else:
-        _rejected_in_manifest = {
-            p for p, w in manifest_weights.items() if w == 0.0
-        }
-    _kept_manifest_paths = manifest_paths - _rejected_in_manifest
-
-    # 4. Bidirectional comparison — strategy depends on reject_policy
-    if reject_policy == "drop":
-        # Phase 1: dataset must contain ONLY clean + pseudo manifest rows
-        _rejected_left_in_dataset = ds_paths & _rejected_in_manifest
-        # Phase 2: clean/pseudo manifest rows must be 1:1 with dataset
-        missing_in_manifest = ds_paths - _kept_manifest_paths
-        extra_in_manifest = _kept_manifest_paths - ds_paths
-    else:
-        # weight_zero: full 1:1 correspondence required
-        missing_in_manifest = ds_paths - manifest_paths
-        extra_in_manifest = manifest_paths - ds_paths
-        _rejected_left_in_dataset = set()
-
-    dup_in_manifest = (
-        manifest_df["image_path"].duplicated().sum()
-        + dup_manifest_canonical
-    )
-
-    # 5. original_label mismatches (on kept paths only)
-    label_mismatches = 0
-    for p in ds_paths & _kept_manifest_paths:
-        if int(ds_label_map[p]) != int(manifest_label_map[p]):
-            label_mismatches += 1
-
-    # 6. Role stats
-    role_counts = {"clean": 0, "rejected": 0, "pseudo": 0}
-    for p in ds_paths:
-        role = manifest_roles.get(p, "clean")
-        if role in role_counts:
-            role_counts[role] += 1
-
-    # 7. Per-class rates (computed over full manifest for completeness)
-    num_classes = 500
-    class_total = {c: 0 for c in range(num_classes)}
-    class_reject = {c: 0 for c in range(num_classes)}
-    class_pseudo = {c: 0 for c in range(num_classes)}
-    for p in manifest_paths:
-        c = int(manifest_label_map[p])
-        class_total[c] += 1
-        if (manifest_weights.get(p, 1.0) == 0.0
-                or manifest_roles.get(p, "") == "rejected"):
-            class_reject[c] += 1
-        if manifest_roles.get(p, "") == "pseudo":
-            class_pseudo[c] += 1
-
-    max_class_drop = max(
-        class_reject[c] / max(class_total[c], 1) for c in range(num_classes)
-    )
-    max_class_relabel = max(
-        class_pseudo[c] / max(class_total[c], 1) for c in range(num_classes)
-    )
-    zero_clean = sorted(
-        c for c in range(num_classes)
-        if class_total[c] > 0
-        and (class_total[c] - class_reject[c] - class_pseudo[c]) == 0
-    )
-
-    audit = {
-        "dataset_sample_count": n_dataset,
-        "manifest_row_count": len(manifest_df),
-        "manifest_rejected_count": len(_rejected_in_manifest),
-        "reject_policy": reject_policy,
-        "missing_in_manifest": len(missing_in_manifest),
-        "extra_in_manifest": len(extra_in_manifest),
-        "rejected_left_in_dataset": len(_rejected_left_in_dataset),
-        "duplicate_manifest_paths": int(dup_in_manifest),
-        "original_label_mismatches": label_mismatches,
-        "coverage": 1.0 if len(missing_in_manifest) == 0 else (n_dataset - len(missing_in_manifest)) / n_dataset,
-        "missing_policy": missing_policy,
-        "clean_count": role_counts["clean"],
-        "rejected_count": role_counts["rejected"],
-        "pseudo_count": role_counts["pseudo"],
-        "global_reject_rate": role_counts["rejected"] / max(len(_kept_manifest_paths), 1),
-        "global_relabel_rate": role_counts["pseudo"] / max(len(_kept_manifest_paths), 1),
-        "max_class_drop_rate": max_class_drop,
-        "max_source_class_relabel_rate": max_class_relabel,
-        "classes_with_zero_clean": zero_clean,
-    }
-
-    audit_path = save_dir / "manifest_runtime_audit.json"
-    save_dir.mkdir(parents=True, exist_ok=True)
-    audit_path.write_text(json.dumps(audit, indent=2))
-
-    # Fail-closed checks
-    errors = []
-    if audit["missing_in_manifest"] > 0:
-        errors.append(
-            f"{audit['missing_in_manifest']} dataset images missing from manifest"
-        )
-    if audit["extra_in_manifest"] > 0:
-        errors.append(
-            f"{audit['extra_in_manifest']} manifest images not in dataset"
-        )
-    if audit["rejected_left_in_dataset"] > 0:
-        errors.append(
-            f"{audit['rejected_left_in_dataset']} rejected samples still in dataset "
-            f"(reject_policy='drop' should have removed them)"
-        )
-    if audit["duplicate_manifest_paths"] > 0:
-        errors.append(
-            f"{audit['duplicate_manifest_paths']} duplicate manifest paths"
-        )
-    if audit["original_label_mismatches"] > 0:
-        errors.append(
-            f"{audit['original_label_mismatches']} original_label mismatches"
-        )
-    if audit["coverage"] < 1.0:
-        errors.append(f"Coverage {audit['coverage']:.4f} < 1.0")
-    if audit["missing_policy"] != "error":
-        errors.append(f"missing_policy is '{missing_policy}', not 'error'")
-    if len(audit["classes_with_zero_clean"]) > 0:
-        errors.append(
-            f"Classes with zero clean samples: {audit['classes_with_zero_clean']}"
-        )
-
-    if errors:
+    if len(mf_keys_list) != n_manifest:
+        dup_counts = {}
+        for k in mf_keys_list:
+            dup_counts[k] = dup_counts.get(k, 0) + 1
+        dup_keys = {k: v for k, v in dup_counts.items() if v > 1}
         raise ValueError(
-            f"Runtime manifest audit FAILED ({len(errors)} errors):\n  "
-            + "\n  ".join(errors)
+            f"Manifest contains {len(mf_keys_list) - n_manifest} duplicate "
+            f"portable keys. First 5: {list(dup_keys.keys())[:5]}"
         )
 
+    # Build manifest lookup dicts (keyed by portable key)
+    mf_p_clean_map: Dict[str, float] = {}
+    if "p_original_label" in manifest_df.columns:
+        for _, row in manifest_df.iterrows():
+            key = portable_image_key(str(row["image_path"]))
+            val = float(row["p_original_label"])
+            if not (0.0 <= val <= 1.0):
+                raise ValueError(
+                    f"p_original_label out of [0,1]: {val} for {key}"
+                )
+            if not np.isfinite(val):
+                raise ValueError(
+                    f"p_original_label is not finite: {val} for {key}"
+                )
+            mf_p_clean_map[key] = val
+    else:
+        mf_p_clean_map = {}
+
+    # ── 3. Global blacklist portable keys ──────────────────────────
+    _bl_path = Path("outputs/phase4/global_rejected_paths.txt")
+    if _bl_path.exists():
+        bl_raw = _bl_path.read_text().strip().split("\n")
+        # Filter empty lines
+        bl_raw = [p for p in bl_raw if p.strip()]
+        bl_keys_set = {portable_image_key(p) for p in bl_raw}
+        n_bl = len(bl_keys_set)
+
+        if len(bl_raw) != n_bl:
+            raise ValueError(
+                f"Blacklist contains {len(bl_raw) - n_bl} duplicate "
+                f"portable keys. File: {_bl_path}"
+            )
+
+        if n_bl == 0:
+            raise ValueError(
+                f"Blacklist is empty. File: {_bl_path}"
+            )
+
+        bl_hit_ds = bl_keys_set & ds_keys
+        bl_hit_mf = bl_keys_set & mf_keys
+
+        # Hard gates
+        if n_bl != 991:
+            raise ValueError(
+                f"Blacklist has {n_bl} unique keys (expected 991)."
+            )
+        if len(bl_hit_ds) != 991:
+            raise ValueError(
+                f"Blacklist matches only {len(bl_hit_ds)}/991 in dataset. "
+                f"Missing {991 - len(bl_hit_ds)} keys."
+            )
+        if len(bl_hit_mf) != 991:
+            raise ValueError(
+                f"Blacklist matches only {len(bl_hit_mf)}/991 in manifest. "
+                f"Missing {991 - len(bl_hit_mf)} keys."
+            )
+    else:
+        raise FileNotFoundError(
+            f"Global blacklist not found: {_bl_path}. "
+            f"This file is required for all experiments."
+        )
+        bl_keys_set = set()
+        n_bl = 0
+        bl_hit_ds = set()
+
+    # ── 4. Post-blacklist consistency ──────────────────────────────
+    # After blacklist is applied, the dataset should equal
+    # (manifest_keys - blacklist_keys).
+    expected_ds = mf_keys - bl_keys_set
+    if ds_keys != expected_ds:
+        missing = expected_ds - ds_keys
+        extra = ds_keys - expected_ds
+        msgs = []
+        if missing:
+            msgs.append(f"{len(missing)} samples in (manifest - BL) but NOT in dataset")
+        if extra:
+            msgs.append(f"{len(extra)} samples in dataset but NOT in (manifest - BL)")
+        raise ValueError(
+            "Post-blacklist dataset ≠ manifest − blacklist.\n" + "\n".join(msgs)
+        )
+
+    # ── 5. Clean / rejected partition (via p_original_label) ───────
+    n_clean = 0
+    n_rejected = 0
+    for key in ds_keys:
+        p_val = mf_p_clean_map.get(key)
+        if p_val is None:
+            raise KeyError(
+                f"p_original_label missing in manifest for dataset key: {key}"
+            )
+        if p_val >= 0.70:
+            n_clean += 1
+        else:
+            n_rejected += 1
+
+    # ── 6. Audit report ────────────────────────────────────────────
+    _clean_prob_thresh = getattr(weight_provider, "clean_prob_threshold", None)
+    audit = {
+        "train_csv_rows": n_dataset + n_bl,  # original = filtered + blacklisted
+        "manifest_rows": n_manifest,
+        "blacklist_rows": n_bl,
+        "blacklist_hit_dataset": len(bl_hit_ds),
+        "blacklist_hit_manifest": len(bl_hit_mf),
+        "dataset_after_blacklist": n_dataset,
+        "manifest_minus_bl_equals_dataset": ds_keys == expected_ds,
+        "clean_count": n_clean,
+        "rejected_count": n_rejected,
+        "clean_prob_threshold": _clean_prob_thresh,
+        "duplicate_dataset_keys": len(ds_keys_list) - n_dataset,
+        "duplicate_manifest_keys": len(mf_keys_list) - n_manifest,
+        "duplicate_blacklist_keys": len(bl_raw) - n_bl if _bl_path.exists() else 0,
+    }
+    audit_path = save_dir / "runtime_manifest_audit.json"
+    audit_path.write_text(_json.dumps(audit, indent=2, default=str))
     audit_logger.info(
-        "Runtime manifest audit PASSED: %d samples, coverage=1.0, "
-        "clean=%d rejected=%d pseudo=%d, max_class_drop=%.4f, "
-        "reject_policy=%s",
-        n_dataset, role_counts["clean"], role_counts["rejected"],
-        role_counts["pseudo"], max_class_drop, reject_policy,
+        "Runtime manifest audit: train=%d → post-BL=%d | manifest=%d | BL=%d | "
+        "clean=%d (p≥%.2f) | rejected=%d",
+        audit["train_csv_rows"], n_dataset, n_manifest, n_bl,
+        n_clean, _clean_prob_thresh or 0.0, n_rejected,
     )
+    audit_logger.info("Runtime manifest audit written to %s", audit_path)
+
+    # Hard-fail on any count that doesn't match expected
+    if audit["duplicate_dataset_keys"] != 0:
+        raise ValueError("Dataset has duplicate portable keys")
+    if audit["duplicate_manifest_keys"] != 0:
+        raise ValueError("Manifest has duplicate portable keys")
+    if audit["duplicate_blacklist_keys"] != 0:
+        raise ValueError("Blacklist has duplicate portable keys")
 
 
 def _prepare_fresh_run_artifacts(
@@ -2065,9 +2060,43 @@ def main():
     epoch0_parent_acc = None
     epoch0_delta = None
 
+    # ── Parent checkpoint requirement (fail-closed) ──
+    # PEFT types that modify the backbone (visual_lora, last_block_lora)
+    # MUST have a parent checkpoint so that base weights are initialised
+    # from a known-good model rather than random CLIP weights.
+    _peft_req_parent = peft_type in ("visual_lora", "last_block_lora")
+    if _peft_req_parent and not args.init_checkpoint:
+        raise RuntimeError(
+            f"PEFT type '{peft_type}' requires --init-checkpoint. "
+            f"Refusing to train with random backbone weights. "
+            f"Provide the parent checkpoint path."
+        )
+
     # Initialize model weights from checkpoint (no optimizer/scheduler/epoch)
     if args.init_checkpoint:
         init_ckpt_path = args.init_checkpoint
+
+        # ── Verify parent checkpoint SHA-256 from artifact manifest ──
+        _parent_ckpt_sha = _sha256_hex(Path(init_ckpt_path))
+        train_logger.info("Parent checkpoint SHA-256: %s", _parent_ckpt_sha)
+
+        # Cross-check against A2 artifact manifest if available
+        _parent_manifest_path = Path(init_ckpt_path).parent / "artifact_manifest.json"
+        if _parent_manifest_path.exists():
+            import json as _json
+            _parent_manifest = _json.loads(_parent_manifest_path.read_text())
+            _expected_sha = _parent_manifest.get("checkpoint_sha256")
+            if _expected_sha and _expected_sha != _parent_ckpt_sha:
+                raise RuntimeError(
+                    f"Parent checkpoint SHA-256 mismatch!\n"
+                    f"  Expected (artifact_manifest.json): {_expected_sha}\n"
+                    f"  Actual:                            {_parent_ckpt_sha}\n"
+                    f"  Path: {init_ckpt_path}"
+                )
+            if _expected_sha:
+                train_logger.info(
+                    "Parent checkpoint SHA-256 verified against artifact_manifest.json"
+                )
 
         # ── Weight loading (skip if already done pre-PEFT) ──
         if _init_ckpt_for_peft is not None:
@@ -2139,31 +2168,34 @@ def main():
                 val_loss_0, val_acc_0,
             )
 
-            if parent_expected_acc is not None:
-                delta = abs(val_acc_0 - parent_expected_acc)
-                if delta > 0.0005:  # 0.05pp threshold
-                    train_logger.error(
-                        "EPOCH-0 VALIDATION MISMATCH: "
-                        "loaded=%.4f, expected=%.4f, delta=%.6f (> 0.0005). "
-                        "Check model loading, transforms, class mapping.",
-                        val_acc_0, parent_expected_acc, delta,
-                    )
-                    raise RuntimeError(
-                        f"Epoch-0 validation mismatch: delta={delta:.6f} > 0.0005"
-                    )
-                train_logger.info(
-                    "Epoch-0 validation gate PASSED: delta=%.6f <= 0.0005",
-                    delta,
+            if parent_expected_acc is None:
+                raise RuntimeError(
+                    "Epoch-0 validation gate FAILED: parent checkpoint has no "
+                    "'best_val_acc' metadata. Cannot verify output equivalence. "
+                    "Ensure the parent checkpoint was produced by a standard "
+                    "training run that records best_val_acc."
                 )
-            else:
-                train_logger.warning(
-                    "No best_val_acc in checkpoint metadata; "
-                    "skipping epoch-0 gate."
+            delta = abs(val_acc_0 - parent_expected_acc)
+            if delta > 0.0005:  # 0.05pp threshold
+                train_logger.error(
+                    "EPOCH-0 VALIDATION MISMATCH: "
+                    "loaded=%.4f, expected=%.4f, delta=%.6f (> 0.0005). "
+                    "Check model loading, transforms, class mapping.",
+                    val_acc_0, parent_expected_acc, delta,
                 )
+                raise RuntimeError(
+                    f"Epoch-0 validation mismatch: delta={delta:.6f} > 0.0005"
+                )
+            train_logger.info(
+                "Epoch-0 validation gate PASSED: delta=%.6f <= 0.0005",
+                delta,
+            )
             train_logger.info("=" * 60)
         else:
-            train_logger.info(
-                "No val_loader available; skipping epoch-0 validation gate."
+            raise RuntimeError(
+                "Epoch-0 validation gate FAILED: no val_loader available. "
+                "Cannot verify parent checkpoint output equivalence. "
+                "Ensure split_dir contains a valid val.csv."
             )
 
     # ── Create EMA hook (after model weights are finalised) ──

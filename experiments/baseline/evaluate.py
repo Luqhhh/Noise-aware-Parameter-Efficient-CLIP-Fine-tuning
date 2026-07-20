@@ -241,23 +241,27 @@ def main():
                 args.cos_learnable_scale.lower() == "true"
             )
 
-        model, preprocess = build_cosine_model(config, device)
+        def _build_fn(cfg, dev):
+            return build_cosine_model(cfg, dev)
     else:
-        from .model import build_model
-        model, preprocess = build_model(config, device)
+        from .model import build_model as _linear_build
 
-    # Load checkpoint
+        def _build_fn(cfg, dev):
+            return _linear_build(cfg, dev)
+
+    # Unified model build → PEFT → strict checkpoint load
+    from common.model_loader import build_and_load_model
+
     ckpt_path = Path(args.ckpt)
-    checkpoint = torch.load(args.ckpt, map_location=device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    logger.info(f"Loaded checkpoint from epoch {checkpoint.get('epoch', 'unknown')}")
-    logger.info(f"Checkpoint best val acc: {checkpoint.get('best_val_acc', 'N/A')}")
+    model, preprocess, load_info = build_and_load_model(
+        config, args.ckpt, device, build_model_fn=_build_fn, strict=True,
+    )
+    logger.info(f"Loaded checkpoint from epoch {load_info.get('checkpoint_epoch', 'unknown')}")
+    logger.info(f"Checkpoint best val acc: {load_info.get('parent_best_val_acc', 'N/A')}")
+    logger.info(f"Checkpoint SHA-256: {load_info['checkpoint_sha256']}")
+    ckpt_sha256 = load_info["checkpoint_sha256"]
 
     model = model.to(device)
-
-    # Compute checkpoint SHA-256 (streaming, never loads whole file into memory)
-    ckpt_sha256 = _sha256_hex(ckpt_path)
-    logger.info(f"Checkpoint SHA-256: {ckpt_sha256}")
 
     # Load validation dataset
     split_dir = Path(config["data"]["split_dir"])

@@ -49,6 +49,7 @@ KNOWN_LOSS_NAMES = {"cross_entropy", "gce", "label_smoothing"}
 KNOWN_PEFT_TYPES = {
     "linear_head_only", "ln_post_and_proj",
     "visual_layernorm_only", "last_block_lora",
+    "visual_lora",
 }
 
 

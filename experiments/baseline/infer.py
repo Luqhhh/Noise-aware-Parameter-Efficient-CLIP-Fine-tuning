@@ -157,20 +157,27 @@ def main():
                 args.cos_learnable_scale.lower() == "true"
             )
 
-        model, preprocess = build_cosine_model(config, device)
+        def _build_fn(cfg, dev):
+            return build_cosine_model(cfg, dev)
     else:
-        from .model import build_model
-        model, preprocess = build_model(config, device)
+        from .model import build_model as _linear_build
 
-    # Load checkpoint (only model weights needed for inference)
-    checkpoint = torch.load(args.ckpt, map_location=device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    logger.info(f"Loaded checkpoint from epoch {checkpoint.get('epoch', 'unknown')}")
-    logger.info(f"Checkpoint best val acc: {checkpoint.get('best_val_acc', 'N/A')}")
+        def _build_fn(cfg, dev):
+            return _linear_build(cfg, dev)
+
+    # Unified model build → PEFT → strict checkpoint load
+    from common.model_loader import build_and_load_model
+
+    model, preprocess, load_info = build_and_load_model(
+        config, args.ckpt, device, build_model_fn=_build_fn, strict=True,
+    )
+    logger.info(f"Loaded checkpoint from epoch {load_info.get('checkpoint_epoch', 'unknown')}")
+    logger.info(f"Checkpoint best val acc: {load_info.get('parent_best_val_acc', 'N/A')}")
 
     model = model.to(device)
 
-    # Load idx_to_class from checkpoint metadata (preferred) or fall back to split_dir
+    # Load checkpoint metadata for idx_to_class
+    checkpoint = torch.load(args.ckpt, map_location=device)
     idx_to_class = checkpoint.get("idx_to_class")
     if idx_to_class is None:
         logger.warning(

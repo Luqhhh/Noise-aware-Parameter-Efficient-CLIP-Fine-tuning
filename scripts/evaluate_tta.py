@@ -239,15 +239,16 @@ def main():
         expected_num_classes=config["model"]["num_classes"],
     )
 
-    # Build model
-    model, preprocess = build_model(config, device)
+    # Build model → apply PEFT → strict-load checkpoint
+    from common.model_loader import build_and_load_model
 
-    # Load checkpoint
     ckpt_path = Path(args.checkpoint)
-    checkpoint = torch.load(ckpt_path, map_location=device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    logger.info(f"Loaded checkpoint from epoch {checkpoint.get('epoch', 'unknown')}")
-    logger.info(f"Checkpoint best val acc: {checkpoint.get('best_val_acc', 'N/A')}")
+    model, preprocess, load_info = build_and_load_model(
+        config, args.checkpoint, device,
+        build_model_fn=build_model, strict=True,
+    )
+    logger.info(f"Loaded checkpoint from epoch {load_info.get('checkpoint_epoch', 'unknown')}")
+    logger.info(f"Checkpoint best val acc: {load_info.get('parent_best_val_acc', 'N/A')}")
 
     model = model.to(device)
 
