@@ -346,8 +346,8 @@ def main():
         "loss": float(results["loss"]),
         "total_samples": results["total_samples"],
         "correct_samples": results["correct_samples"],
-        "checkpoint_epoch": checkpoint.get("epoch"),
-        "checkpoint_best_val_acc": float(checkpoint.get("best_val_acc", -1.0)),
+        "checkpoint_epoch": load_info.get("checkpoint_epoch"),
+        "checkpoint_best_val_acc": float(load_info.get("parent_best_val_acc", -1.0)),
     }
     eval_results_path.parent.mkdir(parents=True, exist_ok=True)
     with open(eval_results_path, "w") as f:

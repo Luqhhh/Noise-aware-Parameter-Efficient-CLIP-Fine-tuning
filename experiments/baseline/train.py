@@ -595,60 +595,7 @@ def _runtime_manifest_audit(
     audit_logger.info("Runtime manifest audit written to %s", audit_path)
 
 
-def _compare_semantic_signature(
-    child_cfg: dict,
-    parent_cfg: dict,
-    child_id: str,
-    parent_id: str,
-) -> list:
-    """Compare semantic config fields between child and parent checkpoint.
 
-    Returns a list of error message strings (empty = OK).
-    """
-    errors = []
-
-    def _compare(key_path, label, parent_val, child_val):
-        if parent_val is not None and child_val is not None and parent_val != child_val:
-            errors.append(
-                f"{label}: parent={parent_val!r}, child={child_val!r}"
-            )
-
-    # Model section
-    pm = parent_cfg.get("model", {}) if parent_cfg else {}
-    cm = child_cfg.get("model", {})
-    _compare("model.clip_model_name", "CLIP model",
-             pm.get("clip_model_name"), cm.get("clip_model_name"))
-    _compare("model.num_classes", "num_classes",
-             pm.get("num_classes"), cm.get("num_classes"))
-
-    # Head type
-    pe = parent_cfg.get("experiment", {}) if parent_cfg else {}
-    ce = child_cfg.get("experiment", {})
-    _compare("experiment.head_type", "head_type",
-             pe.get("head_type"), ce.get("head_type"))
-
-    # PEFT section (only when child has non-default PEFT)
-    child_peft = child_cfg.get("peft", {})
-    parent_peft = parent_cfg.get("peft", {}) if parent_cfg else {}
-    if child_peft.get("type", "linear_head_only") != "linear_head_only":
-        _compare("peft.type", "PEFT type",
-                 parent_peft.get("type"), child_peft.get("type"))
-        _compare("peft.lora_rank / lora.rank", "LoRA rank",
-                 parent_peft.get("lora_rank") or (parent_peft.get("lora", {}) or {}).get("rank"),
-                 child_peft.get("lora_rank") or (child_peft.get("lora", {}) or {}).get("rank"))
-        _compare("peft.lora_alpha / lora.alpha", "LoRA alpha",
-                 parent_peft.get("lora_alpha") or (parent_peft.get("lora", {}) or {}).get("alpha"),
-                 child_peft.get("lora_alpha") or (child_peft.get("lora", {}) or {}).get("alpha"))
-        _compare("peft.lora_last_n_blocks", "LoRA last_n_blocks",
-                 parent_peft.get("lora_last_n_blocks"),
-                 child_peft.get("lora_last_n_blocks"))
-        _compare("peft.lora_adapt_qv", "LoRA adapt_qv",
-                 parent_peft.get("lora_adapt_qv"),
-                 child_peft.get("lora_adapt_qv"))
-        _compare("peft.lora_adapt_out", "LoRA adapt_out",
-                 parent_peft.get("lora_adapt_out"),
-                 child_peft.get("lora_adapt_out"))
-    return errors
 
 
 def _prepare_fresh_run_artifacts(
@@ -1702,11 +1649,50 @@ def main():
     freeze_clip = config["model"].get("freeze_clip", True)
     _enforce_guards(experiment_id, use_cached, aug_preset, freeze_clip)
 
-    # Build model based on head type
+    # ── Pre-model parent checkpoint verification (fail-closed, no GPU) ──
+    _store_lineage = None
+    _peft_type = config.get("peft", {}).get("type", "linear_head_only")
+    _peft_req_parent = _peft_type in ("visual_lora", "last_block_lora")
+
+    if args.init_checkpoint:
+        from common.model_loader import verify_parent_checkpoint, verify_init_compat
+        _store_lineage = verify_parent_checkpoint(
+            args.init_checkpoint, experiment_id,
+        )
+        train_logger.info("Parent checkpoint verified: %s",
+                          _store_lineage["parent_checkpoint_sha256"][:16])
+
+        # Init-compat: child config must be structurally compatible with parent
+        _parent_ckpt_meta = torch.load(args.init_checkpoint, map_location="cpu")
+        _parent_cfg = _parent_ckpt_meta.get("config", {})
+        _init_errs = verify_init_compat(config, _parent_cfg)
+        if _init_errs:
+            raise RuntimeError(
+                "Init-compat check failed between child config and parent "
+                "checkpoint:\n  " + "\n  ".join(_init_errs)
+            )
+        train_logger.info("Init-compat check PASSED")
+        del _parent_ckpt_meta  # free memory; full load happens later
+    elif _peft_req_parent and not args.resume:
+        raise RuntimeError(
+            f"PEFT type '{_peft_type}' requires --init-checkpoint. "
+            f"Refusing to train with random backbone weights. "
+            f"Provide the parent checkpoint path (or use --resume to "
+            f"continue a previous training run)."
+        )
+
+    # ── Load preprocess early (lightweight, for data audit before model) ──
+    import clip as _clip
+    _clip_model_raw, preprocess = _clip.load(
+        config["model"]["clip_model_name"], device="cpu",
+    )
+    _clip_model_raw.visual = _clip_model_raw.visual.float()
+    del _clip_model_raw  # only needed for preprocess; model built below
+
+    # ── Build model based on head type ──
     if head_type == "cosine":
         from experiments.cosine.model import build_cosine_model
 
-        # CLI args override config values for cosine head options
         if args.cos_init_scale is not None:
             config["model"]["cos_init_scale"] = args.cos_init_scale
         if args.cos_learnable_scale is not None:
@@ -1714,10 +1700,10 @@ def main():
                 args.cos_learnable_scale.lower() == "true"
             )
 
-        model, preprocess = build_cosine_model(config, device)
+        model, _ = build_cosine_model(config, device)
     else:
         from .model import build_model
-        model, preprocess = build_model(config, device)
+        model, _ = build_model(config, device)
 
     total_params, trainable_params = count_parameters(model)
     train_logger.info(f"Total parameters:     {total_params:,}")
@@ -2196,6 +2182,18 @@ def main():
     train_logger.info(f"  Trainable head params:    {head_trainable:>10,}")
     train_logger.info(f"  Trainable visual params:  {visual_trainable:>10,}")
 
+    # ── Runtime manifest audit (CPU-only, before any GPU work) ──
+    _reject_policy = config.get("sample_weighting", {}).get(
+        "reject_policy", "weight_zero"
+    )
+    _runtime_manifest_audit(
+        train_dataset, weight_provider, mode,
+        Path(config["train"]["save_dir"]),
+        train_logger,
+        experiment_id=experiment_id,
+        reject_policy=_reject_policy,
+    )
+
     # Early stopping config
     early_stop_patience = train_cfg.get("early_stop_patience", 0)
     early_stop_counter = 0
@@ -2216,105 +2214,13 @@ def main():
     epoch0_parent_acc = None
     epoch0_delta = None
 
-    # ── Parent lineage placeholder ──
-    _store_lineage = None
-
-    # ── Parent checkpoint requirement (fail-closed) ──
-    # PEFT types that modify the backbone (visual_lora, last_block_lora)
-    # MUST have a parent checkpoint for NEW training runs.
-    # Resume runs bypass this gate — the checkpoint already contains
-    # the parent weights baked in.
-    _peft_req_parent = peft_type in ("visual_lora", "last_block_lora")
-    if _peft_req_parent and not args.init_checkpoint and not args.resume:
-        raise RuntimeError(
-            f"PEFT type '{peft_type}' requires --init-checkpoint. "
-            f"Refusing to train with random backbone weights. "
-            f"Provide the parent checkpoint path (or use --resume to "
-            f"continue a previous training run)."
-        )
-
-    # Initialize model weights from checkpoint (no optimizer/scheduler/epoch)
+    # ── Initialize model weights from checkpoint (no optimizer/scheduler/epoch) ──
+    # Parent verification + init-compat already done pre-model (see above).
+    # Here we only handle weight loading, split audit, and epoch-0 gate.
     if args.init_checkpoint:
         init_ckpt_path = args.init_checkpoint
-        import json as _json
 
-        # ── Verify parent checkpoint (fail-closed) ─────────────────
-        _parent_ckpt_sha = _sha256_hex(Path(init_ckpt_path))
-        train_logger.info("Parent checkpoint SHA-256: %s", _parent_ckpt_sha)
-
-        # Cross-check against artifact manifest (mandatory for known parents)
-        _parent_manifest_path = Path(init_ckpt_path).parent / "artifact_manifest.json"
-        if not _parent_manifest_path.exists():
-            raise FileNotFoundError(
-                f"Parent artifact manifest not found: {_parent_manifest_path}. "
-                f"Every checkpoint must have an artifact_manifest.json."
-            )
-        _parent_manifest = _json.loads(_parent_manifest_path.read_text())
-        _parent_exp_id = _parent_manifest.get("experiment_id", "unknown")
-
-        # Verify checkpoint SHA
-        _expected_sha = _parent_manifest.get("checkpoint_sha256")
-        if not _expected_sha:
-            raise RuntimeError(
-                "Parent artifact_manifest.json has no checkpoint_sha256 field."
-            )
-        if _expected_sha != _parent_ckpt_sha:
-            raise RuntimeError(
-                f"Parent checkpoint SHA-256 mismatch!\n"
-                f"  Expected: {_expected_sha}\n"
-                f"  Actual:   {_parent_ckpt_sha}"
-            )
-
-        # ── A2-specific hard-gates ──────────────────────────────────
-        _A2_CKPT_SHA = "74ad2856e4449a42397edbda599ae79e8a4c6a6fa923624ef4e91a35e20a2a4c"
-        _A2_TRAIN_SHA = "646fc7b90b7c244a402f6376d966f40148b5b278dad29cce0c6955c92a1b6666"
-        _A2_VAL_SHA = "607e019165912bb0639efb456b7e8dea122b3e8579a2344dedb8109798921eae"
-
-        if experiment_id == "NR_COMBINED_UPGRADE":
-            if _parent_exp_id != "NR_CL_KNN_DROP":
-                raise RuntimeError(
-                    f"NR_COMBINED_UPGRADE requires parent NR_CL_KNN_DROP, "
-                    f"got {_parent_exp_id}"
-                )
-            if _parent_ckpt_sha != _A2_CKPT_SHA:
-                raise RuntimeError(
-                    f"NR_COMBINED_UPGRADE requires exact A2 checkpoint.\n"
-                    f"  Expected: {_A2_CKPT_SHA}\n"
-                    f"  Actual:   {_parent_ckpt_sha}"
-                )
-            _parent_train_sha = _parent_manifest.get("train_csv_sha256", "")
-            _parent_val_sha = _parent_manifest.get("val_csv_sha256", "")
-            if _parent_train_sha != _A2_TRAIN_SHA:
-                raise RuntimeError(
-                    f"A2 train CSV SHA mismatch.\n"
-                    f"  Expected: {_A2_TRAIN_SHA}\n"
-                    f"  Actual:   {_parent_train_sha}"
-                )
-            if _parent_val_sha != _A2_VAL_SHA:
-                raise RuntimeError(
-                    f"A2 val CSV SHA mismatch.\n"
-                    f"  Expected: {_A2_VAL_SHA}\n"
-                    f"  Actual:   {_parent_val_sha}"
-                )
-            train_logger.info("A2 parent verification: experiment_id=%s, SHA-256, train/val split — all OK",
-                              _parent_exp_id)
-
-        # ── Semantic signature comparison ────────────────────────────
-        if _init_ckpt_for_peft is not None:
-            _parent_cfg = _init_ckpt_for_peft.get("config", {})
-        else:
-            _parent_ckpt_full = torch.load(init_ckpt_path, map_location=device)
-            _parent_cfg = _parent_ckpt_full.get("config", {})
-        _sem_errs = _compare_semantic_signature(
-            config, _parent_cfg, experiment_id, _parent_exp_id,
-        )
-        if _sem_errs:
-            raise RuntimeError(
-                "Semantic signature mismatch between child config and "
-                "parent checkpoint:\n  " + "\n  ".join(_sem_errs)
-            )
-
-        # ── Weight loading (skip if already done pre-PEFT) ──
+        # Weight loading (skip if already done pre-PEFT)
         if _init_ckpt_for_peft is not None:
             checkpoint = _init_ckpt_for_peft
             train_logger.info(
@@ -2327,11 +2233,9 @@ def main():
             )
             checkpoint = torch.load(init_ckpt_path, map_location=device)
             model_state = checkpoint.get("model_state_dict", checkpoint)
-
             missing_keys, unexpected_keys = model.load_state_dict(
-                model_state, strict=False
+                model_state, strict=False,
             )
-
             if missing_keys:
                 train_logger.warning(
                     f"Missing keys ({len(missing_keys)}): {missing_keys}"
@@ -2340,7 +2244,6 @@ def main():
                 train_logger.warning(
                     f"Unexpected keys ({len(unexpected_keys)}): {unexpected_keys}"
                 )
-
             if not missing_keys and not unexpected_keys:
                 train_logger.info("Model weights loaded with exact key match.")
             else:
@@ -2353,21 +2256,9 @@ def main():
         # Do NOT load scheduler state
         # Do NOT restore epoch
 
-        # ── Parent-child split lineage audit ─────────────────────
+        # Split lineage audit
         _run_init_checkpoint_audit(args, config, init_ckpt_path, checkpoint,
                                    train_logger)
-
-        # ── Write parent lineage ──────────────────────────────────
-        _lineage = {
-            "parent_experiment_id": _parent_exp_id,
-            "parent_checkpoint_path": str(init_ckpt_path),
-            "parent_checkpoint_sha256": _parent_ckpt_sha,
-            "parent_train_csv_sha256": _parent_manifest.get("train_csv_sha256", ""),
-            "parent_val_csv_sha256": _parent_manifest.get("val_csv_sha256", ""),
-            "parent_best_val_acc": _parent_manifest.get("best_val_acc"),
-        }
-        train_logger.info("Parent lineage: %s", _json.dumps(_lineage, indent=2))
-        _store_lineage = _lineage  # saved to eval_results later
 
         # ── Epoch-0 validation gate ──────────────────────────────
         if val_loader is not None:
@@ -2488,8 +2379,11 @@ def main():
     # ── Feature distillation setup (after model weights are finalised) ──
     # Builds a frozen parent model from the same CLIP backbone (no LoRA,
     # no classifier training) to anchor visual features via cosine-distance
-    # penalty.  Only active when sample_weighting contains
-    # feature_distillation_weight > 0 and a clean_prob_threshold is set.
+    # penalty.
+    #
+    # On first run: parent weights come from --init-checkpoint.
+    # On resume:    parent lineage is read from the checkpoint and re-verified.
+    # Refusing to degrade to random parent (fail-closed).
     feature_distill = None
     feat_distill_weight = config.get("sample_weighting", {}).get(
         "feature_distillation_weight", 0.0
@@ -2499,44 +2393,50 @@ def main():
         from .model import CLIPLinearClassifier as _CLS
         from .model import build_model as _build
 
-        # Build a fresh frozen parent: same CLIP weights, no LoRA, no PEFT
+        # Determine parent checkpoint path
+        _parent_ckpt_path = None
+        if args.init_checkpoint:
+            _parent_ckpt_path = args.init_checkpoint
+        elif args.resume and _store_lineage:
+            _parent_ckpt_path = _store_lineage.get("parent_checkpoint_path")
+            # Re-verify the parent still matches
+            if _parent_ckpt_path:
+                _expected_sha = _store_lineage.get("parent_checkpoint_sha256", "")
+                _actual_sha = _sha256_hex(Path(_parent_ckpt_path))
+                if _expected_sha and _actual_sha != _expected_sha:
+                    raise RuntimeError(
+                        f"Resume parent SHA mismatch!\n"
+                        f"  Stored:  {_expected_sha}\n"
+                        f"  Current: {_actual_sha}\n"
+                        f"  Path:    {_parent_ckpt_path}"
+                    )
+                train_logger.info("Resume parent verified: SHA matches lineage")
+
+        if not _parent_ckpt_path:
+            raise RuntimeError(
+                "Feature distillation requires a parent checkpoint. "
+                "Provide --init-checkpoint, or --resume from a checkpoint "
+                "that contains parent_lineage."
+            )
+
+        # Build frozen parent and load weights
         _parent_cfg = copy.deepcopy(config)
         _parent_cfg["model"]["freeze_clip"] = True
         _parent_model, _ = _build(_parent_cfg, device)
-        # Load parent weights from the same init checkpoint
-        if args.init_checkpoint:
-            _parent_ckpt = torch.load(args.init_checkpoint, map_location=device)
-            _parent_state = _parent_ckpt.get("model_state_dict", _parent_ckpt)
-            # Filter out classifier keys (child may have different head dims)
-            _parent_keys = {
-                k: v for k, v in _parent_state.items()
-                if "classifier" not in k
-            }
-            _missing, _unexpected = _parent_model.load_state_dict(
-                _parent_keys, strict=False,
-            )
-            if _missing:
-                train_logger.info(
-                    "Distill parent: %d missing keys (expected — no classifier)",
-                    len(_missing),
-                )
-        else:
-            train_logger.warning(
-                "Feature distillation active but no --init-checkpoint provided; "
-                "parent model uses random CLIP weights — distillation will be "
-                "meaningless."
-            )
-
-        # Freeze and eval
+        _parent_ckpt = torch.load(_parent_ckpt_path, map_location=device)
+        _parent_state = _parent_ckpt.get("model_state_dict", _parent_ckpt)
+        _parent_keys = {
+            k: v for k, v in _parent_state.items()
+            if "classifier" not in k
+        }
+        _parent_model.load_state_dict(_parent_keys, strict=False)
         for _p in _parent_model.parameters():
             _p.requires_grad_(False)
         _parent_model.eval()
-
         feature_distill = _FD(_parent_model)
         train_logger.info(
             "Feature distillation enabled: λ=%.1f, parent=%s",
-            feat_distill_weight,
-            "init-checkpoint" if args.init_checkpoint else "random (WARNING)",
+            feat_distill_weight, _parent_ckpt_path,
         )
 
     # Resume if requested
@@ -2553,6 +2453,13 @@ def main():
         resume_info = load_checkpoint(
             args.resume, model, optimizer, scheduler, scaler, device
         )
+        # Restore parent lineage from checkpoint (for feature distillation etc.)
+        if _store_lineage is None:
+            _ckpt_meta = torch.load(args.resume, map_location=device)
+            _store_lineage = _ckpt_meta.get("parent_lineage")
+            if _store_lineage:
+                train_logger.info("Restored parent lineage from resume checkpoint: %s",
+                                  _store_lineage.get("parent_checkpoint_sha256", "?")[:16])
         start_epoch = resume_info["epoch"] + 1
         global_step = resume_info["global_step"]
         best_val_acc = resume_info["best_val_acc"]
@@ -2632,18 +2539,6 @@ def main():
     # Training log CSV
     log_file = Path(config["output"]["log_dir"]) / "train_log.csv"
     log_header = not log_file.exists()
-
-    # Runtime manifest audit: verify dataset paths match manifest before epoch 1
-    _reject_policy = config.get("sample_weighting", {}).get(
-        "reject_policy", "weight_zero"
-    )
-    _runtime_manifest_audit(
-        train_dataset, weight_provider, mode,
-        Path(config["train"]["save_dir"]),
-        train_logger,
-        experiment_id=experiment_id,
-        reject_policy=_reject_policy,
-    )
 
     # Training loop
     train_logger.info(
@@ -2823,6 +2718,8 @@ def main():
         extra_meta = _build_checkpoint_metadata(
             model, config, mode, args, best_epoch=dev_best_epoch
         )
+        if _store_lineage:
+            extra_meta["parent_lineage"] = _store_lineage
 
         save_checkpoint(
             model,

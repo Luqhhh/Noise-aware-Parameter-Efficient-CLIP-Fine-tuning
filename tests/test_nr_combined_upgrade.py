@@ -15,6 +15,8 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
+from common.model_loader import verify_inference_rebuild, verify_init_compat
+
 # ──────────────────────────────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────────────────────────────
@@ -801,8 +803,7 @@ class TestConfigAndIntegration(unittest.TestCase):
 class TestSemanticSignature(unittest.TestCase):
 
     def test_wrong_alpha_must_fail(self):
-        """If parent used alpha=8 but child config says alpha=4, must error."""
-        from experiments.baseline.train import _compare_semantic_signature
+        """If checkpoint uses alpha=8 but runtime config says alpha=4, must error."""
         child = {"peft": {"type": "visual_lora", "lora_rank": 8, "lora_alpha": 4,
                           "lora_last_n_blocks": 4,
                           "lora_adapt_qv": True, "lora_adapt_out": True},
@@ -813,29 +814,64 @@ class TestSemanticSignature(unittest.TestCase):
                            "lora_adapt_qv": True, "lora_adapt_out": True},
                   "model": {"clip_model_name": "ViT-B/32", "num_classes": 500},
                   "experiment": {"head_type": "linear"}}
-        errors = _compare_semantic_signature(child, parent, "CHILD", "PARENT")
+        errors = verify_inference_rebuild(child, parent)
         self.assertGreater(len(errors), 0, "Wrong alpha should produce errors")
         self.assertTrue(any("alpha" in e.lower() for e in errors),
                         f"Errors should mention alpha: {errors}")
 
     def test_matching_configs_produce_no_errors(self):
-        from experiments.baseline.train import _compare_semantic_signature
         cfg = {"peft": {"type": "visual_lora", "lora_rank": 8, "lora_alpha": 8,
                         "lora_last_n_blocks": 4,
                         "lora_adapt_qv": True, "lora_adapt_out": True},
                "model": {"clip_model_name": "ViT-B/32", "num_classes": 500},
                "experiment": {"head_type": "linear"}}
-        errors = _compare_semantic_signature(cfg, cfg, "A", "B")
+        errors = verify_inference_rebuild(cfg, cfg)
         self.assertEqual(len(errors), 0, f"Expected 0 errors, got: {errors}")
 
-    def test_missing_parent_cfg_returns_no_errors(self):
-        """Empty parent config should not error (graceful for old checkpoints)."""
-        from experiments.baseline.train import _compare_semantic_signature
+    def test_init_compat_allows_different_peft(self):
+        """Init compat allows parent (linear) vs child (visual_lora) PEFT diff."""
         child = {"peft": {"type": "visual_lora", "lora_rank": 8, "lora_alpha": 8},
                  "model": {"clip_model_name": "ViT-B/32", "num_classes": 500},
                  "experiment": {"head_type": "linear"}}
-        errors = _compare_semantic_signature(child, {}, "CHILD", "PARENT")
-        self.assertEqual(len(errors), 0)
+        parent = {"model": {"clip_model_name": "ViT-B/32", "num_classes": 500},
+                  "experiment": {"head_type": "linear"}}
+        errors = verify_init_compat(child, parent)
+        self.assertEqual(len(errors), 0,
+                         f"Init compat should allow PEFT diff: {errors}")
+
+    def test_inference_rebuild_wrong_alpha_via_loader(self):
+        """build_and_load_model must reject a checkpoint with mismatched alpha."""
+        import tempfile, os
+        from common.peft import apply_peft
+        cm, _ = _build_clip_model()
+        model = _build_classifier(cm, freeze_clip=False)
+        peft_cfg = {"type": "visual_lora", "lora_last_n_blocks": 2,
+                    "lora_rank": 4, "lora_alpha": 8,
+                    "lora_adapt_qv": True, "lora_adapt_out": True}
+        apply_peft(model, peft_cfg)
+        sd = {"model_state_dict": {k: v.clone() for k, v in model.state_dict().items()},
+              "config": {"model": {"clip_model_name": "ViT-B/32", "num_classes": 500,
+                                   "freeze_clip": False},
+                         "experiment": {"head_type": "linear"},
+                         "peft": peft_cfg}}
+        f = tempfile.NamedTemporaryFile(suffix=".pt", delete=False)
+        torch.save(sd, f.name)
+        f.close()
+        try:
+            from common.model_loader import build_and_load_model
+            from experiments.baseline.model import build_model
+            wrong_cfg = {"model": {"clip_model_name": "ViT-B/32", "num_classes": 500,
+                                    "freeze_clip": False},
+                         "experiment": {"head_type": "linear"},
+                         "peft": {"type": "visual_lora", "lora_last_n_blocks": 2,
+                                  "lora_rank": 4, "lora_alpha": 4,  # WRONG
+                                  "lora_adapt_qv": True, "lora_adapt_out": True}}
+            with self.assertRaises(RuntimeError) as ctx:
+                build_and_load_model(wrong_cfg, f.name, torch.device("cpu"),
+                                     build_model_fn=build_model, strict=True)
+            self.assertIn("alpha", str(ctx.exception).lower())
+        finally:
+            os.unlink(f.name)
 
 
 # ──────────────────────────────────────────────────────────────────────

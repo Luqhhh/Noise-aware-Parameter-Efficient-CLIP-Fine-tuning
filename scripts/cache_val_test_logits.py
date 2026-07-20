@@ -289,8 +289,8 @@ def main():
     manifest = {
         "checkpoint": str(ckpt_path),
         "checkpoint_sha256": ckpt_sha256,
-        "checkpoint_epoch": checkpoint.get("epoch"),
-        "checkpoint_best_val_acc": float(checkpoint.get("best_val_acc", -1.0)),
+        "checkpoint_epoch": load_info.get("checkpoint_epoch"),
+        "checkpoint_best_val_acc": float(load_info.get("parent_best_val_acc", -1.0)),
         "config": str(Path(args.config).resolve()),
         "output_dir": str(output_dir),
         "batch_size": batch_size,

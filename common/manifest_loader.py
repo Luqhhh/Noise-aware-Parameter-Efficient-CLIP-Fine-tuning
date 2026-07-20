@@ -43,13 +43,13 @@ def portable_image_key(value: str) -> str:
     """
     # Normalise backslash separators to forward slash
     value = value.replace("\\", "/")
-    p = Path(value)
-    parts = p.parts
+    # Split on forward slash — avoid Path() which uses OS separator
+    parts = [p for p in value.split("/") if p]
     if len(parts) < 2:
         # Single-component path — return as-is
         return value
     # Last two components are always class_dir/filename
-    return str(Path(parts[-2]) / parts[-1])
+    return "/".join(parts[-2:])
 
 
 REQUIRED_COLUMNS = [
