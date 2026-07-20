@@ -21,6 +21,7 @@ Usage:
 
 import argparse
 import copy
+import hashlib
 import json
 import logging
 import math
@@ -258,6 +259,18 @@ def _build_checkpoint_metadata(
     return meta
 
 
+def _sha256_hex(path: Path, chunk_size: int = 1 << 20) -> str:
+    """Streaming SHA-256 of a file."""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        while True:
+            chunk = f.read(chunk_size)
+            if not chunk:
+                break
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def _check_splits_exist(split_dir: str) -> bool:
     """Check if train/val split files exist."""
     split_dir = Path(split_dir)
@@ -283,28 +296,31 @@ def _runtime_manifest_audit(
     mode: str,
     save_dir: Path,
     audit_logger: logging.Logger,
+    experiment_id: str = "",
     reject_policy: str = "weight_zero",
 ):
     """Verify dataset ↔ manifest ↔ blacklist consistency before epoch 1.
 
     Uses ``portable_image_key`` throughout — all comparisons are
-    machine-independent.  Hard-fails on any discrepancy (missing files,
-    duplicate keys, count mismatches).
+    machine-independent.  Hard-fails on any discrepancy.
 
-    For ``NR_COMBINED_UPGRADE`` the expected cardinalities are:
+    For ``NR_COMBINED_UPGRADE`` the expected cardinalities are enforced
+    as fixed contracts:
 
     - Original train CSV:        91,195 unique portable keys
     - OOF manifest:              91,195 unique portable keys
     - Global blacklist:             991 unique portable keys
-    - Blacklist ∩ train:            991 (exact match)
-    - Blacklist ∩ manifest:         991 (exact match)
+    - Blacklist ∩ raw_train:        991 (exact)
     - After blacklist drop:      90,204 samples
+    - BL ∩ post-filter dataset:      0 (all absent)
     - Clean (p >= 0.70):         50,233
     - Rejected (p < 0.70):       39,971
     """
     import json as _json
     import pandas as pd
     from common.manifest_loader import ManifestLoader, portable_image_key
+
+    _IS_NR_COMBINED = (experiment_id == "NR_COMBINED_UPGRADE")
 
     if weight_provider is None:
         audit_logger.warning("No weight_provider — skipping runtime audit")
@@ -318,7 +334,22 @@ def _runtime_manifest_audit(
             f"missing_weight_policy must be 'error', got '{missing_policy}'"
         )
 
-    # ── 1. Dataset portable keys ──────────────────────────────────
+    # ── 0. Raw train keys (pre-blacklist) ─────────────────────────
+    raw_train_keys: set = set()
+    n_raw_train = 0
+    _split_dir = save_dir.parent  # e.g. outputs/oof/<exp>/seed42
+    raw_train_csv = Path("outputs/data/d3_strict/seed42/train.csv")
+    if raw_train_csv.exists():
+        raw_df = pd.read_csv(raw_train_csv)
+        raw_keys_list = [portable_image_key(str(p)) for p in raw_df["image_path"]]
+        raw_train_keys = set(raw_keys_list)
+        n_raw_train = len(raw_train_keys)
+        if len(raw_keys_list) != n_raw_train:
+            raise ValueError(f"Raw train CSV has duplicate portable keys")
+    else:
+        audit_logger.warning("Raw train CSV not found at %s", raw_train_csv)
+
+    # ── 1. Post-filter dataset portable keys ─────────────────────
     ds_samples = getattr(train_dataset, "samples", None)
     ds_labels_list = getattr(train_dataset, "labels", None)
     if ds_samples is None or ds_labels_list is None:
@@ -336,9 +367,13 @@ def _runtime_manifest_audit(
         dup_keys = {k: v for k, v in dup_counts.items() if v > 1}
         raise ValueError(
             f"Dataset contains {len(ds_keys_list) - n_dataset} duplicate "
-            f"portable keys. First 5 duplicates: "
-            f"{list(dup_keys.keys())[:5]}"
+            f"portable keys. First 5: {list(dup_keys.keys())[:5]}"
         )
+
+    # Label map for consistency checks
+    ds_label_map = {}
+    for p, l in zip(ds_samples, ds_labels_list):
+        ds_label_map[portable_image_key(str(p))] = int(l)
 
     # ── 2. Manifest portable keys ──────────────────────────────────
     manifest_csv = getattr(weight_provider, "_loader", None)
@@ -355,144 +390,265 @@ def _runtime_manifest_audit(
     n_manifest = len(mf_keys)
 
     if len(mf_keys_list) != n_manifest:
-        dup_counts = {}
-        for k in mf_keys_list:
-            dup_counts[k] = dup_counts.get(k, 0) + 1
-        dup_keys = {k: v for k, v in dup_counts.items() if v > 1}
-        raise ValueError(
-            f"Manifest contains {len(mf_keys_list) - n_manifest} duplicate "
-            f"portable keys. First 5: {list(dup_keys.keys())[:5]}"
-        )
+        raise ValueError(f"Manifest contains duplicate portable keys")
 
-    # Build manifest lookup dicts (keyed by portable key)
-    mf_p_clean_map: Dict[str, float] = {}
+    # Build manifest lookup dicts
+    mf_label_map = dict(zip(
+        [portable_image_key(str(p)) for p in manifest_df["image_path"]],
+        manifest_df["original_label"].astype(int),
+    ))
+    mf_p_clean_map: dict = {}
     if "p_original_label" in manifest_df.columns:
         for _, row in manifest_df.iterrows():
             key = portable_image_key(str(row["image_path"]))
             val = float(row["p_original_label"])
             if not (0.0 <= val <= 1.0):
-                raise ValueError(
-                    f"p_original_label out of [0,1]: {val} for {key}"
-                )
+                raise ValueError(f"p_original_label out of [0,1]: {val} for {key}")
             if not np.isfinite(val):
-                raise ValueError(
-                    f"p_original_label is not finite: {val} for {key}"
-                )
+                raise ValueError(f"p_original_label is not finite: {val} for {key}")
             mf_p_clean_map[key] = val
-    else:
-        mf_p_clean_map = {}
 
     # ── 3. Global blacklist portable keys ──────────────────────────
     _bl_path = Path("outputs/phase4/global_rejected_paths.txt")
-    if _bl_path.exists():
-        bl_raw = _bl_path.read_text().strip().split("\n")
-        # Filter empty lines
-        bl_raw = [p for p in bl_raw if p.strip()]
-        bl_keys_set = {portable_image_key(p) for p in bl_raw}
-        n_bl = len(bl_keys_set)
-
-        if len(bl_raw) != n_bl:
-            raise ValueError(
-                f"Blacklist contains {len(bl_raw) - n_bl} duplicate "
-                f"portable keys. File: {_bl_path}"
-            )
-
-        if n_bl == 0:
-            raise ValueError(
-                f"Blacklist is empty. File: {_bl_path}"
-            )
-
-        bl_hit_ds = bl_keys_set & ds_keys
-        bl_hit_mf = bl_keys_set & mf_keys
-
-        # Hard gates
-        if n_bl != 991:
-            raise ValueError(
-                f"Blacklist has {n_bl} unique keys (expected 991)."
-            )
-        if len(bl_hit_ds) != 991:
-            raise ValueError(
-                f"Blacklist matches only {len(bl_hit_ds)}/991 in dataset. "
-                f"Missing {991 - len(bl_hit_ds)} keys."
-            )
-        if len(bl_hit_mf) != 991:
-            raise ValueError(
-                f"Blacklist matches only {len(bl_hit_mf)}/991 in manifest. "
-                f"Missing {991 - len(bl_hit_mf)} keys."
-            )
-    else:
+    if not _bl_path.exists():
         raise FileNotFoundError(
             f"Global blacklist not found: {_bl_path}. "
             f"This file is required for all experiments."
         )
-        bl_keys_set = set()
-        n_bl = 0
-        bl_hit_ds = set()
 
-    # ── 4. Post-blacklist consistency ──────────────────────────────
-    # After blacklist is applied, the dataset should equal
-    # (manifest_keys - blacklist_keys).
-    expected_ds = mf_keys - bl_keys_set
-    if ds_keys != expected_ds:
-        missing = expected_ds - ds_keys
-        extra = ds_keys - expected_ds
-        msgs = []
-        if missing:
-            msgs.append(f"{len(missing)} samples in (manifest - BL) but NOT in dataset")
-        if extra:
-            msgs.append(f"{len(extra)} samples in dataset but NOT in (manifest - BL)")
+    bl_raw = [p for p in _bl_path.read_text().strip().split("\n") if p.strip()]
+    bl_keys_set = {portable_image_key(p) for p in bl_raw}
+    n_bl = len(bl_keys_set)
+    if len(bl_raw) != n_bl:
         raise ValueError(
-            "Post-blacklist dataset ≠ manifest − blacklist.\n" + "\n".join(msgs)
+            f"Blacklist contains {len(bl_raw) - n_bl} duplicate portable keys."
         )
+    if n_bl == 0:
+        raise ValueError("Blacklist is empty.")
 
-    # ── 5. Clean / rejected partition (via p_original_label) ───────
+    # ── 4. Cross-checks ────────────────────────────────────────────
+    bl_hit_raw = bl_keys_set & raw_train_keys if raw_train_keys else set()
+    bl_hit_ds = bl_keys_set & ds_keys
+    bl_hit_mf = bl_keys_set & mf_keys
+    missing_from_raw = bl_keys_set - raw_train_keys if raw_train_keys else set()
+    left_in_ds = bl_hit_ds
+
+    # ── 5. Hard gates ──────────────────────────────────────────────
+    if _IS_NR_COMBINED:
+        # NR_COMBINED_UPGRADE fixed contracts
+        if n_raw_train != 91195:
+            raise ValueError(f"Raw train keys: {n_raw_train} (expected 91195)")
+        if n_manifest != 91195:
+            raise ValueError(f"Manifest keys: {n_manifest} (expected 91195)")
+        if n_bl != 991:
+            raise ValueError(f"Blacklist keys: {n_bl} (expected 991)")
+        if len(bl_hit_raw) != 991:
+            raise ValueError(
+                f"Blacklist: {len(bl_hit_raw)}/991 hit raw train. "
+                f"Missing {len(missing_from_raw)} keys."
+            )
+        if len(bl_hit_mf) != 991:
+            raise ValueError(f"Blacklist: {len(bl_hit_mf)}/991 hit manifest.")
+        if len(left_in_ds) != 0:
+            raise ValueError(
+                f"Blacklist: {len(left_in_ds)} rejected samples still in "
+                f"post-filter dataset (expected 0)."
+            )
+        if n_dataset != 90204:
+            raise ValueError(f"Post-filter dataset: {n_dataset} (expected 90204)")
+    else:
+        # Generic checks for other experiments
+        if len(left_in_ds) > 0:
+            raise ValueError(
+                f"{len(left_in_ds)} blacklisted samples remain in dataset."
+            )
+
+    # ── 6. Post-blacklist consistency ─────────────────────────────
+    expected_ds = mf_keys - bl_keys_set  # always compute for audit report
+    if _IS_NR_COMBINED:
+        if ds_keys != expected_ds:
+            missing = expected_ds - ds_keys
+            extra = ds_keys - expected_ds
+            msgs = []
+            if missing:
+                msgs.append(f"{len(missing)} samples in (manifest - BL) but NOT in dataset")
+            if extra:
+                msgs.append(f"{len(extra)} samples in dataset but NOT in (manifest - BL)")
+            raise ValueError(
+                "Post-blacklist dataset ≠ manifest − blacklist.\n" + "\n".join(msgs)
+            )
+    else:
+        # Generic: bidirectional check between dataset and manifest
+        missing_in_manifest = ds_keys - mf_keys
+        extra_in_manifest = mf_keys - ds_keys
+        if missing_in_manifest:
+            raise ValueError(
+                f"{len(missing_in_manifest)} dataset images missing from manifest"
+            )
+        if extra_in_manifest:
+            raise ValueError(
+                f"{len(extra_in_manifest)} manifest images not in dataset"
+            )
+
+    # ── 7. Clean / rejected partition (via p_original_label, when available) ──
     n_clean = 0
     n_rejected = 0
-    for key in ds_keys:
-        p_val = mf_p_clean_map.get(key)
-        if p_val is None:
-            raise KeyError(
-                f"p_original_label missing in manifest for dataset key: {key}"
-            )
-        if p_val >= 0.70:
-            n_clean += 1
-        else:
-            n_rejected += 1
+    _has_p_clean = len(mf_p_clean_map) > 0
+    if _has_p_clean:
+        for key in ds_keys:
+            p_val = mf_p_clean_map.get(key)
+            if p_val is None:
+                raise KeyError(
+                    f"p_original_label missing in manifest for dataset key: {key}"
+                )
+            if p_val >= 0.70:
+                n_clean += 1
+            else:
+                n_rejected += 1
 
-    # ── 6. Audit report ────────────────────────────────────────────
+        if _IS_NR_COMBINED:
+            if n_clean != 50233:
+                raise ValueError(f"Clean count: {n_clean} (expected 50233)")
+            if n_rejected != 39971:
+                raise ValueError(f"Rejected count: {n_rejected} (expected 39971)")
+
+    # ── 8. Label consistency (retained from old audit) ────────────
+    label_mismatches = 0
+    _common_keys = ds_keys & set(mf_label_map.keys())
+    if _common_keys:
+        for key in _common_keys:
+            if ds_label_map.get(key) != mf_label_map.get(key):
+                label_mismatches += 1
+        if label_mismatches > 0:
+            raise ValueError(
+                f"{label_mismatches} original_label mismatches between dataset and manifest"
+            )
+
+    # ── 9. Per-class zero-clean check ──────────────────────────────
+    # Use p_original_label when available; fall back to training_role/sample_weight
+    zero_clean_classes = []
+    _mf_roles = {}
+    if "training_role" in manifest_df.columns:
+        _mf_roles = dict(zip(
+            [portable_image_key(str(p)) for p in manifest_df["image_path"]],
+            manifest_df["training_role"].astype(str),
+        ))
+    _mf_weights = dict(zip(
+        [portable_image_key(str(p)) for p in manifest_df["image_path"]],
+        manifest_df["sample_weight"].astype(float),
+    ))
+
+    class_total = {}
+    class_rejected = {}
+    for key in ds_keys:
+        c = ds_label_map.get(key, 0)
+        class_total[c] = class_total.get(c, 0) + 1
+        is_rejected = False
+        if _has_p_clean:
+            is_rejected = mf_p_clean_map.get(key, 0.0) < 0.70
+        elif _mf_roles:
+            is_rejected = _mf_roles.get(key, "clean") == "rejected"
+        elif _mf_weights:
+            is_rejected = _mf_weights.get(key, 1.0) == 0.0
+        if is_rejected:
+            class_rejected[c] = class_rejected.get(c, 0) + 1
+
+    if class_rejected:
+        zero_clean_classes = sorted(
+            c for c in range(500)
+            if class_total.get(c, 0) > 0
+            and class_rejected.get(c, 0) >= class_total.get(c, 0)
+        )
+        if zero_clean_classes:
+            raise ValueError(
+                f"Classes with zero clean samples after filtering: {zero_clean_classes}"
+            )
+
+    # ── 10. Audit report ──────────────────────────────────────────
     _clean_prob_thresh = getattr(weight_provider, "clean_prob_threshold", None)
     audit = {
-        "train_csv_rows": n_dataset + n_bl,  # original = filtered + blacklisted
-        "manifest_rows": n_manifest,
-        "blacklist_rows": n_bl,
-        "blacklist_hit_dataset": len(bl_hit_ds),
-        "blacklist_hit_manifest": len(bl_hit_mf),
+        "experiment_id": experiment_id,
+        "raw_train_keys": n_raw_train,
+        "manifest_keys": n_manifest,
+        "blacklist_keys": n_bl,
+        "bl_hit_raw_train": len(bl_hit_raw),
+        "bl_hit_manifest": len(bl_hit_mf),
+        "bl_left_in_dataset": len(left_in_ds),
         "dataset_after_blacklist": n_dataset,
         "manifest_minus_bl_equals_dataset": ds_keys == expected_ds,
         "clean_count": n_clean,
         "rejected_count": n_rejected,
         "clean_prob_threshold": _clean_prob_thresh,
-        "duplicate_dataset_keys": len(ds_keys_list) - n_dataset,
-        "duplicate_manifest_keys": len(mf_keys_list) - n_manifest,
-        "duplicate_blacklist_keys": len(bl_raw) - n_bl if _bl_path.exists() else 0,
+        "label_mismatches": label_mismatches,
+        "zero_clean_classes": zero_clean_classes,
     }
-    audit_path = save_dir / "runtime_manifest_audit.json"
+    audit_path = save_dir / "manifest_runtime_audit.json"
+    save_dir.mkdir(parents=True, exist_ok=True)
     audit_path.write_text(_json.dumps(audit, indent=2, default=str))
     audit_logger.info(
-        "Runtime manifest audit: train=%d → post-BL=%d | manifest=%d | BL=%d | "
-        "clean=%d (p≥%.2f) | rejected=%d",
-        audit["train_csv_rows"], n_dataset, n_manifest, n_bl,
+        "Runtime manifest audit PASSED: raw=%d → post-BL=%d | manifest=%d | BL=%d | "
+        "clean=%d (p≥%.2f) | rejected=%d | label_mismatches=%d | zero_clean=%d",
+        n_raw_train, n_dataset, n_manifest, n_bl,
         n_clean, _clean_prob_thresh or 0.0, n_rejected,
+        label_mismatches, len(zero_clean_classes),
     )
     audit_logger.info("Runtime manifest audit written to %s", audit_path)
 
-    # Hard-fail on any count that doesn't match expected
-    if audit["duplicate_dataset_keys"] != 0:
-        raise ValueError("Dataset has duplicate portable keys")
-    if audit["duplicate_manifest_keys"] != 0:
-        raise ValueError("Manifest has duplicate portable keys")
-    if audit["duplicate_blacklist_keys"] != 0:
-        raise ValueError("Blacklist has duplicate portable keys")
+
+def _compare_semantic_signature(
+    child_cfg: dict,
+    parent_cfg: dict,
+    child_id: str,
+    parent_id: str,
+) -> list:
+    """Compare semantic config fields between child and parent checkpoint.
+
+    Returns a list of error message strings (empty = OK).
+    """
+    errors = []
+
+    def _compare(key_path, label, parent_val, child_val):
+        if parent_val is not None and child_val is not None and parent_val != child_val:
+            errors.append(
+                f"{label}: parent={parent_val!r}, child={child_val!r}"
+            )
+
+    # Model section
+    pm = parent_cfg.get("model", {}) if parent_cfg else {}
+    cm = child_cfg.get("model", {})
+    _compare("model.clip_model_name", "CLIP model",
+             pm.get("clip_model_name"), cm.get("clip_model_name"))
+    _compare("model.num_classes", "num_classes",
+             pm.get("num_classes"), cm.get("num_classes"))
+
+    # Head type
+    pe = parent_cfg.get("experiment", {}) if parent_cfg else {}
+    ce = child_cfg.get("experiment", {})
+    _compare("experiment.head_type", "head_type",
+             pe.get("head_type"), ce.get("head_type"))
+
+    # PEFT section (only when child has non-default PEFT)
+    child_peft = child_cfg.get("peft", {})
+    parent_peft = parent_cfg.get("peft", {}) if parent_cfg else {}
+    if child_peft.get("type", "linear_head_only") != "linear_head_only":
+        _compare("peft.type", "PEFT type",
+                 parent_peft.get("type"), child_peft.get("type"))
+        _compare("peft.lora_rank / lora.rank", "LoRA rank",
+                 parent_peft.get("lora_rank") or (parent_peft.get("lora", {}) or {}).get("rank"),
+                 child_peft.get("lora_rank") or (child_peft.get("lora", {}) or {}).get("rank"))
+        _compare("peft.lora_alpha / lora.alpha", "LoRA alpha",
+                 parent_peft.get("lora_alpha") or (parent_peft.get("lora", {}) or {}).get("alpha"),
+                 child_peft.get("lora_alpha") or (child_peft.get("lora", {}) or {}).get("alpha"))
+        _compare("peft.lora_last_n_blocks", "LoRA last_n_blocks",
+                 parent_peft.get("lora_last_n_blocks"),
+                 child_peft.get("lora_last_n_blocks"))
+        _compare("peft.lora_adapt_qv", "LoRA adapt_qv",
+                 parent_peft.get("lora_adapt_qv"),
+                 child_peft.get("lora_adapt_qv"))
+        _compare("peft.lora_adapt_out", "LoRA adapt_out",
+                 parent_peft.get("lora_adapt_out"),
+                 child_peft.get("lora_adapt_out"))
+    return errors
 
 
 def _prepare_fresh_run_artifacts(
@@ -2060,49 +2216,106 @@ def main():
     epoch0_parent_acc = None
     epoch0_delta = None
 
+    # ── Parent lineage placeholder ──
+    _store_lineage = None
+
     # ── Parent checkpoint requirement (fail-closed) ──
     # PEFT types that modify the backbone (visual_lora, last_block_lora)
-    # MUST have a parent checkpoint so that base weights are initialised
-    # from a known-good model rather than random CLIP weights.
+    # MUST have a parent checkpoint for NEW training runs.
+    # Resume runs bypass this gate — the checkpoint already contains
+    # the parent weights baked in.
     _peft_req_parent = peft_type in ("visual_lora", "last_block_lora")
-    if _peft_req_parent and not args.init_checkpoint:
+    if _peft_req_parent and not args.init_checkpoint and not args.resume:
         raise RuntimeError(
             f"PEFT type '{peft_type}' requires --init-checkpoint. "
             f"Refusing to train with random backbone weights. "
-            f"Provide the parent checkpoint path."
+            f"Provide the parent checkpoint path (or use --resume to "
+            f"continue a previous training run)."
         )
 
     # Initialize model weights from checkpoint (no optimizer/scheduler/epoch)
     if args.init_checkpoint:
         init_ckpt_path = args.init_checkpoint
+        import json as _json
 
-        # ── Verify parent checkpoint SHA-256 from artifact manifest ──
+        # ── Verify parent checkpoint (fail-closed) ─────────────────
         _parent_ckpt_sha = _sha256_hex(Path(init_ckpt_path))
         train_logger.info("Parent checkpoint SHA-256: %s", _parent_ckpt_sha)
 
-        # Cross-check against A2 artifact manifest if available
+        # Cross-check against artifact manifest (mandatory for known parents)
         _parent_manifest_path = Path(init_ckpt_path).parent / "artifact_manifest.json"
-        if _parent_manifest_path.exists():
-            import json as _json
-            _parent_manifest = _json.loads(_parent_manifest_path.read_text())
-            _expected_sha = _parent_manifest.get("checkpoint_sha256")
-            if _expected_sha and _expected_sha != _parent_ckpt_sha:
+        if not _parent_manifest_path.exists():
+            raise FileNotFoundError(
+                f"Parent artifact manifest not found: {_parent_manifest_path}. "
+                f"Every checkpoint must have an artifact_manifest.json."
+            )
+        _parent_manifest = _json.loads(_parent_manifest_path.read_text())
+        _parent_exp_id = _parent_manifest.get("experiment_id", "unknown")
+
+        # Verify checkpoint SHA
+        _expected_sha = _parent_manifest.get("checkpoint_sha256")
+        if not _expected_sha:
+            raise RuntimeError(
+                "Parent artifact_manifest.json has no checkpoint_sha256 field."
+            )
+        if _expected_sha != _parent_ckpt_sha:
+            raise RuntimeError(
+                f"Parent checkpoint SHA-256 mismatch!\n"
+                f"  Expected: {_expected_sha}\n"
+                f"  Actual:   {_parent_ckpt_sha}"
+            )
+
+        # ── A2-specific hard-gates ──────────────────────────────────
+        _A2_CKPT_SHA = "74ad2856e4449a42397edbda599ae79e8a4c6a6fa923624ef4e91a35e20a2a4c"
+        _A2_TRAIN_SHA = "646fc7b90b7c244a402f6376d966f40148b5b278dad29cce0c6955c92a1b6666"
+        _A2_VAL_SHA = "607e019165912bb0639efb456b7e8dea122b3e8579a2344dedb8109798921eae"
+
+        if experiment_id == "NR_COMBINED_UPGRADE":
+            if _parent_exp_id != "NR_CL_KNN_DROP":
                 raise RuntimeError(
-                    f"Parent checkpoint SHA-256 mismatch!\n"
-                    f"  Expected (artifact_manifest.json): {_expected_sha}\n"
-                    f"  Actual:                            {_parent_ckpt_sha}\n"
-                    f"  Path: {init_ckpt_path}"
+                    f"NR_COMBINED_UPGRADE requires parent NR_CL_KNN_DROP, "
+                    f"got {_parent_exp_id}"
                 )
-            if _expected_sha:
-                train_logger.info(
-                    "Parent checkpoint SHA-256 verified against artifact_manifest.json"
+            if _parent_ckpt_sha != _A2_CKPT_SHA:
+                raise RuntimeError(
+                    f"NR_COMBINED_UPGRADE requires exact A2 checkpoint.\n"
+                    f"  Expected: {_A2_CKPT_SHA}\n"
+                    f"  Actual:   {_parent_ckpt_sha}"
                 )
+            _parent_train_sha = _parent_manifest.get("train_csv_sha256", "")
+            _parent_val_sha = _parent_manifest.get("val_csv_sha256", "")
+            if _parent_train_sha != _A2_TRAIN_SHA:
+                raise RuntimeError(
+                    f"A2 train CSV SHA mismatch.\n"
+                    f"  Expected: {_A2_TRAIN_SHA}\n"
+                    f"  Actual:   {_parent_train_sha}"
+                )
+            if _parent_val_sha != _A2_VAL_SHA:
+                raise RuntimeError(
+                    f"A2 val CSV SHA mismatch.\n"
+                    f"  Expected: {_A2_VAL_SHA}\n"
+                    f"  Actual:   {_parent_val_sha}"
+                )
+            train_logger.info("A2 parent verification: experiment_id=%s, SHA-256, train/val split — all OK",
+                              _parent_exp_id)
+
+        # ── Semantic signature comparison ────────────────────────────
+        if _init_ckpt_for_peft is not None:
+            _parent_cfg = _init_ckpt_for_peft.get("config", {})
+        else:
+            _parent_ckpt_full = torch.load(init_ckpt_path, map_location=device)
+            _parent_cfg = _parent_ckpt_full.get("config", {})
+        _sem_errs = _compare_semantic_signature(
+            config, _parent_cfg, experiment_id, _parent_exp_id,
+        )
+        if _sem_errs:
+            raise RuntimeError(
+                "Semantic signature mismatch between child config and "
+                "parent checkpoint:\n  " + "\n  ".join(_sem_errs)
+            )
 
         # ── Weight loading (skip if already done pre-PEFT) ──
         if _init_ckpt_for_peft is not None:
-            # Pre-PEFT already loaded weights with strict=True.
-            # After PEFT, LoRA parameters are new (zero-init) → B@A = 0,
-            # so the model is functionally identical to the parent.
             checkpoint = _init_ckpt_for_peft
             train_logger.info(
                 "Weights already loaded pre-PEFT (strict=True); "
@@ -2129,9 +2342,7 @@ def main():
                 )
 
             if not missing_keys and not unexpected_keys:
-                train_logger.info(
-                    "Model weights loaded with exact key match."
-                )
+                train_logger.info("Model weights loaded with exact key match.")
             else:
                 train_logger.warning(
                     f"Model weight load had {len(missing_keys)} missing, "
@@ -2145,6 +2356,18 @@ def main():
         # ── Parent-child split lineage audit ─────────────────────
         _run_init_checkpoint_audit(args, config, init_ckpt_path, checkpoint,
                                    train_logger)
+
+        # ── Write parent lineage ──────────────────────────────────
+        _lineage = {
+            "parent_experiment_id": _parent_exp_id,
+            "parent_checkpoint_path": str(init_ckpt_path),
+            "parent_checkpoint_sha256": _parent_ckpt_sha,
+            "parent_train_csv_sha256": _parent_manifest.get("train_csv_sha256", ""),
+            "parent_val_csv_sha256": _parent_manifest.get("val_csv_sha256", ""),
+            "parent_best_val_acc": _parent_manifest.get("best_val_acc"),
+        }
+        train_logger.info("Parent lineage: %s", _json.dumps(_lineage, indent=2))
+        _store_lineage = _lineage  # saved to eval_results later
 
         # ── Epoch-0 validation gate ──────────────────────────────
         if val_loader is not None:
@@ -2418,6 +2641,7 @@ def main():
         train_dataset, weight_provider, mode,
         Path(config["train"]["save_dir"]),
         train_logger,
+        experiment_id=experiment_id,
         reject_policy=_reject_policy,
     )
 
@@ -2823,6 +3047,7 @@ def main():
             "early_stopped": early_stopped,
             "stopped_at_epoch": epoch if early_stopped else None,
             "init_checkpoint": args.init_checkpoint,
+            "parent_lineage": _store_lineage,
             "epoch0_val_acc": epoch0_val_acc,
             "epoch0_val_loss": epoch0_val_loss,
             "parent_best_val_acc": epoch0_parent_acc,

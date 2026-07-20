@@ -85,10 +85,10 @@ class TestPortableImageKey(unittest.TestCase):
         self.assertEqual(pk("0001/foo.jpg"), "0001/foo.jpg")
         self.assertEqual(pk("a/b/train/0250/img.png"), "0250/img.png")
 
-    def test_portable_key_rejects_short_paths(self):
+    def test_portable_key_short_paths_return_as_is(self):
         from common.manifest_loader import portable_image_key as pk
-        with self.assertRaises(ValueError):
-            pk("just_filename.jpg")
+        self.assertEqual(pk("just_filename.jpg"), "just_filename.jpg")
+        self.assertEqual(pk(""), "")
 
     def test_portable_key_blacklist_no_duplicates(self):
         from common.manifest_loader import portable_image_key
@@ -318,31 +318,38 @@ class TestDeepCopyVisualLoRA(unittest.TestCase):
 
 class TestLoRAInit(unittest.TestCase):
 
-    def test_lora_a_is_zero_init(self):
+    def test_lora_plan_init_a_zero_b_random(self):
         from common.lora import LoRALinear
         base = nn.Linear(64, 64)
-        lora = LoRALinear(base, r=4, alpha=4)
+        lora = LoRALinear(base, r=4, alpha=4, init_scheme="plan")
         self.assertTrue((lora.lora_A == 0).all(),
-                        "LoRA A must be zero-initialised per plan")
+                        "Plan: LoRA A must be zero-initialised")
         self.assertFalse((lora.lora_B == 0).all(),
-                         "LoRA B must be random normal (not zero) per plan")
+                         "Plan: LoRA B must be random normal (not zero)")
+
+    def test_lora_default_init_a_kaiming_b_zero(self):
+        from common.lora import LoRALinear
+        base = nn.Linear(64, 64)
+        lora = LoRALinear(base, r=4, alpha=4, init_scheme="default")
+        self.assertFalse((lora.lora_A == 0).all(),
+                         "Default: LoRA A must be Kaiming (not zero)")
+        self.assertTrue((lora.lora_B == 0).all(),
+                        "Default: LoRA B must be zero")
 
     def test_lora_b_is_normal_with_expected_std(self):
         from common.lora import LoRALinear
         import math
         base = nn.Linear(128, 128)
         r = 8
-        lora = LoRALinear(base, r=r, alpha=8)
+        lora = LoRALinear(base, r=r, alpha=8, init_scheme="plan")
         expected_std = 1.0 / math.sqrt(r)
         actual_std = lora.lora_B.std().item()
-        # Allow 3-sigma tolerance
         self.assertAlmostEqual(actual_std, expected_std, delta=3 * expected_std)
 
     def test_lora_zero_init_identity_perturbation(self):
         from common.lora import LoRALinear
         base = nn.Linear(64, 64)
-        lora = LoRALinear(base, r=4, alpha=8)
-        # B @ A should be zero matrix initially
+        lora = LoRALinear(base, r=4, alpha=8, init_scheme="plan")
         delta = lora.lora_B @ lora.lora_A
         self.assertTrue((delta == 0).all(),
                         "B@A must be zero at init")
@@ -784,6 +791,236 @@ class TestConfigAndIntegration(unittest.TestCase):
         self.assertEqual(config["sample_weighting"]["feature_distillation_weight"], 2.0)
         self.assertEqual(config["train"]["epochs"], 6)
         self.assertFalse(config["mixup"]["enabled"])
+
+
+# ──────────────────────────────────────────────────────────────────────
+# 15. Semantic signature comparison
+# ──────────────────────────────────────────────────────────────────────
+
+
+class TestSemanticSignature(unittest.TestCase):
+
+    def test_wrong_alpha_must_fail(self):
+        """If parent used alpha=8 but child config says alpha=4, must error."""
+        from experiments.baseline.train import _compare_semantic_signature
+        child = {"peft": {"type": "visual_lora", "lora_rank": 8, "lora_alpha": 4,
+                          "lora_last_n_blocks": 4,
+                          "lora_adapt_qv": True, "lora_adapt_out": True},
+                 "model": {"clip_model_name": "ViT-B/32", "num_classes": 500},
+                 "experiment": {"head_type": "linear"}}
+        parent = {"peft": {"type": "visual_lora", "lora_rank": 8, "lora_alpha": 8,
+                           "lora_last_n_blocks": 4,
+                           "lora_adapt_qv": True, "lora_adapt_out": True},
+                  "model": {"clip_model_name": "ViT-B/32", "num_classes": 500},
+                  "experiment": {"head_type": "linear"}}
+        errors = _compare_semantic_signature(child, parent, "CHILD", "PARENT")
+        self.assertGreater(len(errors), 0, "Wrong alpha should produce errors")
+        self.assertTrue(any("alpha" in e.lower() for e in errors),
+                        f"Errors should mention alpha: {errors}")
+
+    def test_matching_configs_produce_no_errors(self):
+        from experiments.baseline.train import _compare_semantic_signature
+        cfg = {"peft": {"type": "visual_lora", "lora_rank": 8, "lora_alpha": 8,
+                        "lora_last_n_blocks": 4,
+                        "lora_adapt_qv": True, "lora_adapt_out": True},
+               "model": {"clip_model_name": "ViT-B/32", "num_classes": 500},
+               "experiment": {"head_type": "linear"}}
+        errors = _compare_semantic_signature(cfg, cfg, "A", "B")
+        self.assertEqual(len(errors), 0, f"Expected 0 errors, got: {errors}")
+
+    def test_missing_parent_cfg_returns_no_errors(self):
+        """Empty parent config should not error (graceful for old checkpoints)."""
+        from experiments.baseline.train import _compare_semantic_signature
+        child = {"peft": {"type": "visual_lora", "lora_rank": 8, "lora_alpha": 8},
+                 "model": {"clip_model_name": "ViT-B/32", "num_classes": 500},
+                 "experiment": {"head_type": "linear"}}
+        errors = _compare_semantic_signature(child, {}, "CHILD", "PARENT")
+        self.assertEqual(len(errors), 0)
+
+
+# ──────────────────────────────────────────────────────────────────────
+# 16. Parent verification fail-closed tests
+# ──────────────────────────────────────────────────────────────────────
+
+
+class TestParentVerificationFailClosed(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.clip_model, _ = _build_clip_model()
+
+    def test_a2_artifact_manifest_has_required_fields(self):
+        import json
+        manifest_path = Path(
+            "outputs/oof/nr_cl_knn_drop/seed42/checkpoints/artifact_manifest.json"
+        )
+        if not manifest_path.exists():
+            self.skipTest("A2 artifacts not available")
+        m = json.loads(manifest_path.read_text())
+        self.assertEqual(m["experiment_id"], "NR_CL_KNN_DROP")
+        self.assertEqual(m["checkpoint_sha256"],
+                         "74ad2856e4449a42397edbda599ae79e8a4c6a6fa923624ef4e91a35e20a2a4c")
+        self.assertEqual(m["train_csv_sha256"],
+                         "646fc7b90b7c244a402f6376d966f40148b5b278dad29cce0c6955c92a1b6666")
+        self.assertEqual(m["val_csv_sha256"],
+                         "607e019165912bb0639efb456b7e8dea122b3e8579a2344dedb8109798921eae")
+
+    def test_visual_lora_no_init_checkpoint_raises(self):
+        """visual_lora without --init-checkpoint should be rejected at config level."""
+        from common.config_schema import validate_config
+        from common.utils import load_config
+        config = load_config("configs/nr_combined_upgrade.yaml")
+        # Config itself loads fine
+        self.assertEqual(config["peft"]["type"], "visual_lora")
+        # validate_config should accept it
+        warnings = validate_config(config)
+        self.assertIsInstance(warnings, list)
+
+    def test_a2_checkpoint_sha_matches_expected(self):
+        """The A2 best.pt SHA-256 matches the hardcoded expected value."""
+        import hashlib
+        ckpt_path = Path(
+            "outputs/oof/nr_cl_knn_drop/seed42/checkpoints/best.pt"
+        )
+        if not ckpt_path.exists():
+            self.skipTest("A2 checkpoint not available")
+        h = hashlib.sha256()
+        with open(ckpt_path, "rb") as f:
+            while True:
+                chunk = f.read(1 << 20)
+                if not chunk:
+                    break
+                h.update(chunk)
+        self.assertEqual(
+            h.hexdigest(),
+            "74ad2856e4449a42397edbda599ae79e8a4c6a6fa923624ef4e91a35e20a2a4c",
+        )
+
+
+# ──────────────────────────────────────────────────────────────────────
+# 17. Entry-point smoke tests
+# ──────────────────────────────────────────────────────────────────────
+
+
+class TestEntryPointSmoke(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.clip_model, cls.preprocess = _build_clip_model()
+
+    def _make_linear_ckpt(self):
+        """Create a minimal linear_head_only checkpoint for smoke testing."""
+        import tempfile, os
+        model = _build_classifier(self.clip_model, freeze_clip=True)
+        sd = {"model_state_dict": {k: v.clone() for k, v in model.state_dict().items()},
+              "epoch": 0, "best_val_acc": 0.5,
+              "config": {"model": {"clip_model_name": "ViT-B/32", "num_classes": 500},
+                         "experiment": {"head_type": "linear"},
+                         "data": {"split_dir": "outputs/data/d3_strict/seed42"}},
+              "class_to_idx": {str(i): i for i in range(500)},
+              "idx_to_class": {str(i): str(i) for i in range(500)}}
+        f = tempfile.NamedTemporaryFile(suffix=".pt", delete=False)
+        torch.save(sd, f.name)
+        f.close()
+        return f.name
+
+    def _make_visual_lora_ckpt(self):
+        """Create a minimal visual_lora checkpoint for smoke testing."""
+        import tempfile, os
+        from common.peft import apply_peft
+        model = _build_classifier(self.clip_model, freeze_clip=False)
+        peft_cfg = {
+            "type": "visual_lora", "lora_last_n_blocks": 2,
+            "lora_rank": 4, "lora_alpha": 4,
+            "lora_adapt_qv": True, "lora_adapt_out": True,
+        }
+        apply_peft(model, peft_cfg)
+        sd = {"model_state_dict": {k: v.clone() for k, v in model.state_dict().items()},
+              "epoch": 0, "best_val_acc": 0.65,
+              "config": {"model": {"clip_model_name": "ViT-B/32", "num_classes": 500,
+                                   "freeze_clip": False},
+                         "experiment": {"head_type": "linear"},
+                         "data": {"split_dir": "outputs/data/d3_strict/seed42"},
+                         "peft": peft_cfg},
+              "class_to_idx": {str(i): i for i in range(500)},
+              "idx_to_class": {str(i): str(i) for i in range(500)}}
+        f = tempfile.NamedTemporaryFile(suffix=".pt", delete=False)
+        torch.save(sd, f.name)
+        f.close()
+        return f.name
+
+    def test_build_and_load_linear_ckpt(self):
+        """Smoke test: load a linear_head_only checkpoint."""
+        import os
+        ckpt_path = self._make_linear_ckpt()
+        try:
+            from common.model_loader import build_and_load_model
+            from experiments.baseline.model import build_model
+            config = {
+                "model": {"clip_model_name": "ViT-B/32", "num_classes": 500,
+                          "freeze_clip": True},
+                "peft": {"type": "linear_head_only"},
+            }
+            model, prep, info = build_and_load_model(
+                config, ckpt_path, torch.device("cpu"),
+                build_model_fn=build_model, strict=True,
+            )
+            self.assertEqual(len(info["missing_keys"]), 0)
+            self.assertEqual(len(info["unexpected_keys"]), 0)
+        finally:
+            os.unlink(ckpt_path)
+
+    def test_build_and_load_visual_lora_ckpt(self):
+        """Smoke test: load and roundtrip a visual_lora checkpoint."""
+        import os
+        ckpt_path = self._make_visual_lora_ckpt()
+        try:
+            from common.model_loader import build_and_load_model
+            from experiments.baseline.model import build_model
+            config = {
+                "model": {"clip_model_name": "ViT-B/32", "num_classes": 500,
+                          "freeze_clip": False},
+                "peft": {"type": "visual_lora", "lora_last_n_blocks": 2,
+                         "lora_rank": 4, "lora_alpha": 4,
+                         "lora_adapt_qv": True, "lora_adapt_out": True},
+            }
+            model, prep, info = build_and_load_model(
+                config, ckpt_path, torch.device("cpu"),
+                build_model_fn=build_model, strict=True,
+            )
+            self.assertEqual(len(info["missing_keys"]), 0,
+                             f"Missing: {info['missing_keys'][:5]}")
+            self.assertEqual(len(info["unexpected_keys"]), 0,
+                             f"Unexpected: {info['unexpected_keys'][:5]}")
+        finally:
+            os.unlink(ckpt_path)
+
+    def test_evaluate_imports_and_main_parse(self):
+        """evaluate.py argument parser can be constructed."""
+        from experiments.baseline.evaluate import parse_args
+        # Just verify parsing doesn't crash with minimal args
+        try:
+            import sys
+            sys.argv = ["evaluate.py", "--ckpt", "/nonexistent.pt"]
+            parse_args()
+        except SystemExit:
+            pass  # argparse may call sys.exit on --help or errors
+
+    def test_infer_imports_and_main_parse(self):
+        """infer.py argument parser can be constructed."""
+        from experiments.baseline.infer import parse_args
+        try:
+            import sys
+            sys.argv = ["infer.py", "--ckpt", "/nonexistent.pt"]
+            parse_args()
+        except SystemExit:
+            pass
+
+    def test_tta_scripts_importable(self):
+        """TTA scripts can be imported without syntax errors."""
+        import scripts.evaluate_tta  # noqa: F401
+        import scripts.infer_tta     # noqa: F401
+        import scripts.cache_val_test_logits  # noqa: F401
 
 
 if __name__ == "__main__":

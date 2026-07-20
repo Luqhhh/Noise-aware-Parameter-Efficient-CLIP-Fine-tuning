@@ -435,7 +435,8 @@ class _QKVLoRAPatchedAttention(nn.Module):
 
         # ── out_proj: optionally wrap with LoRA ──────────────────
         if adapt_out and isinstance(orig_attn.out_proj, nn.Linear):
-            self.out_proj = LoRALinear(orig_attn.out_proj, r=r, alpha=alpha)
+            self.out_proj = LoRALinear(orig_attn.out_proj, r=r, alpha=alpha,
+                                       init_scheme="plan")
         else:
             self.out_proj = orig_attn.out_proj
 
@@ -462,9 +463,11 @@ class _QKVLoRAPatchedAttention(nn.Module):
             k_linear.weight.data.copy_(k_base)
             v_linear.weight.data.copy_(v_base)
 
-            self.q_proj = LoRALinear(q_linear, r=r, alpha=alpha)
+            self.q_proj = LoRALinear(q_linear, r=r, alpha=alpha,
+                                       init_scheme="plan")
             self.k_proj = k_linear        # plain nn.Linear, frozen
-            self.v_proj = LoRALinear(v_linear, r=r, alpha=alpha)
+            self.v_proj = LoRALinear(v_linear, r=r, alpha=alpha,
+                                       init_scheme="plan")
 
             # Store in_proj_bias as a registered buffer
             if has_bias:

@@ -332,8 +332,8 @@ def main():
         "correct_samples_baseline": results["correct_samples_baseline"],
         "correct_samples_tta": results["correct_samples_tta"],
         "checkpoint": str(ckpt_path),
-        "checkpoint_epoch": checkpoint.get("epoch"),
-        "checkpoint_best_val_acc": float(checkpoint.get("best_val_acc", -1.0)),
+        "checkpoint_epoch": load_info.get("checkpoint_epoch"),
+        "checkpoint_best_val_acc": float(load_info.get("parent_best_val_acc", -1.0)),
         "config": str(Path(args.config).resolve()),
         "tta_strategy": args.tta,
     }

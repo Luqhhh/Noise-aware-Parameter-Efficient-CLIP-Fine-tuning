@@ -34,6 +34,11 @@ class LoRALinear(nn.Module):
         r: Rank of the low-rank decomposition.
         alpha: Scaling factor (output is scaled by alpha / r).
         dropout: Dropout probability on the LoRA path (0 = disabled).
+        init_scheme: Initialisation scheme.
+            ``"default"`` — A ∼ Kaiming-uniform, B = 0 (historical).
+            ``"plan"``   — A = 0, B ∼ N(0, 1/√r) (NR_COMBINED_UPGRADE plan).
+            Both give B @ A = 0 at step 0, so the adapter is an identity
+            perturbation.
     """
 
     def __init__(
@@ -42,6 +47,7 @@ class LoRALinear(nn.Module):
         r: int = 4,
         alpha: int = 8,
         dropout: float = 0.0,
+        init_scheme: str = "default",
     ):
         super().__init__()
         self.base = base
@@ -69,10 +75,20 @@ class LoRALinear(nn.Module):
         self.lora_B = nn.Parameter(
             torch.zeros(out_features, r, device=param_device, dtype=param_dtype)
         )
-        # Zero-init for A, normal-init for B (plan: A=0, B~N(0,σ²)).
-        # B @ A = 0 at step 0 → identity perturbation, matching parent.
-        nn.init.zeros_(self.lora_A)
-        nn.init.normal_(self.lora_B, std=1.0 / math.sqrt(max(r, 1)))
+
+        if init_scheme == "plan":
+            # Plan: A=0, B~N(0, 1/√r)
+            nn.init.zeros_(self.lora_A)
+            nn.init.normal_(self.lora_B, std=1.0 / math.sqrt(max(r, 1)))
+        elif init_scheme == "default":
+            # Historical: A ∼ Kaiming-uniform, B = 0
+            nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
+            nn.init.zeros_(self.lora_B)
+        else:
+            raise ValueError(
+                f"Unknown init_scheme: {init_scheme!r}. "
+                f"Use 'default' or 'plan'."
+            )
 
         self.lora_dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
         self._merged = False
@@ -108,7 +124,9 @@ class LoRALinear(nn.Module):
         if self._merged:
             return F.linear(x, self.base.weight, self.base.bias)
 
-        result = F.linear(x, self.weight, self.bias)
+        # Base linear transform (frozen weight)
+        result = F.linear(x, self.base.weight, self.base.bias)
+        # LoRA path: dropout → A → B → scale
         lora_out = self.lora_dropout(x) @ self.lora_A.T @ self.lora_B.T * self.scaling
         return result + lora_out
 

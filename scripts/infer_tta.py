@@ -111,6 +111,7 @@ def main():
     logger.info(f"Device: {device}")
 
     # Build model → apply PEFT → strict-load checkpoint
+    from experiments.baseline.model import build_model
     from common.model_loader import build_and_load_model
 
     model, preprocess, load_info = build_and_load_model(
@@ -121,13 +122,14 @@ def main():
     model.eval()
     logger.info(f"Loaded checkpoint epoch {load_info.get('checkpoint_epoch')}")
 
-    checkpoint = torch.load(args.checkpoint, map_location=device)
-    idx_to_class = checkpoint.get("idx_to_class")
+    # Load checkpoint metadata for idx_to_class (lightweight re-read)
+    _ckpt_meta = torch.load(args.checkpoint, map_location=device)
+    idx_to_class = _ckpt_meta.get("idx_to_class")
     if idx_to_class is None:
         import json as _json
         with open(Path(config["data"]["split_dir"]) / "idx_to_class.json") as f:
             idx_to_class = _json.load(f)
-    logger.info(f"Loaded checkpoint epoch {ckpt.get('epoch')}")
+    logger.info(f"Checkpoint epoch: {_ckpt_meta.get('epoch')}")
 
     use_amp = config["train"].get("amp", False)
     test_dir = config["data"]["test_dir"]
@@ -159,7 +161,7 @@ def main():
         "experiment_id": "TA1_TTA_FLIP",
         "checkpoint": args.checkpoint,
         "checkpoint_sha256": ckpt_sha,
-        "checkpoint_epoch": ckpt.get("epoch"),
+        "checkpoint_epoch": _ckpt_meta.get("epoch"),
         "tta_strategy": args.tta,
         "num_predictions": len(list(open(results_path))),
         "fallback_images": fallback,
