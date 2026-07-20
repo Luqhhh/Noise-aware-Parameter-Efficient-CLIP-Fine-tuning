@@ -319,6 +319,11 @@ def _runtime_manifest_audit_premodel(
     split_dir = config.get("data", {}).get("split_dir", "")
     train_csv_path = Path(split_dir) / "train.csv"
     if not train_csv_path.exists():
+        if _IS_NR_COMBINED:
+            raise FileNotFoundError(
+                f"Train CSV not found: {train_csv_path}. "
+                f"NR_COMBINED_UPGRADE requires this file for pre-model audit."
+            )
         audit_logger.warning("Train CSV not found at %s — skipping pre-model audit",
                              train_csv_path)
         return True
@@ -364,6 +369,20 @@ def _runtime_manifest_audit_premodel(
     bl_hit_mf = bl_keys & mf_keys
     post_bl = raw_keys - bl_keys
     n_post = len(post_bl)
+
+    # Mandatory: manifest - blacklist must equal post-filter train
+    _mf_minus_bl = mf_keys - bl_keys
+    if _mf_minus_bl != post_bl:
+        missing = _mf_minus_bl - post_bl
+        extra = post_bl - _mf_minus_bl
+        msgs = []
+        if missing:
+            msgs.append(f"{len(missing)} keys in (manifest-BL) but not in post-filter train")
+        if extra:
+            msgs.append(f"{len(extra)} keys in post-filter train but not in (manifest-BL)")
+        raise ValueError(
+            "manifest − blacklist ≠ post-filter train.\n" + "\n".join(msgs)
+        )
 
     # ── Hard gates ────────────────────────────────────────────────
     if _IS_NR_COMBINED:
