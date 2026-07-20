@@ -8,8 +8,8 @@ data:
   train_csv: ../artifacts/stages/preliminary/seed42/train.csv
   val_csv: ../artifacts/stages/preliminary/seed42/val.csv
   class_mapping: ../artifacts/stages/preliminary/seed42/class_to_idx.json
-  train_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/train
-  test_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/test
+  train_root: ../../../train
+  test_root: ../../../test
   external_data: false
   test_usage: inference_only
   expected_official_train_samples: 103218
