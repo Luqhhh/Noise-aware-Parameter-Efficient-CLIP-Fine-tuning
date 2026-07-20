@@ -30,7 +30,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from common.manifest_loader import canonical_image_path
+from common.manifest_loader import canonical_image_path, portable_image_key
 
 logger = logging.getLogger(__name__)
 
@@ -256,6 +256,12 @@ class OOFManifestProvider(BaseWeightProvider):
 
     Uses ``ManifestLoader`` for fail-closed validation.  The manifest must
     have 100% coverage and all ``sample_weight`` values in [0, 1].
+
+    When *clean_prob_threshold* is set, the provider uses the
+    ``p_original_label`` column to make a binary clean / rejected decision
+    for each sample and overrides the weight accordingly (1.0 for clean,
+    0.0 for rejected).  Rejected samples participate only in feature
+    distillation, not in the supervised classification loss.
     """
 
     def __init__(
@@ -264,6 +270,7 @@ class OOFManifestProvider(BaseWeightProvider):
         min_weight: float = 0.3,
         max_weight: float = 1.0,
         missing_policy: str = "error",
+        clean_prob_threshold: Optional[float] = None,
     ):
         from common.manifest_loader import ManifestLoader
 
@@ -278,20 +285,49 @@ class OOFManifestProvider(BaseWeightProvider):
 
         self._weights: Dict[str, float] = {}
         self._training_labels: Dict[str, int] = {}
+        self._is_clean: Dict[str, bool] = {}
         self._warned_missing: bool = False
         self._missing = missing_policy
+        self._clean_prob_threshold = clean_prob_threshold
+
+        # Validate p_original_label column when clean_prob_threshold is used
+        if clean_prob_threshold is not None:
+            if "p_original_label" not in df.columns:
+                raise ValueError(
+                    "clean_prob_threshold requires 'p_original_label' column "
+                    "in the OOF manifest, but it was not found. "
+                    f"Available columns: {list(df.columns)}"
+                )
+            if not (0.0 < clean_prob_threshold <= 1.0):
+                raise ValueError(
+                    f"clean_prob_threshold must be in (0, 1], "
+                    f"got {clean_prob_threshold}"
+                )
+
+        n_clean = 0
+        n_rejected = 0
         for _, row in df.iterrows():
             raw_path = str(row["image_path"])
-            key = canonical_image_path(raw_path)
+            key = portable_image_key(raw_path)
             w = float(row["sample_weight"])
             w = max(min_weight, min(max_weight, w))
             self._weights[key] = w
             # Weight-only mode: keep original label
             self._training_labels[key] = int(row["original_label"])
 
+            if clean_prob_threshold is not None:
+                p_clean = float(row["p_original_label"])
+                clean = p_clean >= clean_prob_threshold
+                self._is_clean[key] = clean
+                if clean:
+                    n_clean += 1
+                    self._weights[key] = 1.0  # full supervision
+                else:
+                    n_rejected += 1
+                    self._weights[key] = 0.0  # distillation only
+
         self._min_weight = min_weight
         self._max_weight = max_weight
-        self._missing = missing_policy
         self._manifest_sha256 = self._loader.sha256
 
         w_vals = np.array(list(self._weights.values()))
@@ -303,12 +339,20 @@ class OOFManifestProvider(BaseWeightProvider):
             float(w_vals.mean()), float(np.median(w_vals)),
             self._manifest_sha256[:16],
         )
+        if clean_prob_threshold is not None:
+            logger.info(
+                "OOFManifestProvider: clean_prob_threshold=%.2f → "
+                "clean=%d (%.1f%%), rejected=%d (%.1f%%)",
+                clean_prob_threshold,
+                n_clean, 100.0 * n_clean / max(len(self._weights), 1),
+                n_rejected, 100.0 * n_rejected / max(len(self._weights), 1),
+            )
 
     def get_weights(self, sample_paths, labels, epoch, per_sample_loss=None):
         w_vals = []
         missing = []
         for p in sample_paths:
-            entry = self._weights.get(canonical_image_path(p))
+            entry = self._weights.get(portable_image_key(p))
             if entry is None:
                 if self._missing == "error":
                     raise KeyError(f"OOF weight missing for: {p}")
@@ -342,12 +386,38 @@ class OOFManifestProvider(BaseWeightProvider):
 
         return torch.tensor(w_vals, device=labels.device, dtype=torch.float32)
 
+    def get_clean_mask(self, sample_paths: list) -> torch.Tensor:
+        """Return a boolean mask: True for clean samples, False for rejected.
+
+        Rejected samples participate only in feature distillation.
+        When *clean_prob_threshold* is None, all samples are treated as clean.
+        """
+        if self._clean_prob_threshold is None:
+            return torch.ones(len(sample_paths), dtype=torch.bool)
+
+        mask = []
+        for p in sample_paths:
+            key = portable_image_key(p)
+            clean = self._is_clean.get(key, True)  # default clean if missing
+            mask.append(clean)
+        return torch.tensor(mask, dtype=torch.bool)
+
+    def uses_clean_prob_filter(self) -> bool:
+        """Return True if clean-probability filtering is active."""
+        return self._clean_prob_threshold is not None
+
+    @property
+    def clean_prob_threshold(self) -> Optional[float]:
+        """The configured clean-probability threshold, or None."""
+        return self._clean_prob_threshold
+
     def get_training_label(self, image_path: str, original_label: int) -> int:
         """Return the training label for a sample.
 
         For weight-only manifests, returns *original_label* unchanged.
         """
-        return self._training_labels.get(image_path, original_label)
+        key = portable_image_key(image_path)
+        return self._training_labels.get(key, original_label)
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -859,6 +929,7 @@ def build_weight_provider(config: dict, num_train_samples: int = 0) -> BaseWeigh
             min_weight=sw.get("min_weight", 0.3),
             max_weight=sw.get("max_weight", 1.0),
             missing_policy=sw.get("missing_weight_policy", "error"),
+            clean_prob_threshold=sw.get("clean_prob_threshold"),
         )
 
     if sw_type == "oof_soft_targets":

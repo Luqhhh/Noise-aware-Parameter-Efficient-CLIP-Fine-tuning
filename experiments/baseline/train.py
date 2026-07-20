@@ -20,6 +20,7 @@ Usage:
 """
 
 import argparse
+import copy
 import json
 import logging
 import math
@@ -591,6 +592,8 @@ def _build_optimizer_and_scheduler(
             model, peft_cfg,
             head_lr=train_cfg["lr"],
             head_weight_decay=train_cfg["weight_decay"],
+            backbone_lr=train_cfg.get("backbone_lr"),
+            backbone_weight_decay=train_cfg.get("backbone_weight_decay"),
         )
         optimizer = torch.optim.AdamW(param_groups)
     elif hasattr(model, "get_param_groups"):
@@ -761,6 +764,41 @@ def _apply_sample_weights(
     return (loss_per_sample * w).mean()
 
 
+def _compute_feature_distill_loss(
+    model: nn.Module,
+    feature_distill,
+    inputs: torch.Tensor,
+    paths: tuple,
+    weight_provider,
+    device: torch.device,
+) -> Optional[torch.Tensor]:
+    """Compute feature distillation loss for rejected samples only.
+
+    Returns None if no rejected samples are in the batch.
+    """
+    # Get clean mask: clean samples already have supervised loss;
+    # only rejected samples participate in feature distillation.
+    if not hasattr(weight_provider, "get_clean_mask"):
+        return None
+    clean_mask = weight_provider.get_clean_mask(list(paths)).to(device)
+
+    rejected_mask = ~clean_mask
+    if not rejected_mask.any():
+        return None  # no rejected samples in this batch
+
+    # Student features (with LoRA gradients)
+    student_feat = model.encode_image(inputs)
+
+    # Parent features (frozen, no_grad already enforced by FeatureDistillation)
+    parent_feat = feature_distill.get_parent_features(inputs)
+
+    # Compute cosine-distance loss only on rejected samples
+    return feature_distill.compute_loss(
+        student_feat[rejected_mask],
+        parent_feat[rejected_mask],
+    )
+
+
 def _forward_inputs(
     model: nn.Module,
     inputs: torch.Tensor,
@@ -825,11 +863,15 @@ def train_one_epoch(
     teacher_hook=None,
     mixup_cfg: Optional[Dict[str, Any]] = None,
     elr_hook=None,
+    feature_distill=None,
+    feat_distill_weight: float = 0.0,
 ) -> tuple:
     """Train for one epoch.
 
     Args:
         sample_weights: Optional dict[image_path -> {"weight": float}].
+        feature_distill: Optional ``FeatureDistillation`` instance.
+        feat_distill_weight: Scalar λ for feature distillation loss.
 
     Returns:
         Tuple of (avg_loss, accuracy, global_step, head_grad_norm,
@@ -945,6 +987,16 @@ def train_one_epoch(
                         elr_loss = elr_hook.compute_loss(paths, logits)
                         loss = loss + elr_w * elr_loss
 
+                # ── Feature distillation (visual_lora + clean filter) ──
+                if feature_distill is not None and feat_distill_weight > 0 \
+                        and not mixup_applied and paths is not None:
+                    _fd_loss = _compute_feature_distill_loss(
+                        model, feature_distill, inputs, paths,
+                        weight_provider, device,
+                    )
+                    if _fd_loss is not None:
+                        loss = loss + feat_distill_weight * _fd_loss
+
             old_scale = scaler.get_scale()
             scaler.scale(loss).backward()
 
@@ -1023,6 +1075,16 @@ def train_one_epoch(
                     if elr_w > 0:
                         elr_loss = elr_hook.compute_loss(paths, logits)
                         loss = loss + elr_w * elr_loss
+
+                # ── Feature distillation (visual_lora + clean filter) ──
+                if feature_distill is not None and feat_distill_weight > 0 \
+                        and not mixup_applied and paths is not None:
+                    _fd_loss = _compute_feature_distill_loss(
+                        model, feature_distill, inputs, paths,
+                        weight_provider, device,
+                    )
+                    if _fd_loss is not None:
+                        loss = loss + feat_distill_weight * _fd_loss
 
             loss.backward()
 
@@ -1510,11 +1572,29 @@ def main():
     train_logger.info(f"Total parameters:     {total_params:,}")
     train_logger.info(f"Trainable parameters: {trainable_params:,}")
 
+    # ── Pre-PEFT weight initialisation (--init-checkpoint) ──
+    # Parent weights MUST be loaded BEFORE PEFT is applied so that
+    # LoRA wrappers (which replace nn.Linear layers) capture the
+    # correct parent base weights.  With zero-init LoRA, the model
+    # remains output-identical to the parent after PEFT.
+    _peft_cfg = config.get("peft", {})
+    _peft_type = _peft_cfg.get("type", "linear_head_only")
+    _init_ckpt_for_peft = None
+    if args.init_checkpoint and _peft_type != "linear_head_only":
+        _init_ckpt = torch.load(args.init_checkpoint, map_location=device)
+        _init_state = _init_ckpt.get("model_state_dict", _init_ckpt)
+        _missing, _unexpected = model.load_state_dict(_init_state, strict=True)
+        _init_ckpt_for_peft = _init_ckpt  # keep for epoch-0 gate later
+        train_logger.info(
+            "Pre-PEFT weight init: loaded %d keys from %s (strict=True)",
+            len(_init_state), args.init_checkpoint,
+        )
+
     # ── PEFT configuration ──
     # Apply after model building; overrides manual freeze/unfreeze.
     # Only non-default PEFT types trigger reconfiguration.
-    peft_cfg = config.get("peft", {})
-    peft_type = peft_cfg.get("type", "linear_head_only")
+    peft_cfg = _peft_cfg
+    peft_type = _peft_type
     peft_info = None
     if peft_type != "linear_head_only":
         peft_info = apply_peft(model, peft_cfg)
@@ -1729,14 +1809,18 @@ def main():
     # ── Global blacklist: always exclude A2 kNN-consensus rejected paths ──
     # The 991 samples identified by CL + OOF + kNN triple consensus as
     # mislabeled are permanently excluded from all future experiments.
+    # Uses portable_image_key (class_dir/filename) so the blacklist is
+    # machine-independent — no absolute-path coupling to a specific
+    # workstation's directory layout.
     _global_blacklist = Path("outputs/phase4/global_rejected_paths.txt")
     if _global_blacklist.exists():
-        from common.manifest_loader import canonical_image_path as _gcanon
-        _blacklist = set(_global_blacklist.read_text().strip().split("\n"))
+        from common.manifest_loader import portable_image_key as _pkey
+        _blacklist_raw = _global_blacklist.read_text().strip().split("\n")
+        _blacklist = set(_pkey(p) for p in _blacklist_raw)
         _old_n = len(train_dataset)
         _keep = [
             i for i, p in enumerate(train_dataset.samples)
-            if _gcanon(str(p)) not in _blacklist
+            if _pkey(str(p)) not in _blacklist
         ]
         train_dataset.samples = [train_dataset.samples[i] for i in _keep]
         train_dataset.labels = [train_dataset.labels[i] for i in _keep]
@@ -1763,13 +1847,18 @@ def main():
                 "DataLoader rebuilt: %d batches (after global blacklist)",
                 len(train_loader),
             )
+        else:
+            train_logger.warning(
+                "Global blacklist: zero samples matched! Blacklist may be "
+                "stale or use incompatible path format. Expected 991 rejects."
+            )
 
     # ── Reject policy: physically drop rejected samples from dataset ──
     sw_cfg_pre = config.get("sample_weighting", {})
     reject_policy = sw_cfg_pre.get("reject_policy", "weight_zero")
     if reject_policy == "drop":
         import pandas as _pd
-        from common.manifest_loader import canonical_image_path as _canon
+        from common.manifest_loader import portable_image_key as _pkey2
 
         _manifest_path = sw_cfg_pre.get("manifest_path")
         if not _manifest_path:
@@ -1791,12 +1880,12 @@ def main():
             )
         _rejected_paths = set(
             _mf[_rejected_mask]["image_path"]
-            .astype(str).map(_canon)
+            .astype(str).map(_pkey2)
         )
         _old_n = len(train_dataset)
         _keep = []
         for _i, _p in enumerate(train_dataset.samples):
-            if _canon(str(_p)) not in _rejected_paths:
+            if _pkey2(str(_p)) not in _rejected_paths:
                 _keep.append(_i)
         train_dataset.samples = [train_dataset.samples[_i] for _i in _keep]
         train_dataset.labels = [train_dataset.labels[_i] for _i in _keep]
@@ -1979,32 +2068,46 @@ def main():
     # Initialize model weights from checkpoint (no optimizer/scheduler/epoch)
     if args.init_checkpoint:
         init_ckpt_path = args.init_checkpoint
-        train_logger.info(
-            f"Initializing model weights from: {init_ckpt_path}"
-        )
-        checkpoint = torch.load(init_ckpt_path, map_location=device)
-        model_state = checkpoint.get("model_state_dict", checkpoint)
 
-        missing_keys, unexpected_keys = model.load_state_dict(
-            model_state, strict=False
-        )
-
-        if missing_keys:
-            train_logger.warning(f"Missing keys ({len(missing_keys)}): {missing_keys}")
-        if unexpected_keys:
-            train_logger.warning(
-                f"Unexpected keys ({len(unexpected_keys)}): {unexpected_keys}"
-            )
-
-        if not missing_keys and not unexpected_keys:
+        # ── Weight loading (skip if already done pre-PEFT) ──
+        if _init_ckpt_for_peft is not None:
+            # Pre-PEFT already loaded weights with strict=True.
+            # After PEFT, LoRA parameters are new (zero-init) → B@A = 0,
+            # so the model is functionally identical to the parent.
+            checkpoint = _init_ckpt_for_peft
             train_logger.info(
-                "Model weights loaded with exact key match."
+                "Weights already loaded pre-PEFT (strict=True); "
+                "skipping redundant load_state_dict."
             )
         else:
-            train_logger.warning(
-                f"Model weight load had {len(missing_keys)} missing, "
-                f"{len(unexpected_keys)} unexpected keys."
+            train_logger.info(
+                f"Initializing model weights from: {init_ckpt_path}"
             )
+            checkpoint = torch.load(init_ckpt_path, map_location=device)
+            model_state = checkpoint.get("model_state_dict", checkpoint)
+
+            missing_keys, unexpected_keys = model.load_state_dict(
+                model_state, strict=False
+            )
+
+            if missing_keys:
+                train_logger.warning(
+                    f"Missing keys ({len(missing_keys)}): {missing_keys}"
+                )
+            if unexpected_keys:
+                train_logger.warning(
+                    f"Unexpected keys ({len(unexpected_keys)}): {unexpected_keys}"
+                )
+
+            if not missing_keys and not unexpected_keys:
+                train_logger.info(
+                    "Model weights loaded with exact key match."
+                )
+            else:
+                train_logger.warning(
+                    f"Model weight load had {len(missing_keys)} missing, "
+                    f"{len(unexpected_keys)} unexpected keys."
+                )
 
         # Do NOT load optimizer state — fresh training from epoch 1
         # Do NOT load scheduler state
@@ -2125,6 +2228,60 @@ def main():
             elr_cfg.get("warmup_epochs", 10),
             elr_cfg.get("ramp_epochs", 10),
             num_train_samples,
+        )
+
+    # ── Feature distillation setup (after model weights are finalised) ──
+    # Builds a frozen parent model from the same CLIP backbone (no LoRA,
+    # no classifier training) to anchor visual features via cosine-distance
+    # penalty.  Only active when sample_weighting contains
+    # feature_distillation_weight > 0 and a clean_prob_threshold is set.
+    feature_distill = None
+    feat_distill_weight = config.get("sample_weighting", {}).get(
+        "feature_distillation_weight", 0.0
+    )
+    if feat_distill_weight > 0:
+        from common.feature_distillation import FeatureDistillation as _FD
+        from .model import CLIPLinearClassifier as _CLS
+        from .model import build_model as _build
+
+        # Build a fresh frozen parent: same CLIP weights, no LoRA, no PEFT
+        _parent_cfg = copy.deepcopy(config)
+        _parent_cfg["model"]["freeze_clip"] = True
+        _parent_model, _ = _build(_parent_cfg, device)
+        # Load parent weights from the same init checkpoint
+        if args.init_checkpoint:
+            _parent_ckpt = torch.load(args.init_checkpoint, map_location=device)
+            _parent_state = _parent_ckpt.get("model_state_dict", _parent_ckpt)
+            # Filter out classifier keys (child may have different head dims)
+            _parent_keys = {
+                k: v for k, v in _parent_state.items()
+                if "classifier" not in k
+            }
+            _missing, _unexpected = _parent_model.load_state_dict(
+                _parent_keys, strict=False,
+            )
+            if _missing:
+                train_logger.info(
+                    "Distill parent: %d missing keys (expected — no classifier)",
+                    len(_missing),
+                )
+        else:
+            train_logger.warning(
+                "Feature distillation active but no --init-checkpoint provided; "
+                "parent model uses random CLIP weights — distillation will be "
+                "meaningless."
+            )
+
+        # Freeze and eval
+        for _p in _parent_model.parameters():
+            _p.requires_grad_(False)
+        _parent_model.eval()
+
+        feature_distill = _FD(_parent_model)
+        train_logger.info(
+            "Feature distillation enabled: λ=%.1f, parent=%s",
+            feat_distill_weight,
+            "init-checkpoint" if args.init_checkpoint else "random (WARNING)",
         )
 
     # Resume if requested
@@ -2269,6 +2426,8 @@ def main():
             teacher_hook=teacher_hook,
             mixup_cfg=config.get("mixup") if config.get("mixup", {}).get("enabled", False) else None,
             elr_hook=elr_hook,
+            feature_distill=feature_distill,
+            feat_distill_weight=feat_distill_weight,
         )
 
         # Validate (skip if no val_loader, e.g., final_fit)

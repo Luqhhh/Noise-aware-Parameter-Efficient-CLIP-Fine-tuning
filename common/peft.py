@@ -38,6 +38,7 @@ KNOWN_PEFT_TYPES = {
     "ln_post_and_proj",
     "visual_layernorm_only",
     "last_block_lora",
+    "visual_lora",
 }
 
 
@@ -99,6 +100,9 @@ def apply_peft(
     elif peft_type == "last_block_lora":
         lora_layers = _apply_last_block_lora(model, peft_cfg)
 
+    elif peft_type == "visual_lora":
+        lora_layers = _apply_visual_lora(model, peft_cfg)
+
     # ── Step 4: audit ──────────────────────────────────────────────────
     trainable_names = [
         name for name, p in model.named_parameters() if p.requires_grad
@@ -131,6 +135,8 @@ def build_peft_param_groups(
     peft_cfg: Dict[str, Any],
     head_lr: float,
     head_weight_decay: float,
+    backbone_lr: Optional[float] = None,
+    backbone_weight_decay: Optional[float] = None,
 ) -> List[dict]:
     """Build optimizer parameter groups from PEFT config.
 
@@ -140,12 +146,17 @@ def build_peft_param_groups(
     - ``ln_post_and_proj``: [head, backbone]
     - ``visual_layernorm_only``: [head, backbone]
     - ``last_block_lora``: [head, lora]
+    - ``visual_lora``: [head, lora]
 
     Args:
         model: PEFT-configured model.
         peft_cfg: PEFT config dict.
         head_lr: Learning rate for the classifier head.
         head_weight_decay: Weight decay for the classifier head.
+        backbone_lr: Learning rate for backbone/LoRA parameters
+            (used by ``visual_lora``; for other types the LR is read
+            from *peft_cfg*).
+        backbone_weight_decay: Weight decay for backbone/LoRA parameters.
 
     Returns:
         List of param group dicts, each with keys: name, params, lr, weight_decay.
@@ -165,7 +176,7 @@ def build_peft_param_groups(
     }]
 
     if peft_type in ("ln_post_and_proj", "visual_layernorm_only"):
-        backbone_lr = peft_cfg.get("backbone_lr", 1e-5)
+        backbone_lr_val = peft_cfg.get("backbone_lr", 1e-5)
         backbone_wd = peft_cfg.get("backbone_weight_decay", 0.01)
         backbone_params = [
             p for n, p in model.named_parameters()
@@ -175,7 +186,7 @@ def build_peft_param_groups(
             groups.append({
                 "name": "backbone",
                 "params": backbone_params,
-                "lr": backbone_lr,
+                "lr": backbone_lr_val,
                 "weight_decay": backbone_wd,
             })
 
@@ -191,6 +202,26 @@ def build_peft_param_groups(
                 "params": lora_params,
                 "lr": lora_lr,
                 "weight_decay": 0.0,  # LoRA typically uses no weight decay
+            })
+
+    elif peft_type == "visual_lora":
+        # LoRA LR from backbone_lr arg (plan-specified), fallback to peft_cfg
+        if backbone_lr is not None:
+            lora_lr = backbone_lr
+        else:
+            lora_lr = peft_cfg.get("lora", {}).get("lora_lr", 1e-5)
+        lora_wd = backbone_weight_decay if backbone_weight_decay is not None else 0.0
+
+        lora_params = [
+            p for n, p in model.named_parameters()
+            if p.requires_grad and "lora_" in n
+        ]
+        if lora_params:
+            groups.append({
+                "name": "lora",
+                "params": lora_params,
+                "lr": lora_lr,
+                "weight_decay": lora_wd,
             })
 
     # Log groups
@@ -287,6 +318,184 @@ def _apply_last_block_lora(model: nn.Module, peft_cfg: dict) -> list:
     )
 
     return lora_layers
+
+
+def _apply_visual_lora(model: nn.Module, peft_cfg: dict) -> list:
+    """Apply LoRA to the last N transformer blocks' attention projections.
+
+    Targets Q, V (via fused ``in_proj_weight`` split) and ``out_proj``
+    according to the config flags.  LoRA is initialised so that the
+    effective weight at step 0 equals the parent weight (zero-init B).
+
+    Config keys (all under the ``peft`` section):
+
+    - ``lora_last_n_blocks``: int (default 4) — number of final blocks to adapt.
+    - ``lora_rank``: int (default 8).
+    - ``lora_alpha``: int (default 8).
+    - ``lora_adapt_qv``: bool (default True) — adapt Q and V projections.
+    - ``lora_adapt_out``: bool (default True) — adapt output projection.
+    """
+    from common.lora import LoRALinear
+
+    n_last = peft_cfg.get("lora_last_n_blocks", 4)
+    r = peft_cfg.get("lora_rank", 8)
+    alpha = peft_cfg.get("lora_alpha", 8)
+    adapt_qv = peft_cfg.get("lora_adapt_qv", True)
+    adapt_out = peft_cfg.get("lora_adapt_out", True)
+
+    blocks = model.visual.transformer.resblocks
+    num_blocks = len(blocks)
+
+    if n_last > num_blocks:
+        raise ValueError(
+            f"lora_last_n_blocks ({n_last}) exceeds total blocks ({num_blocks})"
+        )
+    start_block = num_blocks - n_last
+
+    all_lora_layers: list = []
+
+    for block_idx in range(start_block, num_blocks):
+        block = blocks[block_idx]
+        attn = block.attn
+
+        # ── out_proj: standard LoRALinear ──────────────────────────
+        if adapt_out:
+            if not isinstance(attn.out_proj, nn.Linear):
+                logger.warning(
+                    "Block %d attn.out_proj is %s, not nn.Linear; skipping.",
+                    block_idx, type(attn.out_proj).__name__,
+                )
+            else:
+                lora_out = LoRALinear(attn.out_proj, r=r, alpha=alpha)
+                attn.out_proj = lora_out
+                all_lora_layers.append(lora_out)
+                logger.info(
+                    "LoRA out_proj: block %d/%d (r=%d, alpha=%d)",
+                    block_idx, num_blocks, r, alpha,
+                )
+
+        # ── Q / V: split fused in_proj_weight ──────────────────────
+        if adapt_qv:
+            _patch_attn_for_qv_lora(attn, block_idx, num_blocks, r, alpha, all_lora_layers)
+
+    return all_lora_layers
+
+
+def _patch_attn_for_qv_lora(
+    attn: nn.Module,
+    block_idx: int,
+    num_blocks: int,
+    r: int,
+    alpha: int,
+    collector: list,
+):
+    """Patch a CLIP MultiheadAttention to use separate Q/K/V Linear
+    projections, applying LoRA to Q and V only.
+
+    Replaces the fused ``in_proj_weight`` / ``in_proj_bias`` parameters
+    with three independent ``nn.Linear`` layers and overrides
+    ``forward`` to call ``F.multi_head_attention_forward`` with
+    ``use_separate_proj_weight=True``.
+
+    The original K projection is preserved without LoRA.  Q and V are
+    wrapped with ``LoRALinear`` (zero-init B).
+    """
+    from common.lora import LoRALinear
+    import torch.nn.functional as F
+
+    embed_dim = attn.embed_dim
+    device = attn.in_proj_weight.device
+    dtype = attn.in_proj_weight.dtype
+
+    # ── Extract Q, K, V weights from fused parameter ────────────
+    fused_w = attn.in_proj_weight.data  # [3*embed_dim, embed_dim]
+    q_w = fused_w[:embed_dim, :].clone()
+    k_w = fused_w[embed_dim:2 * embed_dim, :].clone()
+    v_w = fused_w[2 * embed_dim:, :].clone()
+
+    has_bias = attn.in_proj_bias is not None
+    q_b = k_b = v_b = None
+    if has_bias:
+        fused_b = attn.in_proj_bias.data
+        q_b = fused_b[:embed_dim].clone()
+        k_b = fused_b[embed_dim:2 * embed_dim].clone()
+        v_b = fused_b[2 * embed_dim:].clone()
+
+    # ── Create separate nn.Linear for Q, K, V ───────────────────
+    q_proj = nn.Linear(embed_dim, embed_dim, bias=has_bias).to(
+        device=device, dtype=dtype,
+    )
+    k_proj = nn.Linear(embed_dim, embed_dim, bias=has_bias).to(
+        device=device, dtype=dtype,
+    )
+    v_proj = nn.Linear(embed_dim, embed_dim, bias=has_bias).to(
+        device=device, dtype=dtype,
+    )
+
+    q_proj.weight.data.copy_(q_w)
+    k_proj.weight.data.copy_(k_w)
+    v_proj.weight.data.copy_(v_w)
+    if has_bias:
+        q_proj.bias.data.copy_(q_b)
+        k_proj.bias.data.copy_(k_b)
+        v_proj.bias.data.copy_(v_b)
+
+    # ── Apply LoRA to Q and V ───────────────────────────────────
+    lora_q = LoRALinear(q_proj, r=r, alpha=alpha)
+    lora_v = LoRALinear(v_proj, r=r, alpha=alpha)
+    # K is left unadapted (plan: Q/V only)
+
+    # ── Store on attention module ───────────────────────────────
+    attn._qkv_lora_q = lora_q
+    attn._qkv_lora_v = lora_v
+    attn._qkv_k_proj = k_proj
+    attn._qkv_has_bias = has_bias
+
+    # Freeze K (PEFT has already frozen all params; K stays frozen)
+    for p in k_proj.parameters():
+        p.requires_grad_(False)
+
+    collector.extend([lora_q, lora_v])
+
+    # ── Replace forward ─────────────────────────────────────────
+    _orig_forward = attn.forward
+
+    def _lora_forward(
+        query, key, value, key_padding_mask=None,
+        need_weights=True, attn_mask=None,
+    ):
+        """Patched forward using separate Q/K/V projections with LoRA."""
+        # Only operate on query (self-attention in CLIP ViT)
+        return F.multi_head_attention_forward(
+            query, key, value,
+            attn.embed_dim, attn.num_heads,
+            attn.in_proj_weight,       # not used when use_separate_proj_weight=True
+            attn.in_proj_bias,         # not used
+            attn.bias_k, attn.bias_v,
+            attn.add_zero_attn,
+            attn.dropout,
+            attn.out_proj.weight,
+            attn.out_proj.bias,
+            training=attn.training,
+            key_padding_mask=key_padding_mask,
+            need_weights=need_weights,
+            attn_mask=attn_mask,
+            use_separate_proj_weight=True,
+            q_proj_weight=lora_q.weight,       # LoRA-modified Q weight
+            k_proj_weight=k_proj.weight,       # original K weight (frozen)
+            v_proj_weight=lora_v.weight,       # LoRA-modified V weight
+        )
+
+    attn.forward = _lora_forward
+
+    # Keep reference to prevent garbage collection
+    attn._qkv_lora_orig_forward = _orig_forward
+
+    logger.info(
+        "LoRA Q/V: block %d/%d (r=%d, alpha=%d) — "
+        "fused in_proj_weight split; Q/V adapted, K frozen",
+        block_idx, num_blocks, r, alpha,
+    )
 
 
 # ── Audit utilities ─────────────────────────────────────────────────────

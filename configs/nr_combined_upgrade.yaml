@@ -1,0 +1,109 @@
+# NR_COMBINED_UPGRADE: A2 baseline + visual LoRA + clean filter + feature distillation
+#
+# Parent: A2 NR_CL_KNN_DROP checkpoint (TTA 61.21%)
+# Strategy: frozen CLIP backbone → inject LoRA (block 8-11, rank=8, Q/V/out) →
+#           clean-prob filter (≥0.70) → feature distillation on rejected samples.
+#
+# Run:
+#   python3 -m experiments.baseline.train \
+#     --config configs/nr_combined_upgrade.yaml \
+#     --experiment-id NR_COMBINED_UPGRADE \
+#     --mode dev --augmentation-preset a0 \
+#     --init-checkpoint outputs/oof/nr_cl_knn_drop/seed42/checkpoints/best.pt
+
+experiment:
+  id: NR_COMBINED_UPGRADE
+  mode: dev
+  head_type: linear
+  augmentation_preset: a0
+
+data:
+  stage: preliminary
+  image_extensions: [.jpg, .jpeg, .png, .bmp, .webp]
+  seed: 42
+  split_seed: 42
+  train_seed: 42
+  split_dir: outputs/data/d3_strict/seed42
+  test_dir: test
+  train_dir: train
+  val_ratio: 0.1
+  expected_num_classes: 500
+  class_mapping_path: outputs/data/master_splits/seed42
+  use_full_training_set: false
+
+model:
+  clip_model_name: ViT-B/32
+  feature_dim: 512
+  freeze_clip: false          # LoRA needs trainable backbone
+  num_classes: 500
+  use_cached_features: false
+  unfreeze_last_n_blocks: 0
+  train_ln_post: false
+  train_visual_proj: false
+
+peft:
+  type: visual_lora
+  lora_last_n_blocks: 4       # blocks 8-11
+  lora_rank: 8
+  lora_alpha: 8
+  lora_adapt_qv: true
+  lora_adapt_out: true
+
+loss:
+  name: gce
+  q: 0.5
+  probability_epsilon: 1.0e-7
+
+mixup:
+  enabled: false               # no MixUp for LoRA training
+
+sample_weighting:
+  type: oof_manifest
+  manifest_path: outputs/phase/phase3/oof/oof_zero_weight_manifest_thresh0.001.csv
+  min_weight: 0.0
+  max_weight: 1.0
+  missing_weight_policy: error
+  clean_prob_threshold: 0.70
+  feature_distillation_weight: 2.0
+
+eval:
+  batch_size: 256
+
+output:
+  log_dir: outputs/oof/nr_combined_upgrade/seed42/logs
+  submission_dir: outputs/oof/nr_combined_upgrade/seed42/submissions
+
+train:
+  amp: true
+  batch_size: 64
+  device: cuda
+  epochs: 6
+  image_size: 224
+  lr: 5.0e-5                   # head LR
+  backbone_lr: 2.0e-5            # LoRA LR (plan-specified authority)
+  warmup_epochs: 1
+  max_grad_norm: 1.0
+  num_workers: 4
+  save_dir: outputs/oof/nr_combined_upgrade/seed42/checkpoints
+  scheduler: cosine
+  weight_decay: 0.0001           # head weight decay
+  backbone_weight_decay: 0.0     # LoRA weight decay
+  min_lr_ratio: 0.01
+  early_stop_patience: 0         # no early stop (only 6 epochs)
+  pin_memory: true
+
+runtime:
+  experiment_id: NR_COMBINED_UPGRADE
+  mode: dev
+  augmentation_preset: a0
+  head_type: linear
+  use_cached_features: false
+
+head_ema:
+  enabled: false
+
+teacher:
+  enabled: false
+
+cache:
+  enabled: false

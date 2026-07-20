@@ -27,6 +27,28 @@ def canonical_image_path(value: str) -> str:
     return str(Path(value).expanduser().resolve())
 
 
+def portable_image_key(value: str) -> str:
+    """Return a machine-independent key: ``class_dir/filename``.
+
+    Extracts the last two path components — the class directory and the
+    image filename — which are invariant across machines, base-directory
+    conventions (``train/`` vs ``train_dedup/``), and absolute-path
+    prefixes.
+
+    Raises:
+        ValueError: If the path has fewer than two components.
+    """
+    p = Path(value)
+    parts = p.parts
+    if len(parts) < 2:
+        raise ValueError(
+            f"Path has fewer than two components; cannot extract "
+            f"class_dir/filename from: {value!r}"
+        )
+    # Last two components are always class_dir/filename
+    return str(Path(parts[-2]) / parts[-1])
+
+
 REQUIRED_COLUMNS = [
     "sample_id",
     "image_path",
