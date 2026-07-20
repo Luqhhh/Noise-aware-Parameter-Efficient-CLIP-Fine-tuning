@@ -35,9 +35,12 @@ logger = logging.getLogger("gate")
 CONFIG_PATH = "configs/nr_combined_upgrade.yaml"
 A2_CKPT = "outputs/oof/nr_cl_knn_drop/seed42/checkpoints/best.pt"
 A2_SHA = "74ad2856e4449a42397edbda599ae79e8a4c6a6fa923624ef4e91a35e20a2a4c"
-GIT_HEAD = "a989932"
-
-results = {"gate_commit": GIT_HEAD, "parent_sha": A2_SHA, "checks": {}}
+# Read actual Git HEAD at runtime — never hardcode
+import subprocess as _sp
+_GIT_HEAD = _sp.check_output(
+    ["git", "rev-parse", "HEAD"], text=True
+).strip()
+results = {"gate_commit": _GIT_HEAD, "parent_sha": A2_SHA, "checks": {}}
 
 
 def sha256_file(path):
@@ -438,7 +441,7 @@ results["checks"]["no_amp_overflow"] = True
 _bool_checks = {k: v for k, v in results["checks"].items() if isinstance(v, bool)}
 results["gate_passed"] = all(_bool_checks.values())
 logger.info("=" * 60)
-logger.info("GATE RESULT: %s", "PASSED" if results["gate_passed"] else "FAILED")
+logger.info("GATE RESULT: %s  (commit=%s)", "PASSED" if results["gate_passed"] else "FAILED", _GIT_HEAD[:7])
 logger.info("Checks: %s", json.dumps(results["checks"], indent=2))
 logger.info("=" * 60)
 
