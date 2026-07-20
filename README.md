@@ -58,27 +58,30 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - `test_metric_consistency.py`（7 tests）：micro-macro gap 一致性、bottom-10% 计算
 - `test_submission_manifest.py`（18 tests）：SHA-256 哈希、ZIP vs CSV hash 区分、标签格式、预测计数、重复登记拒绝、manifest schema
 
-### 6. 平台结果总览（updated 2026-07-19 15:00）
+### 6. 平台结果总览（updated 2026-07-20）
 
 **Top TTA 分数：**
 
-| 实验 | 平台分数 | vs ref (D3) | 推理策略 |
+| 实验 | 平台 TTA | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
-| **NR_CL_KNN_DROP (A2, kNN consensus drop)** | **61.21%** | **+3.87pp** | 2-view Flip TTA |
+| **NR_CL_KNN_DROP (A2, kNN consensus drop, seed=42)** | **61.21%** | **+3.87pp** | 2-view Flip TTA |
 | AEGIS F1 (visual LoRA, clean≥0.7, distill) | 61.10% | +3.76pp | Flip mean-prob T=0.5 |
 | s_oof_zero_0001_ff (OOF zero p<0.001, final_fit) | 60.51% | +3.17pp | 2-view Flip TTA |
 | S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5) | 60.48% | +3.14pp | 2-view Flip TTA |
 | w1_gce05_mixup (MixUp + GCE q=0.5) | 60.36% | +3.02pp | 2-view Flip TTA |
+| **NR_CL_KNN_DROP (A2, seed=3407)** | **60.31%** | **+2.97pp** | 2-view Flip TTA |
 | nr_ctrl_fixed (A0, reject_policy=drop) | 60.31% | +3.03pp | 2-view Flip TTA |
 | s_oof_zero_0001 (OOF zero-weight p<0.001) | 60.28% | +2.94pp | 2-view Flip TTA |
 | w1_ce5_gce05 (CE5 warmup + GCE q=0.5) | 60.25% | +2.91pp | 2-view Flip TTA |
 | robust_lora (LoRA rank=8, last_block) | 60.24% | +2.90pp | 2-view Flip TTA |
 | b2_gce05 (纯 GCE q=0.5) | 60.16% | +2.82pp | 2-view Flip TTA |
 | s_oof_zero_001 (OOF zero-weight p<0.01) | 59.92% | +2.58pp | 2-view Flip TTA |
+| **NR_CONSENSUS_RELABEL_V2 (A3, 5-signal relabel 100)** | **59.89%** | **+2.55pp** | 2-view Flip TTA |
+| **NR_CL_CLASSWISE_DROP (A1, classwise drop 8680)** | **59.55%** | **+2.21pp** | 2-view Flip TTA |
 
 **Top Bare 分数：**
 
-| 实验 | 平台分数 | vs ref (D3) | 推理策略 |
+| 实验 | 平台 Bare | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
 | **AEGIS F1 (visual LoRA, clean≥0.7, distill)** | **60.52%** | **+3.18pp** | 单视图 |
 | s_oof_zero_0001_ff (OOF zero p<0.001, final_fit) | 60.29% | +2.95pp | 单视图 |
@@ -87,19 +90,39 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | w1_gce05_mixup (MixUp + GCE q=0.5) | 59.86% | +2.52pp | 单视图 |
 | s_d3_mixup (GCE q=0.5 + MixUp, d3 control) | 59.86% | +2.52pp | 单视图 |
 
+**Noise-Robust 消融矩阵（Wave A）：**
+
+| 实验 | 操作 | 样本 | Bare | TTA | vs A0 TTA | 判定 |
+|------|------|------|------|------|-----------|------|
+| A0 `NR_CTRL_FIXED` | p<0.001 零权重 | 6,354 (7%) | 59.90% | 60.31% | — | 对照基线 |
+| **A2** `NR_CL_KNN_DROP` | 三方共识删除 | 991 (1.1%) | **60.64%** | **61.21%** | **+0.90** | ✅ 最佳冻结 |
+| A3 `NR_CONSENSUS_RELABEL` | 5-signal relabel | 100 (0.1%) | — | 59.89% | −0.42 | ❌ 关闭 |
+| A1 `NR_CL_CLASSWISE_DROP` | CL classwise 删除 | 8,680 (9.5%) | — | 59.55% | −0.76 | ❌ 关闭 |
+
+> **注意**：A1 和 A3 均在全局黑名单引入前完成训练，即 991 个三方共识确认错标样本仍以 weight=1.0 参与训练。但即使补上黑名单，relabel 100 个或低精度删除 8680 个带来的边际增益也大概率淹没在噪声里。
+
+**多 seed 稳定性：**
+
+| 实验 | seed | 本地 Val | 平台 TTA | Paired Delta vs s42 |
+|------|------|----------|----------|---------------------|
+| A2 | 42 | 69.44% | **61.21%** | — |
+| A2 | 3407 | 69.39% | **60.31%** | −0.07pp (p=0.457) |
+
+> A2 多 seed 稳定性确认：本地 paired delta 仅 7 张图差异（p=0.457），但平台 TTA 波动达 0.90pp。说明 seed=42 的 61.21% 有运气成分，A2 方法的合理期望约 60.76%（两 seed 平均）。所有后续实验必须跑双 seed 验证。
+
 **基线定义：**
-- **平台 Bare 最佳**：AEGIS F1 = **60.52%**（visual LoRA rank-8, clean filter, 首个突破 60.5%）
-- **平台 TTA 最佳**：AEGIS F1 + Flip TTA = **61.10%**（首个突破 61%）
+- **平台 Bare 最佳**：AEGIS F1 = **60.52%**（visual LoRA rank-8, clean filter）
+- **平台 TTA 最佳**：A2 seed=42 = **61.21%**（frozen CLIP + GCE q=0.5 + MixUp + kNN consensus drop）
+- **最佳冻结合理期望**：约 60.76% TTA（A2 两 seed 平均）
 - **训练基线**：s_d3_mixup (GCE q=0.5 + MixUp, d3_strict) —— 所有 OOF 实验的配对对照
 
-**核心发现：**
-- **OOF zero-weight 有效**：p<0.001 阈值排除 7% 最低置信度样本，平台 Bare 59.96% (+0.10pp vs MixUp control)，本地低但平台反超——OOF 预测本身比本地 val 更可靠
-- **阈值敏感**：p<0.01 排除 12% 样本效果更差（TTA 59.92% vs 60.28%），过度排除损失有用数据
-- **OOF discrete（3-tier）无效**：TTA = Bare（59.28%），zero gain，已关闭
-- CE warmup 本地 +3.65pp 但平台 Bare 完全持平（59.61% vs 59.62%），本地分数无法预测平台表现
-- MixUp 是唯一将本地增益传递到平台的 baseline 方法
-- Horizontal-flip TTA 持续提供 +0.3-0.5pp 平台增益
-- 冻结 CLIP + 线性头框架下，平台天花板约 60-61%，目前最佳 Bare 59.96%
+**核心发现（2026-07-20 修订）：**
+- **Purification 精度 > 覆盖面**：删 991 个高精度样本 > 删 6354 个中精度 > 删 8680 个低精度。精度碾压数量。
+- **删除 > 重标**：A3 五信号共识 relabel 100 个样本（0.1%）反而有害（−0.42pp）。OOF 预测准确率 ~69% 不足以支撑可靠重标。当你确定标签错了但不确定正确答案时，删除比重标更安全。
+- **冻结 CLIP + GCE + MixUp 上限已触达**：A0→A2 本地 paired delta 仅 +17 张图（0.165pp, p=0.196），平台天花板 ~60.5-61% TTA。Purification 的边际增益已饱和。
+- **单 seed 不可靠**：A2 seed=42 TTA 61.21% vs seed=3407 TTA 60.31% = 0.90pp 波动。所有候选必须在 seed=3407 上验证后才能宣称收益。
+- **本地 val 与平台持续反相关**：A3 本地最高（69.47%）平台最差（59.89%）。本地分数不能用于模型选择。
+- **突破上限的唯一出路是 visual LoRA PEFT**：AEGIS F1 证明了在干净监督上 LoRA 能贡献 ~0.6pp bare。下一步 = A2 parent + LoRA + feature distillation。
 
 ### 7. 本地评估与待完成
 
@@ -107,50 +130,27 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | Experiment | Local Micro | Local Macro | Best Epoch | Platform Bare | Platform TTA |
 |---|---|---|---|---|---|
-| w1_ce5_gce05（CE5 warmup） | 73.14% | 73.09% | 50 | 59.61% | 60.25% |
-| s_peft/e2_ln_5e7 | 71.21% | — | 1 | — | — |
-| w1_gce05_mixup（MixUp） | 71.16% | 71.12% | 46 | 59.86% | 60.36% |
-| ref（D3_STRICT） | 70.66% | 70.61% | 49 | 57.34% | 58.31% |
-| s_mixup_ce5（warmup+MixUp） | 70.25% | 70.19% | 43 | 59.70% | **60.48%** |
-| gce_q07（B2_GCE07） | 69.59% | 69.53% | 41 | 58.96% | 59.41% |
-| b2_gce05（GCE q=0.5） | 69.49% | 69.49% | 50 | 59.62% | 60.16% |
+| **A2** `NR_CL_KNN_DROP` | 69.44% | 69.45% | 48 | **60.64%** | **61.21%** |
+| **A2** `NR_CL_KNN_DROP` seed=3407 | 69.39% | 69.40% | 43 | — | **60.31%** |
+| **A3** `NR_CONSENSUS_RELABEL_V2` | 69.47% | 69.47% | 40 | — | **59.89%** |
+| **A1** `NR_CL_CLASSWISE_DROP` | 68.61% | 68.61% | 45 | — | **59.55%** |
+| **A0** `nr_ctrl_fixed` (reject_policy=drop) | 69.33% | — | 50 | 59.90% | 60.31% |
 | s_d3_mixup（MixUp d3 control） | 69.47% | 69.47% | 40 | 59.86% | — |
 | s_oof_zero_0001_ff（OOF p<0.001, final_fit） | — | — | — | **60.29%** | **60.51%** |
-| nr_ctrl_fixed（A0 causal control, GCE+MixUp+OOF zero） | 62.81% | — | 4 | **60.24%** | — |
-| robust_lora（LoRA rank=8 last_block, freeze_clip=false） | 69.40% | — | 1 | — | **60.24%** |
-| nr_ctrl_fixed（A0, reject_policy=drop） | 69.33% | — | 50 | **59.90%** | 60.31% |
+| s_oof_zero_0001（OOF zero-weight p<0.001） | 69.37% | 69.37% | 44 | 59.96% | 60.28% |
 | s_oof_zero_0001（OOF p<0.001） | 69.37% | 69.37% | 44 | **59.96%** | 60.28% |
 | s_oof_zero_001（OOF p<0.01） | 69.02% | 69.01% | 37 | 59.38% | 59.92% |
 | s_oof_discrete（OOF 3-tier） | 68.65% | — | 41 | 59.28% | 59.28% |
 | robust_oof_soft（OOF soft target distillation） | 69.29% | — | 37 | — | 59.87% |
 | s_elr_base（GCE+MixUp+ELR） | 68.20% | 68.21% | 19 | 58.59% | 59.14% |
 
-> ⚠️ **Important**: 本地 val 不能预测平台表现。OOF zero-weight 本地 69.37%（低于 MixUp 71.16%）但平台 Bare 59.96% 超越 MixUp 59.86%。所有模型选择必须以平台 Bare 为准，本地分数仅作辅助诊断。
+> ⚠️ **Important**: 本地 val 不能预测平台表现。A3 本地最高（69.47%）平台最差（59.89%）。所有模型选择必须以平台 Bare/TTA 为准，本地分数仅作辅助诊断。**单 seed 平台结果不可靠**（A2 两 seed TTA 差 0.90pp），所有候选必须在 seed=3407 上验证。
 
-**Platform Submissions (updated 2026-07-19):**
+**已关闭方向**：Dropout、ColorJitter/RandomErasing、Cosine Head、Label Smoothing、Head EMA、EMA Loss、Prototype Weighting、CE 下部分解冻、Head-only EMA Teacher + Consistency、GCE q=0.9、4-view TTA、vertical flip、OOF 3-tier discrete weight、OOF relabel/pseudo-label（A3 5-signal 共识仍有害）、Classwise CL-only drop（A1 −0.76pp）、ELR（本地 −1.2pp vs OOF）、PEFT LN-tune（freeze_clip=true 模式下无增益）、Rejected 半监督回收、NR_COMBINED_CLEAN_CORE（Layer 2/3 均为负信号）
 
-| Submission | Platform | vs ref | 推理 |
-|------------|---------|--------|------|
-| **NR_CL_KNN_DROP + Flip TTA** | **61.21%** | **+3.87pp** | 2-view Flip TTA（NEW BEST） |
-| **AEGIS F1 + Flip mean-prob T=0.5** | **61.10%** | **+3.76pp** | 2-view Flip TTA（NEW BEST） |
-| **AEGIS F1 bare** | **60.52%** | **+3.18pp** | 单视图（BEST BARE） |
-| s_oof_zero_0001_ff + Flip TTA | **60.51%** | **+3.17pp** | 2-view Flip TTA |
-| S_MIXUP_CE5 + Flip TTA | **60.48%** | **+3.14pp** | 2-view Flip TTA |
-| w1_gce05_mixup + Flip TTA | 60.36% | +3.02pp | 2-view Flip TTA |
-| s_oof_zero_0001 + Flip TTA | 60.28% | +2.94pp | 2-view Flip TTA |
-| w1_ce5_gce05 + Flip TTA | 60.25% | +2.91pp | 2-view Flip TTA |
-| b2_gce05 + Flip TTA | 60.16% | +2.82pp | 2-view Flip TTA |
-| robust_lora + Flip TTA | 60.24% | +2.90pp | 2-view Flip TTA |
-| s_oof_zero_0001 bare | **59.96%** | **+2.62pp** | 单视图（BEST BARE） |
-| s_oof_zero_001 + Flip TTA | 59.92% | +2.58pp | 2-view Flip TTA |
-| s_d3_mixup bare | 59.86% | +2.52pp | 单视图 |
-| s_mixup_ce5 bare | 59.70% | +2.36pp | 单视图 |
-| gce_q07 + Flip TTA | 59.41% | +2.07pp | 2-view Flip TTA |
-| ref（D3_STRICT） | 57.34% | — | 单视图 |
+### 下一步
 
-> `AEGIS F1` 指 `AEGIS_F1_VISUAL_LORA_CLEAN_CORE`，与下文因验证泄漏而废弃的旧 `F1-strict` 无关。完整配置、合规说明和哈希见 `docs/AEGIS_F1_VISUAL_LORA.md`；可复现代码快照位于 `reproducibility/aegis_f1/`。
-
-**已关闭方向**：Dropout、ColorJitter/RandomErasing、Cosine Head、Label Smoothing、Head EMA、EMA Loss、Prototype Weighting、CE 下部分解冻、Head-only EMA Teacher + Consistency、GCE q=0.9、4-view TTA、vertical flip、OOF 3-tier discrete weight、ELR（本地 -1.2pp vs OOF）、PEFT LN-tune（freeze_clip=true 模式下无增益）
+**A2 + visual LoRA（`implementary_plan.md`）**：AEGIS F1 已验证在干净监督上 LoRA 可贡献 ~0.6pp bare。将 AEGIS F1 的 LoRA 配方移植到 A2 parent checkpoint，配合全局黑名单和 feature distillation，是当前唯一有明确上行空间的方向。
 
 ## 项目结构
 
@@ -177,45 +177,6 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - **指纹校验**：缓存与数据集通过 SHA-256 全量指纹匹配，防止特征-图片错位
 
 
-## Strict Validation Protocol (2026-07-12)
-
-After discovering 88% validation leakage in F1 and 3.79% content leakage in the original seed 42 split, all baselines were rebuilt on a SHA-256 dedup-enabled master split.
-
-| Experiment | Local Micro | Local Macro | Gap | Epochs | Status |
-|---|---|---|---|---|---|
-| E0-strict | 70.5409% | 70.5015% | 0.0394pp | 47/50 | valid (D3−E0 = +0.1163pp) |
-| D3-strict | 70.6572% | 70.6100% | 0.0473pp | 49† | valid_seed42_pending_multiseed |
-| F0-strict | 70.6378% | 70.5939% | 0.0439pp | 5† | control_complete_no_gain |
-| F1-strict | 70.7832% | 70.7458% | 0.0374pp | 4† | below_gain_threshold |
-
-† Early stopped (patience=10). All metrics from `reeval_best.json` (best.pt reload).
-E0_STRICT: clean rerun completed (50 epochs, best epoch 47, no early stop).
-
-**Platform Submissions (registered in `results/submission_registry.csv`, updated 2026-07-18):**
-
-| Submission | Platform | vs ref | 推理 |
-|------------|---------|--------|------|
-| **AEGIS F1 + Flip mean-prob T=0.5** | **61.10%** | **+3.76pp** | 2-view Flip TTA（NEW BEST） |
-| **AEGIS F1 bare** | **60.52%** | **+3.18pp** | 单视图（BEST BARE） |
-| S_MIXUP_CE5 + Flip TTA | **60.48%** | **+3.14pp** | 2-view Flip TTA |
-| s_oof_zero_0001 + Flip TTA | 60.28% | +2.94pp | 2-view Flip TTA |
-| s_oof_zero_0001 bare | **59.96%** | +2.62pp | 单视图（BEST BARE） |
-| s_d3_mixup bare | 59.86% | +2.52pp | 单视图 |
-| s_oof_zero_001 + Flip TTA | 59.92% | +2.58pp | 2-view Flip TTA |
-| gce_q07 + Flip TTA | 59.41% | +2.07pp | 2-view Flip TTA |
-| ref（D3_STRICT） | 57.34% | — | 单视图 |
-| ref + Flip TTA | 58.31% | +0.97pp | 2-view Flip TTA |
-
-**Pattern note (seed=42):** Both GCE and prototype-weighting showed local raw accuracy regression but positive platform gains, suggesting raw noisy-label validation may invert model ranking vs clean test performance. Multi-seed confirmation in progress (gce_q07 seeds 2026, 3407).
-
-**Key changes from original:**
-- Master split rebuilt with `duplicate_grouping_enabled: true` (SHA-256 group-aware) — **0 cross-boundary SHA-256 groups** (was 192 groups / 391 leaked images)
-- All experiments share `outputs/data/master_splits/seed42/` for train/val
-- D3 train-only cleaning (CLIP centroid arbitration, content-based removal list)
-- Parent-child split audit + epoch-0 validation gate
-- Old F1 80.13% deprecated due to 88% validation leakage; output dirs deleted
-- All post-training metrics reloaded from best.pt (no in-memory contamination)
-- `micro_macro_gap == micro - macro` enforced at 1e-10 precision
 ## Git 策略
 
 - ✅ 跟踪：`.json/.csv/.log/.yaml` 结果文件

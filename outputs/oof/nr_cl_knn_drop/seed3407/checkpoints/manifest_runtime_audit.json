@@ -1,0 +1,21 @@
+{
+  "dataset_sample_count": 90204,
+  "manifest_row_count": 91195,
+  "manifest_rejected_count": 991,
+  "reject_policy": "drop",
+  "missing_in_manifest": 0,
+  "extra_in_manifest": 0,
+  "rejected_left_in_dataset": 0,
+  "duplicate_manifest_paths": 0,
+  "original_label_mismatches": 0,
+  "coverage": 1.0,
+  "missing_policy": "error",
+  "clean_count": 90204,
+  "rejected_count": 0,
+  "pseudo_count": 0,
+  "global_reject_rate": 0.0,
+  "global_relabel_rate": 0.0,
+  "max_class_drop_rate": 0.08791208791208792,
+  "max_source_class_relabel_rate": 0.0,
+  "classes_with_zero_clean": []
+}

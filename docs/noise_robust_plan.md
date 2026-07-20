@@ -66,8 +66,8 @@ Wave A 三个实验揭示了不同精度的噪声处理层级：
 | 实验 | 操作 | 数量 | 精度 | TTA |
 |------|------|------|------|------|
 | A2 `NR_CL_KNN_DROP` | 三方共识删除 | 991 (1.1%) | 极高（CL+OOF+kNN 一致） | **61.21%** |
-| A3 `NR_CONSENSUS_RELABEL_TOP100` | 高置信重标 | 100 (0.1%) | 高（≥3/5 辅助信号） | pending |
-| A1 `NR_CL_CLASSWISE_DROP` | 按类限额删除 | 8,680 (9.5%) | 中（仅 CL 统计） | pending |
+| A3 `NR_CONSENSUS_RELABEL_TOP100` | 高置信重标 | 100 (0.1%) | 高（≥3/5 辅助信号） | **59.89%** ❌ |
+| A1 `NR_CL_CLASSWISE_DROP` | 按类限额删除 | 8,680 (9.5%) | 中（仅 CL 统计） | **59.55%** ❌ |
 
 三者处理的样本群体近乎互斥：
 
@@ -92,6 +92,8 @@ Wave A 三个实验揭示了不同精度的噪声处理层级：
 - 互不冲突（三层作用于不同的信号阈值区间）
 
 计划新增实验 `NR_COMBINED_CLEAN_CORE` 实现此策略，在 Wave A 独立验证完成后执行。
+
+**2026-07-20 更新：NR_COMBINED_CLEAN_CORE 永久关闭。** Layer 2 (A3) 和 Layer 3 (A1) 均为负信号（TTA 分别 −0.42pp 和 −0.76pp vs A0），且 A1/A3 均未使用全局黑名单。但即使补上黑名单，100 个 relabel 或 8680 个低精度删除带来的边际增益大概率淹没在噪声里（paired delta 方法论：17 张图的差距都不显著）。该实验退化为 A2 本身——无独立存在价值。
 
 ### 全局黑名单机制（2026-07-19 实施）
 
@@ -1394,3 +1396,31 @@ python3 scripts/check_submission.py \
 ```
 
 若 Wave A 没有平台正收益，计划应在 Wave A 结束，不继续 Wave B/C。该停止结论本身是有效实验结果。
+
+---
+
+## 6. 最终状态（2026-07-20 更新）
+
+### 已完成
+
+| Task | 状态 | 关键结论 |
+|---|---|---|
+| Task 0–5 | ✅ done | 基础设施、manifest、configs 全部就绪 |
+| Task 6 Control (A0) | ✅ done | Bare 59.90%, TTA 60.31% |
+| Task 6 Wave A (A2) | ✅ done | Bare 60.64%, TTA 61.21% — 最佳冻结 baseline |
+| Task 6 Wave A (A3) | ✅ done | TTA 59.89% — **relabel 有害，方向关闭** |
+| Task 6 Wave A (A1) | ✅ done | TTA 59.55% — **低精度删除有害，方向关闭** |
+| A2 seed=3407 | ✅ done | TTA 60.31% (=A0 水平)，本地 paired delta −0.07pp (p=0.457) |
+
+### 永久关闭
+
+| 方向 | 原因 |
+|---|---|
+| **Task 7 / Wave B** (rejected 半监督回收) | A3 五信号共识 relabel 已证明有害；OOF 准确率 ~69% 不足以支撑可靠回收 |
+| **NR_COMBINED_CLEAN_CORE** | Layer 2 (A3) 和 Layer 3 (A1) 均为负信号 |
+| **OOF relabel / pseudo-label** | 在 OOF acc 不足的前提下，rejected 样本最优处理 = 删除 |
+| **冻结框架下 purification 进一步优化** | Paired delta 方法论证明冰冻 CLIP+GCE+MixUp 框架下数据筛选天花板极低（A0→A2 本地仅 +17 张图） |
+
+### 唯一剩余
+
+**Task 8（升级为 visual LoRA）**：A2 parent + AEGIS F1 LoRA 配方 + feature distillation。这是当前唯一被外部验证过有上行空间的方向。

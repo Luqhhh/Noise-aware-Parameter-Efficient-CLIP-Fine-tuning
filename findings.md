@@ -1,3 +1,34 @@
+# 最新发现（2026-07-20）
+
+## A2 多 seed 稳定性
+
+- A2 seed=42 vs seed=3407 本地 paired delta = −0.07pp（−7 张图），McNemar p=0.457，完全不显著
+- 但平台 TTA 差 0.90pp（61.21% vs 60.31%），本地完全不可见
+- 结论：**单 seed 平台结果不可靠**，所有候选必须双 seed 验证
+
+## A1/A3 均有害
+
+- A3（5-signal consensus relabel 100，0.1%）：TTA 59.89%（−0.42pp vs A0）
+- A1（CL classwise drop 8680，9.5%）：TTA 59.55%（−0.76pp vs A0）
+- A2（三方共识 delete 991，1.1%）：TTA 61.21%（+0.90pp vs A0）
+- 结论：**精度 > 覆盖面**，删除 > 重标
+
+## Purification 天花板已触达
+
+- A0→A2 本地 paired delta 仅 +17 张图（0.165pp, p=0.196）
+- 冻结 CLIP + GCE + MixUp 框架下，数据筛选层的边际增益已饱和
+- 唯一的出路是 visual LoRA PEFT
+
+## 已关闭方向
+
+- OOF relabel / pseudo-label（A3 5-signal 共识仍有害）
+- Classwise CL-only drop（A1 −0.76pp）
+- NR_COMBINED_CLEAN_CORE（Layer 2/3 负信号）
+- Rejected 半监督回收（OOF 准确率 ~69% 不足以支撑可靠回收）
+- ELR、PEFT LN-tune、EMA loss、prototype weighting（旧证据充分）
+
+---
+
 # OOF 执行发现
 
 - 2026-07-15：用户决定继续使用 Windows Codex 环境，不切换到 Linux agent runtime。

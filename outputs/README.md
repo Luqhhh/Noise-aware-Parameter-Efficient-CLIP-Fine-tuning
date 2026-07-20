@@ -68,17 +68,32 @@ Cosine head 在所有学习率下均显著弱于 linear head（~6pp 差距），
 | `phase2/` | Phase 2 产物：D3 logits、prototype weights、TTA 提交、logit adjustment |
 | `dedup/` | 去重扫描结果（duplicate_scan.json） |
 
+## 噪声鲁棒 Wave A（purification 消融）
+
+| 目录 | 实验 ID | 说明 | 本地 Acc | 平台 TTA |
+|------|---------|------|----------|------|
+| `oof/nr_ctrl_fixed/` | A0 (NR_CTRL_OOF_ZERO_0001_FIXED) | p<0.001 zero-weight, reject_policy=drop | 69.33% | 60.31% |
+| `oof/nr_cl_knn_drop/` | **A2 (NR_CL_KNN_DROP)** | kNN 三方共识删除 991 个 (1.1%) | 69.44% | **61.21%** |
+| `oof/nr_consensus_relabel_v2_top100/` | A3 (NR_CONSENSUS_RELABEL_V2) | 5-signal 共识 relabel 100 个 (0.1%) | 69.47% | 59.89% ❌ |
+| `oof/nr_cl_classwise_drop/` | A1 (NR_CL_CLASSWISE_DROP) | CL classwise 删除 8680 个 (9.5%) | 68.61% | 59.55% ❌ |
+
+**结论**：精度 > 覆盖面。A2（删 991 高精度）是唯一有效 purification。A3 relabel 和 A1 classwise drop 均已关闭。
+
 ## 平台提交记录
 
 | 提交 | 平台分数 | vs ref |
 |------|---------|--------|
-| **S_MIXUP_CE5 + Flip TTA** | **60.48%** | +3.14pp |
+| **A2 NR_CL_KNN_DROP s42 + Flip TTA** | **61.21%** | +3.87pp |
+| AEGIS F1 + Flip TTA | 61.10% | +3.76pp |
+| S_MIXUP_CE5 + Flip TTA | 60.48% | +3.14pp |
 | w1_gce05_mixup + Flip TTA | 60.36% | +3.02pp |
+| A2 NR_CL_KNN_DROP s3407 + Flip TTA | 60.31% | +2.97pp |
+| A0 NR_CTRL_FIXED + Flip TTA | 60.31% | +2.97pp |
 | w1_ce5_gce05 + Flip TTA | 60.25% | +2.91pp |
-| b2_gce05 + Flip TTA | 60.16% | +2.82pp |
+| A3 NR_CONSENSUS_RELABEL + Flip TTA | 59.89% | +2.55pp |
+| A1 NR_CL_CLASSWISE_DROP + Flip TTA | 59.55% | +2.21pp |
 | gce_q07 + Flip TTA | 59.41% | +2.07pp |
 | gce_q07 裸模型 | 58.96% | +1.62pp |
-| pw_v1 | 58.05% | +0.71pp |
 | ref | 57.34% | — |
 
 详细记录见 `results/submission_registry.csv`。
