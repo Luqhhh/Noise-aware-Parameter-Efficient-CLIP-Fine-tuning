@@ -48,6 +48,17 @@ Parent swap 确认有效后执行。第一轮全部 seed=42，本地通过安全
 | L3 | 是 | 是 | 是 | weak_rrc_flip | Feature distillation 的边际贡献（= AEGIS F1 全配置） |
 | L4 | 是 | 是 | 是 | **A0** | 弱增强是否必要？用 CLIP 标准预处理替代 weak_rrc_flip |
 
+**Configs:**
+
+| ID | Config file | Key diff from L3 |
+|:---|:---|:---|
+| L0 | `l0_frozen_continue.yaml` | `peft_mode` 非 LoRA, clean 关, distill 关 |
+| L1 | `l1_lora_only.yaml` | clean 关, distill 关 |
+| L2 | `l2_lora_clean.yaml` | distill 关 |
+| L3 | `l3_lora_clean_distill.yaml` | (baseline) |
+| L4 | `l4_lora_clean_distill_a0.yaml` | `train_augmentation: clip_center_crop` |
+| A2 swap | `f1_visual_lora_clean_core_a2_parent.yaml` | `init_checkpoint: A2 best.pt`（前置验证） |
+
 **L0 是因果基线。** 如果 L0 本身就有正收益（继续训练 6 epoch > A2 bare），那后续 LoRA 的收益需要扣除 L0 的贡献。
 
 ### 本地安全门
@@ -122,6 +133,14 @@ LoRA gradient norm
 
 选择标准：clean_core_micro 最高且 drift < 1%。
 
+**Configs:**
+
+| Config | backbone_lr | vs L3 |
+|:---|:---|:---|
+| `p4_lora_blr_1e5.yaml` | 1e-5 | 唯一变化 |
+| L3 (baseline) | 2e-5 | — |
+| `p4_lora_blr_4e5.yaml` | 4e-5 | 唯一变化 |
+
 ### 2. LoRA 位置与容量
 
 固定最优 backbone LR：
@@ -133,6 +152,14 @@ LoRA gradient norm
 | Last-4, R4 | 4 | 8–11 | ~50% of AEGIS | 最小有效配置 |
 
 暂不测试 rank=16。当前数据仍有标签噪声，容量过大更容易破坏 CLIP 表征。
+
+**Configs:**
+
+| Config | blocks | rank | lora_alpha | vs L3 |
+|:---|:---:|:---:|:---|:---|
+| `p4_lora_pos2_r8.yaml` | 2 | 8 | 8.0 | 唯一变化 |
+| L3 (baseline) | 4 | 8 | 8.0 | — |
+| `p4_lora_pos4_r4.yaml` | 4 | 4 | 4.0 | 唯一变化 |
 
 ### 3. Distillation 强度
 
@@ -155,6 +182,14 @@ LoRA gradient norm
 
 仓库已有根据 task loss / feature loss 比例校准 λ 的机制，利用该机制而非盲目搜索。
 
+**Configs:**
+
+| Config | λ | vs L3 |
+|:---|:---|:---|
+| `p4_distill_lam05.yaml` | 0.5 | 唯一变化 |
+| `p4_distill_lam10.yaml` | 1.0 | 唯一变化 |
+| L3 (baseline) | 2.0 | — |
+
 ### 4. Clean threshold
 
 仅在 LoRA 已确认有效后测试：
@@ -176,6 +211,31 @@ LoRA gradient norm
 ```
 
 如果出现"过滤越多性能越差"（类似 A1/A3 的教训），立即固定阈值，不再微调。
+
+**Configs:**
+
+| Config | selection_threshold | clean_core_threshold | vs L3 |
+|:---|:---:|:---:|:---|
+| `p4_clean_thresh065.yaml` | 0.65 | 0.65 | 唯一变化 |
+| L3 (baseline) | 0.70 | 0.70 | — |
+| `p4_clean_thresh075.yaml` | 0.75 | 0.75 | 唯一变化 |
+
+### P4 Config 总览
+
+所有 P4 config 位于 `reproducibility/aegis_f1/configs/`，`stage: p4_ablation`，基于 L3 且每次只变一个变量：
+
+| # | Config | 维度 | 变化 | 执行顺序 |
+|:---|:---|:---|:---|:---:|
+| 1 | `p4_lora_blr_1e5.yaml` | Backbone LR | 2e-5 → 1e-5 | P4.1 |
+| 2 | `p4_lora_blr_4e5.yaml` | Backbone LR | 2e-5 → 4e-5 | P4.1 |
+| 3 | `p4_lora_pos2_r8.yaml` | LoRA 位置 | last-4 → last-2 | P4.2 |
+| 4 | `p4_lora_pos4_r4.yaml` | LoRA 容量 | rank=8 → rank=4 | P4.2 |
+| 5 | `p4_distill_lam05.yaml` | Distill λ | 2.0 → 0.5 | P4.3 |
+| 6 | `p4_distill_lam10.yaml` | Distill λ | 2.0 → 1.0 | P4.3 |
+| 7 | `p4_clean_thresh065.yaml` | Clean thresh | 0.70 → 0.65 | P4.4 |
+| 8 | `p4_clean_thresh075.yaml` | Clean thresh | 0.70 → 0.75 | P4.4 |
+
+**执行约束**：P4.1→P4.2→P4.3→P4.4 顺序执行。每个阶段选最优值固定后再进入下一阶段。不允许跨阶段同时搜索。
 
 ---
 
