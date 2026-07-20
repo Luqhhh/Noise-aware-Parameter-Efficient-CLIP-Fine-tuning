@@ -284,7 +284,9 @@ def build_and_load_model(
     # ── 0. Pre-load semantic check ──────────────────────────────
     # Read the checkpoint's embedded config BEFORE building the model
     # so we can fail fast on config mismatch without GPU work.
-    checkpoint = torch.load(checkpoint_path, map_location=device)
+    # Use map_location="cpu" to avoid GPU memory allocation during
+    # config-only pre-read.
+    checkpoint = torch.load(checkpoint_path, map_location="cpu")
     ckpt_config = checkpoint.get("config", {})
 
     if verify_rebuild and ckpt_config:

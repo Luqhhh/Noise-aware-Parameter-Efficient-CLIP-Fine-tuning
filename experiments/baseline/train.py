@@ -290,6 +290,141 @@ def _count_raw_train_images(train_dir: str) -> int:
     return count
 
 
+def _runtime_manifest_audit_premodel(
+    config: dict,
+    experiment_id: str,
+    save_dir: Path,
+    audit_logger: logging.Logger,
+    reject_policy: str = "weight_zero",
+) -> bool:
+    """Pre-model, CPU-only data audit — NO model, NO GPU, NO DataLoader.
+
+    Reads train CSV, manifest CSV, and blacklist directly from disk.
+    Hard-fails on cardinality mismatches.
+    Returns True on pass.
+    """
+    import json as _json
+    import pandas as pd
+    from common.manifest_loader import portable_image_key
+
+    _IS_NR_COMBINED = (experiment_id == "NR_COMBINED_UPGRADE")
+    sw_cfg = config.get("sample_weighting", {})
+    manifest_csv = sw_cfg.get("manifest_path")
+
+    if not manifest_csv:
+        audit_logger.info("No manifest_path in config — skipping pre-model audit")
+        return True
+
+    # ── Read raw train CSV ────────────────────────────────────────
+    split_dir = config.get("data", {}).get("split_dir", "")
+    train_csv_path = Path(split_dir) / "train.csv"
+    if not train_csv_path.exists():
+        audit_logger.warning("Train CSV not found at %s — skipping pre-model audit",
+                             train_csv_path)
+        return True
+
+    raw_df = pd.read_csv(train_csv_path)
+    raw_keys = {portable_image_key(str(p)) for p in raw_df["image_path"]}
+    n_raw = len(raw_keys)
+    if len(raw_keys) != len(raw_df):
+        raise ValueError("Raw train CSV has duplicate portable keys")
+
+    # ── Read manifest CSV ─────────────────────────────────────────
+    mf_path = Path(manifest_csv)
+    if not mf_path.exists():
+        raise FileNotFoundError(f"Manifest not found: {mf_path}")
+    mf_df = pd.read_csv(mf_path)
+    mf_keys = {portable_image_key(str(p)) for p in mf_df["image_path"]}
+    n_manifest = len(mf_keys)
+    if len(mf_keys) != len(mf_df):
+        raise ValueError("Manifest has duplicate portable keys")
+
+    # ── Validate p_original_label if present ──────────────────────
+    if "p_original_label" in mf_df.columns:
+        _p = mf_df["p_original_label"]
+        if _p.isna().any():
+            raise ValueError("Manifest has NaN p_original_label values")
+        if (_p < 0).any() or (_p > 1).any():
+            raise ValueError("Manifest has p_original_label outside [0,1]")
+
+    # ── Read blacklist ────────────────────────────────────────────
+    bl_path = Path("outputs/phase4/global_rejected_paths.txt")
+    if not bl_path.exists():
+        raise FileNotFoundError(f"Blacklist not found: {bl_path}")
+    bl_raw = [p for p in bl_path.read_text().strip().split("\n") if p.strip()]
+    bl_keys = {portable_image_key(p) for p in bl_raw}
+    n_bl = len(bl_keys)
+    if len(bl_raw) != n_bl:
+        raise ValueError("Blacklist has duplicate portable keys")
+    if n_bl == 0:
+        raise ValueError("Blacklist is empty")
+
+    # ── Cross-checks ─────────────────────────────────────────────
+    bl_hit_raw = bl_keys & raw_keys
+    bl_hit_mf = bl_keys & mf_keys
+    post_bl = raw_keys - bl_keys
+    n_post = len(post_bl)
+
+    # ── Hard gates ────────────────────────────────────────────────
+    if _IS_NR_COMBINED:
+        if n_raw != 91195:
+            raise ValueError(f"Raw train: {n_raw} (expected 91195)")
+        if n_manifest != 91195:
+            raise ValueError(f"Manifest: {n_manifest} (expected 91195)")
+        if n_bl != 991:
+            raise ValueError(f"Blacklist: {n_bl} (expected 991)")
+        if len(bl_hit_raw) != 991:
+            raise ValueError(f"BL ∩ train: {len(bl_hit_raw)}/991")
+        if len(bl_hit_mf) != 991:
+            raise ValueError(f"BL ∩ manifest: {len(bl_hit_mf)}/991")
+        if n_post != 90204:
+            raise ValueError(f"Post-BL: {n_post} (expected 90204)")
+
+    # ── Clean/rejected partition ──────────────────────────────────
+    if "p_original_label" in mf_df.columns:
+        n_clean = 0
+        n_rej = 0
+        for _, row in mf_df.iterrows():
+            key = portable_image_key(str(row["image_path"]))
+            if key in bl_keys:
+                continue
+            if float(row["p_original_label"]) >= 0.70:
+                n_clean += 1
+            else:
+                n_rej += 1
+        if _IS_NR_COMBINED:
+            if n_clean != 50233:
+                raise ValueError(f"Clean: {n_clean} (expected 50233)")
+            if n_rej != 39971:
+                raise ValueError(f"Rejected: {n_rej} (expected 39971)")
+
+    # ── Write audit report ───────────────────────────────────────
+    audit = {
+        "experiment_id": experiment_id,
+        "raw_train_keys": n_raw,
+        "manifest_keys": n_manifest,
+        "blacklist_keys": n_bl,
+        "bl_hit_raw_train": len(bl_hit_raw),
+        "bl_hit_manifest": len(bl_hit_mf),
+        "post_blacklist": n_post,
+        "manifest_minus_bl_equals_post": (mf_keys - bl_keys) == post_bl,
+    }
+    if "p_original_label" in mf_df.columns:
+        audit["clean_count"] = n_clean
+        audit["rejected_count"] = n_rej
+    save_dir.mkdir(parents=True, exist_ok=True)
+    (save_dir / "manifest_runtime_audit.json").write_text(
+        _json.dumps(audit, indent=2, default=str),
+    )
+    audit_logger.info(
+        "Pre-model manifest audit PASSED: raw=%d → post-BL=%d | manifest=%d | BL=%d",
+        n_raw, n_post, n_manifest, n_bl,
+    )
+    if "p_original_label" in mf_df.columns:
+        audit_logger.info("  Clean=%d | Rejected=%d", n_clean, n_rej)
+    return True
+
+
 def _runtime_manifest_audit(
     train_dataset,
     weight_provider,
@@ -1654,6 +1789,14 @@ def main():
     _peft_type = config.get("peft", {}).get("type", "linear_head_only")
     _peft_req_parent = _peft_type in ("visual_lora", "last_block_lora")
 
+    # --resume and --init-checkpoint are mutually exclusive
+    if args.resume and args.init_checkpoint:
+        raise ValueError(
+            "--resume and --init-checkpoint are mutually exclusive. "
+            "Use --init-checkpoint to load model weights for a new "
+            "training run; use --resume to continue a crashed run."
+        )
+
     if args.init_checkpoint:
         from common.model_loader import verify_parent_checkpoint, verify_init_compat
         _store_lineage = verify_parent_checkpoint(
@@ -1672,8 +1815,58 @@ def main():
                 "checkpoint:\n  " + "\n  ".join(_init_errs)
             )
         train_logger.info("Init-compat check PASSED")
-        del _parent_ckpt_meta  # free memory; full load happens later
-    elif _peft_req_parent and not args.resume:
+        del _parent_ckpt_meta
+
+    elif args.resume:
+        # ── Resume: extract lineage & verify BEFORE any model building ──
+        from common.model_loader import (
+            verify_parent_checkpoint, verify_inference_rebuild,
+        )
+        _resume_meta = torch.load(args.resume, map_location="cpu")
+        _resume_cfg = _resume_meta.get("config", {})
+
+        # Rebuild signature must match
+        _rebuild_errs = verify_inference_rebuild(config, _resume_cfg)
+        if _rebuild_errs:
+            raise RuntimeError(
+                "Inference-rebuild signature mismatch on resume:\n  "
+                + "\n  ".join(_rebuild_errs)
+            )
+        train_logger.info("Resume: inference-rebuild check PASSED")
+
+        # Extract parent lineage (mandatory)
+        _store_lineage = _resume_meta.get("parent_lineage")
+        if not _store_lineage:
+            raise RuntimeError(
+                "Resume checkpoint has no parent_lineage. "
+                "Cannot rebuild feature-distillation parent. "
+                "Re-run from scratch with --init-checkpoint."
+            )
+        train_logger.info("Resume: parent_lineage found — %s",
+                          _store_lineage.get("parent_checkpoint_sha256", "?")[:16])
+
+        # Re-verify parent checkpoint against stored lineage
+        _parent_path = _store_lineage.get("parent_checkpoint_path")
+        if _parent_path:
+            _reverified = verify_parent_checkpoint(_parent_path, experiment_id)
+            # Compare all fields
+            for _key in ("parent_experiment_id", "parent_checkpoint_sha256",
+                         "parent_train_csv_sha256", "parent_val_csv_sha256"):
+                if _reverified.get(_key) != _store_lineage.get(_key):
+                    raise RuntimeError(
+                        f"Resume parent lineage mismatch for {_key}: "
+                        f"stored={_store_lineage.get(_key)!r}, "
+                        f"current={_reverified.get(_key)!r}"
+                    )
+            train_logger.info("Resume: parent re-verified against lineage — all fields match")
+        else:
+            raise RuntimeError(
+                "Resume parent_lineage missing parent_checkpoint_path."
+            )
+
+        del _resume_meta
+
+    elif _peft_req_parent:
         raise RuntimeError(
             f"PEFT type '{_peft_type}' requires --init-checkpoint. "
             f"Refusing to train with random backbone weights. "
@@ -1681,13 +1874,28 @@ def main():
             f"continue a previous training run)."
         )
 
-    # ── Load preprocess early (lightweight, for data audit before model) ──
+    # ── Runtime manifest audit (CPU-only, BEFORE any model/GPU work) ──
+    # Needs only: split_dir CSV, manifest CSV, blacklist file.  No model, no GPU.
+    # Build a minimal dataset mock for the audit — the real DataLoader is built later.
+    _reject_policy = config.get("sample_weighting", {}).get(
+        "reject_policy", "weight_zero"
+    )
+    _audit_ok = _runtime_manifest_audit_premodel(
+        config, experiment_id,
+        Path(config["train"]["save_dir"]),
+        train_logger,
+        reject_policy=_reject_policy,
+    )
+    if not _audit_ok:
+        raise RuntimeError("Pre-model runtime manifest audit failed.")
+
+    # ── Load preprocess early (lightweight) ──
     import clip as _clip
     _clip_model_raw, preprocess = _clip.load(
         config["model"]["clip_model_name"], device="cpu",
     )
     _clip_model_raw.visual = _clip_model_raw.visual.float()
-    del _clip_model_raw  # only needed for preprocess; model built below
+    del _clip_model_raw
 
     # ── Build model based on head type ──
     if head_type == "cosine":
@@ -2182,30 +2390,10 @@ def main():
     train_logger.info(f"  Trainable head params:    {head_trainable:>10,}")
     train_logger.info(f"  Trainable visual params:  {visual_trainable:>10,}")
 
-    # ── Runtime manifest audit (CPU-only, before any GPU work) ──
-    _reject_policy = config.get("sample_weighting", {}).get(
-        "reject_policy", "weight_zero"
-    )
-    _runtime_manifest_audit(
-        train_dataset, weight_provider, mode,
-        Path(config["train"]["save_dir"]),
-        train_logger,
-        experiment_id=experiment_id,
-        reject_policy=_reject_policy,
-    )
-
     # Early stopping config
     early_stop_patience = train_cfg.get("early_stop_patience", 0)
     early_stop_counter = 0
     early_stopped = False
-
-    # --resume and --init-checkpoint are mutually exclusive
-    if args.resume and args.init_checkpoint:
-        raise ValueError(
-            "--resume and --init-checkpoint are mutually exclusive. "
-            "Use --init-checkpoint to load model weights for a new "
-            "training run; use --resume to continue a crashed run."
-        )
 
     # Declare epoch0 tracking variables (initialized to None for non-init-checkpoint runs;
     # overwritten with computed values inside the init_checkpoint block below)
@@ -2423,7 +2611,7 @@ def main():
         _parent_cfg = copy.deepcopy(config)
         _parent_cfg["model"]["freeze_clip"] = True
         _parent_model, _ = _build(_parent_cfg, device)
-        _parent_ckpt = torch.load(_parent_ckpt_path, map_location=device)
+        _parent_ckpt = torch.load(_parent_ckpt_path, map_location="cpu")
         _parent_state = _parent_ckpt.get("model_state_dict", _parent_ckpt)
         _parent_keys = {
             k: v for k, v in _parent_state.items()
@@ -2534,6 +2722,8 @@ def main():
 
     # Write resolved config with explicit defaults (A-INFRA-1)
     resolved = resolve_config(config)
+    if _store_lineage:
+        resolved["parent_lineage"] = _store_lineage
     write_resolved_config(resolved, str(save_dir))
 
     # Training log CSV
@@ -2994,6 +3184,7 @@ def main():
                 "sample_weighting_type": config.get(
                     "sample_weighting", {}
                 ).get("type", "none"),
+                "parent_lineage": _store_lineage,
             },
         )
         artifact_path = write_artifact_manifest(manifest, str(save_dir))

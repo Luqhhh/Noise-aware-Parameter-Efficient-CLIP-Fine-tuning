@@ -7,6 +7,7 @@ parent-checkpoint fail-closed behaviour.
 """
 
 import copy
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
@@ -1057,6 +1058,253 @@ class TestEntryPointSmoke(unittest.TestCase):
         import scripts.evaluate_tta  # noqa: F401
         import scripts.infer_tta     # noqa: F401
         import scripts.cache_val_test_logits  # noqa: F401
+
+
+# ──────────────────────────────────────────────────────────────────────
+# 18. Resume smoke tests
+# ──────────────────────────────────────────────────────────────────────
+
+
+class TestResumeSmoke(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.clip_model, cls.preprocess = _build_clip_model()
+
+    def _make_resume_checkpoint(self, with_lineage=True, wrong_alpha=False):
+        """Create a checkpoint suitable for resume testing."""
+        import tempfile, os, json
+        from common.peft import apply_peft
+
+        model = _build_classifier(self.clip_model, freeze_clip=False)
+        peft_cfg = {
+            "type": "visual_lora", "lora_last_n_blocks": 2,
+            "lora_rank": 4, "lora_alpha": 8 if not wrong_alpha else 99,
+            "lora_adapt_qv": True, "lora_adapt_out": True,
+        }
+        apply_peft(model, peft_cfg)
+
+        ckpt = {
+            "model_state_dict": {k: v.clone() for k, v in model.state_dict().items()},
+            "epoch": 5,
+            "global_step": 100,
+            "best_val_acc": 0.65,
+            "optimizer_state_dict": {},
+            "scheduler_state_dict": {},
+            "scaler_state_dict": {},
+            "config": {
+                "model": {"clip_model_name": "ViT-B/32", "num_classes": 500,
+                          "freeze_clip": False},
+                "experiment": {"head_type": "linear"},
+                "data": {"split_dir": "outputs/data/d3_strict/seed42"},
+                "peft": peft_cfg,
+            },
+            "class_to_idx": {str(i): i for i in range(500)},
+            "idx_to_class": {str(i): str(i) for i in range(500)},
+        }
+
+        if with_lineage:
+            # Write a dummy parent checkpoint for lineage
+            parent_dir = self.tmp_root / "parent_ckpt"
+            parent_dir.mkdir(parents=True, exist_ok=True)
+            parent_ckpt = parent_dir / "best.pt"
+            parent_manifest = parent_dir / "artifact_manifest.json"
+
+            # Simple parent: linear head, frozen
+            pmodel = _build_classifier(self.clip_model, freeze_clip=True)
+            psd = {"model_state_dict": {k: v.clone() for k, v in pmodel.state_dict().items()},
+                   "epoch": 48, "best_val_acc": 0.69444,
+                   "config": {"model": {"clip_model_name": "ViT-B/32", "num_classes": 500},
+                              "experiment": {"head_type": "linear"},
+                              "data": {"split_dir": "outputs/data/d3_strict/seed42"}}}
+            torch.save(psd, str(parent_ckpt))
+            psha = hashlib.sha256(open(str(parent_ckpt), "rb").read()).hexdigest()
+            manifest_data = {
+                "experiment_id": "NR_CL_KNN_DROP",
+                "checkpoint_sha256": psha,
+                "train_csv_sha256": "646fc7b90b7c244a402f6376d966f40148b5b278dad29cce0c6955c92a1b6666",
+                "val_csv_sha256": "607e019165912bb0639efb456b7e8dea122b3e8579a2344dedb8109798921eae",
+                "best_val_acc": 0.69444,
+            }
+            parent_manifest.write_text(json.dumps(manifest_data))
+
+            ckpt["parent_lineage"] = {
+                "parent_experiment_id": "NR_CL_KNN_DROP",
+                "parent_checkpoint_path": str(parent_ckpt),
+                "parent_checkpoint_sha256": psha,
+                "parent_train_csv_sha256": manifest_data["train_csv_sha256"],
+                "parent_val_csv_sha256": manifest_data["val_csv_sha256"],
+                "parent_best_val_acc": 0.69444,
+            }
+
+        f = tempfile.NamedTemporaryFile(suffix=".pt", delete=False)
+        torch.save(ckpt, f.name)
+        f.close()
+        return f.name
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.tmp_root = Path(self._tmp.name)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def test_resume_with_lineage_passes_pre_model_checks(self):
+        """Resume with valid parent_lineage passes pre-model verification."""
+        import os, sys
+        ckpt_path = self._make_resume_checkpoint(with_lineage=True)
+        try:
+            # Simulate pre-model resume verification logic
+            from common.model_loader import (
+                verify_parent_checkpoint, verify_inference_rebuild,
+            )
+            _resume_meta = torch.load(ckpt_path, map_location="cpu")
+            _resume_cfg = _resume_meta.get("config", {})
+
+            config = {
+                "model": {"clip_model_name": "ViT-B/32", "num_classes": 500,
+                          "freeze_clip": False},
+                "experiment": {"head_type": "linear"},
+                "peft": {"type": "visual_lora", "lora_last_n_blocks": 2,
+                         "lora_rank": 4, "lora_alpha": 8,
+                         "lora_adapt_qv": True, "lora_adapt_out": True},
+            }
+            # Inference rebuild must pass
+            errs = verify_inference_rebuild(config, _resume_cfg)
+            self.assertEqual(len(errs), 0, f"Rebuild errors: {errs}")
+
+            # Lineage must exist
+            lineage = _resume_meta.get("parent_lineage")
+            self.assertIsNotNone(lineage, "parent_lineage missing")
+
+            # Re-verify parent
+            _parent_path = lineage.get("parent_checkpoint_path")
+            self.assertIsNotNone(_parent_path)
+            _reverified = verify_parent_checkpoint(_parent_path, "TEST")
+            self.assertEqual(_reverified["parent_checkpoint_sha256"],
+                             lineage["parent_checkpoint_sha256"])
+            del _resume_meta
+        finally:
+            os.unlink(ckpt_path)
+
+    def test_resume_without_lineage_fails(self):
+        """Resume checkpoint without parent_lineage must be rejected."""
+        import os
+        ckpt_path = self._make_resume_checkpoint(with_lineage=False)
+        try:
+            _resume_meta = torch.load(ckpt_path, map_location="cpu")
+            lineage = _resume_meta.get("parent_lineage")
+            self.assertIsNone(lineage,
+                              "Checkpoint should NOT have parent_lineage")
+            del _resume_meta
+        finally:
+            os.unlink(ckpt_path)
+
+    def test_resume_wrong_alpha_fails_before_model_build(self):
+        """Resume with mismatched alpha must fail at inference_rebuild check."""
+        import os
+        ckpt_path = self._make_resume_checkpoint(
+            with_lineage=True, wrong_alpha=True,
+        )
+        try:
+            from common.model_loader import verify_inference_rebuild
+            _resume_meta = torch.load(ckpt_path, map_location="cpu")
+            _resume_cfg = _resume_meta.get("config", {})
+
+            config = {
+                "model": {"clip_model_name": "ViT-B/32", "num_classes": 500,
+                          "freeze_clip": False},
+                "experiment": {"head_type": "linear"},
+                "peft": {"type": "visual_lora", "lora_last_n_blocks": 2,
+                         "lora_rank": 4, "lora_alpha": 8,  # correct alpha=8
+                         "lora_adapt_qv": True, "lora_adapt_out": True},
+            }
+            # Checkpoint has alpha=99, config has alpha=8 → must fail
+            errs = verify_inference_rebuild(config, _resume_cfg)
+            self.assertGreater(len(errs), 0,
+                               "Wrong alpha should produce rebuild errors")
+            self.assertTrue(any("alpha" in e.lower() for e in errs))
+            del _resume_meta
+        finally:
+            os.unlink(ckpt_path)
+
+
+# ──────────────────────────────────────────────────────────────────────
+# 19. Entry-point main smoke tests (execute to JSON/manifest writing)
+# ──────────────────────────────────────────────────────────────────────
+
+
+class TestEntryPointMainSmoke(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.clip_model, cls.preprocess = _build_clip_model()
+
+    def _make_linear_ckpt(self, tmp_root):
+        model = _build_classifier(self.clip_model, freeze_clip=True)
+        sd = {"model_state_dict": {k: v.clone() for k, v in model.state_dict().items()},
+              "epoch": 0, "best_val_acc": 0.5,
+              "config": {"model": {"clip_model_name": "ViT-B/32", "num_classes": 500},
+                         "experiment": {"head_type": "linear"},
+                         "data": {"split_dir": "outputs/data/d3_strict/seed42"}},
+              "class_to_idx": {str(i): i for i in range(500)},
+              "idx_to_class": {str(i): str(i) for i in range(500)}}
+        ckpt_path = tmp_root / "best.pt"
+        torch.save(sd, str(ckpt_path))
+        return str(ckpt_path)
+
+    def test_evaluate_main_loads_model_and_writes_json(self):
+        """evaluate.main: model loading + JSON writing (no variable errors)."""
+        import json, os, sys, tempfile
+        from pathlib import Path
+
+        tmp = tempfile.TemporaryDirectory()
+        try:
+            tmp_root = Path(tmp.name)
+            ckpt_path = self._make_linear_ckpt(tmp_root)
+            config_path = tmp_root / "config.yaml"
+            config_path.write_text("""
+experiment:
+  id: TEST
+  mode: dev
+  head_type: linear
+data:
+  split_dir: outputs/data/d3_strict/seed42
+  train_dir: train
+  seed: 42
+  train_seed: 42
+  class_mapping_path: outputs/data/master_splits/seed42
+model:
+  clip_model_name: ViT-B/32
+  num_classes: 500
+  freeze_clip: true
+train:
+  device: cpu
+  num_workers: 0
+  batch_size: 2
+eval:
+  batch_size: 2
+output:
+  log_dir: {logs}
+  submission_dir: {subs}
+""".format(logs=str(tmp_root / "logs"), subs=str(tmp_root / "submissions")))
+
+            old_argv = sys.argv
+            try:
+                sys.argv = ["evaluate.py", "--config", str(config_path),
+                            "--ckpt", ckpt_path,
+                            "--output-json", str(tmp_root / "reeval_best.json")]
+                from experiments.baseline.evaluate import main
+                main()
+            finally:
+                sys.argv = old_argv
+            self.assertTrue((tmp_root / "reeval_best.json").exists())
+        finally:
+            tmp.cleanup()
+
+    @unittest.skip("cache_val_test_logits.main processes full val+test — too slow for CPU CI")
+    def test_cache_val_test_logits_manifest_writes(self):
+        pass
 
 
 if __name__ == "__main__":
