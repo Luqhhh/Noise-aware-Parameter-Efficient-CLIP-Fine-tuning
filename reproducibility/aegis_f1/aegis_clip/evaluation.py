@@ -133,6 +133,7 @@ def evaluate(
     mean_drift = 1.0 - mean_cosine
     metrics = {
         "samples": int(prediction.numel()),
+        "predicted_class_count": int(prediction.unique().numel()),
         "raw_micro": raw_micro,
         "raw_macro": raw_macro,
         "trusted_micro": trusted_micro,

@@ -49,6 +49,39 @@ from aegis_clip.runtime import (
 )
 
 
+def _promotion_decision(
+    epoch0: dict[str, Any],
+    best: dict[str, Any],
+    best_epoch: int,
+    promotion_config: dict[str, Any],
+) -> dict[str, Any]:
+    """Determine whether the LoRA-trained model exceeds the epoch-0 parent."""
+    selector_gain = float(best["selector"]) - float(epoch0["selector"])
+    raw_gain = float(best["raw_micro"]) - float(epoch0["raw_micro"])
+    checks = {
+        "trained_epoch_selected": best_epoch >= 1,
+        "selector_gain": selector_gain >= float(
+            promotion_config.get("minimum_selector_gain", 0.001)
+        ),
+        "raw_micro_floor": raw_gain >= float(
+            promotion_config.get("minimum_raw_micro_gain", -0.001)
+        ),
+        "drift_budget": float(best["mean_feature_drift"]) <= float(
+            promotion_config.get("maximum_mean_feature_drift", 0.01)
+        ),
+        "class_coverage": int(best["predicted_class_count"]) == int(
+            promotion_config.get("required_predicted_class_count", 500)
+        ),
+    }
+    return {
+        "passed": all(checks.values()),
+        "best_epoch": int(best_epoch),
+        "selector_gain": selector_gain,
+        "raw_micro_gain": raw_gain,
+        "checks": checks,
+    }
+
+
 def train(
     config: dict[str, Any],
     *,
@@ -93,6 +126,25 @@ def train(
         raise ValueError(
             f"Class mapping has {len(class_to_idx)} classes, expected {num_classes}"
         )
+
+    # --- Lineage audit (fail-close before any model or data loading) ---
+    require_lineage = bool(train_config.get("require_lineage_for_init_checkpoint", False))
+    if require_lineage:
+        source = init_checkpoint or train_config.get("init_checkpoint")
+        if not source:
+            raise ValueError(
+                "require_lineage_for_init_checkpoint=true but no init_checkpoint"
+            )
+        from aegis_clip.lineage import run_lineage_audit
+
+        run_lineage_audit(
+            config,
+            child_train_csv=data_config["train_csv"],
+            child_val_csv=data_config["val_csv"],
+            checkpoint_path=source,
+            output_path=run_dir / "split_lineage_audit.json",
+        )
+
     feature_store = FrozenFeatureStore(
         tensor_path=feature_config["tensor_path"],
         paths_path=feature_config["paths_path"],
@@ -251,6 +303,56 @@ def train(
         source = init_checkpoint or train_config["init_checkpoint"]
         state = load_initial_weights(model, source, device)
         logger.info("Initialised weights from %s (epoch=%s)", source, state.get("epoch"))
+
+    # --- Epoch-0 baseline evaluation ---
+    if not resume and (init_checkpoint or train_config.get("init_checkpoint")):
+        epoch0_metrics = evaluate(
+            model,
+            val_loader,
+            device=device,
+            num_classes=num_classes,
+            use_amp=use_amp,
+            drift_budget=float(evaluation_config.get("drift_budget", 0.01)),
+            drift_penalty=float(evaluation_config.get("drift_penalty", 0.5)),
+            selector_metric=str(
+                evaluation_config.get("selector_metric", "proxy_macro")
+            ),
+            clean_core_threshold=float(
+                evaluation_config.get("clean_core_threshold", 0.70)
+            ),
+            measure_flip_consistency=bool(
+                evaluation_config.get("measure_flip_consistency", False)
+            ),
+        )
+        atomic_json_dump(epoch0_metrics, checkpoint_dir / "epoch0_evaluation.json")
+        logger.info(
+            "Epoch 0 baseline | %s",
+            format_metrics(epoch0_metrics),
+        )
+        best_selector = float(epoch0_metrics["selector"])
+
+        save_checkpoint(
+            checkpoint_dir / "epoch0.pt",
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            scaler=scaler,
+            epoch=0,
+            global_step=0,
+            best_selector=best_selector,
+            config=config,
+            metrics=epoch0_metrics,
+            adaptive_cap_state=adaptive_cap.state_dict() if adaptive_cap else None,
+            data_generator_state=generator.get_state(),
+            elr_state_dict=(
+                elr_regularizer.state_dict() if elr_regularizer is not None else None
+            ),
+        )
+        shutil.copy2(checkpoint_dir / "epoch0.pt", checkpoint_dir / "best.pt")
+        logger.info("Epoch-0 checkpoint saved as initial best")
+        epoch0_saved = epoch0_metrics
+    else:
+        epoch0_saved = None
 
     effective_spec = model.effective_spec()
     _validate_effective_spec(effective_spec, model.peft_mode)
@@ -509,6 +611,17 @@ def train(
             ),
         )
         metrics = {**train_metrics, **val_metrics}
+        if epoch0_saved is not None:
+            metrics["delta_vs_epoch0_selector"] = (
+                float(val_metrics["selector"]) - float(epoch0_saved["selector"])
+            )
+            metrics["delta_vs_epoch0_raw_micro"] = (
+                float(val_metrics["raw_micro"]) - float(epoch0_saved["raw_micro"])
+            )
+            metrics["delta_vs_epoch0_clean_core_micro"] = (
+                float(val_metrics["clean_core_micro"])
+                - float(epoch0_saved["clean_core_micro"])
+            )
         logger.info("Epoch %d | %s", epoch, format_metrics(metrics))
         _append_metrics_csv(log_path, epoch, metrics, optimizer)
 
@@ -565,6 +678,24 @@ def train(
         ),
     )
     atomic_json_dump(final_metrics, checkpoint_dir / "best_evaluation.json")
+
+    # --- Promotion decision ---
+    if epoch0_saved is not None:
+        best_epoch = int(best["epoch"])
+        promotion = _promotion_decision(
+            epoch0_saved,
+            final_metrics,
+            best_epoch,
+            config.get("promotion", {}),
+        )
+        atomic_json_dump(promotion, checkpoint_dir / "promotion.json")
+        logger.info(
+            "Promotion: %s selector_gain=%.6f raw_gain=%.6f",
+            "PASS" if promotion["passed"] else "FAIL",
+            promotion["selector_gain"],
+            promotion["raw_micro_gain"],
+        )
+
     atomic_json_dump(
         {
             "experiment_id": project["experiment_id"],
@@ -576,6 +707,21 @@ def train(
             "trust_bundle_sha256": (
                 sha256_file(config["trust"]["bundle_path"])
                 if trust_bundle is not None
+                else None
+            ),
+            "split_lineage_audit_sha256": (
+                sha256_file(run_dir / "split_lineage_audit.json")
+                if (run_dir / "split_lineage_audit.json").exists()
+                else None
+            ),
+            "epoch0_evaluation_sha256": (
+                sha256_file(checkpoint_dir / "epoch0_evaluation.json")
+                if (checkpoint_dir / "epoch0_evaluation.json").exists()
+                else None
+            ),
+            "promotion_sha256": (
+                sha256_file(checkpoint_dir / "promotion.json")
+                if (checkpoint_dir / "promotion.json").exists()
                 else None
             ),
             "metrics": final_metrics,

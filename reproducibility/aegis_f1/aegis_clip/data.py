@@ -203,6 +203,11 @@ def resolve_image_path(root: Path, value: str | Path) -> Path:
     parts = path.parts
     if parts and parts[0] == root.name:
         path = Path(*parts[1:])
+    # Map train_dedup → train so that files referenced under the dedup
+    # prefix resolve to the physical train/ directory (critical when
+    # child splits mirror a parent trained with d3 strict dedup).
+    if parts and parts[0] == "train_dedup":
+        path = Path("train") / Path(*parts[1:])
     return root / path
 
 

@@ -13,15 +13,19 @@ from aegis_clip.runtime import sha256_lines
 
 
 def canonical_sample_path(path: str | Path) -> str:
-    """Canonicalise a sample path independently of its machine-specific root."""
+    """Canonicalise a training sample independently of storage directory."""
     value = str(path).replace("\\", "/").strip()
     while value.startswith("./"):
         value = value[2:]
-    marker = "/train/"
-    if marker in value:
-        value = value.split(marker, 1)[1]
-    elif value.startswith("train/"):
-        value = value[len("train/") :]
+
+    for marker in ("/train_dedup/", "/train/"):
+        if marker in value:
+            return value.split(marker, 1)[1].lstrip("/")
+
+    for prefix in ("train_dedup/", "train/"):
+        if value.startswith(prefix):
+            return value[len(prefix):].lstrip("/")
+
     return value.lstrip("/")
 
 
