@@ -1,6 +1,16 @@
-# OOF 执行进度
+# 执行进度
 
-## 2026-07-15 Windows 续跑
+## 2026-07-21 A2_AEGIS_PARENT_SWAP 协议修复与严格复跑
+
+- 发现原 A2 parent swap 本地 79.22% 是 split lineage 泄漏（parent d3_strict vs child AEGIS prepare）
+- 实现 lineage audit + epoch-0 baseline + promotion gate + canonical sample path fix
+- 严格复跑 (F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT) 双 seed 均通过
+- epoch-0 = 69.43%（精确匹配 A2 本地），LoRA 真实增益 +0.19~0.39pp
+- 平台 Bare = 60.65%（+0.14pp vs F1），TTA = 61.15%（+0.05pp vs F1）
+- 结论：A2 parent swap 确认正收益但边际，P3/P4 不追
+- 分支 fix/a2-aegis-parent-lineage 已合并 main，协议修复已归档
+
+## 2026-07-15 OOF 执行（Windows 续跑）
 
 - 已确认继续使用 Windows 端控制 WSL。
 - 已读取文件化计划技能并恢复任务上下文。

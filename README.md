@@ -65,6 +65,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | 实验 | 平台 TTA | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
 | **NR_CL_KNN_DROP (A2, kNN consensus drop, seed=42)** | **61.21%** | **+3.87pp** | 2-view Flip TTA |
+| **A2 STRICT (A2 parent + LoRA, lineage-fixed, seed=42)** | **61.15%** | **+3.81pp** | Flip mean-prob T=0.5 |
 | AEGIS F1 (visual LoRA, clean≥0.7, distill) | 61.10% | +3.76pp | Flip mean-prob T=0.5 |
 | s_oof_zero_0001_ff (OOF zero p<0.001, final_fit) | 60.51% | +3.17pp | 2-view Flip TTA |
 | S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5) | 60.48% | +3.14pp | 2-view Flip TTA |
@@ -83,6 +84,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | 实验 | 平台 Bare | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
+| **A2 STRICT (A2 parent + LoRA, lineage-fixed, seed=42)** | **60.65%** | **+3.31pp** | 单视图 |
 | **AEGIS F1 (visual LoRA, clean≥0.7, distill)** | **60.52%** | **+3.18pp** | 单视图 |
 | s_oof_zero_0001_ff (OOF zero p<0.001, final_fit) | 60.29% | +2.95pp | 单视图 |
 | s_oof_zero_0001 (OOF zero-weight p<0.001) | 59.96% | +2.62pp | 单视图 |
@@ -111,7 +113,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 > A2 多 seed 稳定性确认：本地 paired delta 仅 7 张图差异（p=0.457），但平台 TTA 波动达 0.90pp。说明 seed=42 的 61.21% 有运气成分，A2 方法的合理期望约 60.76%（两 seed 平均）。所有后续实验必须跑双 seed 验证。
 
 **基线定义：**
-- **平台 Bare 最佳**：AEGIS F1 = **60.52%**（visual LoRA rank-8, clean filter）
+- **平台 Bare 最佳**：A2 STRICT = **60.65%**（A2 parent + visual LoRA rank-8, clean filter, distill）
 - **平台 TTA 最佳**：A2 seed=42 = **61.21%**（frozen CLIP + GCE q=0.5 + MixUp + kNN consensus drop）
 - **最佳冻结合理期望**：约 60.76% TTA（A2 两 seed 平均）
 - **训练基线**：s_d3_mixup (GCE q=0.5 + MixUp, d3_strict) —— 所有 OOF 实验的配对对照
@@ -122,7 +124,9 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - **冻结 CLIP + GCE + MixUp 上限已触达**：A0→A2 本地 paired delta 仅 +17 张图（0.165pp, p=0.196），平台天花板 ~60.5-61% TTA。Purification 的边际增益已饱和。
 - **单 seed 不可靠**：A2 seed=42 TTA 61.21% vs seed=3407 TTA 60.31% = 0.90pp 波动。所有候选必须在 seed=3407 上验证后才能宣称收益。
 - **本地 val 与平台持续反相关**：A3 本地最高（69.47%）平台最差（59.89%）。本地分数不能用于模型选择。
-- **突破上限的唯一出路是 visual LoRA PEFT**：AEGIS F1 证明了在干净监督上 LoRA 能贡献 ~0.6pp bare。下一步 = A2 parent + LoRA + feature distillation。
+- **突破上限的唯一出路是 visual LoRA PEFT**：AEGIS F1 证明了在干净监督上 LoRA 能贡献 ~0.6pp bare。A2 parent swap (STRICT) 进一步提升 bare 至 60.65%（+0.14pp vs F1 E2），但增益边际。
+- **Split-lineage protocol 至关重要**：原始 A2 parent swap 因 parent (d3_strict) 与 child (AEGIS prepare) 使用不同 split，导致本地 raw_micro 从真实 69.43% 假胀至 79.22%（+8.5pp 假信号）。修复后 epoch-0 baseline 精确匹配，证实验证必须与训练用同一 split。
+- **A2 parent swap 确认成立**：双 seed promotion 通过，bare +0.14pp, TTA +0.05pp vs F1 E2 parent。方向正确但收益太小，不进参数搜索。
 
 ### 7. 本地评估与待完成
 
@@ -135,6 +139,8 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | **A3** `NR_CONSENSUS_RELABEL_V2` | 69.47% | 69.47% | 40 | — | **59.89%** |
 | **A1** `NR_CL_CLASSWISE_DROP` | 68.61% | 68.61% | 45 | — | **59.55%** |
 | **A0** `nr_ctrl_fixed` (reject_policy=drop) | 69.33% | — | 50 | 59.90% | 60.31% |
+| **A2 STRICT** `F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT` | 69.71% | 69.71% | 2 (raw) / 6 (clean_core) | **60.65%** | **61.15%** |
+| **A2 STRICT** seed=3407 | 69.82% | 69.83% | 3 (raw) / 5-6 (clean_core) | 待提交 | — |
 | s_d3_mixup（MixUp d3 control） | 69.47% | 69.47% | 40 | 59.86% | — |
 | s_oof_zero_0001_ff（OOF p<0.001, final_fit） | — | — | — | **60.29%** | **60.51%** |
 | s_oof_zero_0001（OOF zero-weight p<0.001） | 69.37% | 69.37% | 44 | 59.96% | 60.28% |

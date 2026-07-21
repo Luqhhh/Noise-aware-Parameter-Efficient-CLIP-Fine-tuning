@@ -1,4 +1,16 @@
-# 最新发现（2026-07-20）
+# 最新发现（2026-07-21）
+
+## A2_AEGIS_PARENT_SWAP：Split-lineage 协议修复与最终结论
+
+- **原始 A2 parent swap 本地 79.22% raw_micro 是假信号**：A2 parent 使用 d3_strict split (91,195/10,322)，AEGIS child 使用 prepare split (92,902/10,316)。val 样本泄漏到 parent 训练集，导致本地准确率假胀 8.5pp。
+- **协议修复**：新增 `canonical_sample_path`（统一 train/train_dedup）、fail-closed lineage audit、epoch-0 baseline evaluation、promotion gate
+- **严格复跑 epoch-0 = 69.43%**：精确匹配 A2 本地准确率，确认 lineage 修复正确
+- **LoRA 真实增益 +0.19~0.39pp**（vs 假 +8.5pp），双 seed promotion 通过
+- **平台 Bare = 60.65%（+0.14pp vs F1 E2），TTA = 61.15%（+0.05pp vs F1 E2）**
+- **结论：A2 parent swap 确认成立但收益边际**，不进入 P3/P4 参数搜索
+- **教训**：parent-child split 必须完全相同（SHA-256 级别验证），epoch-0 evaluation 是必不或缺的 parent swap gate
+
+# 发现（2026-07-20）
 
 ## A2 多 seed 稳定性
 
