@@ -2,7 +2,7 @@
 
 > 日期：2026-07-20  
 > 父模型：A2 `NR_CL_KNN_DROP` seed=42 best.pt（epoch 48, val 69.44%, TTA 61.21%）  
-> 前提：A2_AEGIS_PARENT_SWAP 已确认更强 parent 能提高 AEGIS LoRA  
+> 前提：A2_AEGIS_PARENT_SWAP **结论已出——更强 parent 不提高 LoRA（-0.22pp bare, -0.23pp TTA）**  
 > 原则：每次只变一个变量，禁止笛卡尔积搜索
 
 ---
@@ -32,11 +32,33 @@ init_checkpoint: <A2 best.pt>  # 替换 E2 epoch44
 
 **回答的问题**：更强的 A2 parent 是否能提高 AEGIS LoRA，而不引入其他混杂因素？
 
+### 结果（2026-07-21）
+
+| 指标 | F1 (E2 parent) | A2 swap | Δ |
+|------|:---:|:---:|:---:|
+| raw_micro (val) | 0.7068 | 0.7922 | +8.5pp ⚠️ 假信号 |
+| clean_core_micro (val) | — | 0.8832 | — |
+| best epoch | 4 | **1** | 极快过拟合 |
+| drift @ best | — | 0.0021 | — |
+| **Bare 平台** | **60.52%** | 60.29% | **-0.22pp** |
+| **TTA 平台** | **61.10%** | 60.87% | **-0.23pp** |
+
+**结论：更强的 A2 parent 不能提高 AEGIS LoRA。方向关闭。**
+
+- 本地 val 暴涨 8.5pp 是假信号——LoRA 在 val set 上过拟合到 A2 特征空间，泛化到 test set 反而变差
+- Epoch 1 即最佳（vs F1 epoch 4），之后持续 drift 上升
+- TTA gain +0.58pp 与 F1 一致（+0.59pp），说明 TTA 收益与 parent 无关
+- **教训**：本地 val metrics 不能替代平台验证；大 parent 改进不一定传递到 LoRA
+
 ---
 
 ## P3：LoRA 因果消融矩阵
 
-Parent swap 确认有效后执行。第一轮全部 seed=42，本地通过安全门后只提交关键端点。
+> ⚠️ **2026-07-21 更新**：A2_AEGIS_PARENT_SWAP 负收益（-0.22pp bare, -0.23pp TTA）。A2 parent 不如 E2 parent。
+> P3/P4 的因果消融链仍可执行，但 baseline 应该是 F1 (E2 parent)，不是 A2 swap。
+> L0（从 A2 继续训练）仍有独立价值——它测试的是继续训练本身，不涉及 LoRA。
+
+Parent swap ~~确认有效后~~ 已出负结果，但消融矩阵本身仍有价值。第一轮全部 seed=42，本地通过安全门后只提交关键端点。
 
 ### 实验矩阵
 
