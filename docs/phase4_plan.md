@@ -2,11 +2,11 @@
 
 > 日期：2026-07-20  
 > 父模型：A2 `NR_CL_KNN_DROP` seed=42 best.pt（epoch 48, val 69.44%, TTA 61.21%）  
-> 前提：A2_AEGIS_PARENT_SWAP **结论已出——更强 parent 不提高 LoRA（-0.22pp bare, -0.23pp TTA）**  
-> ⚠️ **Protocol correction (2026-07-21):** the local 79.22% result is invalid because the A2 parent
-> and AEGIS child used different train/val splits (d3_strict vs AEGIS prepare). The platform score
-> remains a valid observation for that checkpoint, but the causal conclusion is pending a
-> parent-aligned rerun (`F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT` on `fix/a2-aegis-parent-lineage`).
+> 前提：A2_AEGIS_PARENT_SWAP **结论已更正（2026-07-21）——更强 parent 确实提高 LoRA（+0.14pp bare vs F1 E2）**  
+> ⚠️ **Protocol correction (2026-07-21):** the original 79.22% local was invalid due to split lineage
+> leak. Strict rerun (`F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT`) confirmed epoch-0=69.43% (matching
+> A2 local), LoRA gain +0.19pp local, bare platform=60.65% (+0.14pp over F1 E2 60.52%).
+> **CORRECTED CONCLUSION: A2 parent swap is marginally positive.**
 > 原则：每次只变一个变量，禁止笛卡尔积搜索
 
 ---
@@ -38,21 +38,36 @@ init_checkpoint: <A2 best.pt>  # 替换 E2 epoch44
 
 ### 结果（2026-07-21）
 
-| 指标 | F1 (E2 parent) | A2 swap | Δ |
+**原始 A2 swap（broken lineage — 本地无效，平台仅供参考）：**
+
+| 指标 | F1 (E2 parent) | A2 swap OLD | Δ |
 |------|:---:|:---:|:---:|
-| raw_micro (val) | 0.7068 | 0.7922 | +8.5pp ⚠️ 假信号 |
-| clean_core_micro (val) | — | 0.8832 | — |
-| best epoch | 4 | **1** | 极快过拟合 |
-| drift @ best | — | 0.0021 | — |
-| **Bare 平台** | **60.52%** | 60.29% | **-0.22pp** |
-| **TTA 平台** | **61.10%** | 60.87% | **-0.23pp** |
+| raw_micro (val) | 0.7068 | 0.7922 ⚠️ | +8.5pp 假信号 |
+| Bare 平台 | **60.52%** | 60.29% | -0.22pp |
+| TTA 平台 | **61.10%** | 60.87% | -0.23pp |
 
-**结论：更强的 A2 parent 不能提高 AEGIS LoRA。方向关闭。**
+**严格复跑 `F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT`（lineage 修复，d3_strict split）：**
 
-- 本地 val 暴涨 8.5pp 是假信号——LoRA 在 val set 上过拟合到 A2 特征空间，泛化到 test set 反而变差
-- Epoch 1 即最佳（vs F1 epoch 4），之后持续 drift 上升
-- TTA gain +0.58pp 与 F1 一致（+0.59pp），说明 TTA 收益与 parent 无关
-- **教训**：本地 val metrics 不能替代平台验证；大 parent 改进不一定传递到 LoRA
+| 指标 | Seed=42 | Seed=3407 |
+|------|:---:|:---:|
+| epoch-0 raw_micro | 69.43% ✅ | 69.43% ✅ |
+| best raw gain | +0.27pp (epoch 2) | +0.39pp (epoch 3) |
+| best clean_core gain | +0.53pp (epoch 6) | +0.57pp |
+| promotion | PASS | PASS |
+| **Bare 平台** | **60.65%** | 待提交 |
+| **TTA 平台** | **61.15%** | — |
+
+**最终对比：**
+
+| vs F1 E2 | Bare | TTA |
+|------|:---:|:---:|
+| A2 STRICT Δ | **+0.14pp** | **+0.05pp** |
+
+**结论：更强的 A2 parent 确认可提高 AEGIS LoRA（+0.05~0.14pp），方向成立但收益边际性。**
+- 本地 79.22% 是 split lineage 泄漏导致的假信号，严格复跑 epoch-0=69.43% 完美匹配 A2 本地
+- 双 seed promotion 通过，LoRA 增益同符号（+0.19~0.39pp local）
+- TTA gain +0.50pp 与 F1 一致（+0.58pp），说明 TTA 收益与 parent 无关
+- **不建议进 P4 参数搜索**：收益太小，AEGIS F1 的 E2 parent 已接近最优
 
 ---
 
