@@ -1,291 +1,921 @@
-# Phase 4：Visual LoRA 因果消融与参数优化
+# 后续突破性实验执行方案
 
-> 日期：2026-07-20  
-> 父模型：A2 `NR_CL_KNN_DROP` seed=42 best.pt（epoch 48, val 69.44%, TTA 61.21%）  
-> 前提：A2_AEGIS_PARENT_SWAP **结论已更正（2026-07-21）——更强 parent 确实提高 LoRA（+0.14pp bare vs F1 E2）**  
-> ⚠️ **Protocol correction (2026-07-21):** the original 79.22% local was invalid due to split lineage
-> leak. Strict rerun (`F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT`) confirmed epoch-0=69.43% (matching
-> A2 local), LoRA gain +0.19pp local, bare platform=60.65% (+0.14pp over F1 E2 60.52%).
-> **CORRECTED CONCLUSION: A2 parent swap is marginally positive.**
-> 原则：每次只变一个变量，禁止笛卡尔积搜索
+**项目**：Noise-aware Parameter-Efficient CLIP Fine-tuning  
+**日期**：2026-07-21  
+**当前主分支**：`60fc60878e6acdf00dad1b4e990eb9086add9167`  
+**目标**：停止 0.05–0.15pp 级别的低收益参数微调，优先验证可能改变平台分数分布的机制级方向。
 
 ---
 
-## 0. 前置：A2_AEGIS_PARENT_SWAP
+## 1. 当前状态与判断
 
-严格复刻 AEGIS F1，只替换 init_checkpoint：
+当前主要平台结果：
 
-```yaml
-# 完全保持 AEGIS F1 配置，不变：
-augmentation: weak_rrc_flip
-lora_last_n_blocks: 4        # blocks 8–11
-lora_rank: 8
-lora_adapt_qv: true          # Q/V
-lora_adapt_out: true         # output projection
-clean_threshold: 0.70
-gce_q: 0.5
-feature_distillation_weight: 2.0
-head_lr: 5e-5
-backbone_lr: 2e-5
-epochs: 6
-drift_budget: 0.01           # 1%
+| 实验                        |       Bare |        TTA |
+| --------------------------- | ---------: | ---------: |
+| A2 `NR_CL_KNN_DROP` seed=42 |  约 60.64% | **61.21%** |
+| AEGIS F1（E2 parent）       |     60.52% |     61.10% |
+| A2 STRICT + AEGIS LoRA      | **60.65%** |     61.15% |
 
-# 唯一变化：
-init_checkpoint: <A2 best.pt>  # 替换 E2 epoch44
-```
+A2 STRICT 修复 parent-child split lineage 后表明：
 
-**回答的问题**：更强的 A2 parent 是否能提高 AEGIS LoRA，而不引入其他混杂因素？
+- epoch-0 与 A2 父模型本地准确率一致；
+- 双 seed 的 LoRA 本地增益同符号；
+- 平台 Bare 仅提升约 0.14pp；
+- 平台 TTA 仅提升约 0.05pp；
+- 当前 LoRA 配方已进入明显的边际收益区。
 
-### 结果（2026-07-21）
+因此，后续不应继续把主要算力投入：
 
-**原始 A2 swap（broken lineage — 本地无效，平台仅供参考）：**
+- GCE 的普通 `q` 搜索；
+- CE warmup 长度；
+- Label Smoothing；
+- Head EMA；
+- 普通 sample weighting；
+- Cosine Head；
+- 更激进的数据删除；
+- 大规模伪标签重标；
+- LoRA rank、层数、学习率、distillation weight 的笛卡尔积搜索。
 
-| 指标 | F1 (E2 parent) | A2 swap OLD | Δ |
-|------|:---:|:---:|:---:|
-| raw_micro (val) | 0.7068 | 0.7922 ⚠️ | +8.5pp 假信号 |
-| Bare 平台 | **60.52%** | 60.29% | -0.22pp |
-| TTA 平台 | **61.10%** | 60.87% | -0.23pp |
+后续实验必须改变至少一个关键环节：
 
-**严格复跑 `F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT`（lineage 修复，d3_strict split）：**
-
-| 指标 | Seed=42 | Seed=3407 |
-|------|:---:|:---:|
-| epoch-0 raw_micro | 69.43% ✅ | 69.43% ✅ |
-| best raw gain | +0.27pp (epoch 2) | +0.39pp (epoch 3) |
-| best clean_core gain | +0.53pp (epoch 6) | +0.57pp |
-| promotion | PASS | PASS |
-| **Bare 平台** | **60.65%** | 待提交 |
-| **TTA 平台** | **61.15%** | — |
-
-**最终对比：**
-
-| vs F1 E2 | Bare | TTA |
-|------|:---:|:---:|
-| A2 STRICT Δ | **+0.14pp** | **+0.05pp** |
-
-**结论：更强的 A2 parent 确认可提高 AEGIS LoRA（+0.05~0.14pp），方向成立但收益边际性。**
-- 本地 79.22% 是 split lineage 泄漏导致的假信号，严格复跑 epoch-0=69.43% 完美匹配 A2 本地
-- 双 seed promotion 通过，LoRA 增益同符号（+0.19~0.39pp local）
-- TTA gain +0.50pp 与 F1 一致（+0.58pp），说明 TTA 收益与 parent 无关
-- **不建议进 P4 参数搜索**：收益太小，AEGIS F1 的 E2 parent 已接近最优
+1. 哪些样本有资格更新视觉 LoRA；
+2. 如何增强细粒度类别间的视觉分离；
+3. 一个类别是否需要多个视觉中心；
+4. 如何减少单 epoch 和单 seed 的偶然性。
 
 ---
 
-## P3：LoRA 因果消融矩阵
+# 2. 总体实验路线
 
-> ⚠️ **2026-07-21 更新**：严格 lineage 修复后，A2 parent swap 为边际正收益：
-> Bare +0.14pp，TTA +0.05pp（vs F1 E2 parent）。方向成立，但收益不足以支持大规模参数搜索。
-> 双 seed 本地 LoRA 增益同符号，promotion gate 通过。seed=3407 平台 Bare 待补交。
-> P3/P4 因果消融链暂不执行——LoRA 基础收益仅 +0.19~0.39pp local，模块消融的边际贡献大概率淹没在 seed 波动中。
+采用四级漏斗：
 
-Parent swap ~~确认有效后~~ 结论已更正为边际正收益。P3/P4 不追，后续优先 frozen backbone 路径。
+| 优先级 | 方向                            | 成本 | 目标                         |
+| ------ | ------------------------------- | ---: | ---------------------------- |
+| P0     | 多原型与结构化分类头            | 很低 | 利用现有特征修正决策边界     |
+| P1     | 同训练轨迹 checkpoint averaging |   低 | 降低单 epoch 偶然性          |
+| P2     | Clean-Routed LoRA               |   中 | 控制哪些样本能够更新视觉主干 |
+| P3     | Trusted Prototype-Contrastive   | 中高 | 增强细粒度特征分离           |
+| P4     | 动态样本分组                    |   高 | 用训练动态修正静态 trust     |
 
-### 实验矩阵
-
-| ID | LoRA | Clean≥0.70 | Distill | 增强 | 研究问题 |
-|:---|:---:|:---:|:---:|:---|:---|
-| L0 | 否 | 否 | 否 | weak_rrc_flip | 从 A2 init 继续训练 6 epoch 是否有收益？ |
-| L1 | 是 | 否 | 否 | weak_rrc_flip | 纯 visual LoRA，不加任何过滤 |
-| L2 | 是 | 是 | 否 | weak_rrc_flip | Clean filter 的边际贡献 |
-| L3 | 是 | 是 | 是 | weak_rrc_flip | Feature distillation 的边际贡献（= AEGIS F1 全配置） |
-| L4 | 是 | 是 | 是 | **A0** | 弱增强是否必要？用 CLIP 标准预处理替代 weak_rrc_flip |
-
-**Configs:**
-
-| ID | Config file | Key diff from L3 |
-|:---|:---|:---|
-| L0 | `l0_frozen_continue.yaml` | `peft_mode` 非 LoRA, clean 关, distill 关 |
-| L1 | `l1_lora_only.yaml` | clean 关, distill 关 |
-| L2 | `l2_lora_clean.yaml` | distill 关 |
-| L3 | `l3_lora_clean_distill.yaml` | (baseline) |
-| L4 | `l4_lora_clean_distill_a0.yaml` | `train_augmentation: clip_center_crop` |
-| A2 swap | `f1_visual_lora_clean_core_a2_parent.yaml` | `init_checkpoint: A2 best.pt`（前置验证） |
-
-**L0 是因果基线。** 如果 L0 本身就有正收益（继续训练 6 epoch > A2 bare），那后续 LoRA 的收益需要扣除 L0 的贡献。
-
-### 本地安全门
-
-所有实验必须满足：
+推荐资源分配：
 
 ```text
-protocol_audit passed
-clean_core_micro 不崩塌
-flip_agreement 不显著下降
-drift (if applicable) < 0.01
-predicted class count == 500
-no class accuracy drops >25pp with prediction count collapse >50%
-```
-
-L0 额外：feature drift 应接近 0（backbone 冻结）。
-
-### 平台提交顺序
-
-```
-L1 Bare → L3 Bare → 胜者 seed=3407 → 双 seed 有收益后 TTA
-```
-
-最多消耗 3 次 Bare + 1 次 TTA 提交。
-
-### 判断逻辑
-
-```
-L1 Bare > A2 Bare + 0.20pp？
-  ├── 是 → LoRA 本身有效，进入 L2/L3
-  └── 否 → LoRA 无效，关闭 PEFT 方向
-
-L2 Bare > L1 Bare + 0.10pp？
-  ├── 是 → clean filter 有边际收益
-  └── 否 → clean filter 在 A2 数据上冗余（A2 已删 991 个确认错标）
-
-L3 Bare > L2 Bare + 0.10pp？
-  ├── 是 → feature distillation 有边际收益
-  └── 否 → distillation 在 A2 数据上冗余
-
-L4 Bare vs L3 Bare？
-  ├── L4 ≥ L3 → 弱增强不必要，可用 A0 简化管线
-  └── L4 < L3 → weak_rrc_flip 对 LoRA 训练有帮助
+20%：P0 低成本筛选
+15%：P1 checkpoint averaging
+45%：P2 Clean-Routed LoRA
+15%：P3 prototype-contrastive
+5%：P4 动态 trust 原型验证
 ```
 
 ---
 
-## P4：参数优化（仅在 LoRA 有效后）
+# 3. P0：低成本结构化分类头实验
 
-禁止直接大规模网格搜索。按以下顺序逐一优化，每个阶段只调一个参数。
+## 3.1 多原型分类头
 
-### 1. Backbone LR
+### 研究问题
 
-固定其他配置（L3 全配置）：
+当前 Linear Head 每个类别只有一个权重向量。细粒度类别可能包含多个视角、姿态、背景和亚型，因此单中心分类边界可能不足。
 
-| backbone_lr | 预期 |
-|:---|:---|
-| 1e-5 | 更保守，drift 更低 |
-| 2e-5 | AEGIS F1 默认 |
-| 4e-5 | 更激进，drift 风险 |
+多原型分类头使用每类多个视觉中心：
 
-监控指标：
+\[
+s*c(x)=\operatorname{Agg}*{j=1}^{K}\left(\operatorname{sim}(f(x),p\_{c,j})\right)
+\]
 
-```text
-clean_core_micro
-raw_micro
-flip_agreement
-mean_feature_cosine_distance
-p95_feature_cosine_distance
-LoRA gradient norm
-```
+其中：
 
-选择标准：clean_core_micro 最高且 drift < 1%。
+- \(K\) 为每类 prototype 数量；
+- `Agg` 可选 `max` 或 `logmeanexp`；
+- 最终与原 Linear Head logits 小比例融合。
 
-**Configs:**
-
-| Config | backbone_lr | vs L3 |
-|:---|:---|:---|
-| `p4_lora_blr_1e5.yaml` | 1e-5 | 唯一变化 |
-| L3 (baseline) | 2e-5 | — |
-| `p4_lora_blr_4e5.yaml` | 4e-5 | 唯一变化 |
-
-### 2. LoRA 位置与容量
-
-固定最优 backbone LR：
-
-| 配置 | rank | blocks | 参数量 | 预期 |
-|:---|:---:|:---|:---|:---|
-| Last-2, R8 | 8 | 10–11 | ~50% of AEGIS | 可能足够，当前数据噪声比 AEGIS 少 |
-| Last-4, R8 | 8 | 8–11 | AEGIS F1 默认 | baseline |
-| Last-4, R4 | 4 | 8–11 | ~50% of AEGIS | 最小有效配置 |
-
-暂不测试 rank=16。当前数据仍有标签噪声，容量过大更容易破坏 CLIP 表征。
-
-**Configs:**
-
-| Config | blocks | rank | lora_alpha | vs L3 |
-|:---|:---:|:---:|:---|:---|
-| `p4_lora_pos2_r8.yaml` | 2 | 8 | 8.0 | 唯一变化 |
-| L3 (baseline) | 4 | 8 | 8.0 | — |
-| `p4_lora_pos4_r4.yaml` | 4 | 4 | 4.0 | 唯一变化 |
-
-### 3. Distillation 强度
-
-用特征漂移作为控制目标，不盲目固定 λ=2.0：
-
-| λ | 目标 |
-|:---|:---|
-| 0.5 | 更弱的 anchor，允许更多适配 |
-| 1.0 | 折中 |
-| 2.0 | AEGIS F1 默认 |
-
-约束：
+### 现有入口
 
 ```text
-目标 drift：0.3%–0.8%
-硬上限：1.0%
-如果 λ=2.0 时 drift < 0.3% → 可以降低 λ 允许更多适配
-如果 λ=0.5 时 drift > 1.0% → 必须提高 λ 加强约束
+reproducibility/aegis_f1/aegis_clip/cli/sweep_multiprototype_head.py
 ```
 
-仓库已有根据 task loss / feature loss 比例校准 λ 的机制，利用该机制而非盲目搜索。
+### 第一轮实验矩阵
 
-**Configs:**
+| ID   | prototypes/class | trust power | aggregation | alpha |
+| ---- | ---------------: | ----------: | ----------- | ----: |
+| MP-1 |                2 |           1 | logmeanexp  |  0.10 |
+| MP-2 |                2 |           1 | logmeanexp  |  0.25 |
+| MP-3 |                2 |           2 | logmeanexp  |  0.10 |
+| MP-4 |                2 |           2 | logmeanexp  |  0.25 |
+| MP-5 |                4 |           1 | logmeanexp  |  0.10 |
+| MP-6 |                4 |           2 | max         |  0.10 |
 
-| Config | λ | vs L3 |
-|:---|:---|:---|
-| `p4_distill_lam05.yaml` | 0.5 | 唯一变化 |
-| `p4_distill_lam10.yaml` | 1.0 | 唯一变化 |
-| L3 (baseline) | 2.0 | — |
-
-### 4. Clean threshold
-
-仅在 LoRA 已确认有效后测试：
-
-| threshold | 预期 |
-|:---|:---|
-| 0.65 | 更多样本获得分类监督 |
-| 0.70 | AEGIS F1 默认 |
-| 0.75 | 更严格，更少样本 |
-
-必须输出：
+第一轮不要尝试：
 
 ```text
-总保留率
-每类保留率（min / median / max）
-每类最少样本数
-被 global blacklist (A2) 与 clean filter 同时拒绝的重叠率
-被 global blacklist 拒绝但 clean filter 接受的样本数
+alpha >= 0.5
+prototypes/class > 4
 ```
 
-如果出现"过滤越多性能越差"（类似 A1/A3 的教训），立即固定阈值，不再微调。
+多原型只能作为原分类头的小幅结构修正，不能直接替代已训练 Linear Head。
 
-**Configs:**
+### 基线
 
-| Config | selection_threshold | clean_core_threshold | vs L3 |
-|:---|:---:|:---:|:---|
-| `p4_clean_thresh065.yaml` | 0.65 | 0.65 | 唯一变化 |
-| L3 (baseline) | 0.70 | 0.70 | — |
-| `p4_clean_thresh075.yaml` | 0.75 | 0.75 | 唯一变化 |
+```text
+F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT
+seed=42
+best.pt
+```
 
-### P4 Config 总览
+### 本地晋级条件
 
-所有 P4 config 位于 `reproducibility/aegis_f1/configs/`，`stage: p4_ablation`，基于 L3 且每次只变一个变量：
+候选必须同时满足：
 
-| # | Config | 维度 | 变化 | 执行顺序 |
-|:---|:---|:---|:---|:---:|
-| 1 | `p4_lora_blr_1e5.yaml` | Backbone LR | 2e-5 → 1e-5 | P4.1 |
-| 2 | `p4_lora_blr_4e5.yaml` | Backbone LR | 2e-5 → 4e-5 | P4.1 |
-| 3 | `p4_lora_pos2_r8.yaml` | LoRA 位置 | last-4 → last-2 | P4.2 |
-| 4 | `p4_lora_pos4_r4.yaml` | LoRA 容量 | rank=8 → rank=4 | P4.2 |
-| 5 | `p4_distill_lam05.yaml` | Distill λ | 2.0 → 0.5 | P4.3 |
-| 6 | `p4_distill_lam10.yaml` | Distill λ | 2.0 → 1.0 | P4.3 |
-| 7 | `p4_clean_thresh065.yaml` | Clean thresh | 0.70 → 0.65 | P4.4 |
-| 8 | `p4_clean_thresh075.yaml` | Clean thresh | 0.70 → 0.75 | P4.4 |
+```text
+predicted_class_count == 500
+proxy_macro >= base + 0.15pp
+trusted_macro >= base + 0.15pp
+raw_macro >= base - 0.10pp
+raw_fixed > raw_broken
+changed_predictions_ratio in [0.5%, 8%]
+```
 
-**执行约束**：P4.1→P4.2→P4.3→P4.4 顺序执行。每个阶段选最优值固定后再进入下一阶段。不允许跨阶段同时搜索。
+第一轮最多保留一个候选。
 
 ---
 
-## 全局约束
+## 3.2 LDA / Ridge 结构化分类头
 
-- **所有实验 seed=42 首轮，只有通过本地门+平台 Bare 正收益的候选补 seed=3407**
-- **每次只变一个参数**，不跑组合网格
-- **禁止**：rank 搜索 + block 搜索 + LR 搜索 + threshold 搜索同时进行
-- **失败即停**：L0/L1 无收益 → 关闭 PEFT，不继续 L2-L4 和 P4
-- **数据固定**：使用 AEGIS F1 的 train.csv（91,195 samples），不引入全局黑名单（AEGIS 代码不知道黑名单的存在，保持变量隔离）
-- **提交纪律**：先 Bare，Bare 有正信号再 TTA；单 seed 不宣称收益
+### 研究问题
+
+普通 Linear Head 通过 SGD 隐式学习决策边界，但没有直接利用：
+
+- 类内协方差；
+- 类间判别统计；
+- trust-weighted 全局统计；
+- corrected target。
+
+结构化 Head 可利用训练特征拟合：
+
+- Shrinkage LDA；
+- Ridge Regression；
+- Corrected-target Ridge。
+
+### 现有入口
+
+```text
+reproducibility/aegis_f1/aegis_clip/cli/sweep_structural_head.py
+```
+
+### 第一轮矩阵
+
+| ID   | 方法            | trust power |           参数 | alpha |
+| ---- | --------------- | ----------: | -------------: | ----: |
+| SH-1 | LDA             |           1 | shrinkage=0.75 |  0.10 |
+| SH-2 | LDA             |           1 | shrinkage=0.75 |  0.25 |
+| SH-3 | LDA             |           2 | shrinkage=0.75 |  0.10 |
+| SH-4 | Ridge corrected |           1 |      lambda=10 |  0.10 |
+| SH-5 | Ridge corrected |           1 |      lambda=10 |  0.25 |
+| SH-6 | Ridge corrected |           2 |      lambda=10 |  0.10 |
+
+### 晋级门槛
+
+```text
+predicted_class_count == 500
+proxy_macro >= base + 0.15pp
+trusted_macro >= base + 0.15pp
+raw_macro >= base - 0.10pp
+```
+
+P0 中只允许多原型和结构化 Head 合计保留一个平台候选。
+
+---
+
+# 4. P1：同轨迹 Checkpoint Averaging
+
+## 4.1 动机
+
+A2 STRICT 中出现：
+
+- raw 指标最佳 epoch 较早；
+- clean-core 指标最佳 epoch 较晚；
+- 不同 epoch 在不同样本子集之间存在折中。
+
+单独选择一个 epoch 可能放大随机优化噪声和模型选择偏差。Checkpoint averaging 试图在不增加推理模型数量的前提下，保留多个 epoch 的共同有效方向。
+
+## 4.2 必须保存的 checkpoint
+
+重新运行 A2 STRICT，保存：
+
+```text
+epoch_1.pt
+epoch_2.pt
+epoch_3.pt
+epoch_4.pt
+epoch_5.pt
+epoch_6.pt
+```
+
+同时保留：
+
+```text
+epoch0.pt
+best.pt
+metrics.csv
+epoch0_evaluation.json
+promotion.json
+```
+
+## 4.3 第一轮平均方案
+
+| ID    | 平均范围   | 方式        |
+| ----- | ---------- | ----------- |
+| SWA-1 | epoch 2–6  | 等权平均    |
+| SWA-2 | epoch 2–4  | 等权平均    |
+| SWA-3 | epoch 3–6  | 等权平均    |
+| SWA-4 | epoch 2 起 | greedy soup |
+
+只平均：
+
+```text
+LoRA 参数
+classifier.weight
+classifier.bias
+```
+
+不平均 frozen CLIP base 权重。
+
+## 4.4 禁止操作
+
+不要直接平均不同训练 seed 的 LoRA `A/B` 因子。
+
+因为：
+
+\[
+\Delta W = BA
+\]
+
+不同 seed 的低秩分解存在等价变换。跨 seed 平均必须：
+
+1. 重建每层有效增量 \(\Delta W\)；
+2. 平均多个 \(\Delta W\)；
+3. 对平均结果做 truncated SVD；
+4. 重新压回 rank 8。
+
+第一阶段只做同一训练轨迹、不同 epoch 的平均。
+
+## 4.5 晋级条件
+
+满足以下一种：
+
+### 条件 A
+
+```text
+raw_micro >= best_raw_epoch
+clean_core_micro >= best_clean_core_epoch
+```
+
+### 条件 B
+
+```text
+raw_micro >= best_raw_epoch - 0.05pp
+clean_core_micro >= best_clean_core_epoch + 0.10pp
+```
+
+同时：
+
+```text
+predicted_class_count == 500
+mean_feature_drift <= 1%
+```
+
+---
+
+# 5. P2：Clean-Routed LoRA
+
+## 5.1 核心问题
+
+当前 AEGIS 主要用 `clean_probability` 调整分类损失权重，但没有完全回答：
+
+> 哪些样本有资格改变视觉编码器？
+
+低可信样本即使分类 loss 较小，仍可能经过 LoRA 路径、参与蒸馏并影响视觉梯度。
+
+Clean Routing 将：
+
+```text
+样本是否可信
+```
+
+从普通 loss weight 升级为：
+
+```text
+样本是否拥有更新 LoRA 的权限
+```
+
+## 5.2 数学形式
+
+\[
+f*i=f*{\mathrm{CLIP}}(x*i)+g_i\Delta f*{\mathrm{LoRA}}(x_i)
+\]
+
+其中：
+
+- \(f\_{\mathrm{CLIP}}\) 为 frozen base；
+- \(\Delta f\_{\mathrm{LoRA}}\) 为低秩视觉增量；
+- \(g_i\) 为样本级 routing gate。
+
+## 5.3 第一轮实验矩阵
+
+| ID   | Head 训练    | LoRA 更新         | Gate       |
+| ---- | ------------ | ----------------- | ---------- |
+| CR-0 | 当前配置     | 当前配置          | 无 routing |
+| CR-1 | 所有样本 GCE | clean≥0.70        | hard gate  |
+| CR-2 | 所有样本 GCE | clean probability | soft gate  |
+| CR-3 | clean+hard   | clean≥0.80        | hard gate  |
+
+最高优先级：`CR-1`。
+
+## 5.4 CR-1 具体行为
+
+### 高可信样本
+
+```text
+clean_probability >= 0.70
+```
+
+执行：
+
+```text
+更新 classifier
+更新 LoRA
+计算 classification loss
+计算 feature distillation
+```
+
+### 低可信样本
+
+```text
+clean_probability < 0.70
+```
+
+执行：
+
+```text
+更新 classifier
+不允许产生 LoRA gradient
+使用 frozen CLIP feature
+不参与 LoRA feature distillation
+```
+
+## 5.5 推荐实现方式
+
+不要对同一个 batch 逐样本开关整个模块参数。
+
+推荐拆分视觉输出：
+
+```python
+base_feature = frozen_visual_forward(images)
+lora_delta = visual_lora_delta(images)
+feature = base_feature + gate[:, None] * lora_delta
+```
+
+其中：
+
+```python
+gate = (clean_probability >= threshold).float()
+```
+
+这样：
+
+- gate=0 的样本不会给 LoRA 增量产生梯度；
+- classifier 仍可利用全部样本；
+- batch 内不需要动态修改 `requires_grad`；
+- 便于 soft gate 扩展。
+
+## 5.6 CR-2 Soft Gate
+
+建议：
+
+\[
+g_i=\operatorname{clip}\left(\frac{p_i-0.5}{0.5},0,1\right)
+\]
+
+对应：
+
+```python
+gate = ((clean_probability - 0.5) / 0.5).clamp(0.0, 1.0)
+```
+
+第一轮不要加入可学习 gate，避免引入新的确认偏差。
+
+## 5.7 固定变量
+
+所有 CR 实验固定：
+
+```text
+parent = A2 STRICT parent
+lora_rank = 8
+lora_last_n_blocks = 4
+adapt_qv = true
+adapt_out = true
+gce_q = 0.5
+feature_distillation_weight = 2.0
+augmentation = weak_rrc_flip
+epochs = 6
+head_lr = 5e-5
+backbone_lr = 2e-5
+drift_budget = 0.01
+```
+
+只改变 routing。
+
+## 5.8 实验顺序
+
+```text
+Step 1：跑 CR-0 seed42，重新确认基线
+Step 2：跑 CR-1 seed42
+Step 3：跑 CR-2 seed42
+Step 4：CR-1/CR-2 中最多保留一个
+Step 5：补 seed3407
+Step 6：两个 seed 同方向才提交平台 Bare
+```
+
+## 5.9 晋级条件
+
+两个 seed 必须同时满足：
+
+```text
+selector_gain >= +0.20pp
+clean_core_micro_gain >= +0.20pp
+raw_micro_gain >= -0.15pp
+predicted_class_count == 500
+mean_feature_drift <= 1%
+LoRA gain same-sign across seeds
+```
+
+平台晋级：
+
+```text
+Bare >= 60.85%
+```
+
+低于 60.85% 视为与当前 60.65% 持平，不继续调参。
+
+---
+
+# 6. P3：Trusted Prototype-Contrastive Learning
+
+## 6.1 动机
+
+当前分类损失主要优化“样本是否被正确分类”，但细粒度识别还需要优化：
+
+- 同类特征是否紧凑；
+- 近邻类别是否真正分离。
+
+普通 batch SupCon 不适合当前 500 类场景，因为 batch 内同类样本过少。推荐采用 class prototype 作为稳定正样本锚点。
+
+## 6.2 Trusted EMA Prototype
+
+对每个类别维护：
+
+\[
+c_k\leftarrow mc_k+(1-m)\operatorname{mean}\{f_i:y_i=k,p_i\ge0.8\}
+\]
+
+推荐：
+
+```text
+prototype_momentum = 0.99
+clean_threshold = 0.80
+```
+
+## 6.3 Prototype Contrastive Loss
+
+对高可信样本：
+
+\[
+L*{\mathrm{proto}}=-\log\frac{\exp(\operatorname{sim}(f_i,c*{y_i})/\tau)}{\sum_k\exp(\operatorname{sim}(f_i,c_k)/\tau)}
+\]
+
+第一轮固定：
+
+```text
+temperature = 0.10
+loss_weight = 0.05
+only_clean_samples = true
+```
+
+总损失：
+
+\[
+L=L*{\mathrm{classification}}+\lambda*{\mathrm{distill}}L*{\mathrm{distill}}+0.05L*{\mathrm{proto}}
+\]
+
+## 6.4 第一轮只跑一个配置
+
+```text
+最佳 Clean Routing
++ Trusted Prototype Contrastive
+lambda=0.05
+temperature=0.10
+momentum=0.99
+threshold=0.80
+```
+
+只有 seed42 出现明显正收益，才补：
+
+```text
+lambda=0.10
+```
+
+不要一开始做温度、momentum、threshold 网格。
+
+## 6.5 晋级条件
+
+相对最佳 Clean Routing：
+
+```text
+clean_core_micro >= +0.20pp
+proxy_macro >= +0.20pp
+raw_micro >= -0.10pp
+predicted_class_count == 500
+mean_feature_drift <= 1%
+```
+
+---
+
+# 7. P4：动态样本分组
+
+## 7.1 当前问题
+
+现有 trust bundle 在训练开始前生成，之后保持静态。随着 LoRA 表征变化：
+
+- hard 样本可能逐渐变得可信；
+- 部分初始 clean 样本可能出现两视图不一致；
+- 静态阈值无法适应训练动态。
+
+## 7.2 最小可行实验
+
+不要直接实现完整 DivideMix 或双网络 Co-teaching。只做一次中途刷新：
+
+```text
+epoch 0–1：
+    使用静态 CVT trust
+
+epoch 2：
+    用 EMA model 对 original + flip 重新推理
+    更新 clean / hard / reject 分组
+
+epoch 2–6：
+    clean：更新 head + LoRA
+    hard：只更新 head，使用 GCE
+    reject：不参与分类，或只做一致性约束
+```
+
+第一轮只刷新一次。
+
+## 7.3 动态分组建议
+
+### Clean
+
+```text
+mean confidence >= 0.80
+flip agreement = true
+predicted label == original label
+```
+
+### Hard
+
+```text
+mean confidence in [0.50, 0.80)
+or
+flip agreement = false
+but original label remains top-3
+```
+
+### Reject
+
+```text
+mean confidence < 0.50
+and
+predicted label != original label
+and
+two-view prediction agreement = true
+```
+
+---
+
+# 8. 不建议继续投入的方向
+
+## 8.1 普通 LoRA 参数网格
+
+暂停：
+
+```text
+rank 4/8/16
+last 2/4/6 blocks
+lr 1e-5/2e-5/4e-5
+distill 0.5/1/2
+threshold 0.65/0.70/0.75
+```
+
+原因：
+
+- 当前 A2 parent swap 平台收益只有 0.05–0.14pp；
+- 小于已观察到的 seed 波动；
+- 易产生偶然最优；
+- 不能解释机制。
+
+## 8.2 大规模删除
+
+后续只允许：
+
+```text
+极高置信度 blacklist
+```
+
+不允许继续扩大删除比例。
+
+## 8.3 大规模伪标签重标
+
+后续伪标签只能用于：
+
+```text
+辅助 loss
+prototype 更新
+dynamic routing
+```
+
+不建议直接永久替换原标签。
+
+## 8.4 双网络 Co-teaching / DivideMix
+
+暂不优先：
+
+- 训练成本高；
+- 工程复杂；
+- 难以归因；
+- 与当前 CLIP PEFT 主线不一致；
+- 当前最重要问题是视觉梯度污染，而不是缺少更复杂的噪声框架。
+
+---
+
+# 9. 实验执行顺序
+
+## 第一阶段：不重新训练或低成本
+
+```text
+P0-1 多原型 Head
+P0-2 LDA / Ridge Head
+P1 同轨迹 Checkpoint Averaging
+```
+
+目标：
+
+```text
+选出最多一个平台候选
+```
+
+## 第二阶段：Clean Routing
+
+```text
+CR-0 seed42
+CR-1 seed42
+CR-2 seed42
+最佳候选 seed3407
+平台 Bare
+```
+
+目标：
+
+```text
+验证视觉更新权限控制是否有效
+```
+
+## 第三阶段：Trusted Prototype Contrastive
+
+```text
+最佳 Clean Routing
++ prototype contrastive lambda=0.05
+```
+
+目标：
+
+```text
+验证细粒度特征分离是否可带来进一步增益
+```
+
+## 第四阶段：动态 trust
+
+```text
+epoch-2 单次 trust refresh
+```
+
+目标：
+
+```text
+验证静态 trust 是否已经成为主要瓶颈
+```
+
+---
+
+# 10. 平台提交策略
+
+## 提交优先级
+
+1. P0 中最强的一个候选 Bare；
+2. Clean Routing 最强候选 Bare；
+3. Prototype Contrastive 最强候选 Bare；
+4. Bare 明显提升后再补 TTA。
+
+## 不允许的行为
+
+```text
+不要一次提交多个 alpha
+不要用 TTA 掩盖 Bare 无提升
+不要只凭单 seed 本地指标提交
+不要用 raw_micro 单独选模型
+不要把平台 +0.05pp 宣称为突破
+```
+
+---
+
+# 11. 统一晋级标准
+
+## 本地晋级
+
+两个训练 seed 必须满足：
+
+```text
+提升方向相同
+clean_core/proxy_macro 至少 +0.20pp
+raw_micro 不下降超过 0.15pp
+predicted_class_count == 500
+mean_feature_drift <= 1%
+```
+
+## 平台晋级
+
+当前 Bare 基线：
+
+```text
+60.65%
+```
+
+新方法至少达到：
+
+```text
+60.85%
+```
+
+才定义为有效正收益。
+
+达到：
+
+```text
+61.10% Bare
+```
+
+才定义为明显突破。
+
+TTA 目标：
+
+```text
+>= 61.40%
+```
+
+才可视为超过当前平台波动范围的有效进展。
+
+---
+
+# 12. 结果产物要求
+
+每个实验必须保存：
+
+```text
+resolved_config.yaml/json
+git_commit.txt
+split_lineage_audit.json
+epoch0_evaluation.json
+metrics.csv
+promotion.json
+effective_model_spec.json
+checkpoint_sha256.txt
+prediction_records.csv
+submission_manifest.json
+```
+
+每条平台结果必须登记：
+
+```text
+experiment_id
+train_seed
+split_seed
+checkpoint_sha256
+prediction_csv_sha256
+submission_zip_sha256
+local metrics
+online score
+Bare/TTA mode
+parent checkpoint
+```
+
+---
+
+# 13. 推荐分工
+
+## A：公共机制与审计
+
+负责：
+
+```text
+Clean Routing 公共接口
+LoRA delta 分离
+gate 单元测试
+checkpoint averaging 工具
+统一 promotion gate
+结果审计
+```
+
+## B：低成本结构化实验
+
+负责：
+
+```text
+Multiprototype Head
+LDA / Ridge Head
+paired prediction analysis
+候选筛选
+```
+
+## C：表示学习实验
+
+负责：
+
+```text
+Trusted EMA prototype
+Prototype contrastive loss
+dynamic trust refresh
+双 seed 训练
+```
+
+---
+
+# 14. 最终决策树
+
+```text
+P0 有 >=0.20pp 本地稳定增益？
+    是 → 提交一个 Bare
+    否 → 关闭结构化 Head
+
+P1 averaging 同时改善 raw 和 clean-core？
+    是 → 提交 Bare
+    否 → 关闭 checkpoint averaging
+
+CR-1/CR-2 双 seed 同方向？
+    是 → 提交 Bare
+    否 → 关闭 Clean Routing
+
+Clean Routing 平台 Bare >=60.85%？
+    是 → 做 Prototype Contrastive
+    否 → 不继续调 routing threshold
+
+Prototype Contrastive 双 seed 明显提升？
+    是 → 提交 Bare/TTA
+    否 → 做一次动态 trust MVP
+
+动态 trust 仍无增益？
+    是 → 当前 CLIP ViT-B/32 方法族基本到顶
+    下一阶段考虑更强 backbone 或模型级 ensemble
+```
+
+---
+
+# 15. 核心结论
+
+当前最值得做的不是继续调：
+
+```text
+q
+rank
+lr
+threshold
+distill weight
+```
+
+而是优先验证：
+
+1. 多原型或结构化分类边界能否改善细粒度多模态问题；
+2. 同轨迹权重平均能否降低模型选择偶然性；
+3. Clean Routing 能否阻止低可信样本污染 LoRA；
+4. Trusted Prototype Contrastive 能否增强类别间特征分离；
+5. 动态 trust 是否比静态 trust 更适合当前任务。
+
+最有可能形成真正突破的主线是：
+
+```text
+A2 parent
+→ Clean-Routed Visual LoRA
+→ Trusted Prototype Contrastive
+→ Dynamic Trust Refresh
+```
+
+这条路线改变的是视觉参数的更新机制，具有明确因果问题和可解释性，优先级高于普通参数搜索。
