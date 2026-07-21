@@ -73,11 +73,12 @@ init_checkpoint: <A2 best.pt>  # 替换 E2 epoch44
 
 ## P3：LoRA 因果消融矩阵
 
-> ⚠️ **2026-07-21 更新**：A2_AEGIS_PARENT_SWAP 负收益（-0.22pp bare, -0.23pp TTA）。A2 parent 不如 E2 parent。
-> P3/P4 的因果消融链仍可执行，但 baseline 应该是 F1 (E2 parent)，不是 A2 swap。
-> L0（从 A2 继续训练）仍有独立价值——它测试的是继续训练本身，不涉及 LoRA。
+> ⚠️ **2026-07-21 更新**：严格 lineage 修复后，A2 parent swap 为边际正收益：
+> Bare +0.14pp，TTA +0.05pp（vs F1 E2 parent）。方向成立，但收益不足以支持大规模参数搜索。
+> 双 seed 本地 LoRA 增益同符号，promotion gate 通过。seed=3407 平台 Bare 待补交。
+> P3/P4 因果消融链暂不执行——LoRA 基础收益仅 +0.19~0.39pp local，模块消融的边际贡献大概率淹没在 seed 波动中。
 
-Parent swap ~~确认有效后~~ 已出负结果，但消融矩阵本身仍有价值。第一轮全部 seed=42，本地通过安全门后只提交关键端点。
+Parent swap ~~确认有效后~~ 结论已更正为边际正收益。P3/P4 不追，后续优先 frozen backbone 路径。
 
 ### 实验矩阵
 

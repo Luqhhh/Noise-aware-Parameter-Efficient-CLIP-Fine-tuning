@@ -1,0 +1,13 @@
+{
+  "best_epoch": 6,
+  "checks": {
+    "class_coverage": true,
+    "drift_budget": true,
+    "raw_micro_floor": true,
+    "selector_gain": true,
+    "trained_epoch_selected": true
+  },
+  "passed": true,
+  "raw_micro_gain": 0.0029063820838928223,
+  "selector_gain": 0.005742311477661133
+}
