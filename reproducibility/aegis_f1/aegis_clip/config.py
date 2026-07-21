@@ -24,6 +24,8 @@ TOP_LEVEL_KEYS = {
     "train",
     "evaluation",
     "output",
+    "lineage",
+    "promotion",
 }
 
 REQUIRED_SECTIONS = {
@@ -255,6 +257,8 @@ def _resolve_paths(config: dict[str, Any], base: Path) -> None:
         ("trust", "bundle_path"),
         ("trust", "groups_path"),
         ("train", "init_checkpoint"),
+        ("lineage", "parent_train_csv"),
+        ("lineage", "parent_val_csv"),
         ("output", "root"),
     }
     for section, key in path_keys:
