@@ -3,6 +3,10 @@
 > 日期：2026-07-20  
 > 父模型：A2 `NR_CL_KNN_DROP` seed=42 best.pt（epoch 48, val 69.44%, TTA 61.21%）  
 > 前提：A2_AEGIS_PARENT_SWAP **结论已出——更强 parent 不提高 LoRA（-0.22pp bare, -0.23pp TTA）**  
+> ⚠️ **Protocol correction (2026-07-21):** the local 79.22% result is invalid because the A2 parent
+> and AEGIS child used different train/val splits (d3_strict vs AEGIS prepare). The platform score
+> remains a valid observation for that checkpoint, but the causal conclusion is pending a
+> parent-aligned rerun (`F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT` on `fix/a2-aegis-parent-lineage`).
 > 原则：每次只变一个变量，禁止笛卡尔积搜索
 
 ---
