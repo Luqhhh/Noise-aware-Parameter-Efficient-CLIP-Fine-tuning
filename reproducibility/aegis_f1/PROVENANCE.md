@@ -4,6 +4,7 @@
 - Original snapshot commit: `d542fc6` (`experiment: add noise-aware visual LoRA F1`)
 - First incremental source commit: `0e06f0a` (`feat: add cross-fitted trajectory audit`)
 - Latest incremental source commit: `ed32fb6` (`feat: audit numeric prompt feasibility`)
+- Complete-ledger sync base: team `main` commit `70f9182`
 - Initial team integration base: `7c8b966`
 - R1 integration base: `375b396` (`origin/main` after team A2 LoRA ablation update)
 - First imported: 2026-07-19
@@ -13,7 +14,7 @@
 
 This directory remains intentionally isolated from the legacy team runner. The legacy `ROBUST_LORA` runner updates only the last block's attention output projection, whereas Aegis F1 updates Q/V/output weights in the final four visual blocks and uses a separate clean-core trust bundle plus feature anchoring. Treating the two runners as interchangeable would not reproduce the submitted model.
 
-The integration includes source, configurations, tests, protocols and result metadata. It intentionally excludes datasets, feature caches, checkpoints, prediction CSV files and submission ZIPs.
+The integration includes source, configurations, tests, protocols and result metadata. A file-level audit against source `ed32fb6` found 240 relevant source files, 0 missing files, 214 byte-identical files and 26 team-preserved amendments. It intentionally excludes datasets, feature caches, checkpoints, prediction CSV files and submission ZIPs. The machine-readable audit is [`../../results/aegis_independent_integration_audit_2026-07-22.json`](../../results/aegis_independent_integration_audit_2026-07-22.json).
 
 ## Confirmed independent platform results
 

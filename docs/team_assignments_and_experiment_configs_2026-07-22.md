@@ -2,9 +2,9 @@
 
 日期：2026-07-22
 
-团队仓库本次整合基线：`origin/main`，commit `7df9eca`（已包含 Aegis PR #2/#3、R1 与团队 A2 LoRA 消融更新）
+团队仓库本次完整账本同步基线：`origin/main`，commit `70f9182`（已包含 Aegis PR #2/#3/#4、R1、T0/T1、U0 与团队 A2 LoRA 消融更新）
 
-独立研发来源：`/home/x28639/projects/AegisCLIP-F6-A2LoRA`，已按来源提交 `ed32fb6` 增量整合到团队目录 `reproducibility/aegis_f1/`
+独立研发来源：`/home/x28639/projects/AegisCLIP-F6-A2LoRA`，已按来源提交 `ed32fb6` 完整增量整合到团队目录 `reproducibility/aegis_f1/`；文件级审计确认相关源文件缺失数为 0
 
 本文用于统一人员分工、待评测候选、固定实验配置与合规边界。新增训练、缓存和提交包保留在独立 Aegis 工程中；团队当前开发工作树不被占用或覆盖。任何 GPU 任务启动前必须确认无人占卡，并禁止多人写入同一输出目录。
 

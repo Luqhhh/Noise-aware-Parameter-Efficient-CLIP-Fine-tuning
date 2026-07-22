@@ -13,6 +13,8 @@
 
 机器可读平台记录见 [`../results/aegis_independent_platform_results.csv`](../results/aegis_independent_platform_results.csv)，团队统一提交登记见 [`../results/submission_registry.csv`](../results/submission_registry.csv)。
 
+完整性审计见 [`../results/aegis_independent_integration_audit_2026-07-22.json`](../results/aegis_independent_integration_audit_2026-07-22.json)：以独立源提交 `ed32fb6` 对照团队同步前 `main` 提交 `70f9182`，240 个相关源文件全部存在，缺失数为 0；其中 214 个逐字节一致，26 个保留了团队侧的兼容修订、结果回填或新增验证。检查点、缓存、预测 CSV 与 ZIP 仍按仓库策略不入 Git，只登记路径、状态和 SHA-256。
+
 ## 平台实测与待评测包
 
 | 实验 | 检查点/训练策略 | 推理策略 | 平台分数 | 状态 | ZIP SHA-256 |
@@ -88,6 +90,6 @@
 
 ## 合并范围与复现
 
-此次整合把 Aegis 从共同基线 `d542fc6` 到独立提交 `ed32fb6` 的新增/修改源代码、配置、测试与协议合并到 `reproducibility/aegis_f1/`，并保留团队在该目录后续加入的 A2 STRICT、Phase 4 与 A2 LoRA 消融内容。最新团队整合快照完整回归为 `201 passed`。未提交 `.pt`、缓存、数据集、预测 CSV、ZIP 或机器本地 U0 JSON 大文件；哈希保留在权威协议中。
+此次整合把 Aegis 从共同基线 `d542fc6` 到独立提交 `ed32fb6` 的新增/修改源代码、配置、测试与协议合并到 `reproducibility/aegis_f1/`，并保留团队在该目录后续加入的 A2 STRICT、Phase 4 与 A2 LoRA 消融内容。文件级完整性审计确认相关源文件缺失数为 0，最新团队整合快照完整回归为 `201 passed`。未提交 `.pt`、缓存、数据集、预测 CSV、ZIP 或机器本地 U0 JSON 大文件；哈希保留在权威协议中。
 
 详细来源见 [`PROVENANCE.md`](../reproducibility/aegis_f1/PROVENANCE.md)。

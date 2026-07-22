@@ -8,7 +8,7 @@
 reproducibility/aegis_f1
 ```
 
-独立开发来源为本机 `AegisCLIP-Noise-Robust` / `AegisCLIP-F6-A2LoRA`；本目录已增量整合到来源提交 `0e06f0a`。只把团队项目目录中的 `train/` 与 `test/` 当作本机官方数据位置；划分、特征缓存、噪声估计、训练、检查点、审计与提交产物均由本工程生成。数据、缓存、检查点、预测 CSV 与提交 ZIP 不进入 Git。
+独立开发来源为本机 `AegisCLIP-Noise-Robust` / `AegisCLIP-F6-A2LoRA`；本目录已完整增量整合到来源提交 `ed32fb6`。只把团队项目目录中的 `train/` 与 `test/` 当作本机官方数据位置；划分、特征缓存、噪声估计、训练、检查点、审计与提交产物均由本工程生成。数据、缓存、检查点、预测 CSV 与提交 ZIP 不进入 Git。
 
 ## 方法：Cross-Fitted Visual Trust
 
@@ -39,7 +39,7 @@ reproducibility/aegis_f1
 ## 已完成的工程验证
 
 - 独立 `.venv` 已按锁定依赖创建；
-- 180 项隔离自动测试通过；
+- 201 项隔离自动测试通过；
 - 官方训练数据审计：103,218 张、500 类；
 - 内容哈希：101,980 个唯一组，1,238 个重复样本被组级隔离；
 - seed 42 划分：92,902 训练、10,316 验证；
@@ -120,5 +120,7 @@ bash scripts/run_stage.sh a3
 - [平台结果与待评测顺序](docs/PLATFORM_RESULTS_2026-07-22.md)
 - [来源与增量合并说明](PROVENANCE.md)
 - [团队根目录独立实验总账](../../docs/aegis_independent_experiments_2026-07-22.md)
+- [机器可读平台结果](../../results/aegis_independent_platform_results.csv)
+- [完整性审计](../../results/aegis_independent_integration_audit_2026-07-22.json)
 
 本工程提高的是获得高分的概率与实验效率，不虚构未运行的榜单成绩。每个真实结果必须绑定配置、数据划分、特征缓存、可信度资产、有效参数清单与检查点哈希。
