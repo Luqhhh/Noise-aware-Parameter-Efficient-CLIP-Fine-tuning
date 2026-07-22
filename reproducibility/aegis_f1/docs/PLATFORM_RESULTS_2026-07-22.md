@@ -2,6 +2,8 @@
 
 日期：2026-07-22
 
+本页只把官网返回的真实成绩写入“平台分数”。机器可读权威记录为 [`../../../results/aegis_independent_platform_results.csv`](../../../results/aegis_independent_platform_results.csv)，其中 `platform_accuracy` 使用 0–1 小数；本文表格使用百分数。待评测、未运行和仅本地审计项目保持空分，不以本地 validation 代填。
+
 ## 完整历史锚点
 
 | 提交 | 推理 | 平台分数 | 备注 |

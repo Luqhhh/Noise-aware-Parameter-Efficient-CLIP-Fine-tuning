@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "audit_date": "2026-07-22",
+  "source_repository": "/home/x28639/projects/AegisCLIP-F6-A2LoRA",
+  "source_commit": "ed32fb6c18df4656419e675eda85e35422f2865e",
+  "team_repository": "Luqhhh/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning",
+  "team_main_before_ledger_sync": "70f91827f09c49721c9968f1da7583965d490bd6",
+  "team_prefix": "reproducibility/aegis_f1",
+  "scope": [
+    "aegis_clip",
+    "configs",
+    "docs",
+    "scripts",
+    "tests",
+    "README.md",
+    "pyproject.toml",
+    "requirements.lock",
+    "uv.lock",
+    ".gitignore"
+  ],
+  "relevant_source_files": 240,
+  "byte_identical_files": 214,
+  "team_preserved_amendment_files": 26,
+  "missing_source_files": [],
+  "platform_result_registry": {
+    "path": "results/aegis_independent_platform_results.csv",
+    "rows": 18,
+    "confirmed_exact_scores": 9,
+    "reported_without_exact_score": 1,
+    "pending_platform_packages": 4,
+    "not_run": 3,
+    "local_audit_only": 1
+  },
+  "validation": {
+    "isolated_test_result": "201 passed",
+    "missing_file_gate": "passed"
+  },
+  "excluded_large_artifacts": [
+    "datasets",
+    "feature caches",
+    "model checkpoints",
+    "prediction CSV files",
+    "submission ZIP files",
+    "machine-local audit tensors"
+  ],
+  "notes": "Team-side differences preserve portability fixes, team experiments, result backfills, and additional validation; they are not missing independent experiment files. Large artifacts remain outside Git and are referenced by paths and SHA-256 where available."
+}

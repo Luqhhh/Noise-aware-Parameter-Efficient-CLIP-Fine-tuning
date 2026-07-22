@@ -48,7 +48,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 ### 5. 测试覆盖
 
-团队根测试当前收集 405 项；Aegis 隔离实验线另有 180 项测试，本次整合后 **180/180 全部通过**。主要覆盖包括：
+团队根测试当前收集 405 项；Aegis 隔离实验线当前有 **201 项测试并全部通过**。主要覆盖包括：
 - `test_partial_unfreeze.py`（16 tests）：参数冻结/解冻、train mode 行为
 - `test_discriminative_optimizer.py`（11 tests）：参数组结构、LR/WD 正确性、覆盖率
 - `test_init_checkpoint.py`（4 tests）：权重加载、跨架构兼容、requires_grad 保持
@@ -112,7 +112,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | 实验 | seed | 本地 Val | 平台 Bare | 平台 TTA | Paired Delta vs s42 |
 |------|------|----------|----------|----------|---------------------|
-| A2 | 42 | 69.44% | 59.81% | **61.21%** | — |
+| A2 | 42 | 69.44% | — | **61.21%** | — |
 | A2 | 3407 | 69.39% | 59.81% | **60.31%** | −0.07pp (p=0.457) |
 | A2 STRICT | 42 | 69.64% | **60.65%** | **61.15%** | — |
 | A2 STRICT | 3407 | — | **60.64%** | — | −0.01pp |
@@ -145,8 +145,8 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | Experiment | Local Micro | Local Macro | Best Epoch | Platform Bare | Platform TTA |
 |---|---|---|---|---|---|
-| **A2** `NR_CL_KNN_DROP` | 69.44% | 69.45% | 48 | **60.64%** | **61.21%** |
-| **A2** `NR_CL_KNN_DROP` seed=3407 | 69.39% | 69.40% | 43 | — | **60.31%** |
+| **A2** `NR_CL_KNN_DROP` | 69.44% | 69.45% | 48 | — | **61.21%** |
+| **A2** `NR_CL_KNN_DROP` seed=3407 | 69.39% | 69.40% | 43 | **59.81%** | **60.31%** |
 | **A3** `NR_CONSENSUS_RELABEL_V2` | 69.47% | 69.47% | 40 | — | **59.89%** |
 | **A1** `NR_CL_CLASSWISE_DROP` | 68.61% | 68.61% | 45 | — | **59.55%** |
 | **A0** `nr_ctrl_fixed` (reject_policy=drop) | 69.33% | — | 50 | 59.90% | 60.31% |
@@ -179,7 +179,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 ├── configs/             # 每个实验一个 YAML
 ├── scripts/             # 数据准备、超参搜索、去重仲裁、提交验证
 ├── tests/               # 团队根测试套件（当前收集 405 项）
-├── reproducibility/     # 隔离的 Aegis 独立实验线（另含 180 项测试）
+├── reproducibility/     # 隔离的 Aegis 独立实验线（当前 201 项测试）
 ├── outputs/             # 实验结果（tracked in git，*.pt 忽略）
 └── docs/superpowers/    # 设计文档与实施计划
 ```
