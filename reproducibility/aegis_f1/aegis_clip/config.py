@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import math
 from pathlib import Path
 from typing import Any
 
@@ -444,6 +445,96 @@ def validate_config(config: dict[str, Any]) -> None:
             raise ConfigError("ELR requires mixup_probability=0 for sample alignment")
         if cyclic_filter.get("enabled", False):
             raise ConfigError("cyclic_filter cannot be combined with ELR")
+
+    trust_subspace = trust.get("subspace_projection", {})
+    if trust_subspace.get("enabled", False):
+        mode = str(trust_subspace.get("mode", ""))
+        if mode not in {"control", "project_uncertain"}:
+            raise ConfigError(
+                "trust.subspace_projection.mode must be control or project_uncertain"
+            )
+        if not trust.get("enabled", False):
+            raise ConfigError("subspace_projection requires trust.enabled=true")
+        if model.get("peft_mode") != "visual_lora" or bool(
+            model.get("use_cached_training", False)
+        ):
+            raise ConfigError(
+                "subspace_projection requires online visual_lora training"
+            )
+        if loss.get("name") != "gce":
+            raise ConfigError("subspace_projection requires loss.name=gce")
+        threshold = float(trust_subspace.get("trusted_threshold", -1.0))
+        if not 0.0 < threshold < 1.0:
+            raise ConfigError(
+                "subspace_projection.trusted_threshold must be in (0,1)"
+            )
+        if selection_threshold is None or not math.isclose(
+            float(selection_threshold), threshold, rel_tol=0.0, abs_tol=1.0e-12
+        ):
+            raise ConfigError(
+                "subspace_projection trusted_threshold must equal "
+                "trust.selection_threshold"
+            )
+        if float(trust.get("minimum_sample_weight", 1.0)) != 1.0 or (
+            rejected_weight != 0.0
+        ):
+            raise ConfigError(
+                "subspace_projection requires trusted/rejected weights 1.0/0.0"
+            )
+        if int(trust.get("weighting_start_epoch", 1)) != 1:
+            raise ConfigError("subspace_projection requires weighting_start_epoch=1")
+        if int(trust.get("correction_start_epoch", 0)) <= int(train["epochs"]):
+            raise ConfigError(
+                "subspace_projection forbids pseudo-label correction during training"
+            )
+        legacy_projection = trust.get("gradient_projection", {})
+        if legacy_projection.get("enabled", False):
+            raise ConfigError(
+                "subspace_projection cannot be combined with gradient_projection"
+            )
+        rank = int(trust_subspace.get("rank", 0))
+        if not 1 <= rank <= 32:
+            raise ConfigError("subspace_projection.rank must be in [1,32]")
+        if int(trust_subspace.get("update_interval", 0)) <= 0:
+            raise ConfigError(
+                "subspace_projection.update_interval must be positive"
+            )
+        if float(trust_subspace.get("epsilon", 0.0)) <= 0.0:
+            raise ConfigError("subspace_projection.epsilon must be positive")
+        for name in ("minimum_trusted_samples", "minimum_uncertain_samples"):
+            value = int(trust_subspace.get(name, 0))
+            if not 1 <= value < int(train["batch_size"]):
+                raise ConfigError(
+                    f"subspace_projection.{name} must be in [1,batch_size)"
+                )
+        if float(loss.get("feature_distillation_weight", 0.0)) <= 0.0:
+            raise ConfigError(
+                "subspace_projection requires positive feature distillation"
+            )
+        incompatible = {
+            "mixup": float(loss.get("mixup_probability", 0.0)) > 0.0,
+            "class_prior_adjustment": float(
+                loss.get("class_prior_adjustment_tau", 0.0)
+            )
+            > 0.0,
+            "active_forgetting": active_forgetting.get("enabled", False),
+            "adaptive_cap": loss.get("adaptive_cap", {}).get("enabled", False),
+            "attention_local_training": attention_local.get("enabled", False),
+            "contrastive": contrastive.get("enabled", False),
+            "cyclic_filter": cyclic_filter.get("enabled", False),
+            "dual_gce": dual_gce.get("enabled", False),
+            "elr": elr.get("enabled", False),
+            "prototype_contrastive": config.get("prototype_contrastive", {}).get(
+                "enabled", False
+            ),
+            "snscl": snscl.get("enabled", False),
+        }
+        enabled_conflicts = [name for name, enabled in incompatible.items() if enabled]
+        if enabled_conflicts:
+            raise ConfigError(
+                "subspace_projection has incompatible objectives: "
+                + ", ".join(enabled_conflicts)
+            )
 
     for key in ("train_csv", "val_csv", "class_mapping", "train_root", "test_root"):
         if key not in data:

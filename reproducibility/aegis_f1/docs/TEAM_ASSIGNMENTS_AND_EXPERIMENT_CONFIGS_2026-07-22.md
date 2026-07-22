@@ -2,9 +2,9 @@
 
 日期：2026-07-22
 
-适用提交：AegisCLIP 独立来源已推进到 `beaa81f`
+适用提交：AegisCLIP 独立来源已推进到 `ed32fb6`
 
-> **归档提示（2026-07-22）**：本文件保留为独立工程的历史分工快照，其中 O3 运行说明已失效。团队当前唯一权威分工、O3-R1/Q1A/R1 状态与算力授权边界见团队根目录 [`team_assignments_and_experiment_configs_2026-07-22.md`](../../../docs/team_assignments_and_experiment_configs_2026-07-22.md)。不得依据本历史快照启动 O3 或任何 GPU 任务。
+> **归档提示（2026-07-22）**：本文件保留为独立工程的历史分工快照，其中 O3 运行说明已失效。团队当前唯一权威分工、O3-R1/Q1A/R1/T0/T1/U0 状态与算力授权边界见团队根目录 [`team_assignments_and_experiment_configs_2026-07-22.md`](../../../docs/team_assignments_and_experiment_configs_2026-07-22.md)。不得依据本历史快照启动 O3 或任何 GPU 任务。
 
 原则：团队原项目只读；所有新增训练、缓存和提交包均位于独立 Aegis 工程；任何 GPU 任务启动前先确认无人占卡，并禁止两人写入同一输出目录。
 

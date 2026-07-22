@@ -114,6 +114,8 @@ bash scripts/run_stage.sh a3
 - [研究依据与设计取舍](docs/RESEARCH.md)
 - [实验、晋级与停止协议](docs/EXPERIMENT_PROTOCOL.md)
 - [R1：F1+M1 Part-Token 残差预注册协议](docs/R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md)
+- [T1：F1 可信梯度子空间投影协议](docs/T1_F1_TRUST_SUBSPACE_GRADIENT_PROTOCOL_2026-07-22.md)
+- [U0：数字类别 Prompt Tuning 可行性审计](docs/U0_NUMERIC_CLASS_PROMPT_FEASIBILITY_AUDIT_2026-07-22.md)
 - [已执行验证记录](docs/VERIFICATION.md)
 - [平台结果与待评测顺序](docs/PLATFORM_RESULTS_2026-07-22.md)
 - [来源与增量合并说明](PROVENANCE.md)

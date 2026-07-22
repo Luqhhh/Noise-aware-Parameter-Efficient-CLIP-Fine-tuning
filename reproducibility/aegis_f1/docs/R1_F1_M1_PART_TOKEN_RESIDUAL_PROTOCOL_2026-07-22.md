@@ -162,7 +162,7 @@ outputs/R1_F1_M1_PART_TOKEN_RESIDUAL/seed42/checkpoints/gate.json
 ## 8. 当前实现验证
 
 - 新增模块、缓存器、CPU 训练器、推理模式与 fail-closed 校验；
-- 针对性 CPU 测试：`14 passed`；独立 Aegis 完整回归：`188 passed`；团队整合快照完整回归：`189 passed`；
+- 针对性 CPU 测试：`14 passed`；R1 合并时独立 Aegis 完整回归：`188 passed`、团队整合快照：`189 passed`；纳入后续 T1/U0 增量后的最新团队完整回归：`201 passed`；
 - 已验证零初始化逐位回退、稳定 tie-break、cache 非有限值拒绝、复合 checkpoint 生成和 native forward hook 不改变 logits；
 - 真实 F1 checkpoint 的 CPU 冒烟审计：独立两次原生前向的 logits/CLS 均逐位一致，patch shape 为 `(2,49,512)`，归一化范数最大误差 `1.7881e-7`；
 - 真实 F1 的完整 M1 对 R1 epoch-0 端到端审计：500 类融合 logits 逐位一致，最大绝对差 `0`、预测一致率 `100%`、局部适配前后特征逐位一致；

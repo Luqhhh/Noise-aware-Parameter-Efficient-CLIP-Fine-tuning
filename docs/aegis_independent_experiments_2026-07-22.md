@@ -8,7 +8,8 @@
 - M1（中心视图 + 注意力定位局部视图的 1:1 概率融合）在 F1、A2 两个不同检查点上均显著提升平台分数，是目前最强且有跨模型复现的平台信号。
 - M3 在本地排序中曾表现更好，但平台仅 62.0259%，低于 A2 + M1 的 62.6747%；因此 M3 只保留作消融，不再默认叠加 Flip。
 - F2、O1、N3 已完成训练、审计与打包，当前只缺平台评测，不需要新增训练算力。
-- O3 原方案在训练前复现审计中停止；O3-R1、Q1A 与 R1 仅完成预注册/实现，尚未运行，必须另行获得算力与执行授权。R1 逐位锚定当前平台最佳 F1+M1，但目前没有提交包或平台分数。
+- O3 原方案在训练前复现审计中停止；O3-R1、Q1A、R1 与 T0/T1 仅完成预注册/实现，尚未运行，必须另行获得算力与执行授权。R1 逐位锚定当前平台最佳 F1+M1；T1 用可信梯度子空间限制不确定标签梯度，二者目前均没有提交包或平台分数。
+- U0 数字类别 Prompt 审计已确定性重跑：raw/clean-core 仅 `0.232648%/0.229854%`，500 个数字提示的 90%/99% 能量秩仅 `1/5`。因此直接把标准共享 CoOp 套到 `0000–0499` 上的路线关闭；这不是平台成绩，也不否定另行设计视觉原型锚定的 soft token。
 
 机器可读平台记录见 [`../results/aegis_independent_platform_results.csv`](../results/aegis_independent_platform_results.csv)，团队统一提交登记见 [`../results/submission_registry.csv`](../results/submission_registry.csv)。
 
@@ -74,6 +75,8 @@
 | P1/P3/P4 | balanced-prior 计划与团队 Phase 4 联合探索 | 独立线仅保留 train-only 计划/配置；不得把本地先验假设写成平台证据；[`P1`](../reproducibility/aegis_f1/docs/P1_BALANCED_PRIOR_PLAN_2026-07-19.md) |
 | Q1A | cross-fitted wrong-event trajectory | 代码、测试与协议完成，尚未运行；需要明确轻量 GPU 授权；[`Q1`](../reproducibility/aegis_f1/docs/Q1_CROSSFITTED_WRONG_EVENT_PROTOCOL_2026-07-22.md) |
 | R1 | F1+M1 Part-Token 局部残差 | 协议、实现、源工程 188 项/团队快照 189 项完整回归及真实 F1 epoch-0 逐位复现审计完成；GPU cache/训练未启动，无提交包、无平台分数；[`R1`](../reproducibility/aegis_f1/docs/R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md) |
+| T0/T1 | F1 可信梯度子空间严格配对 | T0 丢弃不确定标签梯度；T1 仅保留其在近期可信梯度 rank-8 子空间中的投影。实现、配置配对与自动 gate 已完成；训练未启动，无提交包、无平台分数；[`T1`](../reproducibility/aegis_f1/docs/T1_F1_TRUST_SUBSPACE_GRADIENT_PROTOCOL_2026-07-22.md) |
+| U0 | 数字类别标准 CoOp 可行性审计 | VERIFIED；raw/clean-core `0.232648%/0.229854%`，有效预测类 `210/500`，文本特征非对角余弦均值 `0.978551`，结论为 direct numeric CoOp infeasible；[`U0`](../reproducibility/aegis_f1/docs/U0_NUMERIC_CLASS_PROMPT_FEASIBILITY_AUDIT_2026-07-22.md) |
 
 ## 合规边界
 
@@ -85,6 +88,6 @@
 
 ## 合并范围与复现
 
-此次整合把 Aegis 从共同基线 `d542fc6` 到独立提交 `beaa81f` 的新增/修改源代码、配置、测试与协议合并到 `reproducibility/aegis_f1/`，并保留团队在该目录后续加入的 A2 STRICT、Phase 4 与 A2 LoRA 消融内容。未提交 `.pt`、缓存、数据集、预测 CSV 或 ZIP 大文件。
+此次整合把 Aegis 从共同基线 `d542fc6` 到独立提交 `ed32fb6` 的新增/修改源代码、配置、测试与协议合并到 `reproducibility/aegis_f1/`，并保留团队在该目录后续加入的 A2 STRICT、Phase 4 与 A2 LoRA 消融内容。最新团队整合快照完整回归为 `201 passed`。未提交 `.pt`、缓存、数据集、预测 CSV、ZIP 或机器本地 U0 JSON 大文件；哈希保留在权威协议中。
 
 详细来源见 [`PROVENANCE.md`](../reproducibility/aegis_f1/PROVENANCE.md)。

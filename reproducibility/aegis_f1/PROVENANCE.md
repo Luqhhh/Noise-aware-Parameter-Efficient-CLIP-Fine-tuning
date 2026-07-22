@@ -3,11 +3,11 @@
 - Source repositories: `/home/x28639/projects/AegisCLIP-Noise-Robust` and `/home/x28639/projects/AegisCLIP-F6-A2LoRA`
 - Original snapshot commit: `d542fc6` (`experiment: add noise-aware visual LoRA F1`)
 - First incremental source commit: `0e06f0a` (`feat: add cross-fitted trajectory audit`)
-- Latest incremental source commit: `beaa81f` (`feat: preregister F1 M1 part-token residual`)
+- Latest incremental source commit: `ed32fb6` (`feat: audit numeric prompt feasibility`)
 - Initial team integration base: `7c8b966`
 - R1 integration base: `375b396` (`origin/main` after team A2 LoRA ablation update)
 - First imported: 2026-07-19
-- Incremental integrations: 2026-07-22 (`0e06f0a`, then `beaa81f`)
+- Incremental integrations: 2026-07-22 (`0e06f0a`, `beaa81f`, `61b238e`, then `ed32fb6`)
 - Merge mode: three-way additive A/M union under the existing isolated prefix. Team-side A2 STRICT and Phase 4 additions were preserved; only files added or modified by the independent Aegis line since `d542fc6` were imported.
 - Portability: machine-specific data roots in committed configurations are kept relative to the team repository where required.
 
@@ -30,6 +30,8 @@ The integration includes source, configurations, tests, protocols and result met
 
 D1 bare was reported only as lower than D1 Flip; its exact platform score is unavailable and is therefore not fabricated. F2 + M1, O1 + M1, N3 + M1 and N3 + M3 are audited packages awaiting platform evaluation, not confirmed scores.
 
-R1 has protocol, implementation, full regression tests and an epoch-0 exact-reproduction audit, but no formal cache, training run, submission package or platform score. It is recorded as `not_run`, not as a scored candidate.
+R1 has protocol, implementation, full regression tests and an epoch-0 exact-reproduction audit, but no formal cache, training run, submission package or platform score. T0/T1 add a paired trusted-gradient-subspace control/treatment implementation, but neither training arm has run. U0 is a deterministic train/validation-only numeric-prompt feasibility audit: it obtained `0.232648%` raw and `0.229854%` clean-core validation accuracy and therefore closes only the direct numeric shared-context CoOp route. R1/T0/T1 are recorded as `not_run`; U0 is `local_audit_only`; none is represented as a platform score.
+
+The latest integrated team snapshot passes `201` tests. The integration still excludes datasets, feature caches, checkpoints, prediction CSV files, submission ZIPs and U0's machine-local JSON artifact; their authoritative hashes remain in the linked protocols.
 
 The authoritative experiment/status index is [`../../docs/aegis_independent_experiments_2026-07-22.md`](../../docs/aegis_independent_experiments_2026-07-22.md); machine-readable results are in [`../../results/aegis_independent_platform_results.csv`](../../results/aegis_independent_platform_results.csv).
