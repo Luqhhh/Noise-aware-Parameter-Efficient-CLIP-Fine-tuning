@@ -42,6 +42,10 @@ O1 与 N3 的纯 M1 验证 clean-core 均为 `83.5875%`；O1 的 trusted macro/r
 
 下一次有限平台名额的优先顺序为：**F2 + M1 → O1 + M1 → N3 + M1**。F2 + M1 是当前平台最佳的最小风险全量重放；O1/N3 用于检验 AdaptFormer 表示能否进一步放大 M1。不要优先上传 N3 + M3 或旧的裸推理/Flip 包。
 
-## 已预注册但尚未形成提交包
+## 已预注册或完成本地审计、但尚未形成提交包
 
-- R1：F1+M1 Part-Token 局部残差。协议、实现、独立源工程 `188 passed`/团队整合快照 `189 passed` 回归和真实 F1 epoch-0 逐位复现审计已完成；正式 GPU cache 与训练尚未启动，当前无 ZIP、无平台分数，不进入上述上传顺序。权威协议见 [`R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md`](R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md)。
+- R1：F1+M1 Part-Token 局部残差。协议、实现、真实 F1 epoch-0 逐位复现审计已完成；正式 GPU cache 与训练尚未启动，当前无 ZIP、无平台分数。最新团队整合快照完整回归 `201 passed`。权威协议见 [`R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md`](R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md)。
+- T0/T1：F1 可信梯度子空间严格配对。T0 只使用可信标签梯度，T1 仅加入不确定标签梯度在近期可信梯度 rank-8 子空间中的投影；两份配置除实验编号和处理模式外逐字段一致。实现和自动 gate 已完成，但两个训练臂均未启动，当前无 ZIP、无平台分数。权威协议见 [`T1_F1_TRUST_SUBSPACE_GRADIENT_PROTOCOL_2026-07-22.md`](T1_F1_TRUST_SUBSPACE_GRADIENT_PROTOCOL_2026-07-22.md)。
+- U0：冻结 OpenAI CLIP ViT-B/32 的数字类别 Prompt 可行性审计已完成且独立重跑逐字节一致。raw/clean-core validation 为 `0.232648%/0.229854%`，90%/99% 能量秩为 `1/5`，因此直接数字类名共享 CoOp 路线关闭。U0 没有训练、没有读取 test、没有 ZIP，也不是平台成绩。权威记录见 [`U0_NUMERIC_CLASS_PROMPT_FEASIBILITY_AUDIT_2026-07-22.md`](U0_NUMERIC_CLASS_PROMPT_FEASIBILITY_AUDIT_2026-07-22.md)。
+
+以上三项均不进入当前 **F2 + M1 → O1 + M1 → N3 + M1** 的平台上传顺序；只有预注册训练门禁通过并生成审计合格的单模型包后，才可新增平台候选。

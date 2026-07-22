@@ -57,7 +57,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - `test_best_checkpoint_post_eval.py`（4 tests）：best.pt 重载、strict load 校验
 - `test_metric_consistency.py`（7 tests）：micro-macro gap 一致性、bottom-10% 计算
 - `test_submission_manifest.py`（18 tests）：SHA-256 哈希、ZIP vs CSV hash 区分、标签格式、预测计数、重复登记拒绝、manifest schema
-- Aegis 独立套件：配置合规、LoRA/AdaptFormer/visual prompt、OOF 重建、局部推理、M1/M3、多类噪声诊断与 Q1 trajectory 审计
+- Aegis 独立套件：配置合规、LoRA/AdaptFormer/visual prompt、OOF 重建、局部推理、M1/M3、多类噪声诊断、Q1 trajectory、T0/T1 可信梯度子空间与 U0 数字 Prompt 审计；最新隔离整合回归 `201 passed`
 
 ### 6. 平台结果总览（updated 2026-07-22）
 
@@ -137,6 +137,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - **表示适配与细粒度局部推理互补**：AEGIS F1 证明干净监督下的 visual LoRA 能贡献 bare 增益；M1 又在 F1 上获得比 A2 更大的平台提升，说明局部细节视图与 LoRA 表示适配存在正协同。
 - **Split-lineage protocol 至关重要**：原始 A2 parent swap 因 parent (d3_strict) 与 child (AEGIS prepare) 使用不同 split，导致本地 raw_micro 从真实 69.43% 假胀至 79.22%（+8.5pp 假信号）。修复后 epoch-0 baseline 精确匹配，证实验证必须与训练用同一 split。
 - **A2 parent swap 确认成立**：双 seed promotion 通过，bare +0.14pp, TTA +0.05pp vs F1 E2 parent。方向正确但收益太小，不进参数搜索。
+- **数字类别不能直接继承语义 Prompt 鲁棒性**：U0 固定数字 Prompt 的 raw/clean-core 仅 0.232648%/0.229854%，500 个文本方向的 90% 能量秩为 1；direct numeric shared-context CoOp 已关闭。该结论是 train/validation-only 本地审计，不是平台成绩，也不排除另行设计视觉原型锚定 soft token。
 
 ### 7. 本地评估与待完成
 
@@ -166,7 +167,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 ### 下一步
 
-平台名额优先用于已经完成训练和审计的 **F2 + M1 → O1 + M1 → N3 + M1**。完整独立实验总账、状态和合规边界见 [`docs/aegis_independent_experiments_2026-07-22.md`](docs/aegis_independent_experiments_2026-07-22.md)。O3-R1、Q1A 与 R1 均尚未运行；其中 R1 仅完成协议、实现和 CPU/真实检查点复现审计，只有在明确授权并确认不占用团队任务后才可启动 GPU cache。
+平台名额优先用于已经完成训练和审计的 **F2 + M1 → O1 + M1 → N3 + M1**。完整独立实验总账、状态和合规边界见 [`docs/aegis_independent_experiments_2026-07-22.md`](docs/aegis_independent_experiments_2026-07-22.md)。O3-R1、Q1A、R1 与 T0/T1 均尚未运行；其中 T0/T1 是严格配对的可信梯度子空间实验，只有在明确授权并确认不占用团队任务后才可启动。U0 已完成，不需要继续训练；它只关闭 direct numeric shared-context CoOp。
 
 ## 项目结构
 

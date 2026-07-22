@@ -328,3 +328,30 @@ def test_cyclic_filter_requires_complete_frozen_cached_cycles() -> None:
         validate_config(config)
     config["train"]["epochs"] = 45
     validate_config(config)
+
+
+def test_trust_subspace_configs_are_strictly_paired() -> None:
+    control = load_config(ROOT / "configs" / "t0_f1_trust_subspace_control.yaml")
+    treatment = load_config(
+        ROOT / "configs" / "t1_f1_trust_subspace_projection.yaml"
+    )
+    control_public = deepcopy(control)
+    treatment_public = deepcopy(treatment)
+    for value in (control_public, treatment_public):
+        value.pop("_config_path", None)
+        value["project"].pop("experiment_id")
+        value["trust"]["subspace_projection"].pop("mode")
+    assert control_public == treatment_public
+
+
+def test_trust_subspace_rejects_confounded_objectives() -> None:
+    config = deepcopy(
+        load_config(ROOT / "configs" / "t1_f1_trust_subspace_projection.yaml")
+    )
+    config["loss"]["mixup_probability"] = 0.2
+    with pytest.raises(ConfigError, match="incompatible objectives"):
+        validate_config(config)
+    config["loss"]["mixup_probability"] = 0.0
+    config["trust"]["gradient_projection"]["enabled"] = True
+    with pytest.raises(ConfigError, match="cannot be combined"):
+        validate_config(config)

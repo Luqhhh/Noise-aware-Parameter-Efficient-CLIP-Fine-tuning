@@ -62,6 +62,10 @@ from aegis_clip.snscl import (
     StatefulSNSCL,
     classwise_queue_contrastive_loss,
 )
+from aegis_clip.trust_subspace import (
+    OnlineTrustGradientSubspace,
+    construct_trust_subspace_gradient,
+)
 
 
 def _promotion_decision(
@@ -292,6 +296,21 @@ def train(
             ),
         ).to(device)
 
+    subspace_config = config["trust"].get("subspace_projection", {})
+    trust_subspace = (
+        OnlineTrustGradientSubspace(
+            max_rank=int(subspace_config.get("rank", 8)),
+            epsilon=float(subspace_config.get("epsilon", 1.0e-12)),
+        )
+        if subspace_config.get("enabled", False)
+        else None
+    )
+    if snscl_state is not None and trust_subspace is not None:
+        raise ValueError("SNSCL and trust-subspace state cannot share one checkpoint")
+    training_auxiliary = (
+        snscl_state if snscl_state is not None else trust_subspace
+    )
+
     groups = model.parameter_groups(
         head_lr=float(train_config["head_lr"]),
         head_weight_decay=float(train_config.get("head_weight_decay", 1.0e-4)),
@@ -384,7 +403,7 @@ def train(
             adaptive_cap=adaptive_cap,
             elr_regularizer=elr_regularizer,
             data_generator=generator,
-            training_auxiliary=snscl_state,
+            training_auxiliary=training_auxiliary,
         )
         start_epoch = int(state["epoch"]) + 1
         global_step = int(state["global_step"])
@@ -579,6 +598,18 @@ def train(
             "attention_local_consistency": 0.0,
             "attention_local_agreement": 0.0,
             "attention_local_examples": 0,
+            "trust_subspace_steps": 0,
+            "trust_subspace_skipped_steps": 0,
+            "trust_subspace_basis_updates": 0,
+            "trust_subspace_projection_steps": 0,
+            "trust_subspace_trusted_examples": 0,
+            "trust_subspace_uncertain_examples": 0,
+            "trust_subspace_reference_gradient_norm": 0.0,
+            "trust_subspace_shared_gradient_norm": 0.0,
+            "trust_subspace_uncertain_gradient_norm": 0.0,
+            "trust_subspace_projected_gradient_norm": 0.0,
+            "trust_subspace_retained_norm_ratio": 0.0,
+            "trust_subspace_uncertain_loss": 0.0,
         }
         for batch in train_loader:
             labels = batch["label"].to(device, non_blocking=True)
@@ -959,7 +990,98 @@ def train(
                     proto_loss = prototype_bank.loss(encoded, labels, clean)
                     loss = loss + proto_weight * proto_loss
 
-            scaler.scale(loss).backward()
+            subspace_step = None
+            subspace_uncertain_value = logits.new_zeros(())
+            if trust_subspace is not None:
+                trusted_mask = clean >= float(
+                    subspace_config["trusted_threshold"]
+                )
+                uncertain_mask = ~trusted_mask
+                trusted_count = int(trusted_mask.sum())
+                uncertain_count = int(uncertain_mask.sum())
+                denominator = float(labels.numel())
+                trusted_float = trusted_mask.to(dtype=per_sample.dtype)
+                uncertain_float = uncertain_mask.to(dtype=per_sample.dtype)
+                trusted_classification = (
+                    per_sample * trusted_float
+                ).sum() / denominator
+                subspace_uncertain_value = (
+                    per_sample * uncertain_float
+                ).sum() / denominator
+                trusted_reference_loss = trusted_classification + distill_weight * (
+                    drift * trusted_float
+                ).sum() / denominator
+                shared_loss = trusted_classification + distill_weight * drift.mean()
+                # The displayed scalar is the shared T0 objective. The T1
+                # uncertain contribution is a gradient projection and therefore
+                # has no equivalent scalar objective; it is logged separately.
+                classification_loss = trusted_classification
+                loss = shared_loss
+                minimum_trusted = int(
+                    subspace_config.get("minimum_trusted_samples", 8)
+                )
+                minimum_uncertain = int(
+                    subspace_config.get("minimum_uncertain_samples", 8)
+                )
+                if trusted_count >= minimum_trusted:
+                    treatment_mode = (
+                        str(subspace_config["mode"]) == "project_uncertain"
+                    )
+                    include_uncertain = (
+                        treatment_mode and uncertain_count >= minimum_uncertain
+                    )
+                    if treatment_mode and not include_uncertain:
+                        totals["trust_subspace_skipped_steps"] += 1
+                    subspace_step = construct_trust_subspace_gradient(
+                        parameters=model.parameters(),
+                        trusted_reference_loss=trusted_reference_loss,
+                        shared_loss=shared_loss,
+                        uncertain_loss=(
+                            subspace_uncertain_value if include_uncertain else None
+                        ),
+                        scaler=scaler,
+                        subspace=trust_subspace,
+                        update_basis=(
+                            global_step
+                            % int(subspace_config.get("update_interval", 1))
+                            == 0
+                        ),
+                        include_uncertain=include_uncertain,
+                    )
+                    totals["trust_subspace_steps"] += 1
+                    totals["trust_subspace_basis_updates"] += int(
+                        subspace_step.basis_updated
+                    )
+                    totals["trust_subspace_projection_steps"] += int(
+                        subspace_step.projection_applied
+                    )
+                    totals["trust_subspace_trusted_examples"] += trusted_count
+                    totals["trust_subspace_uncertain_examples"] += uncertain_count
+                    totals["trust_subspace_reference_gradient_norm"] += (
+                        subspace_step.reference_gradient_norm
+                    )
+                    totals["trust_subspace_shared_gradient_norm"] += (
+                        subspace_step.shared_gradient_norm
+                    )
+                    totals["trust_subspace_uncertain_gradient_norm"] += (
+                        subspace_step.uncertain_gradient_norm
+                    )
+                    totals["trust_subspace_projected_gradient_norm"] += (
+                        subspace_step.projected_uncertain_gradient_norm
+                    )
+                    totals["trust_subspace_retained_norm_ratio"] += (
+                        subspace_step.retained_uncertain_norm_ratio
+                    )
+                else:
+                    # Fail closed for the uncertain branch when a shuffled batch
+                    # cannot construct a sufficiently supported trusted anchor.
+                    scaler.scale(shared_loss).backward()
+                    totals["trust_subspace_skipped_steps"] += 1
+                totals["trust_subspace_uncertain_loss"] += float(
+                    subspace_uncertain_value.detach()
+                ) * labels.numel()
+            else:
+                scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
             head_grad = _gradient_norm(model.classifier.parameters())
             adapter_grad = _gradient_norm(model.feature_adapter.parameters())
@@ -1153,6 +1275,48 @@ def train(
                 totals["attention_local_agreement"]
                 / max(1, totals["attention_local_examples"])
             ),
+            "train_trust_subspace_steps": int(totals["trust_subspace_steps"]),
+            "train_trust_subspace_skipped_steps": int(
+                totals["trust_subspace_skipped_steps"]
+            ),
+            "train_trust_subspace_basis_updates": int(
+                totals["trust_subspace_basis_updates"]
+            ),
+            "train_trust_subspace_basis_rank": (
+                trust_subspace.rank if trust_subspace is not None else 0
+            ),
+            "train_trust_subspace_projection_steps": int(
+                totals["trust_subspace_projection_steps"]
+            ),
+            "train_trust_subspace_trusted_examples": int(
+                totals["trust_subspace_trusted_examples"]
+            ),
+            "train_trust_subspace_uncertain_examples": int(
+                totals["trust_subspace_uncertain_examples"]
+            ),
+            "train_trust_subspace_reference_gradient_norm": (
+                totals["trust_subspace_reference_gradient_norm"]
+                / max(1, totals["trust_subspace_steps"])
+            ),
+            "train_trust_subspace_shared_gradient_norm": (
+                totals["trust_subspace_shared_gradient_norm"]
+                / max(1, totals["trust_subspace_steps"])
+            ),
+            "train_trust_subspace_uncertain_gradient_norm": (
+                totals["trust_subspace_uncertain_gradient_norm"]
+                / max(1, totals["trust_subspace_steps"])
+            ),
+            "train_trust_subspace_projected_gradient_norm": (
+                totals["trust_subspace_projected_gradient_norm"]
+                / max(1, totals["trust_subspace_steps"])
+            ),
+            "train_trust_subspace_retained_norm_ratio": (
+                totals["trust_subspace_retained_norm_ratio"]
+                / max(1, totals["trust_subspace_steps"])
+            ),
+            "train_trust_subspace_uncertain_loss": (
+                totals["trust_subspace_uncertain_loss"] / totals["examples"]
+            ),
             "train_cyclic_filter_selected": int(cyclic_filter_mask.sum()),
             "train_cyclic_filter_active": int(active_cyclic_filter.sum()),
             "train_cyclic_delta": float(cyclic_delta),
@@ -1241,7 +1405,9 @@ def train(
                 elr_regularizer.state_dict() if elr_regularizer is not None else None
             ),
             training_aux_state=(
-                snscl_state.state_dict() if snscl_state is not None else None
+                training_auxiliary.state_dict()
+                if training_auxiliary is not None
+                else None
             ),
         )
         save_checkpoint(checkpoint_dir / "last.pt", **common)
@@ -1670,6 +1836,19 @@ def _prepare_metrics_csv(path: Path, resume: bool) -> None:
                 "train_attention_local_classification",
                 "train_attention_local_consistency",
                 "train_attention_local_agreement",
+                "train_trust_subspace_steps",
+                "train_trust_subspace_skipped_steps",
+                "train_trust_subspace_basis_updates",
+                "train_trust_subspace_basis_rank",
+                "train_trust_subspace_projection_steps",
+                "train_trust_subspace_trusted_examples",
+                "train_trust_subspace_uncertain_examples",
+                "train_trust_subspace_reference_gradient_norm",
+                "train_trust_subspace_shared_gradient_norm",
+                "train_trust_subspace_uncertain_gradient_norm",
+                "train_trust_subspace_projected_gradient_norm",
+                "train_trust_subspace_retained_norm_ratio",
+                "train_trust_subspace_uncertain_loss",
                 "raw_micro",
                 "raw_macro",
                 "trusted_micro",
@@ -1723,6 +1902,19 @@ def _append_metrics_csv(
                 metrics["train_attention_local_classification"],
                 metrics["train_attention_local_consistency"],
                 metrics["train_attention_local_agreement"],
+                metrics["train_trust_subspace_steps"],
+                metrics["train_trust_subspace_skipped_steps"],
+                metrics["train_trust_subspace_basis_updates"],
+                metrics["train_trust_subspace_basis_rank"],
+                metrics["train_trust_subspace_projection_steps"],
+                metrics["train_trust_subspace_trusted_examples"],
+                metrics["train_trust_subspace_uncertain_examples"],
+                metrics["train_trust_subspace_reference_gradient_norm"],
+                metrics["train_trust_subspace_shared_gradient_norm"],
+                metrics["train_trust_subspace_uncertain_gradient_norm"],
+                metrics["train_trust_subspace_projected_gradient_norm"],
+                metrics["train_trust_subspace_retained_norm_ratio"],
+                metrics["train_trust_subspace_uncertain_loss"],
                 metrics["raw_micro"],
                 metrics["raw_macro"],
                 metrics["trusted_micro"],

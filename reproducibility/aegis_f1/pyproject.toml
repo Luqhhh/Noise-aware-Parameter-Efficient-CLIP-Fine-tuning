@@ -57,6 +57,8 @@ aegis-train-local-residual = "aegis_clip.cli.train_local_residual:main"
 aegis-evaluate-local-prototype = "aegis_clip.cli.evaluate_local_prototype:main"
 aegis-cache-part-token-adapter-features = "aegis_clip.cli.cache_part_token_adapter_features:main"
 aegis-train-part-token-adapter = "aegis_clip.cli.train_part_token_adapter:main"
+aegis-evaluate-trust-subspace-gate = "aegis_clip.cli.evaluate_trust_subspace_gate:main"
+aegis-audit-numeric-prompts = "aegis_clip.cli.audit_numeric_prompts:main"
 
 [tool.setuptools.packages.find]
 include = ["aegis_clip*"]
