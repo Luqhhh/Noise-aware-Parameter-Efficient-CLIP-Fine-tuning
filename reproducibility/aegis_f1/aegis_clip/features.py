@@ -17,7 +17,6 @@ def canonical_sample_path(path: str | Path) -> str:
     value = str(path).replace("\\", "/").strip()
     while value.startswith("./"):
         value = value[2:]
-
     for marker in ("/train_dedup/", "/train/"):
         if marker in value:
             return value.split(marker, 1)[1].lstrip("/")
@@ -25,7 +24,6 @@ def canonical_sample_path(path: str | Path) -> str:
     for prefix in ("train_dedup/", "train/"):
         if value.startswith(prefix):
             return value[len(prefix):].lstrip("/")
-
     return value.lstrip("/")
 
 

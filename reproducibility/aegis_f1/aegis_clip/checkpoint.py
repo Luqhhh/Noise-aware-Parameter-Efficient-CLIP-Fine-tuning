@@ -30,6 +30,7 @@ def save_checkpoint(
     adaptive_cap_state: dict[str, Any] | None,
     data_generator_state: torch.Tensor,
     elr_state_dict: dict[str, Any] | None = None,
+    training_aux_state: dict[str, Any] | None = None,
 ) -> None:
     payload = {
         "format_version": 1,
@@ -43,6 +44,7 @@ def save_checkpoint(
         "scaler_state_dict": scaler.state_dict(),
         "adaptive_cap_state": adaptive_cap_state,
         "elr_state_dict": elr_state_dict,
+        "training_aux_state": training_aux_state,
         "data_generator_state": data_generator_state,
         "config": public_config(config),
         "metrics": metrics,
@@ -75,6 +77,16 @@ def load_initial_weights(
             name
             for name in model.state_dict()
             if name.startswith("feature_adapter.")
+        )
+    if getattr(model, "peft_mode", None) == "visual_mlp_adapter":
+        allowed_missing.update(
+            name for name in model.state_dict() if ".adaptmlp." in name
+        )
+    if getattr(model, "peft_mode", None) == "visual_prompt":
+        allowed_missing.update(
+            name
+            for name in model.state_dict()
+            if name.startswith("visual.visual_prompt.")
         )
     if getattr(model, "classifier_mode", None) == "anchored_residual":
         allowed_missing.update(
@@ -123,6 +135,7 @@ def resume_checkpoint(
     adaptive_cap: Any = None,
     elr_regularizer: Any = None,
     data_generator: torch.Generator | None = None,
+    training_auxiliary: Any = None,
 ) -> dict[str, Any]:
     checkpoint = load_initial_weights(model, path, device)
     required = {
@@ -147,18 +160,24 @@ def resume_checkpoint(
         if checkpoint.get("data_generator_state") is None:
             raise ValueError("Resume checkpoint is missing data_generator_state")
         data_generator.set_state(checkpoint["data_generator_state"].cpu())
+    if training_auxiliary is not None:
+        if checkpoint.get("training_aux_state") is None:
+            raise ValueError("Resume checkpoint is missing training auxiliary state")
+        training_auxiliary.load_state_dict(checkpoint["training_aux_state"])
     _restore_rng(checkpoint["rng_state"])
     return checkpoint
 
 
 def build_from_checkpoint(
-    path: str | Path, device: torch.device
+    path: str | Path,
+    device: torch.device,
+    config_override: dict[str, Any] | None = None,
 ) -> tuple[AegisCLIP, Any, dict[str, Any]]:
     checkpoint = torch.load(path, map_location="cpu", weights_only=False)
     config = checkpoint.get("config")
     if config is None:
         raise ValueError("Aegis checkpoint is missing its resolved config")
-    model, preprocess = build_model(config, device)
+    model, preprocess = build_model(config_override or config, device)
     state = checkpoint.get("model_state_dict")
     if state is None:
         raise ValueError("Aegis checkpoint is missing model_state_dict")

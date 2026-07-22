@@ -3,12 +3,46 @@
 from __future__ import annotations
 
 import math
+import types
 from typing import Any
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils import parametrize
+
+
+def interpolate_visual_positional_embedding(
+    positional_embedding: torch.Tensor,
+    target_grid: tuple[int, int],
+) -> torch.Tensor:
+    """Bicubically resize CLIP's 2-D patch positions, preserving CLS exactly."""
+    if positional_embedding.ndim != 2:
+        raise ValueError("Visual positional embedding must be a 2-D tensor")
+    target_height, target_width = (int(target_grid[0]), int(target_grid[1]))
+    if target_height <= 0 or target_width <= 0:
+        raise ValueError("Target patch grid must be positive")
+    patch_count = positional_embedding.shape[0] - 1
+    source_size = int(round(math.sqrt(patch_count)))
+    if source_size * source_size != patch_count:
+        raise ValueError("Source visual positional embedding is not a square grid")
+    if (target_height, target_width) == (source_size, source_size):
+        return positional_embedding
+    class_position = positional_embedding[:1]
+    patch_positions = positional_embedding[1:].reshape(
+        1, source_size, source_size, positional_embedding.shape[1]
+    )
+    patch_positions = patch_positions.permute(0, 3, 1, 2)
+    patch_positions = F.interpolate(
+        patch_positions.float(),
+        size=(target_height, target_width),
+        mode="bicubic",
+        align_corners=False,
+    ).to(dtype=positional_embedding.dtype)
+    patch_positions = patch_positions.permute(0, 2, 3, 1).reshape(
+        target_height * target_width, positional_embedding.shape[1]
+    )
+    return torch.cat([class_position, patch_positions], dim=0)
 
 
 class AdditiveLowRankParametrization(nn.Module):
@@ -147,6 +181,157 @@ class ResidualFeatureAdapter(nn.Module):
         return F.normalize(features + self.residual_scale * residual, dim=-1)
 
 
+class ParallelVisualMLPAdapter(nn.Module):
+    """Zero-initialised AdaptFormer branch parallel to a ViT block MLP."""
+
+    def __init__(
+        self,
+        width: int,
+        bottleneck_dim: int,
+        *,
+        residual_scale: float,
+        dropout: float,
+    ) -> None:
+        super().__init__()
+        if int(width) <= 0 or int(bottleneck_dim) <= 0:
+            raise ValueError("Visual adapter dimensions must be positive")
+        if not 0.0 < float(residual_scale) <= 1.0:
+            raise ValueError("Visual adapter scale must be in (0,1]")
+        if not 0.0 <= float(dropout) < 1.0:
+            raise ValueError("Visual adapter dropout must be in [0,1)")
+        self.residual_scale = float(residual_scale)
+        self.norm = nn.LayerNorm(int(width))
+        self.down = nn.Linear(int(width), int(bottleneck_dim))
+        self.activation = nn.ReLU()
+        self.dropout = nn.Dropout(float(dropout))
+        self.up = nn.Linear(int(bottleneck_dim), int(width))
+        nn.init.kaiming_uniform_(self.down.weight, a=math.sqrt(5))
+        nn.init.zeros_(self.down.bias)
+        nn.init.zeros_(self.up.weight)
+        nn.init.zeros_(self.up.bias)
+
+    def forward(self, values: torch.Tensor) -> torch.Tensor:
+        hidden = self.down(self.norm(values))
+        hidden = self.dropout(self.activation(hidden))
+        return self.residual_scale * self.up(hidden)
+
+
+class DeepVisualPrompt(nn.Module):
+    """Layer-specific VPT tokens prepended after CLS and replaced per block."""
+
+    def __init__(
+        self,
+        *,
+        block_indices: list[int],
+        num_tokens: int,
+        width: int,
+        patch_size: tuple[int, int],
+        dropout: float,
+    ) -> None:
+        super().__init__()
+        if not block_indices:
+            raise ValueError("Deep visual prompts require at least one block")
+        if int(num_tokens) <= 0 or int(width) <= 0:
+            raise ValueError("Visual prompt dimensions must be positive")
+        if not 0.0 <= float(dropout) < 1.0:
+            raise ValueError("Visual prompt dropout must be in [0,1)")
+        self.block_indices = [int(index) for index in block_indices]
+        self.num_tokens = int(num_tokens)
+        self.width = int(width)
+        self.embeddings = nn.Parameter(
+            torch.empty(len(self.block_indices), self.num_tokens, self.width)
+        )
+        patch_area = int(patch_size[0]) * int(patch_size[1])
+        bound = math.sqrt(6.0 / float(3 * patch_area + self.width))
+        nn.init.uniform_(self.embeddings, -bound, bound)
+        self.dropout = nn.Dropout(float(dropout))
+
+    def tokens_for(
+        self,
+        prompt_index: int,
+        *,
+        batch_size: int,
+        dtype: torch.dtype,
+    ) -> torch.Tensor:
+        values = self.dropout(self.embeddings[int(prompt_index)]).to(dtype=dtype)
+        return values.unsqueeze(1).expand(-1, int(batch_size), -1)
+
+
+def install_deep_visual_prompts(
+    visual: nn.Module,
+    *,
+    last_n_blocks: int,
+    num_tokens: int,
+    dropout: float,
+) -> list[int]:
+    """Attach standard layer-specific VPT tokens without modifying CLIP weights."""
+    try:
+        blocks = visual.transformer.resblocks
+        width = int(visual.class_embedding.numel())
+        kernel = visual.conv1.kernel_size
+    except AttributeError as exc:
+        raise ValueError("Deep visual prompts require CLIP ViT internals") from exc
+    block_count = len(blocks)
+    if not 1 <= int(last_n_blocks) <= block_count:
+        raise ValueError(
+            f"visual_prompt_last_n_blocks must be in [1,{block_count}]"
+        )
+    block_indices = list(range(block_count - int(last_n_blocks), block_count))
+    visual.add_module(
+        "visual_prompt",
+        DeepVisualPrompt(
+            block_indices=block_indices,
+            num_tokens=int(num_tokens),
+            width=width,
+            patch_size=(int(kernel[0]), int(kernel[1])),
+            dropout=float(dropout),
+        ),
+    )
+    return block_indices
+
+
+def _parallel_adapter_block_forward(block: nn.Module, values: torch.Tensor) -> torch.Tensor:
+    values = values + block.attention(block.ln_1(values))
+    return values + block.mlp(block.ln_2(values)) + block.adaptmlp(values)
+
+
+def install_visual_mlp_adapters(
+    visual: nn.Module,
+    *,
+    last_n_blocks: int,
+    bottleneck_dim: int,
+    residual_scale: float,
+    dropout: float,
+) -> list[int]:
+    """Install zero-output AdaptFormer branches on the last CLIP ViT blocks."""
+    try:
+        blocks = visual.transformer.resblocks
+    except AttributeError as exc:
+        raise ValueError("Visual MLP adapters require CLIP transformer blocks") from exc
+    block_count = len(blocks)
+    if not 1 <= int(last_n_blocks) <= block_count:
+        raise ValueError(
+            f"visual_adapter_last_n_blocks must be in [1,{block_count}]"
+        )
+    selected = list(range(block_count - int(last_n_blocks), block_count))
+    for index in selected:
+        block = blocks[index]
+        if not all(hasattr(block, name) for name in {"attention", "ln_1", "ln_2", "mlp"}):
+            raise ValueError("Visual MLP adapter requires native CLIP block internals")
+        width = int(block.ln_2.weight.numel())
+        block.add_module(
+            "adaptmlp",
+            ParallelVisualMLPAdapter(
+                width,
+                int(bottleneck_dim),
+                residual_scale=float(residual_scale),
+                dropout=float(dropout),
+            ),
+        )
+        block.forward = types.MethodType(_parallel_adapter_block_forward, block)
+    return selected
+
+
 class AnchoredResidualClassifier(nn.Module):
     """Frozen robust base classifier plus a small trainable task residual.
 
@@ -197,8 +382,16 @@ class AegisCLIP(nn.Module):
         lora_alpha: float = 8.0,
         lora_adapt_qv: bool = True,
         lora_adapt_out: bool = True,
+        visual_adapter_last_n_blocks: int = 6,
+        visual_adapter_bottleneck: int = 64,
+        visual_adapter_scale: float = 0.1,
+        visual_adapter_dropout: float = 0.1,
+        visual_prompt_last_n_blocks: int = 12,
+        visual_prompt_num_tokens: int = 5,
+        visual_prompt_dropout: float = 0.0,
         classifier_mode: str = "linear",
         classifier_residual_scale: float = 0.25,
+        input_resolution: int = 224,
     ) -> None:
         super().__init__()
         if peft_mode not in {
@@ -207,6 +400,8 @@ class AegisCLIP(nn.Module):
             "visual_ln",
             "ln_post_proj",
             "visual_lora",
+            "visual_mlp_adapter",
+            "visual_prompt",
         }:
             raise ValueError(f"Unsupported PEFT mode: {peft_mode}")
         self.visual = visual
@@ -221,10 +416,20 @@ class AegisCLIP(nn.Module):
         self.lora_adapt_qv = bool(lora_adapt_qv)
         self.lora_adapt_out = bool(lora_adapt_out)
         self.lora_block_indices: list[int] = []
+        self.visual_adapter_last_n_blocks = int(visual_adapter_last_n_blocks)
+        self.visual_adapter_bottleneck = int(visual_adapter_bottleneck)
+        self.visual_adapter_scale = float(visual_adapter_scale)
+        self.visual_adapter_dropout = float(visual_adapter_dropout)
+        self.visual_adapter_block_indices: list[int] = []
+        self.visual_prompt_last_n_blocks = int(visual_prompt_last_n_blocks)
+        self.visual_prompt_num_tokens = int(visual_prompt_num_tokens)
+        self.visual_prompt_dropout = float(visual_prompt_dropout)
+        self.visual_prompt_block_indices: list[int] = []
         if classifier_mode not in {"linear", "anchored_residual"}:
             raise ValueError(f"Unsupported classifier mode: {classifier_mode}")
         self.classifier_mode = str(classifier_mode)
         self.classifier_residual_scale = float(classifier_residual_scale)
+        self.input_resolution = int(input_resolution)
         self.feature_adapter = (
             ResidualFeatureAdapter(
                 self.feature_dim,
@@ -252,6 +457,21 @@ class AegisCLIP(nn.Module):
                 alpha=self.lora_alpha,
                 adapt_qv=self.lora_adapt_qv,
                 adapt_out=self.lora_adapt_out,
+            )
+        elif self.peft_mode == "visual_mlp_adapter":
+            self.visual_adapter_block_indices = install_visual_mlp_adapters(
+                self.visual,
+                last_n_blocks=self.visual_adapter_last_n_blocks,
+                bottleneck_dim=self.visual_adapter_bottleneck,
+                residual_scale=self.visual_adapter_scale,
+                dropout=self.visual_adapter_dropout,
+            )
+        elif self.peft_mode == "visual_prompt":
+            self.visual_prompt_block_indices = install_deep_visual_prompts(
+                self.visual,
+                last_n_blocks=self.visual_prompt_last_n_blocks,
+                num_tokens=self.visual_prompt_num_tokens,
+                dropout=self.visual_prompt_dropout,
             )
         self._configure_trainability()
 
@@ -284,6 +504,15 @@ class AegisCLIP(nn.Module):
                 ):
                     for parameter in module.parameters():
                         parameter.requires_grad_(True)
+        elif self.peft_mode == "visual_mlp_adapter":
+            for index in self.visual_adapter_block_indices:
+                for parameter in self.visual.transformer.resblocks[
+                    index
+                ].adaptmlp.parameters():
+                    parameter.requires_grad_(True)
+        elif self.peft_mode == "visual_prompt":
+            for parameter in self.visual.visual_prompt.parameters():
+                parameter.requires_grad_(True)
 
     @property
     def visual_requires_grad(self) -> bool:
@@ -299,6 +528,11 @@ class AegisCLIP(nn.Module):
                 ):
                     module.train(True)
         self.feature_adapter.train(mode and self.peft_mode == "feature_adapter")
+        if self.peft_mode == "visual_mlp_adapter":
+            for index in self.visual_adapter_block_indices:
+                self.visual.transformer.resblocks[index].adaptmlp.train(mode)
+        elif self.peft_mode == "visual_prompt":
+            self.visual.visual_prompt.train(mode)
         self.classifier.train(mode)
         return self
 
@@ -306,7 +540,7 @@ class AegisCLIP(nn.Module):
         dtype = self.visual.conv1.weight.dtype
         images = images.to(dtype=dtype)
         with torch.set_grad_enabled(self.visual_requires_grad and torch.is_grad_enabled()):
-            features = self.visual(images)
+            features = self._encode_visual(images)
         if features.ndim > 2:
             features = (
                 features.mean(dim=(2, 3))
@@ -332,6 +566,84 @@ class AegisCLIP(nn.Module):
         reference = self.adapt_features(F.normalize(reference_features.float(), dim=-1))
         delta = adapted - reference
         return reference + gate[:, None] * delta
+
+    def _encode_visual(self, images: torch.Tensor) -> torch.Tensor:
+        """Use native CLIP at 224px and ViT 2-D position interpolation otherwise."""
+        required = {
+            "class_embedding",
+            "positional_embedding",
+            "ln_pre",
+            "transformer",
+            "ln_post",
+        }
+        if not all(hasattr(self.visual, name) for name in required):
+            return self.visual(images)
+        if images.ndim != 4:
+            raise ValueError("Visual input must have shape [N,C,H,W]")
+        height, width = int(images.shape[-2]), int(images.shape[-1])
+        stride = self.visual.conv1.stride
+        stride_height, stride_width = int(stride[0]), int(stride[1])
+        if height % stride_height or width % stride_width:
+            raise ValueError("Input resolution must be divisible by the ViT patch size")
+        target_grid = (height // stride_height, width // stride_width)
+        source_tokens = int(self.visual.positional_embedding.shape[0] - 1)
+        source_size = int(round(math.sqrt(source_tokens)))
+        if source_size * source_size != source_tokens:
+            raise ValueError("Source visual positional embedding is not a square grid")
+        if (
+            target_grid == (source_size, source_size)
+            and self.peft_mode != "visual_prompt"
+        ):
+            return self.visual(images)
+
+        values = self.visual.conv1(images)
+        values = values.reshape(values.shape[0], values.shape[1], -1)
+        values = values.permute(0, 2, 1)
+        class_token = self.visual.class_embedding.to(values.dtype).reshape(
+            1, 1, -1
+        ).expand(
+            values.shape[0], 1, values.shape[-1]
+        )
+        values = torch.cat([class_token, values], dim=1)
+        positions = interpolate_visual_positional_embedding(
+            self.visual.positional_embedding, target_grid
+        )
+        values = values + positions.to(values.dtype).unsqueeze(0)
+        values = self.visual.ln_pre(values)
+        values = values.permute(1, 0, 2)
+        values = self._forward_visual_transformer(values)
+        values = values.permute(1, 0, 2)
+        values = self.visual.ln_post(values[:, 0, :])
+        if self.visual.proj is not None:
+            values = values @ self.visual.proj
+        return values
+
+    def _forward_visual_transformer(self, values: torch.Tensor) -> torch.Tensor:
+        if self.peft_mode != "visual_prompt":
+            return self.visual.transformer(values)
+        prompts = self.visual.visual_prompt
+        prompt_lookup = {
+            block_index: prompt_index
+            for prompt_index, block_index in enumerate(
+                self.visual_prompt_block_indices
+            )
+        }
+        for block_index, block in enumerate(self.visual.transformer.resblocks):
+            prompt_index = prompt_lookup.get(block_index)
+            if prompt_index is None:
+                values = block(values)
+                continue
+            prompt_tokens = prompts.tokens_for(
+                prompt_index,
+                batch_size=values.shape[1],
+                dtype=values.dtype,
+            )
+            values = torch.cat([values[:1], prompt_tokens, values[1:]], dim=0)
+            values = block(values)
+            values = torch.cat(
+                [values[:1], values[1 + prompts.num_tokens :]], dim=0
+            )
+        return values
 
     def forward_features(self, features: torch.Tensor) -> torch.Tensor:
         return self.classifier(self.adapt_features(features))
@@ -439,8 +751,54 @@ class AegisCLIP(nn.Module):
                 if self.classifier_mode == "anchored_residual"
                 else None
             ),
+            "visual_adapter_last_n_blocks": (
+                self.visual_adapter_last_n_blocks
+                if self.peft_mode == "visual_mlp_adapter"
+                else None
+            ),
+            "visual_adapter_block_indices": (
+                self.visual_adapter_block_indices
+                if self.peft_mode == "visual_mlp_adapter"
+                else None
+            ),
+            "visual_adapter_bottleneck": (
+                self.visual_adapter_bottleneck
+                if self.peft_mode == "visual_mlp_adapter"
+                else None
+            ),
+            "visual_adapter_scale": (
+                self.visual_adapter_scale
+                if self.peft_mode == "visual_mlp_adapter"
+                else None
+            ),
+            "visual_adapter_dropout": (
+                self.visual_adapter_dropout
+                if self.peft_mode == "visual_mlp_adapter"
+                else None
+            ),
+            "visual_prompt_last_n_blocks": (
+                self.visual_prompt_last_n_blocks
+                if self.peft_mode == "visual_prompt"
+                else None
+            ),
+            "visual_prompt_block_indices": (
+                self.visual_prompt_block_indices
+                if self.peft_mode == "visual_prompt"
+                else None
+            ),
+            "visual_prompt_num_tokens": (
+                self.visual_prompt_num_tokens
+                if self.peft_mode == "visual_prompt"
+                else None
+            ),
+            "visual_prompt_dropout": (
+                self.visual_prompt_dropout
+                if self.peft_mode == "visual_prompt"
+                else None
+            ),
             "num_classes": self.num_classes,
             "feature_dim": self.feature_dim,
+            "input_resolution": self.input_resolution,
             "visual_requires_grad": self.visual_requires_grad,
             "trainable_names": trainable_names,
             "trainable_parameters": sum(
@@ -468,6 +826,13 @@ def build_model(
 
     clip_model, preprocess = clip.load("ViT-B/32", device=device, jit=False)
     clip_model.visual = clip_model.visual.float()
+    input_resolution = int(
+        model_config.get("input_resolution", clip_model.visual.input_resolution)
+    )
+    if input_resolution != int(clip_model.visual.input_resolution):
+        from clip.clip import _transform
+
+        preprocess = _transform(input_resolution)
     model = AegisCLIP(
         visual=clip_model.visual,
         num_classes=int(model_config["num_classes"]),
@@ -480,9 +845,31 @@ def build_model(
         lora_alpha=float(model_config.get("lora_alpha", 8.0)),
         lora_adapt_qv=bool(model_config.get("lora_adapt_qv", True)),
         lora_adapt_out=bool(model_config.get("lora_adapt_out", True)),
+        visual_adapter_last_n_blocks=int(
+            model_config.get("visual_adapter_last_n_blocks", 6)
+        ),
+        visual_adapter_bottleneck=int(
+            model_config.get("visual_adapter_bottleneck", 64)
+        ),
+        visual_adapter_scale=float(
+            model_config.get("visual_adapter_scale", 0.1)
+        ),
+        visual_adapter_dropout=float(
+            model_config.get("visual_adapter_dropout", 0.1)
+        ),
+        visual_prompt_last_n_blocks=int(
+            model_config.get("visual_prompt_last_n_blocks", 12)
+        ),
+        visual_prompt_num_tokens=int(
+            model_config.get("visual_prompt_num_tokens", 5)
+        ),
+        visual_prompt_dropout=float(
+            model_config.get("visual_prompt_dropout", 0.0)
+        ),
         classifier_mode=str(model_config.get("classifier_mode", "linear")),
         classifier_residual_scale=float(
             model_config.get("classifier_residual_scale", 0.25)
         ),
+        input_resolution=input_resolution,
     ).to(device)
     return model, preprocess

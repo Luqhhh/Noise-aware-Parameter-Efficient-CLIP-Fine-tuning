@@ -32,14 +32,26 @@ def main() -> None:
     train_paths = [canonical_sample_path(path) for path in train["image_path"].astype(str)]
     val_paths = [canonical_sample_path(path) for path in val["image_path"].astype(str)]
     overlap = set(train_paths) & set(val_paths)
-    if overlap:
+    validation_overlap = bool(data.get("validation_overlap_with_training", False))
+    if validation_overlap:
+        missing_from_full_train = set(val_paths) - set(train_paths)
+        if missing_from_full_train:
+            raise ValueError(
+                "Overlapping diagnostic validation must be a subset of full train: "
+                f"missing={len(missing_from_full_train)}"
+            )
+    elif overlap:
         raise ValueError(f"Train/validation path overlap: {len(overlap)}")
     official_train_samples = int(data["expected_official_train_samples"])
-    if len(train_paths) + len(val_paths) != official_train_samples:
+    configured_official_samples = (
+        len(train_paths) if validation_overlap else len(train_paths) + len(val_paths)
+    )
+    if configured_official_samples != official_train_samples:
         raise ValueError(
             "Configured split does not cover the complete official training set: "
-            f"{len(train_paths) + len(val_paths)} != {official_train_samples}"
+            f"{configured_official_samples} != {official_train_samples}"
         )
+    coverage_paths = train_paths if validation_overlap else train_paths + val_paths
     groups_path_value = config.get("trust", {}).get("groups_path")
     groups_path = (
         Path(groups_path_value)
@@ -50,7 +62,7 @@ def main() -> None:
     if groups_path.is_file():
         group_mapping = json.loads(groups_path.read_text(encoding="utf-8"))
         missing_groups = [
-            path for path in train_paths + val_paths if path not in group_mapping
+            path for path in coverage_paths if path not in group_mapping
         ]
         if missing_groups:
             raise ValueError(
@@ -60,14 +72,14 @@ def main() -> None:
         train_groups = {group_mapping[path] for path in train_paths}
         val_groups = {group_mapping[path] for path in val_paths}
         group_overlap = train_groups & val_groups
-        if group_overlap:
+        if group_overlap and not validation_overlap:
             raise ValueError(
                 f"Train/validation content-group overlap: {len(group_overlap)}"
             )
         group_summary = {
             "path": str(groups_path),
             "unique_groups": len(set(group_mapping.values())),
-            "train_val_overlap": 0,
+            "train_val_overlap": len(group_overlap),
         }
     train_root = Path(data["train_root"]).resolve()
     test_root = Path(data["test_root"]).resolve()
@@ -75,8 +87,7 @@ def main() -> None:
         raise ValueError("Training and test roots must be distinct")
     missing_images = [
         path
-        for path in train["image_path"].astype(str).tolist()
-        + val["image_path"].astype(str).tolist()
+        for path in coverage_paths
         if not resolve_image_path(train_root, path).is_file()
     ]
     if missing_images:
@@ -104,11 +115,11 @@ def main() -> None:
         config["features"].get("manifest_path"),
         expected_dim=int(config["model"].get("feature_dim", 512)),
     )
-    features.verify_coverage(train_paths + val_paths)
+    features.verify_coverage(coverage_paths)
     trust_summary = None
     if config.get("trust", {}).get("enabled", False):
         trust = TrustBundle(config["trust"]["bundle_path"])
-        trust.verify_coverage(train_paths + val_paths)
+        trust.verify_coverage(coverage_paths)
         trust_summary = {
             "samples": len(trust),
             "mean_clean_probability": float(trust.clean_probability.mean()),
@@ -136,6 +147,7 @@ def main() -> None:
         "experiment_id": config["project"]["experiment_id"],
         "train_samples": len(train_paths),
         "val_samples": len(val_paths),
+        "validation_overlap_with_training": validation_overlap,
         "classes": len(class_to_idx),
         "stage": config["project"]["stage"],
         "external_data": config["data"]["external_data"],
