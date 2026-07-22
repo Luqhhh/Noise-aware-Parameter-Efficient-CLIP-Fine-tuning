@@ -48,7 +48,7 @@ case "${stage}" in
       --config configs/a1_cvt_soft.yaml \
       --device "${DEVICE}"
     ;;
-  smoke|a0|a1|a2|a3|b0|b1|b2|c0|c1|c2|c3|d0|d1|f1)
+  smoke|a0|a1|a2|a3|b0|b1|b2|c0|c1|c2|c3|d0|d1|f1|f6|f7)
     config="$(
       case "${stage}" in
         smoke) echo configs/s0_cvt_cached_smoke.yaml ;;
@@ -66,6 +66,8 @@ case "${stage}" in
         d0) echo configs/d0_full_train_anchor.yaml ;;
         d1) echo configs/d1_full_train_gated_adapter.yaml ;;
         f1) echo configs/f1_visual_lora_clean_core.yaml ;;
+        f6) echo configs/f6_a2_disjoint_lora_gate.yaml ;;
+        f7) echo configs/f7_a2_fixed_fullfit.yaml ;;
       esac
     )"
     train_args=(--config "${config}")
@@ -78,7 +80,7 @@ case "${stage}" in
     "${PYTHON}" -m aegis_clip.cli.train "${train_args[@]}"
     ;;
   *)
-    echo "Usage: $0 {test|prepare|cache|audit|groups|trust|smoke|a0|a1|a2|a3|b0|b1|b2|c0|c1|c2|c3|d0|d1|f1}" >&2
+    echo "Usage: $0 {test|prepare|cache|audit|groups|trust|smoke|a0|a1|a2|a3|b0|b1|b2|c0|c1|c2|c3|d0|d1|f1|f6|f7}" >&2
     exit 2
     ;;
 esac

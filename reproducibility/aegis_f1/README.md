@@ -2,13 +2,13 @@
 
 面向噪声标签细粒度图像识别比赛的独立工程。目标不是堆叠论文名词，而是在赛规允许的 OpenAI CLIP ViT-B/32 上建立一条可复现、可消融、可回退的高分路线。
 
-工程位置：
+团队仓库内的可复现快照位置：
 
 ```text
-/home/x28639/projects/AegisCLIP-Noise-Robust
+reproducibility/aegis_f1
 ```
 
-原项目未被修改。新工程只把原项目目录中的 `train/` 与 `test/` 当作本机官方数据位置；划分、特征缓存、噪声估计、训练、检查点、审计与提交产物均由本工程生成。
+独立开发来源为本机 `AegisCLIP-Noise-Robust` / `AegisCLIP-F6-A2LoRA`；本目录已增量整合到来源提交 `0e06f0a`。只把团队项目目录中的 `train/` 与 `test/` 当作本机官方数据位置；划分、特征缓存、噪声估计、训练、检查点、审计与提交产物均由本工程生成。数据、缓存、检查点、预测 CSV 与提交 ZIP 不进入 Git。
 
 ## 方法：Cross-Fitted Visual Trust
 
@@ -39,19 +39,20 @@
 ## 已完成的工程验证
 
 - 独立 `.venv` 已按锁定依赖创建；
-- 26 项 CPU 自动测试通过；
+- 180 项隔离自动测试通过；
 - 官方训练数据审计：103,218 张、500 类；
 - 内容哈希：101,980 个唯一组，1,238 个重复样本被组级隔离；
 - seed 42 划分：92,902 训练、10,316 验证；
 - 新工程重建的 train/val CSV 与既有全量划分逐字节一致；
 - 新工程独立重建 103,218 × 512 的官方 CLIP 冻结特征；
 - 特征路径索引与 103,218 张官方训练图像完全一致；
-- OOF 可信度、快速闭环和完整消融结果只在真实运行后记录，不把历史结果冒充新结果。
+- OOF 可信度、快速闭环和完整消融结果只在真实运行后记录，不把本地分数或未评测候选冒充平台结果；
+- 当前已确认平台最佳为 **F1 + M1：63.3276%**，A2 + M1 为 62.6747%，A2 + M3 为 62.0259%。
 
 ## 从零复现
 
 ```bash
-cd /home/x28639/projects/AegisCLIP-Noise-Robust
+cd reproducibility/aegis_f1
 
 uv sync --extra dev --locked
 
@@ -113,5 +114,8 @@ bash scripts/run_stage.sh a3
 - [研究依据与设计取舍](docs/RESEARCH.md)
 - [实验、晋级与停止协议](docs/EXPERIMENT_PROTOCOL.md)
 - [已执行验证记录](docs/VERIFICATION.md)
+- [平台结果与待评测顺序](docs/PLATFORM_RESULTS_2026-07-22.md)
+- [来源与增量合并说明](PROVENANCE.md)
+- [团队根目录独立实验总账](../../docs/aegis_independent_experiments_2026-07-22.md)
 
 本工程提高的是获得高分的概率与实验效率，不虚构未运行的榜单成绩。每个真实结果必须绑定配置、数据划分、特征缓存、可信度资产、有效参数清单与检查点哈希。

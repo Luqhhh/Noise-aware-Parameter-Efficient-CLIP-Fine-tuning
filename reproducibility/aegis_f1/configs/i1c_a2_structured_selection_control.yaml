@@ -1,0 +1,89 @@
+# I1C - paired control for cross-fitted structured allocation.
+project:
+  experiment_id: I1C_A2_STRUCTURED_SELECTION_CONTROL
+  seed: 42
+  stage: preliminary
+
+data:
+  train_csv: ../artifacts/i1_structured_allocation/seed42/selected_train.csv
+  val_csv: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/seed42/val.csv
+  class_mapping: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/seed42/class_to_idx.json
+  train_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/train
+  test_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/test
+  train_augmentation: clip_center_crop
+  external_data: false
+  test_usage: inference_only
+  expected_official_train_samples: 103218
+  expected_test_samples: 24967
+
+features:
+  tensor_path: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/features/clip_vit_b32_openai/features.pt
+  paths_path: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/features/clip_vit_b32_openai/image_paths.json
+  manifest_path: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/features/clip_vit_b32_openai/manifest.json
+
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  num_classes: 500
+  feature_dim: 512
+  peft_mode: frozen
+  use_cached_training: true
+
+trust:
+  enabled: true
+  bundle_path: ../artifacts/i1_structured_allocation/seed42/control_trust.pt
+  weighting_start_epoch: 1
+  correction_start_epoch: 0
+  minimum_sample_weight: 1.0
+  selection_threshold: 0.5
+  rejected_sample_weight: 0.0
+  anchor_threshold: 0.999
+  gradient_projection:
+    enabled: false
+    start_epoch: 1
+    interval: 8
+    minimum_anchor_samples: 8
+
+loss:
+  name: gce
+  gce_q: 0.5
+  epsilon: 1.0e-7
+  ce_warmup_epochs: 0
+  class_prior_adjustment_tau: 0.0
+  mixup_alpha: 0.2
+  mixup_probability: 0.2
+  feature_distillation_weight: 0.0
+  adaptive_cap:
+    enabled: false
+
+train:
+  device: cuda
+  deterministic: true
+  amp: false
+  epochs: 20
+  batch_size: 256
+  num_workers: 0
+  loader_timeout: 0
+  pin_memory: false
+  head_lr: 0.0005
+  head_weight_decay: 0.0001
+  backbone_lr: 0.0
+  backbone_weight_decay: 0.0
+  lr_warmup_epochs: 1
+  max_grad_norm: 1.0
+  early_stop_patience: 0
+  init_checkpoint: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/oof/nr_cl_knn_drop/seed42/checkpoints/best.pt
+
+evaluation:
+  batch_size: 256
+  inference_batch_size: 256
+  selector_metric: clean_core_micro
+  selection_policy: best_selector
+  clean_core_threshold: 0.70
+  measure_flip_consistency: false
+  record_initial: true
+  drift_budget: 0.01
+  drift_penalty: 1.0
+
+output:
+  root: ../outputs

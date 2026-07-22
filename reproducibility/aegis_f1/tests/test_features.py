@@ -11,6 +11,8 @@ from aegis_clip.runtime import sha256_lines
 def test_canonical_paths_are_machine_independent() -> None:
     assert canonical_sample_path("/mnt/data/train/0001/a.jpg") == "0001/a.jpg"
     assert canonical_sample_path("train\\0001\\a.jpg") == "0001/a.jpg"
+    assert canonical_sample_path("train_dedup/0001/a.jpg") == "0001/a.jpg"
+    assert canonical_sample_path("/mnt/data/train_dedup/0001/a.jpg") == "0001/a.jpg"
 
 
 def test_feature_store_validates_and_normalizes(tmp_path) -> None:

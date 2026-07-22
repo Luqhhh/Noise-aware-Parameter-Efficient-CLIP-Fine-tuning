@@ -1,0 +1,95 @@
+# N5: adapt the validated N3 visual adapters to CLIP ViT-B/32 at 288px.
+project:
+  experiment_id: N5_N3_HIGHRES_ADAPTATION
+  seed: 42
+  stage: preliminary
+
+data:
+  train_csv: ../artifacts/j1_a2_kept/seed42/a2_kept_train.csv
+  val_csv: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/data/d3_strict/seed42/val.csv
+  class_mapping: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/seed42/class_to_idx.json
+  train_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning
+  test_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/test
+  train_augmentation: weak_rrc_flip
+  external_data: false
+  test_usage: inference_only
+  expected_official_train_samples: 103218
+  expected_test_samples: 24967
+
+features:
+  tensor_path: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/features/clip_vit_b32_openai/features.pt
+  paths_path: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/features/clip_vit_b32_openai/image_paths.json
+  manifest_path: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/features/clip_vit_b32_openai/manifest.json
+
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  num_classes: 500
+  feature_dim: 512
+  input_resolution: 288
+  peft_mode: visual_mlp_adapter
+  use_cached_training: false
+  visual_adapter_last_n_blocks: 6
+  visual_adapter_bottleneck: 64
+  visual_adapter_scale: 0.1
+  visual_adapter_dropout: 0.1
+
+trust:
+  enabled: true
+  bundle_path: ../artifacts/kta_curriculum/seed42/trust.pt
+  weighting_start_epoch: 1
+  correction_start_epoch: 99
+  minimum_sample_weight: 0.25
+  selection_threshold: 0.05
+  rejected_sample_weight: 0.0
+  anchor_threshold: 0.999
+  gradient_projection:
+    enabled: false
+    start_epoch: 1
+    interval: 8
+    minimum_anchor_samples: 8
+
+loss:
+  name: gce
+  gce_q: 0.5
+  epsilon: 1.0e-7
+  ce_warmup_epochs: 0
+  class_prior_adjustment_tau: 0.0
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  feature_distillation_weight: 2.0
+  adaptive_cap:
+    enabled: false
+
+train:
+  device: cuda
+  deterministic: true
+  amp: true
+  epochs: 2
+  batch_size: 32
+  num_workers: 4
+  prefetch_factor: 1
+  loader_timeout: 120
+  pin_memory: true
+  head_lr: 0.00005
+  head_weight_decay: 0.0001
+  backbone_lr: 0.0001
+  backbone_weight_decay: 0.0
+  lr_warmup_epochs: 1
+  max_grad_norm: 1.0
+  early_stop_patience: 0
+  init_checkpoint: ../outputs/N3_A2_ADAPTFORMER_GATE/seed42/checkpoints/best.pt
+
+evaluation:
+  batch_size: 32
+  inference_batch_size: 32
+  selector_metric: clean_core_micro
+  selection_policy: best_selector
+  clean_core_threshold: 0.70
+  measure_flip_consistency: true
+  record_initial: true
+  drift_budget: 0.02
+  drift_penalty: 2.0
+
+output:
+  root: ../outputs

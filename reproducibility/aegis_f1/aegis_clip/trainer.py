@@ -26,18 +26,28 @@ from aegis_clip.data import (
     load_class_mapping,
 )
 from aegis_clip.evaluation import evaluate, format_metrics
-from aegis_clip.features import FrozenFeatureStore
+from aegis_clip.features import FrozenFeatureStore, canonical_sample_path
 from aegis_clip.losses import (
     AdaptiveLossCap,
     EarlyLearningRegularizer,
     TrustedPrototypeBank,
+    active_forgetting_noise_suppression_losses,
+    classwise_high_loss_filter,
     classwise_suspicion_mask,
     class_prior_adjusted_logits,
+    consensus_conflict_mask,
     corrected_targets,
+    double_softmax_cross_entropy,
     mixup,
+    noise_tolerant_supervised_contrastive_loss,
     project_conflicting_gradients,
     soft_cross_entropy,
     soft_generalized_cross_entropy,
+    smoothstep_damped_loss,
+)
+from aegis_clip.local_inference import (
+    attention_guided_crop,
+    logits_with_last_block_attention,
 )
 from aegis_clip.model import AegisCLIP, build_model
 from aegis_clip.runtime import (
@@ -47,6 +57,10 @@ from aegis_clip.runtime import (
     seed_worker,
     set_seed,
     sha256_file,
+)
+from aegis_clip.snscl import (
+    StatefulSNSCL,
+    classwise_queue_contrastive_loss,
 )
 
 
@@ -160,7 +174,11 @@ def train(
 
     model, preprocess = build_model(config, device)
     visual_peft = model.visual_requires_grad
-    train_preprocess = _training_preprocess(preprocess, data_config)
+    train_preprocess = _training_preprocess(
+        preprocess,
+        data_config,
+        input_resolution=int(model_config.get("input_resolution", 224)),
+    )
     use_cached = bool(model_config.get("use_cached_training", not visual_peft))
     if visual_peft and use_cached:
         raise ValueError("Visual PEFT cannot use cached-only training")
@@ -179,6 +197,11 @@ def train(
         preprocess=preprocess,
         feature_store=feature_store,
         trust_bundle=trust_bundle,
+    )
+    _validate_train_val_overlap(
+        train_dataset.paths,
+        val_dataset.paths,
+        allow_overlap=bool(data_config.get("validation_overlap_with_training", False)),
     )
     elr_config = config.get("elr", {})
     elr_regularizer = (
@@ -201,20 +224,22 @@ def train(
     if (class_counts == 0).any():
         missing = torch.nonzero(class_counts == 0).flatten().tolist()
         raise ValueError(f"Training split is missing classes: {missing[:10]}")
-    dual_gce_config = config["loss"].get("dual_gce", {})
-    suspicious_mask = None
-    if dual_gce_config.get("enabled", False):
-        if trust_bundle is None:
-            raise ValueError("dual_gce requires an OOF trust bundle")
-        trust_scores = torch.stack(
+    train_clean_scores = None
+    if trust_bundle is not None:
+        train_clean_scores = torch.stack(
             [
                 trust_bundle.values_for(path, label)["clean_probability"]
                 for path, label in zip(train_dataset.paths, train_dataset.labels)
             ]
         )
+    dual_gce_config = config["loss"].get("dual_gce", {})
+    suspicious_mask = None
+    if dual_gce_config.get("enabled", False):
+        if trust_bundle is None:
+            raise ValueError("dual_gce requires an OOF trust bundle")
         suspicious_mask = classwise_suspicion_mask(
             torch.as_tensor(train_dataset.labels),
-            trust_scores,
+            train_clean_scores,
             float(dual_gce_config.get("suspicious_fraction", 0.2)),
         ).to(device)
     prior_tau = float(config["loss"].get("class_prior_adjustment_tau", 0.0))
@@ -249,6 +274,24 @@ def train(
         **loader_options,
     )
 
+    snscl_config = config["loss"].get("snscl", {})
+    snscl_state = None
+    if snscl_config.get("enabled", False):
+        if trust_bundle is None:
+            raise ValueError("SNSCL requires cross-fitted trust evidence")
+        snscl_state = StatefulSNSCL(
+            num_samples=len(train_dataset),
+            num_classes=num_classes,
+            feature_dim=int(model_config.get("feature_dim", 512)),
+            hidden_dim=int(snscl_config.get("hidden_dim", 2048)),
+            projection_dim=int(snscl_config.get("projection_dim", 128)),
+            queue_size=int(snscl_config.get("queue_size", 32)),
+            initial_std=float(snscl_config.get("initial_std", 0.05)),
+            mean_residual_scale=float(
+                snscl_config.get("mean_residual_scale", 0.1)
+            ),
+        ).to(device)
+
     groups = model.parameter_groups(
         head_lr=float(train_config["head_lr"]),
         head_weight_decay=float(train_config.get("head_weight_decay", 1.0e-4)),
@@ -257,6 +300,15 @@ def train(
             train_config.get("backbone_weight_decay", 1.0e-4)
         ),
     )
+    if snscl_state is not None:
+        groups.append(
+            {
+                "name": "snscl",
+                "params": list(snscl_state.parameters()),
+                "lr": float(snscl_config["module_lr"]),
+                "weight_decay": float(snscl_config.get("module_weight_decay", 1.0e-4)),
+            }
+        )
     optimizer = torch.optim.AdamW(groups)
     epochs = int(train_config["epochs"])
     schedule_epochs = int(train_config.get("schedule_epochs", epochs))
@@ -267,7 +319,11 @@ def train(
         lr_lambda=lambda step: _warmup_cosine(step, warmup_steps, total_steps),
     )
     use_amp = bool(train_config.get("amp", True)) and device.type == "cuda"
-    scaler = torch.amp.GradScaler(device=device.type, enabled=use_amp)
+    scaler = torch.amp.GradScaler(
+        device=device.type,
+        enabled=use_amp,
+        init_scale=float(train_config.get("amp_initial_scale", 65536.0)),
+    )
 
     cap_config = config["loss"].get("adaptive_cap", {})
     adaptive_cap = (
@@ -280,6 +336,12 @@ def train(
         if cap_config.get("enabled", False)
         else None
     )
+    active_forgetting_config = config["loss"].get("active_forgetting", {})
+    active_forgetting_enabled = bool(
+        active_forgetting_config.get("enabled", False)
+    )
+    attention_local_config = config["loss"].get("attention_local_training", {})
+    attention_local_enabled = bool(attention_local_config.get("enabled", False))
 
     routing_config = config.get("clean_routing", {})
     routing_enabled = bool(routing_config.get("enabled", False))
@@ -322,6 +384,7 @@ def train(
             adaptive_cap=adaptive_cap,
             elr_regularizer=elr_regularizer,
             data_generator=generator,
+            training_auxiliary=snscl_state,
         )
         start_epoch = int(state["epoch"]) + 1
         global_step = int(state["global_step"])
@@ -395,6 +458,56 @@ def train(
     stale_epochs = 0
     first_step_audited = global_step > 0
 
+    if (
+        not resume
+        and start_epoch == 1
+        and bool(evaluation_config.get("record_initial", False))
+    ):
+        initial_metrics = evaluate(
+            model,
+            val_loader,
+            device=device,
+            num_classes=num_classes,
+            use_amp=use_amp,
+            drift_budget=float(evaluation_config.get("drift_budget", 0.01)),
+            drift_penalty=float(evaluation_config.get("drift_penalty", 0.5)),
+            selector_metric=str(
+                evaluation_config.get("selector_metric", "proxy_macro")
+            ),
+            clean_core_threshold=float(
+                evaluation_config.get("clean_core_threshold", 0.70)
+            ),
+            measure_flip_consistency=bool(
+                evaluation_config.get("measure_flip_consistency", False)
+            ),
+        )
+        atomic_json_dump(initial_metrics, checkpoint_dir / "initial_evaluation.json")
+        logger.info("Initial checkpoint | %s", format_metrics(initial_metrics))
+
+    cyclic_config = config["loss"].get("cyclic_filter", {})
+    cyclic_enabled = bool(cyclic_config.get("enabled", False))
+    cyclic_filter_mask = torch.zeros(len(train_dataset), dtype=torch.bool)
+    cycle_epochs = int(cyclic_config.get("cycle_epochs", 15))
+    if cyclic_enabled:
+        if train_clean_scores is None:
+            raise ValueError("Cyclic filtering requires trust scores")
+        cyclic_filter_mask = _refresh_cyclic_filter(
+            model=model,
+            train_dataset=train_dataset,
+            device=device,
+            use_amp=use_amp,
+            loss_config=config["loss"],
+            epoch=max(start_epoch, 1),
+            clean_scores=train_clean_scores,
+            cyclic_config=cyclic_config,
+            num_classes=num_classes,
+        )
+        logger.info(
+            "Initial cyclic filter selected %d/%d samples",
+            int(cyclic_filter_mask.sum()),
+            len(cyclic_filter_mask),
+        )
+
     for epoch in range(start_epoch, epochs + 1):
         # --- Dynamic Trust Refresh (P4) ---
         if dynamic_enabled and epoch == dynamic_refresh_epoch:
@@ -436,6 +549,14 @@ def train(
             model.train()
 
         model.train()
+        epoch_in_cycle = (epoch - 1) % cycle_epochs + 1
+        reintroduction_epoch = cyclic_enabled and epoch_in_cycle == cycle_epochs
+        active_cyclic_filter = (
+            torch.zeros_like(cyclic_filter_mask)
+            if reintroduction_epoch
+            else cyclic_filter_mask
+        ).to(device)
+        cyclic_delta = 0.0
         totals = {
             "loss": 0.0,
             "examples": 0,
@@ -444,7 +565,20 @@ def train(
             "projection_cosine": 0.0,
             "feature_drift": 0.0,
             "cached_forward_examples": 0,
+            "consensus_conflict_dropped": 0,
             "elr_regularization": 0.0,
+            "contrastive_loss": 0.0,
+            "snscl_contrastive_loss": 0.0,
+            "snscl_kl_loss": 0.0,
+            "snscl_usable_anchors": 0,
+            "snscl_admitted": 0,
+            "fine_active_forgetting": 0.0,
+            "fine_negative_learning": 0.0,
+            "fine_suspicious_samples": 0,
+            "attention_local_classification": 0.0,
+            "attention_local_consistency": 0.0,
+            "attention_local_agreement": 0.0,
+            "attention_local_examples": 0,
         }
         for batch in train_loader:
             labels = batch["label"].to(device, non_blocking=True)
@@ -458,7 +592,9 @@ def train(
             if dynamic_clean is not None and epoch >= dynamic_refresh_epoch:
                 clean = dynamic_clean[batch_indices.cpu()].to(device).float()
             pseudo = batch["pseudo_label"].to(device).long()
-            correction = batch["correction_alpha"].to(device).float()
+            pseudo_confidence = batch["pseudo_confidence"].to(device).float()
+            correction_evidence = batch["correction_alpha"].to(device).float()
+            correction = correction_evidence
             if epoch <= int(config["trust"].get("correction_start_epoch", 0)):
                 correction = torch.zeros_like(correction)
             targets = corrected_targets(labels, pseudo, correction, num_classes)
@@ -479,6 +615,32 @@ def train(
                     )
             else:
                 weights = torch.ones_like(clean)
+            conflict_config = config["trust"].get("consensus_conflict", {})
+            conflict_mode = str(conflict_config.get("mode", "keep"))
+            if conflict_mode not in {"keep", "drop"}:
+                raise ValueError(
+                    "trust.consensus_conflict.mode must be 'keep' or 'drop'"
+                )
+            if conflict_mode == "drop":
+                conflict_mask = consensus_conflict_mask(
+                    labels,
+                    pseudo,
+                    pseudo_confidence,
+                    correction_evidence,
+                    minimum_confidence=float(
+                        conflict_config.get("minimum_pseudo_confidence", 0.85)
+                    ),
+                )
+                weights = torch.where(
+                    conflict_mask, torch.zeros_like(weights), weights
+                )
+                totals["consensus_conflict_dropped"] += int(conflict_mask.sum())
+            if cyclic_enabled:
+                weights = torch.where(
+                    active_cyclic_filter[batch_indices],
+                    torch.zeros_like(weights),
+                    weights,
+                )
 
             input_key = "features" if "features" in batch else "images"
             original_inputs = batch[input_key].to(device, non_blocking=True)
@@ -524,6 +686,10 @@ def train(
                 else None
             )
             optimizer.zero_grad(set_to_none=True)
+            snscl_projected = None
+            snscl_hard_labels = None
+            snscl_admission_probabilities = None
+            snscl_usable_anchors = 0
             with torch.autocast(device_type=device.type, enabled=use_amp):
                 arguments: dict[str, torch.Tensor] = {forward_key: forward_inputs}
                 if mixed_gate is not None and forward_key == "images":
@@ -540,6 +706,13 @@ def train(
                     epoch,
                     batch_suspicious,
                 )
+                if cyclic_enabled:
+                    per_sample, cyclic_delta = smoothstep_damped_loss(
+                        per_sample,
+                        maximum_delta=float(cyclic_config["maximum_delta"]),
+                        epoch_in_cycle=epoch_in_cycle,
+                        cycle_epochs=cycle_epochs,
+                    )
                 mixed_clean = (
                     mix_lambda * clean
                     + (1.0 - mix_lambda) * clean[mix_permutation]
@@ -554,6 +727,208 @@ def train(
                     per_sample * mixed_weights
                 ).sum() / mixed_weights.sum().clamp_min(1.0e-8)
                 loss = classification_loss
+                local_classification_value = logits.new_zeros(())
+                local_consistency_value = logits.new_zeros(())
+                local_agreement_value = logits.new_zeros(())
+                if attention_local_enabled:
+                    if input_key != "images" or mix_lambda != 1.0:
+                        raise ValueError(
+                            "Attention-local training requires unmixed online images"
+                        )
+                    # Crop selection is a deterministic, label-free teacher path.
+                    # Detaching it prevents the non-smooth top-k location from
+                    # becoming an accidental optimisation target, while the global
+                    # and local classification forwards remain fully trainable.
+                    with torch.no_grad():
+                        _, _, patch_attention = logits_with_last_block_attention(
+                            model, original_inputs
+                        )
+                        local_inputs = attention_guided_crop(
+                            original_inputs,
+                            patch_attention.detach(),
+                            crop_size=int(
+                                attention_local_config.get("crop_size", 160)
+                            ),
+                            top_patches=int(
+                                attention_local_config.get("top_patches", 5)
+                            ),
+                        )
+                    local_logits = model(images=local_inputs)
+                    local_training_logits = class_prior_adjusted_logits(
+                        local_logits, class_counts, prior_tau
+                    )
+                    local_per_sample = _per_sample_loss(
+                        local_training_logits,
+                        targets,
+                        config["loss"],
+                        epoch,
+                        batch_suspicious,
+                    )
+                    local_classification_value = (
+                        local_per_sample * weights
+                    ).sum() / weights.sum().clamp_min(1.0e-8)
+                    local_weight = float(
+                        attention_local_config.get(
+                            "local_supervision_weight", 0.5
+                        )
+                    )
+                    classification_loss = (
+                        (1.0 - local_weight) * classification_loss
+                        + local_weight * local_classification_value
+                    )
+                    temperature = float(
+                        attention_local_config.get("temperature", 1.0)
+                    )
+                    teacher_probability = F.softmax(
+                        training_logits.detach().float() / temperature,
+                        dim=1,
+                    )
+                    local_log_probability = F.log_softmax(
+                        local_training_logits.float() / temperature,
+                        dim=1,
+                    )
+                    consistency_per_sample = F.kl_div(
+                        local_log_probability,
+                        teacher_probability,
+                        reduction="none",
+                    ).sum(dim=1) * (temperature * temperature)
+                    local_consistency_value = (
+                        consistency_per_sample * weights
+                    ).sum() / weights.sum().clamp_min(1.0e-8)
+                    local_agreement_value = (
+                        local_logits.detach()
+                        .argmax(dim=1)
+                        .eq(logits.detach().argmax(dim=1))
+                        .float()
+                        .mean()
+                    )
+                    loss = classification_loss + float(
+                        attention_local_config.get("consistency_weight", 0.25)
+                    ) * local_consistency_value
+                fine_active_value = logits.new_zeros(())
+                fine_negative_value = logits.new_zeros(())
+                fine_suspicious_count = 0
+                if active_forgetting_enabled and epoch >= int(
+                    active_forgetting_config.get("start_epoch", 1)
+                ):
+                    fine_suspicious = clean <= float(
+                        active_forgetting_config.get(
+                            "maximum_clean_probability", 0.05
+                        )
+                    )
+                    (
+                        fine_active_value,
+                        fine_negative_value,
+                        fine_suspicious_count,
+                    ) = active_forgetting_noise_suppression_losses(
+                        training_logits,
+                        labels,
+                        fine_suspicious,
+                        batch_indices,
+                        epoch=epoch,
+                        epsilon=float(config["loss"].get("epsilon", 1.0e-7)),
+                    )
+                    loss = (
+                        loss
+                        + float(
+                            active_forgetting_config.get(
+                                "unlearning_weight", 0.001
+                            )
+                        )
+                        * fine_active_value
+                        + float(
+                            active_forgetting_config.get(
+                                "negative_learning_weight", 0.1
+                            )
+                        )
+                        * fine_negative_value
+                    )
+                contrastive_value = logits.new_zeros(())
+                contrastive_config = config["loss"].get("contrastive", {})
+                if contrastive_config.get("enabled", False):
+                    if input_key != "features" or mix_lambda != 1.0:
+                        raise ValueError(
+                            "Current contrastive gate requires unmixed cached features"
+                        )
+                    feature_noise = float(
+                        contrastive_config.get("feature_noise_std", 0.01)
+                    )
+                    stochastic_features = F.normalize(
+                        original_inputs.float()
+                        + feature_noise * torch.randn_like(original_inputs.float()),
+                        dim=1,
+                    )
+                    _, stochastic_encoded = model(
+                        features=stochastic_features, return_features=True
+                    )
+                    trusted_for_class = clean >= float(
+                        contrastive_config.get("trusted_threshold", 0.70)
+                    )
+                    trusted_for_class = trusted_for_class | (
+                        (correction_evidence > 0.0)
+                        & (
+                            pseudo_confidence
+                            >= float(
+                                contrastive_config.get(
+                                    "pseudo_confidence_threshold", 0.90
+                                )
+                            )
+                        )
+                    )
+                    contrastive_value = noise_tolerant_supervised_contrastive_loss(
+                        encoded,
+                        stochastic_encoded,
+                        mixed_targets.argmax(dim=1),
+                        trusted_for_class,
+                        temperature=float(
+                            contrastive_config.get("temperature", 0.10)
+                        ),
+                    )
+                    loss = loss + float(
+                        contrastive_config.get("weight", 1.0)
+                    ) * contrastive_value
+                snscl_contrastive_value = logits.new_zeros(())
+                snscl_kl_value = logits.new_zeros(())
+                if snscl_state is not None:
+                    corrected_anchor_labels, snscl_admission_probabilities = (
+                        snscl_state.corrected_labels(
+                            indices=batch_indices,
+                            noisy_labels=labels,
+                            reliability=clean,
+                            logits=logits,
+                            reliability_threshold=float(
+                                snscl_config.get("reliability_threshold", 0.5)
+                            ),
+                            moving_average=float(
+                                snscl_config.get("label_moving_average", 0.99)
+                            ),
+                        )
+                    )
+                    snscl_hard_labels = corrected_anchor_labels.argmax(dim=1)
+                    (
+                        snscl_projected,
+                        _,
+                        _,
+                        snscl_kl_value,
+                    ) = snscl_state.embedding(encoded)
+                    queue_features, queue_labels = snscl_state.queue.snapshot()
+                    (
+                        snscl_contrastive_value,
+                        snscl_usable_anchors,
+                    ) = classwise_queue_contrastive_loss(
+                        snscl_projected,
+                        snscl_hard_labels,
+                        queue_features,
+                        queue_labels,
+                        temperature=float(snscl_config.get("temperature", 0.07)),
+                    )
+                    loss = (
+                        loss
+                        + float(snscl_config.get("contrastive_weight", 1.0))
+                        * snscl_contrastive_value
+                        + float(snscl_config.get("kl_weight", 0.001))
+                        * snscl_kl_value
+                    )
                 elr_value = logits.new_zeros(())
                 elr_weight = 0.0
                 if elr_regularizer is not None:
@@ -587,6 +962,7 @@ def train(
             scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
             head_grad = _gradient_norm(model.classifier.parameters())
+            adapter_grad = _gradient_norm(model.feature_adapter.parameters())
             visual_grad = _gradient_norm(model.visual.parameters())
 
             projection_config = config["trust"].get("gradient_projection", {})
@@ -641,22 +1017,40 @@ def train(
                 totals["projection_cosine"] += float(projection["cosine"])
 
             max_grad_norm = float(train_config.get("max_grad_norm", 1.0))
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
+            parameters_to_clip = list(model.parameters())
+            if snscl_state is not None:
+                parameters_to_clip.extend(snscl_state.parameters())
+            torch.nn.utils.clip_grad_norm_(parameters_to_clip, max_grad_norm)
             scaler.step(optimizer)
             scaler.update()
             scheduler.step()
+            snscl_admitted = 0
+            if snscl_state is not None:
+                if (
+                    snscl_projected is None
+                    or snscl_hard_labels is None
+                    or snscl_admission_probabilities is None
+                ):
+                    raise RuntimeError("SNSCL batch state was not constructed")
+                snscl_admitted = snscl_state.queue.enqueue(
+                    snscl_projected,
+                    snscl_hard_labels,
+                    snscl_admission_probabilities,
+                )
 
             if not first_step_audited:
                 _audit_first_step(
                     model=model,
                     before=before or {},
                     head_grad=head_grad,
+                    adapter_grad=adapter_grad,
                     visual_grad=visual_grad,
                 )
                 first_step_audited = True
                 logger.info(
-                    "First-step audit passed: head_grad=%.6f visual_grad=%.6f",
+                    "First-step audit passed: head_grad=%.6f adapter_grad=%.6f visual_grad=%.6f",
                     head_grad,
+                    adapter_grad,
                     visual_grad,
                 )
 
@@ -668,6 +1062,35 @@ def train(
             )
             totals["feature_drift"] += float(drift.detach().sum())
             totals["elr_regularization"] += float(elr_value.detach()) * batch_size
+            totals["contrastive_loss"] += (
+                float(contrastive_value.detach()) * batch_size
+            )
+            totals["snscl_contrastive_loss"] += (
+                float(snscl_contrastive_value.detach()) * batch_size
+            )
+            totals["snscl_kl_loss"] += (
+                float(snscl_kl_value.detach()) * batch_size
+            )
+            totals["snscl_usable_anchors"] += int(snscl_usable_anchors)
+            totals["snscl_admitted"] += int(snscl_admitted)
+            totals["fine_active_forgetting"] += (
+                float(fine_active_value.detach()) * fine_suspicious_count
+            )
+            totals["fine_negative_learning"] += (
+                float(fine_negative_value.detach()) * fine_suspicious_count
+            )
+            totals["fine_suspicious_samples"] += int(fine_suspicious_count)
+            if attention_local_enabled:
+                totals["attention_local_classification"] += (
+                    float(local_classification_value.detach()) * batch_size
+                )
+                totals["attention_local_consistency"] += (
+                    float(local_consistency_value.detach()) * batch_size
+                )
+                totals["attention_local_agreement"] += (
+                    float(local_agreement_value.detach()) * batch_size
+                )
+                totals["attention_local_examples"] += batch_size
             if used_cached_forward:
                 totals["cached_forward_examples"] += batch_size
             global_step += 1
@@ -679,6 +1102,9 @@ def train(
             "train_cached_forward_fraction": (
                 totals["cached_forward_examples"] / totals["examples"]
             ),
+            "train_consensus_conflict_dropped": int(
+                totals["consensus_conflict_dropped"]
+            ),
             "projection_count": int(totals["projection_count"]),
             "train_elr_regularization": (
                 totals["elr_regularization"] / totals["examples"]
@@ -688,6 +1114,49 @@ def train(
                 if elr_regularizer is not None
                 else 0.0
             ),
+            "train_contrastive_loss": (
+                totals["contrastive_loss"] / totals["examples"]
+            ),
+            "train_snscl_contrastive_loss": (
+                totals["snscl_contrastive_loss"] / totals["examples"]
+            ),
+            "train_snscl_kl_loss": (
+                totals["snscl_kl_loss"] / totals["examples"]
+            ),
+            "train_snscl_usable_anchor_fraction": (
+                totals["snscl_usable_anchors"] / totals["examples"]
+            ),
+            "train_snscl_admitted": int(totals["snscl_admitted"]),
+            "train_snscl_queue_valid": (
+                snscl_state.queue.valid_count if snscl_state is not None else 0
+            ),
+            "train_fine_active_forgetting": (
+                totals["fine_active_forgetting"]
+                / max(1, totals["fine_suspicious_samples"])
+            ),
+            "train_fine_negative_learning": (
+                totals["fine_negative_learning"]
+                / max(1, totals["fine_suspicious_samples"])
+            ),
+            "train_fine_suspicious_samples": int(
+                totals["fine_suspicious_samples"]
+            ),
+            "train_attention_local_classification": (
+                totals["attention_local_classification"]
+                / max(1, totals["attention_local_examples"])
+            ),
+            "train_attention_local_consistency": (
+                totals["attention_local_consistency"]
+                / max(1, totals["attention_local_examples"])
+            ),
+            "train_attention_local_agreement": (
+                totals["attention_local_agreement"]
+                / max(1, totals["attention_local_examples"])
+            ),
+            "train_cyclic_filter_selected": int(cyclic_filter_mask.sum()),
+            "train_cyclic_filter_active": int(active_cyclic_filter.sum()),
+            "train_cyclic_delta": float(cyclic_delta),
+            "train_cyclic_reintroduction": int(reintroduction_epoch),
         }
         val_metrics = evaluate(
             model,
@@ -722,10 +1191,37 @@ def train(
         logger.info("Epoch %d | %s", epoch, format_metrics(metrics))
         _append_metrics_csv(log_path, epoch, metrics, optimizer)
 
+        if cyclic_enabled and reintroduction_epoch and epoch < epochs:
+            cyclic_filter_mask = _refresh_cyclic_filter(
+                model=model,
+                train_dataset=train_dataset,
+                device=device,
+                use_amp=use_amp,
+                loss_config=config["loss"],
+                epoch=epoch + 1,
+                clean_scores=train_clean_scores,
+                cyclic_config=cyclic_config,
+                num_classes=num_classes,
+            )
+            logger.info(
+                "Refreshed cyclic filter after epoch %d: selected=%d",
+                epoch,
+                int(cyclic_filter_mask.sum()),
+            )
+
         selector = float(val_metrics["selector"])
-        improved = selector > best_selector
+        selection_policy = str(
+            evaluation_config.get("selection_policy", "best_selector")
+        )
+        improved = _checkpoint_is_selected(
+            selection_policy=selection_policy,
+            selector=selector,
+            best_selector=best_selector,
+        )
         if improved:
-            best_selector = selector
+            best_selector = (
+                selector if selection_policy == "best_selector" else float(epoch)
+            )
             stale_epochs = 0
         else:
             stale_epochs += 1
@@ -744,12 +1240,20 @@ def train(
             elr_state_dict=(
                 elr_regularizer.state_dict() if elr_regularizer is not None else None
             ),
+            training_aux_state=(
+                snscl_state.state_dict() if snscl_state is not None else None
+            ),
         )
         save_checkpoint(checkpoint_dir / "last.pt", **common)
         save_checkpoint(checkpoint_dir / f"epoch_{epoch}.pt", **common)
         if improved:
             save_checkpoint(checkpoint_dir / "best.pt", **common)
-            logger.info("New best clean-proxy selector: %.6f", best_selector)
+            logger.info(
+                "Selected checkpoint at epoch %d (policy=%s, selector=%.6f)",
+                epoch,
+                selection_policy,
+                selector,
+            )
         if patience > 0 and stale_epochs >= patience:
             logger.info("Early stopping after %d stale epochs", stale_epochs)
             break
@@ -830,6 +1334,83 @@ def train(
     return best_path
 
 
+@torch.no_grad()
+def _refresh_cyclic_filter(
+    *,
+    model: AegisCLIP,
+    train_dataset: torch.utils.data.Dataset,
+    device: torch.device,
+    use_amp: bool,
+    loss_config: dict[str, Any],
+    epoch: int,
+    clean_scores: torch.Tensor,
+    cyclic_config: dict[str, Any],
+    num_classes: int,
+) -> torch.Tensor:
+    """Rank deterministic, unmixed training losses and refresh the curriculum."""
+    was_training = model.training
+    model.eval()
+    loader = DataLoader(
+        train_dataset,
+        batch_size=int(cyclic_config.get("scoring_batch_size", 1024)),
+        shuffle=False,
+        num_workers=0,
+        pin_memory=False,
+        drop_last=False,
+    )
+    losses = torch.empty(len(train_dataset), dtype=torch.float32)
+    for batch in loader:
+        features = batch["features"].to(device)
+        labels = batch["label"].to(device).long()
+        correction = batch["correction_alpha"].to(device).float()
+        targets = corrected_targets(
+            labels,
+            batch["pseudo_label"].to(device).long(),
+            correction,
+            num_classes,
+        )
+        with torch.autocast(device_type=device.type, enabled=use_amp):
+            logits = model(features=features)
+            per_sample = _per_sample_loss(
+                logits, targets, loss_config, epoch, suspicious_mask=None
+            )
+        losses[batch["index"].long()] = per_sample.detach().float().cpu()
+    if was_training:
+        model.train()
+    protection_threshold = float(
+        cyclic_config.get("protect_clean_threshold", 0.999)
+    )
+    eligible = (clean_scores > 0.0) & (clean_scores < protection_threshold)
+    return classwise_high_loss_filter(
+        losses,
+        torch.as_tensor(train_dataset.labels, dtype=torch.long),
+        eligible,
+        remove_fraction=float(cyclic_config["remove_fraction"]),
+        maximum_class_fraction=float(cyclic_config["maximum_class_fraction"]),
+        minimum_kept_per_class=int(cyclic_config["minimum_kept_per_class"]),
+    )
+
+
+def _checkpoint_is_selected(
+    *,
+    selection_policy: str,
+    selector: float,
+    best_selector: float,
+) -> bool:
+    """Apply an explicit checkpoint policy without consulting test results.
+
+    ``last_epoch`` is intended for a full-data replay whose epoch count was
+    fixed by a preceding development run.  Its overlapping validation metrics
+    remain diagnostic only and cannot silently choose the submitted epoch.
+    """
+
+    if selection_policy == "last_epoch":
+        return True
+    if selection_policy == "best_selector":
+        return float(selector) > float(best_selector)
+    raise ValueError(f"Unsupported selection policy: {selection_policy}")
+
+
 def _build_dataset(
     *,
     use_cached: bool,
@@ -846,7 +1427,36 @@ def _build_dataset(
     )
 
 
-def _training_preprocess(preprocess: Any, data_config: dict[str, Any]) -> Any:
+def _validate_train_val_overlap(
+    train_paths: list[str],
+    val_paths: list[str],
+    *,
+    allow_overlap: bool,
+) -> None:
+    """Fail closed when a development selector can see its training samples."""
+    train_keys = {canonical_sample_path(path) for path in train_paths}
+    val_keys = {canonical_sample_path(path) for path in val_paths}
+    overlap = train_keys & val_keys
+    if not overlap:
+        return
+    if not allow_overlap:
+        first = min(overlap)
+        raise ValueError(
+            f"Train/validation path overlap: {len(overlap)}; first={first}"
+        )
+    missing = val_keys - train_keys
+    if missing:
+        raise ValueError(
+            "Overlapping diagnostic validation must be a subset of training: "
+            f"missing={len(missing)}"
+        )
+
+
+def _training_preprocess(
+    preprocess: Any,
+    data_config: dict[str, Any],
+    input_resolution: int = 224,
+) -> Any:
     preset = str(data_config.get("train_augmentation", "clip_center_crop"))
     if preset == "clip_center_crop":
         return preprocess
@@ -867,7 +1477,7 @@ def _training_preprocess(preprocess: Any, data_config: dict[str, Any]) -> Any:
     return Compose(
         [
             RandomResizedCrop(
-                224,
+                int(input_resolution),
                 scale=(0.70, 1.0),
                 ratio=(0.85, 1.15),
                 interpolation=InterpolationMode.BICUBIC,
@@ -906,6 +1516,8 @@ def _per_sample_loss(
         return soft_cross_entropy(logits, targets)
     if loss_config["name"] == "cross_entropy":
         return soft_cross_entropy(logits, targets)
+    if loss_config["name"] == "double_softmax_cross_entropy":
+        return double_softmax_cross_entropy(logits, targets)
     dual_gce = loss_config.get("dual_gce", {})
     if dual_gce.get("enabled", False):
         if suspicious_mask is None or suspicious_mask.numel() != logits.shape[0]:
@@ -963,6 +1575,7 @@ def _audit_first_step(
     model: AegisCLIP,
     before: dict[str, torch.Tensor],
     head_grad: float,
+    adapter_grad: float,
     visual_grad: float,
 ) -> None:
     if not math.isfinite(head_grad) or head_grad <= 0.0:
@@ -971,6 +1584,10 @@ def _audit_first_step(
         not math.isfinite(visual_grad) or visual_grad <= 0.0
     ):
         raise RuntimeError(f"PEFT configured but visual gradient is {visual_grad}")
+    if model.peft_mode == "feature_adapter" and (
+        not math.isfinite(adapter_grad) or adapter_grad <= 0.0
+    ):
+        raise RuntimeError(f"Invalid first-step adapter gradient: {adapter_grad}")
     changed = []
     for name, parameter in model.named_parameters():
         if name not in before:
@@ -993,7 +1610,13 @@ def _audit_first_step(
 def _validate_effective_spec(spec: dict[str, Any], peft_mode: str) -> None:
     if peft_mode == "frozen" and spec["visual_requires_grad"]:
         raise RuntimeError("Frozen mode has trainable visual parameters")
-    if peft_mode in {"visual_ln", "ln_post_proj", "visual_lora"} and not spec[
+    if peft_mode in {
+        "visual_ln",
+        "ln_post_proj",
+        "visual_lora",
+        "visual_mlp_adapter",
+        "visual_prompt",
+    } and not spec[
         "visual_requires_grad"
     ]:
         raise RuntimeError("Visual PEFT mode has no trainable visual parameters")
@@ -1001,6 +1624,14 @@ def _validate_effective_spec(spec: dict[str, Any], peft_mode: str) -> None:
         "parametrizations" in name for name in spec["trainable_names"]
     ):
         raise RuntimeError("Visual LoRA mode has no trainable low-rank parameters")
+    if peft_mode == "visual_mlp_adapter" and not any(
+        ".adaptmlp." in name for name in spec["trainable_names"]
+    ):
+        raise RuntimeError("Visual MLP adapter mode has no trainable adapters")
+    if peft_mode == "visual_prompt" and not any(
+        ".visual_prompt." in name for name in spec["trainable_names"]
+    ):
+        raise RuntimeError("Visual prompt mode has no trainable prompt tokens")
     if peft_mode == "feature_adapter":
         if spec["visual_requires_grad"]:
             raise RuntimeError("Feature adapter must keep visual parameters frozen")
@@ -1024,9 +1655,21 @@ def _prepare_metrics_csv(path: Path, resume: bool) -> None:
                 "train_accuracy",
                 "train_feature_drift",
                 "train_cached_forward_fraction",
+                "train_consensus_conflict_dropped",
                 "projection_count",
                 "train_elr_regularization",
                 "train_elr_weight",
+                "train_snscl_contrastive_loss",
+                "train_snscl_kl_loss",
+                "train_snscl_usable_anchor_fraction",
+                "train_snscl_admitted",
+                "train_snscl_queue_valid",
+                "train_fine_active_forgetting",
+                "train_fine_negative_learning",
+                "train_fine_suspicious_samples",
+                "train_attention_local_classification",
+                "train_attention_local_consistency",
+                "train_attention_local_agreement",
                 "raw_micro",
                 "raw_macro",
                 "trusted_micro",
@@ -1041,6 +1684,7 @@ def _prepare_metrics_csv(path: Path, resume: bool) -> None:
                 "selector",
                 "head_lr",
                 "visual_lr",
+                "snscl_lr",
             ]
         )
 
@@ -1064,9 +1708,21 @@ def _append_metrics_csv(
                 metrics["train_accuracy"],
                 metrics["train_feature_drift"],
                 metrics["train_cached_forward_fraction"],
+                metrics["train_consensus_conflict_dropped"],
                 metrics["projection_count"],
                 metrics["train_elr_regularization"],
                 metrics["train_elr_weight"],
+                metrics["train_snscl_contrastive_loss"],
+                metrics["train_snscl_kl_loss"],
+                metrics["train_snscl_usable_anchor_fraction"],
+                metrics["train_snscl_admitted"],
+                metrics["train_snscl_queue_valid"],
+                metrics["train_fine_active_forgetting"],
+                metrics["train_fine_negative_learning"],
+                metrics["train_fine_suspicious_samples"],
+                metrics["train_attention_local_classification"],
+                metrics["train_attention_local_consistency"],
+                metrics["train_attention_local_agreement"],
                 metrics["raw_micro"],
                 metrics["raw_macro"],
                 metrics["trusted_micro"],
@@ -1081,5 +1737,6 @@ def _append_metrics_csv(
                 metrics["selector"],
                 learning_rates.get("head", ""),
                 learning_rates.get("visual", ""),
+                learning_rates.get("snscl", ""),
             ]
         )
