@@ -116,6 +116,8 @@ bash scripts/run_stage.sh a3
 - [R1：F1+M1 Part-Token 残差预注册协议](docs/R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md)
 - [T1：F1 可信梯度子空间投影协议](docs/T1_F1_TRUST_SUBSPACE_GRADIENT_PROTOCOL_2026-07-22.md)
 - [U0：数字类别 Prompt Tuning 可行性审计](docs/U0_NUMERIC_CLASS_PROMPT_FEASIBILITY_AUDIT_2026-07-22.md)
+- [V1：F1+M1 已知均衡目标先验传输](docs/V1_F1_M1_KNOWN_BALANCED_PRIOR_TRANSPORT_PROTOCOL_2026-07-22.md)
+- [V2：F1+M1 收敛驱动的已知均衡目标先验传输](docs/V2_F1_M1_CONVERGED_KNOWN_BALANCED_PRIOR_TRANSPORT_PROTOCOL_2026-07-22.md)
 - [已执行验证记录](docs/VERIFICATION.md)
 - [平台结果与待评测顺序](docs/PLATFORM_RESULTS_2026-07-22.md)
 - [来源与增量合并说明](PROVENANCE.md)

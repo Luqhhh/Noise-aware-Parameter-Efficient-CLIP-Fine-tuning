@@ -5,6 +5,7 @@ from aegis_clip.structured_allocation import (
     backfill_minimum_class_support,
     classwise_curriculum_selection,
     log_sinkhorn_allocation,
+    log_sinkhorn_allocation_until_converged,
 )
 
 
@@ -30,6 +31,46 @@ def test_log_sinkhorn_matches_row_and_column_marginals() -> None:
 def test_log_sinkhorn_rejects_non_positive_residual_capacity() -> None:
     with pytest.raises(ValueError, match="positive"):
         log_sinkhorn_allocation(torch.zeros(2, 2), torch.tensor([0.0, 2.0]))
+
+
+def test_log_sinkhorn_accepts_float32_uniform_marginal_roundoff() -> None:
+    rows = 10322
+    classes = 500
+    counts = torch.full((classes,), rows / classes, dtype=torch.float32)
+    assert abs(float(counts.double().sum()) - rows) > 1.0e-4
+    allocation, diagnostics = log_sinkhorn_allocation(
+        torch.zeros(rows, classes), counts, iterations=1
+    )
+    assert allocation.shape == (rows, classes)
+    assert diagnostics["target_count_sum_error"] < diagnostics[
+        "target_count_sum_tolerance"
+    ]
+
+
+def test_log_sinkhorn_convergence_solver_meets_both_marginals() -> None:
+    logits = torch.tensor(
+        [
+            [12.0, 0.0, -3.0],
+            [10.0, 0.0, -2.0],
+            [8.0, 1.0, -1.0],
+            [0.0, 9.0, 0.0],
+            [0.0, 7.0, 1.0],
+            [-2.0, 0.0, 11.0],
+        ]
+    )
+    allocation, diagnostics = log_sinkhorn_allocation_until_converged(
+        logits,
+        torch.tensor([2.0, 2.0, 2.0]),
+        minimum_iterations=10,
+        maximum_iterations=500,
+        check_interval=5,
+        tolerance=1.0e-5,
+    )
+    assert diagnostics["converged"] is True
+    assert diagnostics["iterations"] >= 10
+    assert diagnostics["maximum_row_absolute_error"] <= 1.0e-5
+    assert diagnostics["maximum_column_absolute_error"] <= 1.0e-5
+    assert torch.allclose(allocation.sum(dim=1), torch.ones(6), atol=1.0e-5)
 
 
 def test_classwise_curriculum_selection_is_quota_bound_and_stable() -> None:

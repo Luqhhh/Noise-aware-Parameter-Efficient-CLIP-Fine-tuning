@@ -50,8 +50,20 @@ def log_sinkhorn_allocation(
         raise ValueError("target_counts must contain one value per class")
     if (counts <= 0).any():
         raise ValueError("every residual target count must be positive")
+    expected_total = float(logits.shape[0])
+    observed_total = float(counts.double().sum())
+    # A uniform N/C marginal is generally not exactly representable in
+    # float32. Summing hundreds of identical counts can therefore exceed the
+    # historical fixed 1e-4 tolerance despite being the intended marginal.
+    total_tolerance = max(
+        1.0e-4,
+        4.0 * torch.finfo(counts.dtype).eps * max(abs(expected_total), 1.0),
+    )
     if not math.isclose(
-        float(counts.sum()), float(logits.shape[0]), rel_tol=0.0, abs_tol=1.0e-4
+        observed_total,
+        expected_total,
+        rel_tol=0.0,
+        abs_tol=total_tolerance,
     ):
         raise ValueError("target_counts must sum to the number of rows")
 
@@ -76,6 +88,114 @@ def log_sinkhorn_allocation(
         "mean_row_absolute_error": float(row_error.mean()),
         "maximum_column_absolute_error": float(column_error.max()),
         "mean_column_absolute_error": float(column_error.mean()),
+        "target_count_sum_error": abs(observed_total - expected_total),
+        "target_count_sum_tolerance": total_tolerance,
+    }
+    return allocation, diagnostics
+
+
+def log_sinkhorn_allocation_until_converged(
+    logits: torch.Tensor,
+    target_counts: torch.Tensor,
+    *,
+    temperature: float = 1.0,
+    minimum_iterations: int = 100,
+    maximum_iterations: int = 2000,
+    check_interval: int = 10,
+    tolerance: float = 1.0e-5,
+) -> tuple[torch.Tensor, dict[str, float | int | bool]]:
+    """Run log-space Sinkhorn until both marginals meet a fixed tolerance."""
+    if logits.ndim != 2:
+        raise ValueError("logits must be rank two")
+    if not torch.isfinite(logits).all():
+        raise ValueError("logits must be finite")
+    if float(temperature) <= 0.0:
+        raise ValueError("temperature must be positive")
+    if int(minimum_iterations) < 1:
+        raise ValueError("minimum_iterations must be positive")
+    if int(maximum_iterations) < int(minimum_iterations):
+        raise ValueError("maximum_iterations must be at least minimum_iterations")
+    if int(check_interval) < 1:
+        raise ValueError("check_interval must be positive")
+    if float(tolerance) <= 0.0:
+        raise ValueError("tolerance must be positive")
+
+    counts = torch.as_tensor(
+        target_counts, device=logits.device, dtype=torch.float32
+    ).flatten()
+    if counts.numel() != logits.shape[1]:
+        raise ValueError("target_counts must contain one value per class")
+    if (counts <= 0).any():
+        raise ValueError("every residual target count must be positive")
+    expected_total = float(logits.shape[0])
+    observed_total = float(counts.double().sum())
+    total_tolerance = max(
+        1.0e-4,
+        4.0 * torch.finfo(counts.dtype).eps * max(abs(expected_total), 1.0),
+    )
+    if not math.isclose(
+        observed_total,
+        expected_total,
+        rel_tol=0.0,
+        abs_tol=total_tolerance,
+    ):
+        raise ValueError("target_counts must sum to the number of rows")
+
+    log_kernel = logits.detach().float() / float(temperature)
+    log_target = counts.log()
+    log_v = torch.zeros_like(log_target)
+    log_u = torch.zeros(logits.shape[0], device=logits.device)
+    allocation: torch.Tensor | None = None
+    maximum_row_error = float("inf")
+    maximum_column_error = float("inf")
+    mean_row_error = float("inf")
+    mean_column_error = float("inf")
+    converged = False
+    iterations_run = 0
+    for iteration in range(1, int(maximum_iterations) + 1):
+        log_u = -torch.logsumexp(log_kernel + log_v.unsqueeze(0), dim=1)
+        log_v = log_target - torch.logsumexp(
+            log_kernel + log_u.unsqueeze(1), dim=0
+        )
+        iterations_run = iteration
+        should_check = iteration >= int(minimum_iterations) and (
+            iteration % int(check_interval) == 0
+            or iteration == int(maximum_iterations)
+        )
+        if not should_check:
+            continue
+        allocation = torch.exp(
+            log_kernel + log_u.unsqueeze(1) + log_v.unsqueeze(0)
+        )
+        row_error = (allocation.sum(dim=1) - 1.0).abs()
+        column_error = (allocation.sum(dim=0) - counts).abs()
+        maximum_row_error = float(row_error.max())
+        maximum_column_error = float(column_error.max())
+        mean_row_error = float(row_error.mean())
+        mean_column_error = float(column_error.mean())
+        converged = (
+            maximum_row_error <= float(tolerance)
+            and maximum_column_error <= float(tolerance)
+        )
+        if converged:
+            break
+
+    if allocation is None:
+        raise RuntimeError("Sinkhorn convergence loop produced no allocation")
+    diagnostics: dict[str, float | int | bool] = {
+        "iterations": iterations_run,
+        "minimum_iterations": int(minimum_iterations),
+        "maximum_iterations": int(maximum_iterations),
+        "check_interval": int(check_interval),
+        "convergence_tolerance": float(tolerance),
+        "converged": converged,
+        "temperature": float(temperature),
+        "maximum_row_absolute_error": maximum_row_error,
+        "mean_row_absolute_error": mean_row_error,
+        "maximum_column_absolute_error": maximum_column_error,
+        "mean_column_absolute_error": mean_column_error,
+        "target_count_sum_error": abs(observed_total - expected_total),
+        "target_count_sum_tolerance": total_tolerance,
     }
     return allocation, diagnostics
 
