@@ -10,8 +10,11 @@
 - F2、O1、N3 已完成训练、审计与打包，当前只缺平台评测，不需要新增训练算力。
 - O3 原方案在训练前复现审计中停止；O3-R1、Q1A、R1 与 T0/T1 仅完成预注册/实现，尚未运行，必须另行获得算力与执行授权。R1 逐位锚定当前平台最佳 F1+M1；T1 用可信梯度子空间限制不确定标签梯度，二者目前均没有提交包或平台分数。
 - U0 数字类别 Prompt 审计已确定性重跑：raw/clean-core 仅 `0.232648%/0.229854%`，500 个数字提示的 90%/99% 能量秩仅 `1/5`。因此直接把标准共享 CoOp 套到 `0000–0499` 上的路线关闭；这不是平台成绩，也不否定另行设计视觉原型锚定的 soft token。
+- V1/V2 已在固定 F1+M1 与 A2+M1 本地验证缓存上完成已知均衡目标先验传输：F1 clean-core 为 `+0.229853 pp`，但 A2 仅 `+0.069308 pp` 且 raw micro 为 `-0.077504 pp`，未过预注册跨检查点门禁。该方向已关闭、未触碰测试集、未生成平台包；这些数值不是平台分数。
 
 机器可读平台记录见 [`../results/aegis_independent_platform_results.csv`](../results/aegis_independent_platform_results.csv)，团队统一提交登记见 [`../results/submission_registry.csv`](../results/submission_registry.csv)。
+
+V1/V2 本地验证缓存结果另见 [`../results/aegis_balanced_transport_local_results.csv`](../results/aegis_balanced_transport_local_results.csv)，与平台成绩表物理分离，避免误报。
 
 完整性审计见 [`../results/aegis_independent_integration_audit_2026-07-22.json`](../results/aegis_independent_integration_audit_2026-07-22.json)：以独立源提交 `ed32fb6` 对照团队同步前 `main` 提交 `70f9182`，240 个相关源文件全部存在，缺失数为 0；其中 214 个逐字节一致，26 个保留了团队侧的兼容修订、结果回填或新增验证。检查点、缓存、预测 CSV 与 ZIP 仍按仓库策略不入 Git，只登记路径、状态和 SHA-256。
 
@@ -79,6 +82,8 @@
 | R1 | F1+M1 Part-Token 局部残差 | 协议、实现、源工程 188 项/团队快照 189 项完整回归及真实 F1 epoch-0 逐位复现审计完成；GPU cache/训练未启动，无提交包、无平台分数；[`R1`](../reproducibility/aegis_f1/docs/R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md) |
 | T0/T1 | F1 可信梯度子空间严格配对 | T0 丢弃不确定标签梯度；T1 仅保留其在近期可信梯度 rank-8 子空间中的投影。实现、配置配对与自动 gate 已完成；训练未启动，无提交包、无平台分数；[`T1`](../reproducibility/aegis_f1/docs/T1_F1_TRUST_SUBSPACE_GRADIENT_PROTOCOL_2026-07-22.md) |
 | U0 | 数字类别标准 CoOp 可行性审计 | VERIFIED；raw/clean-core `0.232648%/0.229854%`，有效预测类 `210/500`，文本特征非对角余弦均值 `0.978551`，结论为 direct numeric CoOp infeasible；[`U0`](../reproducibility/aegis_f1/docs/U0_NUMERIC_CLASS_PROMPT_FEASIBILITY_AUDIT_2026-07-22.md) |
+| V1 | F1+M1/A2+M1 固定 100 次已知均衡先验传输 | F1 clean-core `+0.229853 pp`，A2 `+0.069308 pp`；两缓存行边际误差未过门禁，且 A2 准确率门禁失败，关闭、无测试推理；[`V1`](../reproducibility/aegis_f1/docs/V1_F1_M1_KNOWN_BALANCED_PRIOR_TRANSPORT_PROTOCOL_2026-07-22.md) |
+| V2 | 收敛驱动的同配方数值修复 | F1 于 250 次收敛；A2 到 2,000 次仍有 `1.335144e-5` 列误差，且 clean-core 仍仅 `+0.069308 pp`、raw micro `-0.077504 pp`。结论为瓶颈不是固定 100 次迭代，方向关闭；[`V2`](../reproducibility/aegis_f1/docs/V2_F1_M1_CONVERGED_KNOWN_BALANCED_PRIOR_TRANSPORT_PROTOCOL_2026-07-22.md) |
 
 ## 合规边界
 
@@ -86,10 +91,11 @@
 - 主干固定为允许的 OpenAI CLIP ViT-B/32；每个提交由一个检查点和一条固定、确定性的推理流水线生成。
 - 测试集只用于推理和格式审计，不参与训练、选样、调参或类别先验估计。
 - M1/M3/Flip 属于同一模型的固定多视图推理。由于赛事对 TTA 的文字解释可能需要组委会最终确认，登记中保留 `tta_risk_acknowledged`，不把合规解释风险隐藏掉。
+- V1/V2 属于使用整批样本固定均衡边际的传导式后处理；即使未来本地门禁通过，也必须先由队长或组委会确认解释边界。本轮已因本地门禁失败关闭，没有对测试集执行该流程。
 - 不把带噪本地验证分数当作平台分数；不把全量训练的回代准确率当作独立泛化证据；未知分数保持空缺。
 
 ## 合并范围与复现
 
-此次整合把 Aegis 从共同基线 `d542fc6` 到独立提交 `ed32fb6` 的新增/修改源代码、配置、测试与协议合并到 `reproducibility/aegis_f1/`，并保留团队在该目录后续加入的 A2 STRICT、Phase 4 与 A2 LoRA 消融内容。文件级完整性审计确认相关源文件缺失数为 0，最新团队整合快照完整回归为 `201 passed`。未提交 `.pt`、缓存、数据集、预测 CSV、ZIP 或机器本地 U0 JSON 大文件；哈希保留在权威协议中。
+此次整合把 Aegis 从共同基线 `d542fc6` 到独立提交 `9f9126a` 的新增/修改源代码、配置、测试与协议合并到 `reproducibility/aegis_f1/`，并保留团队在该目录后续加入的 A2 STRICT、Phase 4 与 A2 LoRA 消融内容。文件级完整性审计确认 246 个相关源文件缺失数为 0，最新团队整合快照完整回归为 `210 passed`。未提交 `.pt`、缓存、数据集、预测 CSV、ZIP 或机器本地审计大文件；哈希保留在权威协议中。
 
 详细来源见 [`PROVENANCE.md`](../reproducibility/aegis_f1/PROVENANCE.md)。

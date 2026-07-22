@@ -2,9 +2,9 @@
 
 日期：2026-07-22
 
-团队仓库本次完整账本同步基线：`origin/main`，commit `70f9182`（已包含 Aegis PR #2/#3/#4、R1、T0/T1、U0 与团队 A2 LoRA 消融更新）
+团队仓库本次增量同步基线：`origin/main`，commit `9ecb289`（已包含 Aegis 完整账本、平台分数回填与 A2 bare 归属修正）
 
-独立研发来源：`/home/x28639/projects/AegisCLIP-F6-A2LoRA`，已按来源提交 `ed32fb6` 完整增量整合到团队目录 `reproducibility/aegis_f1/`；文件级审计确认相关源文件缺失数为 0
+独立研发来源：`/home/x28639/projects/AegisCLIP-F6-A2LoRA`，已按来源提交 `9f9126a` 完整增量整合到团队目录 `reproducibility/aegis_f1/`；文件级审计确认 246 个相关源文件缺失数为 0
 
 本文用于统一人员分工、待评测候选、固定实验配置与合规边界。新增训练、缓存和提交包保留在独立 Aegis 工程中；团队当前开发工作树不被占用或覆盖。任何 GPU 任务启动前必须确认无人占卡，并禁止多人写入同一输出目录。
 
@@ -32,8 +32,9 @@
 | R1 F1+M1 Part-Token 残差 | 协议、实现、源工程 188 项/团队快照 189 项回归与真实 F1 epoch-0 逐位复现已通过；尚未生成正式 cache/训练 | **是**：先生成固定 batch-128 train/validation cache；随后 Adapter 在 CPU 训练 | 等队长明确批准和空闲 GPU 窗口 | 暂未分配；可由 JJT 按固定命令协助 |
 | T0/T1 可信梯度子空间 | 严格配对配置、实现和自动 gate 已完成；两个训练臂均未运行 | **是**：T0、T1 各 2 epoch；之后仅在 Gate 0 通过时生成 center/M1 validation cache | 等队长明确批准和空闲 GPU 窗口；T0→T1 串行 | 暂未分配；可由 JJT 按固定协议协助 |
 | U0 数字 Prompt 审计 | 已完成并确定性重跑；raw/clean-core `0.232648%/0.229854%` | 否 | 关闭 direct numeric shared-context CoOp；仅保留审计证据 | 无 |
+| V1/V2 均衡先验传输 | 已在 F1+M1/A2+M1 两份固定 validation cache 上完成并复现；跨检查点门禁失败 | 否 | 关闭该固定传输方向；无测试推理、无提交包 | 无 |
 
-截至本文当前版本，没有任何默认分配给队长或 JJT 的运行中任务。若要使用两人的算力，只能从 O3-R1、Q1A、R1、T0/T1 中按队长确认的优先级领取；必须先在群内确认实验编号、执行者和 GPU 时间窗。未经确认，不启动，也不重复训练已经完成的 F2/O1/N3。U0 已结束，不需要 GPU。
+截至本文当前版本，没有任何默认分配给队长或 JJT 的运行中任务。若要使用两人的算力，只能从 O3-R1、Q1A、R1、T0/T1 中按队长确认的优先级领取；必须先在群内确认实验编号、执行者和 GPU 时间窗。未经确认，不启动，也不重复训练已经完成的 F2/O1/N3。U0、V1、V2 均已结束，不需要 GPU。
 
 ## 二、平台评测任务
 
@@ -178,7 +179,7 @@ R1 保持已经平台验证的 F1+M1 全局/局部路径不变，只在同一次
 | 缓存 | train/validation 图像 batch 均固定 `128`；父 checkpoint、pool spec 与路径交集 fail-closed 审计 |
 | 损失 | fused GCE `q=0.5` + `0.25×` local GCE + `2.0×` feature L2 anchor |
 | 晋级门槛 | clean-core `>=+0.20pp`、trusted macro 不降、raw micro `>=-0.10pp`、drift `<=1%`、空预测类 0 |
-| 当前证据 | R1 合并时独立源工程 `188 passed`、团队快照 `189 passed`；最新 T1/U0 增量后团队完整回归 `201 passed`；真实 F1 的 R1 epoch-0 对 F1+M1 最大 logit 差 `0`、预测一致率 `100%` |
+| 当前证据 | R1 合并时独立源工程 `188 passed`、团队快照 `189 passed`；最新 V1/V2 增量后团队完整回归 `210 passed`；真实 F1 的 R1 epoch-0 对 F1+M1 最大 logit 差 `0`、预测一致率 `100%` |
 | 当前边界 | 尚未生成正式 GPU cache、尚未训练、尚无提交包和平台分数 |
 
 完整协议：`reproducibility/aegis_f1/docs/R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md`。只有预注册门控 `passed=true` 后才能读取 test 并生成提交包。
@@ -196,7 +197,7 @@ T0/T1 从同一 F1 best checkpoint 出发，数据顺序、增强、可信集合
 | 优化 | 2 epoch，batch 64，head LR `2e-5`，LoRA LR `1e-5` |
 | T1 投影 | 最近可信参考梯度、FIFO 两遍 MGS、rank 8；不确定梯度正交分量全部丢弃 |
 | 本地晋级 | 相对 T0 的 M1 clean-core `>=+0.20pp`，trusted macro `>=-0.05pp`，raw `>=-0.10pp`；并满足复现、漂移与类别覆盖门禁 |
-| 当前状态 | 团队整合完整回归 `201 passed`；T0/T1 均 `not_run`，无提交包、无平台分数 |
+| 当前状态 | 团队整合完整回归 `210 passed`；T0/T1 均 `not_run`，无提交包、无平台分数 |
 
 配置与协议：
 
