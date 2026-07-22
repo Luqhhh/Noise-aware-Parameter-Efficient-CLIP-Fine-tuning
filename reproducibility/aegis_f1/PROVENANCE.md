@@ -2,10 +2,12 @@
 
 - Source repositories: `/home/x28639/projects/AegisCLIP-Noise-Robust` and `/home/x28639/projects/AegisCLIP-F6-A2LoRA`
 - Original snapshot commit: `d542fc6` (`experiment: add noise-aware visual LoRA F1`)
-- Incremental source commit: `0e06f0a` (`feat: add cross-fitted trajectory audit`)
-- Team integration base: `7c8b966` (`origin/main` at integration start)
+- First incremental source commit: `0e06f0a` (`feat: add cross-fitted trajectory audit`)
+- Latest incremental source commit: `beaa81f` (`feat: preregister F1 M1 part-token residual`)
+- Initial team integration base: `7c8b966`
+- R1 integration base: `375b396` (`origin/main` after team A2 LoRA ablation update)
 - First imported: 2026-07-19
-- Incremental integration: 2026-07-22
+- Incremental integrations: 2026-07-22 (`0e06f0a`, then `beaa81f`)
 - Merge mode: three-way additive A/M union under the existing isolated prefix. Team-side A2 STRICT and Phase 4 additions were preserved; only files added or modified by the independent Aegis line since `d542fc6` were imported.
 - Portability: machine-specific data roots in committed configurations are kept relative to the team repository where required.
 
@@ -27,5 +29,7 @@ The integration includes source, configurations, tests, protocols and result met
 | F1 + M1 | center + attention-local, 1:1 probability mean | **63.3276%** | `eca9e7c6269c6a4a1cdb213228fa11e881a7ed9795df14da721d6799a1dab63c` |
 
 D1 bare was reported only as lower than D1 Flip; its exact platform score is unavailable and is therefore not fabricated. F2 + M1, O1 + M1, N3 + M1 and N3 + M3 are audited packages awaiting platform evaluation, not confirmed scores.
+
+R1 has protocol, implementation, full regression tests and an epoch-0 exact-reproduction audit, but no formal cache, training run, submission package or platform score. It is recorded as `not_run`, not as a scored candidate.
 
 The authoritative experiment/status index is [`../../docs/aegis_independent_experiments_2026-07-22.md`](../../docs/aegis_independent_experiments_2026-07-22.md); machine-readable results are in [`../../results/aegis_independent_platform_results.csv`](../../results/aegis_independent_platform_results.csv).

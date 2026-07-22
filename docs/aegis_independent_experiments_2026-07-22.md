@@ -8,7 +8,7 @@
 - M1（中心视图 + 注意力定位局部视图的 1:1 概率融合）在 F1、A2 两个不同检查点上均显著提升平台分数，是目前最强且有跨模型复现的平台信号。
 - M3 在本地排序中曾表现更好，但平台仅 62.0259%，低于 A2 + M1 的 62.6747%；因此 M3 只保留作消融，不再默认叠加 Flip。
 - F2、O1、N3 已完成训练、审计与打包，当前只缺平台评测，不需要新增训练算力。
-- O3 原方案在训练前复现审计中停止；O3-R1 与 Q1A 仅完成预注册/实现，尚未运行，必须另行获得算力与执行授权。
+- O3 原方案在训练前复现审计中停止；O3-R1、Q1A 与 R1 仅完成预注册/实现，尚未运行，必须另行获得算力与执行授权。R1 逐位锚定当前平台最佳 F1+M1，但目前没有提交包或平台分数。
 
 机器可读平台记录见 [`../results/aegis_independent_platform_results.csv`](../results/aegis_independent_platform_results.csv)，团队统一提交登记见 [`../results/submission_registry.csv`](../results/submission_registry.csv)。
 
@@ -73,6 +73,7 @@
 | O3-R1 | O3 batch-size 复现修订 | 已预注册，尚未运行；需要明确算力授权；[`O3-R1`](../reproducibility/aegis_f1/docs/O3_R1_BATCH_REPRODUCIBILITY_AMENDMENT_2026-07-22.md) |
 | P1/P3/P4 | balanced-prior 计划与团队 Phase 4 联合探索 | 独立线仅保留 train-only 计划/配置；不得把本地先验假设写成平台证据；[`P1`](../reproducibility/aegis_f1/docs/P1_BALANCED_PRIOR_PLAN_2026-07-19.md) |
 | Q1A | cross-fitted wrong-event trajectory | 代码、测试与协议完成，尚未运行；需要明确轻量 GPU 授权；[`Q1`](../reproducibility/aegis_f1/docs/Q1_CROSSFITTED_WRONG_EVENT_PROTOCOL_2026-07-22.md) |
+| R1 | F1+M1 Part-Token 局部残差 | 协议、实现、源工程 188 项/团队快照 189 项完整回归及真实 F1 epoch-0 逐位复现审计完成；GPU cache/训练未启动，无提交包、无平台分数；[`R1`](../reproducibility/aegis_f1/docs/R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md) |
 
 ## 合规边界
 
@@ -84,6 +85,6 @@
 
 ## 合并范围与复现
 
-此次整合把 Aegis 从共同基线 `d542fc6` 到独立提交 `0e06f0a` 的新增/修改源代码、配置、测试与协议合并到 `reproducibility/aegis_f1/`，并保留团队在该目录后续加入的 A2 STRICT 与 Phase 4 内容。未提交 `.pt`、缓存、数据集、预测 CSV 或 ZIP 大文件。
+此次整合把 Aegis 从共同基线 `d542fc6` 到独立提交 `beaa81f` 的新增/修改源代码、配置、测试与协议合并到 `reproducibility/aegis_f1/`，并保留团队在该目录后续加入的 A2 STRICT、Phase 4 与 A2 LoRA 消融内容。未提交 `.pt`、缓存、数据集、预测 CSV 或 ZIP 大文件。
 
 详细来源见 [`PROVENANCE.md`](../reproducibility/aegis_f1/PROVENANCE.md)。
