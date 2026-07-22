@@ -1,0 +1,9 @@
+{
+  "clip_module": "/home/clairvoyant/.venvs/noise-clip/lib/python3.12/site-packages/clip/__init__.py",
+  "cuda_available": true,
+  "cuda_runtime": "13.0",
+  "cudnn": 92000,
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "python": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]",
+  "torch": "2.13.0+cu130"
+}
