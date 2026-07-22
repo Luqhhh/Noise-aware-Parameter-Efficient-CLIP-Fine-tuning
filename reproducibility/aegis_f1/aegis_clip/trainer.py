@@ -30,6 +30,7 @@ from aegis_clip.features import FrozenFeatureStore
 from aegis_clip.losses import (
     AdaptiveLossCap,
     EarlyLearningRegularizer,
+    TrustedPrototypeBank,
     classwise_suspicion_mask,
     class_prior_adjusted_logits,
     corrected_targets,
@@ -280,6 +281,33 @@ def train(
         else None
     )
 
+    routing_config = config.get("clean_routing", {})
+    routing_enabled = bool(routing_config.get("enabled", False))
+    routing_mode = str(routing_config.get("mode", "hard"))
+    routing_threshold = float(routing_config.get("threshold", 0.70))
+    routing_start_epoch = int(routing_config.get("start_epoch", 1))
+
+    proto_config = config.get("prototype_contrastive", {})
+    proto_enabled = bool(proto_config.get("enabled", False))
+    prototype_bank = (
+        TrustedPrototypeBank(
+            num_classes=num_classes,
+            feature_dim=int(model_config.get("feature_dim", 512)),
+            momentum=float(proto_config.get("momentum", 0.99)),
+            temperature=float(proto_config.get("temperature", 0.10)),
+            threshold=float(proto_config.get("threshold", 0.80)),
+        ).to(device)
+        if proto_enabled
+        else None
+    )
+    proto_weight = float(proto_config.get("loss_weight", 0.05))
+    proto_start_epoch = int(proto_config.get("start_epoch", 1))
+
+    dynamic_config = config.get("dynamic_trust", {})
+    dynamic_enabled = bool(dynamic_config.get("enabled", False))
+    dynamic_refresh_epoch = int(dynamic_config.get("refresh_epoch", 2))
+    dynamic_clean: torch.Tensor | None = None  # populated at refresh epoch, shape [N]
+
     start_epoch = 1
     global_step = 0
     best_selector = -math.inf
@@ -368,6 +396,45 @@ def train(
     first_step_audited = global_step > 0
 
     for epoch in range(start_epoch, epochs + 1):
+        # --- Dynamic Trust Refresh (P4) ---
+        if dynamic_enabled and epoch == dynamic_refresh_epoch:
+            logger.info("Dynamic trust refresh at epoch %d...", epoch)
+            model.eval()
+            all_idx, all_scores = [], []
+            for batch in train_loader:
+                images = batch["images"].to(device, non_blocking=True)
+                labels = batch["label"].to(device, non_blocking=True)
+                indices = batch["index"]
+                with torch.autocast(device_type=device.type, enabled=use_amp):
+                    logits_orig, _ = model(images=images, return_features=True)
+                    logits_flip, _ = model(
+                        images=torch.flip(images, dims=(3,)), return_features=True
+                    )
+                probs = (F.softmax(logits_orig.float(), dim=1) + F.softmax(logits_flip.float(), dim=1)) / 2.0
+                mean_conf, pred = probs.max(dim=1)
+                flip_agree = (logits_orig.argmax(dim=1) == logits_flip.argmax(dim=1))
+                clean_mask = (mean_conf >= 0.80) & flip_agree & (pred == labels)
+                hard_mask = ((mean_conf >= 0.50) & ~clean_mask) | ~flip_agree
+                new_clean = torch.where(
+                    clean_mask,
+                    torch.tensor(1.0),
+                    torch.where(hard_mask, torch.tensor(0.5), torch.tensor(0.0)),
+                )
+                all_idx.append(indices)
+                all_scores.append(new_clean.cpu())
+            full_idx = torch.cat(all_idx)
+            full_scores = torch.cat(all_scores)
+            dynamic_clean = torch.zeros(len(train_dataset))
+            dynamic_clean[full_idx] = full_scores
+            clean_count = int((dynamic_clean >= 0.80).sum())
+            hard_count = int(((dynamic_clean >= 0.50) & (dynamic_clean < 0.80)).sum())
+            reject_count = int((dynamic_clean < 0.50).sum())
+            logger.info(
+                "Dynamic refresh done: clean=%d hard=%d reject=%d (total=%d)",
+                clean_count, hard_count, reject_count, len(train_dataset),
+            )
+            model.train()
+
         model.train()
         totals = {
             "loss": 0.0,
@@ -388,6 +455,8 @@ def train(
                 else None
             )
             clean = batch["clean_probability"].to(device).float()
+            if dynamic_clean is not None and epoch >= dynamic_refresh_epoch:
+                clean = dynamic_clean[batch_indices.cpu()].to(device).float()
             pseudo = batch["pseudo_label"].to(device).long()
             correction = batch["correction_alpha"].to(device).float()
             if epoch <= int(config["trust"].get("correction_start_epoch", 0)):
@@ -426,6 +495,20 @@ def train(
                 mix_lambda * reference
                 + (1.0 - mix_lambda) * reference[mix_permutation]
             )
+
+            # --- Clean-Routing gate ---
+            if routing_enabled and epoch >= routing_start_epoch:
+                if routing_mode == "hard":
+                    gate = (clean >= routing_threshold).float()
+                else:
+                    gate = ((clean - 0.5) / 0.5).clamp(0.0, 1.0)
+                # Apply mixup to gate so it aligns with mixed inputs
+                mixed_gate = (
+                    mix_lambda * gate
+                    + (1.0 - mix_lambda) * gate[mix_permutation]
+                )
+            else:
+                mixed_gate = None
             forward_key, forward_inputs, used_cached_forward = (
                 _select_training_forward(
                     peft=visual_peft,
@@ -442,7 +525,10 @@ def train(
             )
             optimizer.zero_grad(set_to_none=True)
             with torch.autocast(device_type=device.type, enabled=use_amp):
-                arguments = {forward_key: forward_inputs}
+                arguments: dict[str, torch.Tensor] = {forward_key: forward_inputs}
+                if mixed_gate is not None and forward_key == "images":
+                    arguments["gate"] = mixed_gate
+                    arguments["reference_features"] = mixed_reference
                 logits, encoded = model(**arguments, return_features=True)
                 training_logits = class_prior_adjusted_logits(
                     logits, class_counts, prior_tau
@@ -485,7 +571,18 @@ def train(
                     encoded.float(), F.normalize(mixed_reference, dim=1), dim=1
                 )
                 if distill_weight > 0.0:
-                    loss = loss + distill_weight * drift.mean()
+                    if mixed_gate is not None:
+                        gate_sum = mixed_gate.sum().clamp_min(1.0)
+                        gated_drift = (drift * mixed_gate).sum() / gate_sum
+                        loss = loss + distill_weight * gated_drift
+                    else:
+                        loss = loss + distill_weight * drift.mean()
+
+                proto_loss = encoded.new_zeros(())
+                if proto_enabled and epoch >= proto_start_epoch:
+                    prototype_bank.update(encoded, labels, clean)
+                    proto_loss = prototype_bank.loss(encoded, labels, clean)
+                    loss = loss + proto_weight * proto_loss
 
             scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
@@ -649,6 +746,7 @@ def train(
             ),
         )
         save_checkpoint(checkpoint_dir / "last.pt", **common)
+        save_checkpoint(checkpoint_dir / f"epoch_{epoch}.pt", **common)
         if improved:
             save_checkpoint(checkpoint_dir / "best.pt", **common)
             logger.info("New best clean-proxy selector: %.6f", best_selector)

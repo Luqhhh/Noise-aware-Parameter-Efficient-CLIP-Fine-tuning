@@ -84,7 +84,10 @@ Cosine head 在所有学习率下均显著弱于 linear head（~6pp 差距），
 | 提交 | 平台分数 | vs ref |
 |------|---------|--------|
 | **A2 NR_CL_KNN_DROP s42 + Flip TTA** | **61.21%** | +3.87pp |
+| **A2 STRICT (LoRA, lineage-fixed) s42 + Flip TTA** | **61.15%** | +3.81pp |
 | AEGIS F1 + Flip TTA | 61.10% | +3.76pp |
+| **A2 STRICT s42 Bare** | **60.65%** | +3.31pp |
+| **A2 STRICT s3407 Bare** | **60.64%** | +3.30pp |
 | S_MIXUP_CE5 + Flip TTA | 60.48% | +3.14pp |
 | w1_gce05_mixup + Flip TTA | 60.36% | +3.02pp |
 | A2 NR_CL_KNN_DROP s3407 + Flip TTA | 60.31% | +2.97pp |

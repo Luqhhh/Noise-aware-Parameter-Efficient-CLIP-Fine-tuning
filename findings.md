@@ -7,6 +7,7 @@
 - **严格复跑 epoch-0 = 69.43%**：精确匹配 A2 本地准确率，确认 lineage 修复正确
 - **LoRA 真实增益 +0.19~0.39pp**（vs 假 +8.5pp），双 seed promotion 通过
 - **平台 Bare = 60.65%（+0.14pp vs F1 E2），TTA = 61.15%（+0.05pp vs F1 E2）**
+- **A2 STRICT seed=3407 平台 Bare = 60.64%（vs seed=42 Bare 60.65%，双 seed 仅差 0.01pp，LoRA 增益高度稳定）**
 - **结论：A2 parent swap 确认成立但收益边际**，不进入 P3/P4 参数搜索
 - **教训**：parent-child split 必须完全相同（SHA-256 级别验证），epoch-0 evaluation 是必不或缺的 parent swap gate
 

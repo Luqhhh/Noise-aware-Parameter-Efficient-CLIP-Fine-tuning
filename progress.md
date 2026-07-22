@@ -1,5 +1,13 @@
 # 执行进度
 
+## 2026-07-21 Phase 4 突破实验执行中
+
+- **P0 结构化分类头**：多原型 (MP-1~6) 和 LDA/Ridge (SH-1~6) 全部未通过晋级 gate。raw_fixed < raw_broken 始终成立，关闭方向。
+- **P1 Checkpoint Averaging**：修改 trainer 保存逐 epoch checkpoint，P1_A2_STRICT_EPOCH_CKPTS 训练进行中（epoch 1/6）。
+- **P2 Clean-Routed LoRA**：`encode_image_with_routing()` 已实现，trainer gating logic 已完成，CR-0/CR-1/CR-2 配置文件已创建。
+- **A2 STRICT seed=3407 平台 Bare = 60.64%**（vs seed=42 Bare 60.65%，双 seed 仅差 0.01pp），LoRA 增益高度稳定。
+- **增强特征缓存**：horizontal_flip 缓存已生成并审计通过（103,218 samples, 512-dim）。
+
 ## 2026-07-21 A2_AEGIS_PARENT_SWAP 协议修复与严格复跑
 
 - 发现原 A2 parent swap 本地 79.22% 是 split lineage 泄漏（parent d3_strict vs child AEGIS prepare）
@@ -7,6 +15,7 @@
 - 严格复跑 (F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT) 双 seed 均通过
 - epoch-0 = 69.43%（精确匹配 A2 本地），LoRA 真实增益 +0.19~0.39pp
 - 平台 Bare = 60.65%（+0.14pp vs F1），TTA = 61.15%（+0.05pp vs F1）
+- A2 STRICT seed=3407 平台 Bare = 60.64%，双 seed Bare 差 0.01pp → LoRA 增益确认稳定
 - 结论：A2 parent swap 确认正收益但边际，P3/P4 不追
 - 分支 fix/a2-aegis-parent-lineage 已合并 main，协议修复已归档
 

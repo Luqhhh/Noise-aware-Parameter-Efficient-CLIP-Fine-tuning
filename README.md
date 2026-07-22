@@ -85,6 +85,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | 实验 | 平台 Bare | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
 | **A2 STRICT (A2 parent + LoRA, lineage-fixed, seed=42)** | **60.65%** | **+3.31pp** | 单视图 |
+| **A2 STRICT (A2 parent + LoRA, lineage-fixed, seed=3407)** | **60.64%** | **+3.30pp** | 单视图 |
 | **AEGIS F1 (visual LoRA, clean≥0.7, distill)** | **60.52%** | **+3.18pp** | 单视图 |
 | s_oof_zero_0001_ff (OOF zero p<0.001, final_fit) | 60.29% | +2.95pp | 单视图 |
 | s_oof_zero_0001 (OOF zero-weight p<0.001) | 59.96% | +2.62pp | 单视图 |
@@ -105,12 +106,14 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 **多 seed 稳定性：**
 
-| 实验 | seed | 本地 Val | 平台 TTA | Paired Delta vs s42 |
-|------|------|----------|----------|---------------------|
-| A2 | 42 | 69.44% | **61.21%** | — |
-| A2 | 3407 | 69.39% | **60.31%** | −0.07pp (p=0.457) |
+| 实验 | seed | 本地 Val | 平台 Bare | 平台 TTA | Paired Delta vs s42 |
+|------|------|----------|----------|----------|---------------------|
+| A2 | 42 | 69.44% | 59.81% | **61.21%** | — |
+| A2 | 3407 | 69.39% | 59.81% | **60.31%** | −0.07pp (p=0.457) |
+| A2 STRICT | 42 | 69.64% | **60.65%** | **61.15%** | — |
+| A2 STRICT | 3407 | — | **60.64%** | — | −0.01pp |
 
-> A2 多 seed 稳定性确认：本地 paired delta 仅 7 张图差异（p=0.457），但平台 TTA 波动达 0.90pp。说明 seed=42 的 61.21% 有运气成分，A2 方法的合理期望约 60.76%（两 seed 平均）。所有后续实验必须跑双 seed 验证。
+> A2 多 seed 稳定性确认：本地 paired delta 仅 7 张图差异（p=0.457），但平台 TTA 波动达 0.90pp。A2 STRICT LoRA 双 seed Bare 仅差 0.01pp（60.65% vs 60.64%），确认 LoRA 增益高度稳定。所有后续实验必须跑双 seed 验证。
 
 **基线定义：**
 - **平台 Bare 最佳**：A2 STRICT = **60.65%**（A2 parent + visual LoRA rank-8, clean filter, distill）

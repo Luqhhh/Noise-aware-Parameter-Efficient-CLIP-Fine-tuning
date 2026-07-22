@@ -282,3 +282,96 @@ def project_conflicting_gradients(
         "dot": float(dot),
         "cosine": float(cosine),
     }
+
+
+class TrustedPrototypeBank:
+    """EMA-updated per-class prototypes for contrastive feature learning.
+
+    Only samples with ``clean_probability >= threshold`` update the prototype
+    and participate in the loss, as specified in the Phase 4 P3 plan.
+    """
+
+    def __init__(
+        self,
+        num_classes: int,
+        feature_dim: int,
+        momentum: float = 0.99,
+        temperature: float = 0.10,
+        threshold: float = 0.80,
+    ) -> None:
+        if not 0.0 < momentum < 1.0:
+            raise ValueError("prototype momentum must be in (0, 1)")
+        if temperature <= 0.0:
+            raise ValueError("temperature must be positive")
+        self.momentum = float(momentum)
+        self.temperature = float(temperature)
+        self.threshold = float(threshold)
+        self.num_classes = int(num_classes)
+        self.feature_dim = int(feature_dim)
+        self.prototypes: torch.Tensor = torch.empty(0)
+        self.initialized: torch.Tensor = torch.empty(0)
+
+    def to(self, device: torch.device) -> "TrustedPrototypeBank":
+        if self.prototypes.numel() == 0:
+            self.prototypes = torch.zeros(
+                self.num_classes, self.feature_dim, device=device
+            )
+        else:
+            self.prototypes = self.prototypes.to(device)
+        if self.initialized.numel() == 0:
+            self.initialized = torch.zeros(
+                self.num_classes, dtype=torch.bool, device=device
+            )
+        else:
+            self.initialized = self.initialized.to(device)
+        return self
+
+    @torch.no_grad()
+    def update(
+        self,
+        features: torch.Tensor,
+        labels: torch.Tensor,
+        clean_probability: torch.Tensor,
+    ) -> None:
+        """EMA-update prototypes using trusted samples (p >= threshold).
+
+        Only iterates over classes *present in the current batch*, which is
+        far cheaper than scanning all 500 classes for every batch.
+        """
+        trusted = clean_probability >= self.threshold
+        features = F.normalize(features.float().detach(), dim=1)
+        present = labels.unique()
+        for class_idx in present.tolist():
+            mask = (labels == class_idx) & trusted
+            count = int(mask.sum())
+            if count == 0:
+                continue
+            class_mean = F.normalize(
+                features[mask].mean(dim=0, keepdim=True), dim=1
+            ).squeeze(0)
+            if not self.initialized[class_idx]:
+                self.prototypes[class_idx] = class_mean
+                self.initialized[class_idx] = True
+            else:
+                self.prototypes[class_idx] = F.normalize(
+                    self.momentum * self.prototypes[class_idx]
+                    + (1.0 - self.momentum) * class_mean,
+                    dim=0,
+                )
+
+    def loss(
+        self,
+        features: torch.Tensor,
+        labels: torch.Tensor,
+        clean_probability: torch.Tensor,
+    ) -> torch.Tensor:
+        """Prototype-contrastive loss on trusted samples only."""
+        if not self.initialized.any():
+            return features.new_zeros(())
+        trusted = clean_probability >= self.threshold
+        if trusted.sum() == 0:
+            return features.new_zeros(())
+        features = F.normalize(features.float(), dim=1)
+        sim = features @ self.prototypes.T / self.temperature
+        per_sample = F.cross_entropy(sim, labels, reduction="none")
+        return per_sample[trusted].mean()

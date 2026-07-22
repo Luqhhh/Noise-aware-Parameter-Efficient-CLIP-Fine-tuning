@@ -26,6 +26,9 @@ TOP_LEVEL_KEYS = {
     "output",
     "lineage",
     "promotion",
+    "clean_routing",
+    "prototype_contrastive",
+    "dynamic_trust",
 }
 
 REQUIRED_SECTIONS = {

@@ -315,6 +315,24 @@ class AegisCLIP(nn.Module):
             )
         return self.adapt_features(features)
 
+    def encode_image_with_routing(
+        self,
+        images: torch.Tensor,
+        reference_features: torch.Tensor,
+        gate: torch.Tensor,
+    ) -> torch.Tensor:
+        """Encode images with per-sample LoRA routing.
+
+        reference_features must be frozen-CLIP features (no LoRA) for the
+        exact images in the batch.  The LoRA delta is computed as
+        ``adapted - reference`` and scaled by ``gate``, so gate=0 samples
+        receive no LoRA gradient.
+        """
+        adapted = self.encode_image(images)
+        reference = self.adapt_features(F.normalize(reference_features.float(), dim=-1))
+        delta = adapted - reference
+        return reference + gate[:, None] * delta
+
     def forward_features(self, features: torch.Tensor) -> torch.Tensor:
         return self.classifier(self.adapt_features(features))
 
@@ -328,14 +346,20 @@ class AegisCLIP(nn.Module):
         images: torch.Tensor | None = None,
         features: torch.Tensor | None = None,
         return_features: bool = False,
+        reference_features: torch.Tensor | None = None,
+        gate: torch.Tensor | None = None,
     ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         if (images is None) == (features is None):
             raise ValueError("Provide exactly one of images or features")
-        encoded = (
-            self.encode_image(images)
-            if images is not None
-            else self.adapt_features(features)
-        )
+        if images is not None:
+            if gate is not None and reference_features is not None:
+                encoded = self.encode_image_with_routing(
+                    images, reference_features, gate
+                )
+            else:
+                encoded = self.encode_image(images)
+        else:
+            encoded = self.adapt_features(features)
         logits = self.classifier(encoded)
         return (logits, encoded) if return_features else logits
 

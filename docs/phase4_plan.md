@@ -15,7 +15,8 @@
 | --------------------------- | ---------: | ---------: |
 | A2 `NR_CL_KNN_DROP` seed=42 |  约 60.64% | **61.21%** |
 | AEGIS F1（E2 parent）       |     60.52% |     61.10% |
-| A2 STRICT + AEGIS LoRA      | **60.65%** |     61.15% |
+| A2 STRICT + AEGIS LoRA s=42 | **60.65%** |     61.15% |
+| A2 STRICT + AEGIS LoRA s=3407 |   60.64% |         — |
 
 A2 STRICT 修复 parent-child split lineage 后表明：
 
