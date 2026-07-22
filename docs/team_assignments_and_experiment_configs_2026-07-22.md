@@ -2,7 +2,7 @@
 
 日期：2026-07-22
 
-团队仓库本次增量同步基线：`origin/main`，commit `9ecb289`（已包含 Aegis 完整账本、平台分数回填与 A2 bare 归属修正）
+团队仓库 V1/V2 增量导入前基线：`origin/main`，commit `9ecb289`（已包含 Aegis 完整账本、平台分数回填与 A2 bare 归属修正）；V1/V2 与最新总账随后通过 PR #7 合入
 
 独立研发来源：`/home/x28639/projects/AegisCLIP-F6-A2LoRA`，已按来源提交 `9f9126a` 完整增量整合到团队目录 `reproducibility/aegis_f1/`；文件级审计确认 246 个相关源文件缺失数为 0
 

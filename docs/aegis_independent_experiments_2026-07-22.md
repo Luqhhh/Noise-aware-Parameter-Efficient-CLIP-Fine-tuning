@@ -16,7 +16,7 @@
 
 V1/V2 本地验证缓存结果另见 [`../results/aegis_balanced_transport_local_results.csv`](../results/aegis_balanced_transport_local_results.csv)，与平台成绩表物理分离，避免误报。
 
-完整性审计见 [`../results/aegis_independent_integration_audit_2026-07-22.json`](../results/aegis_independent_integration_audit_2026-07-22.json)：以独立源提交 `ed32fb6` 对照团队同步前 `main` 提交 `70f9182`，240 个相关源文件全部存在，缺失数为 0；其中 214 个逐字节一致，26 个保留了团队侧的兼容修订、结果回填或新增验证。检查点、缓存、预测 CSV 与 ZIP 仍按仓库策略不入 Git，只登记路径、状态和 SHA-256。
+完整性审计见 [`../results/aegis_independent_integration_audit_2026-07-22.json`](../results/aegis_independent_integration_audit_2026-07-22.json)：以独立源提交 `9f9126a` 对照团队增量同步前的 `main` 提交 `9ecb289`，246 个相关源文件全部存在，缺失数为 0；其中 213 个逐字节一致，33 个保留了团队侧的兼容修订、结果回填或新增验证。检查点、缓存、预测 CSV 与 ZIP 仍按仓库策略不入 Git，只登记路径、状态和 SHA-256。
 
 ## 平台实测与待评测包
 
