@@ -55,6 +55,8 @@ aegis-prepare-high-clean-split = "aegis_clip.cli.prepare_high_clean_split:main"
 aegis-cache-dual-view-features = "aegis_clip.cli.cache_dual_view_features:main"
 aegis-train-local-residual = "aegis_clip.cli.train_local_residual:main"
 aegis-evaluate-local-prototype = "aegis_clip.cli.evaluate_local_prototype:main"
+aegis-cache-part-token-adapter-features = "aegis_clip.cli.cache_part_token_adapter_features:main"
+aegis-train-part-token-adapter = "aegis_clip.cli.train_part_token_adapter:main"
 
 [tool.setuptools.packages.find]
 include = ["aegis_clip*"]

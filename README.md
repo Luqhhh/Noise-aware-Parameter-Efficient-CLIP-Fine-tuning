@@ -166,7 +166,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 ### 下一步
 
-平台名额优先用于已经完成训练和审计的 **F2 + M1 → O1 + M1 → N3 + M1**。完整独立实验总账、状态和合规边界见 [`docs/aegis_independent_experiments_2026-07-22.md`](docs/aegis_independent_experiments_2026-07-22.md)。O3-R1 与 Q1A 尚未运行，只有在明确授权并确认不占用团队任务后才可启动。
+平台名额优先用于已经完成训练和审计的 **F2 + M1 → O1 + M1 → N3 + M1**。完整独立实验总账、状态和合规边界见 [`docs/aegis_independent_experiments_2026-07-22.md`](docs/aegis_independent_experiments_2026-07-22.md)。O3-R1、Q1A 与 R1 均尚未运行；其中 R1 仅完成协议、实现和 CPU/真实检查点复现审计，只有在明确授权并确认不占用团队任务后才可启动 GPU cache。
 
 ## 项目结构
 

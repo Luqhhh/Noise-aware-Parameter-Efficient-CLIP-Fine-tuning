@@ -18,9 +18,11 @@ from aegis_clip.local_feature_adapter import load_local_feature_adapter
 from aegis_clip.local_inference import (
     attention_local_adapter_global_logits,
     attention_local_global_logits,
+    attention_part_token_adapter_global_logits,
     complementary_flip_local_global_logits,
 )
 from aegis_clip.multiprototype import blend_multiprototype_logits
+from aegis_clip.part_token_adapter import load_part_token_adapter
 from aegis_clip.prior_alignment import align_logits_to_prior
 from aegis_clip.runtime import seed_worker, set_seed
 from aegis_clip.submission import create_submission
@@ -40,6 +42,7 @@ def main() -> None:
             "horizontal_flip",
             "attention_local_global",
             "attention_local_adapter_global",
+            "attention_part_token_adapter_global",
             "complementary_flip_local_global",
         ],
         default="none",
@@ -72,6 +75,7 @@ def main() -> None:
     if args.tta in {
         "attention_local_global",
         "attention_local_adapter_global",
+        "attention_part_token_adapter_global",
         "complementary_flip_local_global",
     } and (
         args.tta_fusion != "mean_logits" or args.tta_temperature != 1.0
@@ -136,6 +140,11 @@ def main() -> None:
         if args.tta == "attention_local_adapter_global"
         else None
     )
+    part_token_adapter = (
+        load_part_token_adapter(checkpoint, device)
+        if args.tta == "attention_part_token_adapter_global"
+        else None
+    )
     multiprototype_head = checkpoint.get("multiprototype_head")
     if multiprototype_head is not None:
         multiprototype_head = dict(multiprototype_head)
@@ -145,6 +154,7 @@ def main() -> None:
     if args.tta in {
         "attention_local_global",
         "attention_local_adapter_global",
+        "attention_part_token_adapter_global",
         "complementary_flip_local_global",
     } and multiprototype_head is not None:
         raise ValueError(
@@ -173,6 +183,21 @@ def main() -> None:
                     images,
                     crop_size=160,
                     top_patches=5,
+                )["logits"]
+            elif args.tta == "attention_part_token_adapter_global":
+                if part_token_adapter is None:
+                    raise RuntimeError("R1 part-token adapter was not loaded")
+                part_pool_spec = checkpoint["part_token_adapter"]["spec"][
+                    "part_pool_spec"
+                ]
+                logits = attention_part_token_adapter_global_logits(
+                    model,
+                    part_token_adapter,
+                    images,
+                    crop_size=160,
+                    top_patches=5,
+                    part_top_patches=int(part_pool_spec["top_patches"]),
+                    part_temperature=float(part_pool_spec["temperature"]),
                 )["logits"]
             elif args.tta == "complementary_flip_local_global":
                 logits = complementary_flip_local_global_logits(
@@ -237,6 +262,11 @@ def main() -> None:
             "attention_local_adapter_global:crop=160:top5:"
             "mean_probabilities"
         )
+    elif args.tta == "attention_part_token_adapter_global":
+        inference_mode = (
+            "attention_part_token_adapter_global:crop=160:top5:"
+            "part_top8:mean_probabilities"
+        )
     elif args.tta == "complementary_flip_local_global":
         inference_mode = (
             "complementary_flip_local_global:crop=160:top5:"
@@ -265,7 +295,11 @@ def main() -> None:
             "tta_fusion": (
                 "mean_probabilities"
                 if args.tta
-                in {"attention_local_global", "attention_local_adapter_global"}
+                in {
+                    "attention_local_global",
+                    "attention_local_adapter_global",
+                    "attention_part_token_adapter_global",
+                }
                 else "branch_mean_probabilities"
                 if args.tta == "complementary_flip_local_global"
                 else args.tta_fusion if args.tta != "none" else "none"
@@ -297,7 +331,11 @@ def main() -> None:
                     "fusion": "1:1_probability_mean",
                 }
                 if args.tta
-                in {"attention_local_global", "attention_local_adapter_global"}
+                in {
+                    "attention_local_global",
+                    "attention_local_adapter_global",
+                    "attention_part_token_adapter_global",
+                }
                 else None
             ),
             "local_feature_adapter": (
@@ -308,6 +346,17 @@ def main() -> None:
                     "global_path": "native_parent_checkpoint_unchanged",
                 }
                 if args.tta == "attention_local_adapter_global"
+                else None
+            ),
+            "part_token_adapter": (
+                {
+                    **checkpoint["part_token_adapter"]["spec"],
+                    "gate": checkpoint["part_token_adapter"]["gate"],
+                    "view_condition": "attention_local_only",
+                    "global_path": "native_parent_checkpoint_unchanged",
+                    "epoch_zero_baseline": "F1+M1",
+                }
+                if args.tta == "attention_part_token_adapter_global"
                 else None
             ),
             "complementary_flip_local_global": (

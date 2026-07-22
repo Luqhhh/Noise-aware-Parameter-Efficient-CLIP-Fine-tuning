@@ -41,3 +41,7 @@
 O1 与 N3 的纯 M1 验证 clean-core 均为 `83.5875%`；O1 的 trusted macro/raw micro 为 `81.3115%/70.7809%`，分别比 N3 高 `0.0447pp/0.0775pp`。这只作为安全审计，不视为平台分数估计。
 
 下一次有限平台名额的优先顺序为：**F2 + M1 → O1 + M1 → N3 + M1**。F2 + M1 是当前平台最佳的最小风险全量重放；O1/N3 用于检验 AdaptFormer 表示能否进一步放大 M1。不要优先上传 N3 + M3 或旧的裸推理/Flip 包。
+
+## 已预注册但尚未形成提交包
+
+- R1：F1+M1 Part-Token 局部残差。协议、实现、独立源工程 `188 passed`/团队整合快照 `189 passed` 回归和真实 F1 epoch-0 逐位复现审计已完成；正式 GPU cache 与训练尚未启动，当前无 ZIP、无平台分数，不进入上述上传顺序。权威协议见 [`R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md`](R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md)。

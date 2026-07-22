@@ -12,6 +12,11 @@ from aegis_clip.local_feature_adapter import (
     fuse_global_local_log_probabilities,
 )
 from aegis_clip.model import AegisCLIP
+from aegis_clip.part_token_adapter import (
+    PartTokenResidualAdapter,
+    anchored_classifier_residual_logits,
+    pool_cls_aligned_patch_features,
+)
 
 
 def logits_with_last_block_attention(
@@ -80,6 +85,57 @@ def logits_with_last_block_attention(
         images.shape[0], grid_height, grid_width
     )
     return logits, encoded, patch_attention
+
+
+def native_visual_forward_with_patch_features(
+    model: AegisCLIP,
+    images: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Run the native model once and expose its final projected patch tokens.
+
+    A forward hook observes the exact transformer invocation used by the native
+    CLIP path.  Consequently the returned logits and CLS feature retain the
+    same numerical operation order as ``model(images=...)``; patch processing
+    is read-only and cannot perturb the scored branch.
+    """
+    if model.peft_mode == "visual_prompt":
+        raise ValueError("Part-token inference is not validated for visual prompts")
+    visual = model.visual
+    required = {"transformer", "ln_post", "proj"}
+    if not all(hasattr(visual, name) for name in required):
+        raise ValueError("Part-token inference requires CLIP ViT internals")
+    captured: list[torch.Tensor] = []
+
+    def capture_tokens(
+        _module: torch.nn.Module,
+        _inputs: tuple[torch.Tensor, ...],
+        output: torch.Tensor,
+    ) -> None:
+        if not isinstance(output, torch.Tensor):
+            raise ValueError("CLIP visual transformer returned a non-tensor")
+        captured.append(output)
+
+    handle = visual.transformer.register_forward_hook(capture_tokens)
+    try:
+        logits, local_features = model(images=images, return_features=True)
+    finally:
+        handle.remove()
+    if len(captured) != 1:
+        raise RuntimeError(
+            "Expected exactly one native visual transformer invocation, "
+            f"captured {len(captured)}"
+        )
+    tokens = captured[0]
+    if tokens.ndim != 3 or tokens.shape[1] != images.shape[0]:
+        raise ValueError("Captured CLIP tokens must have [sequence,batch,width] shape")
+    if tokens.shape[0] <= 1:
+        raise ValueError("Captured CLIP sequence does not contain patch tokens")
+    patch_values = tokens[1:].permute(1, 0, 2)
+    patch_values = visual.ln_post(patch_values)
+    if visual.proj is not None:
+        patch_values = patch_values @ visual.proj
+    patch_features = F.normalize(patch_values.float(), dim=2)
+    return logits, local_features, patch_features
 
 
 def attention_guided_crop(
@@ -198,6 +254,60 @@ def attention_local_adapter_global_logits(
         "base_local_logits": base_local_logits.float(),
         "adapted_local_logits": adapted_local_logits.float(),
         "local_features": local_features.float(),
+        "adapted_local_features": adapted_local_features.float(),
+        "attention": attention,
+    }
+
+
+def attention_part_token_adapter_global_logits(
+    model: AegisCLIP,
+    adapter: PartTokenResidualAdapter,
+    images: torch.Tensor,
+    *,
+    crop_size: int = 160,
+    top_patches: int = 5,
+    part_top_patches: int = 8,
+    part_temperature: float = 0.07,
+) -> dict[str, torch.Tensor]:
+    """Fuse native F1 globally with an R1-adapted M1 part-token local view."""
+    global_logits = model(images=images)
+    _, _, attention = logits_with_last_block_attention(model, images)
+    local_images = attention_guided_crop(
+        images,
+        attention,
+        crop_size=crop_size,
+        top_patches=top_patches,
+    )
+    base_local_logits, local_features, patch_features = (
+        native_visual_forward_with_patch_features(model, local_images)
+    )
+    part_features = pool_cls_aligned_patch_features(
+        local_features,
+        patch_features,
+        top_patches=part_top_patches,
+        temperature=part_temperature,
+    )
+    adapted_local_features = adapter(local_features, part_features)
+    # Anchor on the exact native/AMP local logits and apply only the shared
+    # classifier weight to the learned feature residual.  The classifier bias
+    # cancels, and a zero feature residual is therefore bit-exact regardless of
+    # CPU/GPU matmul precision differences.
+    adapted_local_logits = anchored_classifier_residual_logits(
+        base_local_logits,
+        local_features,
+        adapted_local_features,
+        model.classifier.weight,
+    )
+    fused = fuse_global_local_log_probabilities(
+        global_logits, adapted_local_logits
+    )
+    return {
+        "logits": fused,
+        "global_logits": global_logits.float(),
+        "base_local_logits": base_local_logits.float(),
+        "adapted_local_logits": adapted_local_logits.float(),
+        "local_features": local_features.float(),
+        "part_features": part_features.float(),
         "adapted_local_features": adapted_local_features.float(),
         "attention": attention,
     }

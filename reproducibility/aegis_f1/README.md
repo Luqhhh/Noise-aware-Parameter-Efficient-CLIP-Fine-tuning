@@ -113,6 +113,7 @@ bash scripts/run_stage.sh a3
 - [赛规合规矩阵](docs/COMPETITION_COMPLIANCE.md)
 - [研究依据与设计取舍](docs/RESEARCH.md)
 - [实验、晋级与停止协议](docs/EXPERIMENT_PROTOCOL.md)
+- [R1：F1+M1 Part-Token 残差预注册协议](docs/R1_F1_M1_PART_TOKEN_RESIDUAL_PROTOCOL_2026-07-22.md)
 - [已执行验证记录](docs/VERIFICATION.md)
 - [平台结果与待评测顺序](docs/PLATFORM_RESULTS_2026-07-22.md)
 - [来源与增量合并说明](PROVENANCE.md)
