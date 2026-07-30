@@ -1,4 +1,48 @@
-# 最新发现（2026-07-22，2026-07-30 文档核对）
+# 最新发现（2026-07-30）
+
+## E2→F1 严格重建成功，M1 新候选待平台
+
+- 原 F1 checkpoint 虽缺失，但同 split 重建的 E2 父模型 raw `70.3470%`，
+  超 archived 父模型 `+0.1163pp`；lineage 审计无泄漏。
+- F1 LoRA 相对 epoch 0 raw `+0.2230pp`、clean-core `+0.4092pp`，漂移仅
+  `0.3982%`，promotion 通过。
+- M1 weight 0.35 进一步带来 raw `+1.2602pp`、clean-core `+0.9548pp`，
+  trusted/proxy 同向；这是比局部 Adapter 更大且更一致的本地机制增益。
+- 重建 F1 absolute clean-core 仍比 archived F1 低 `0.2456pp`，所以不能把原
+  F1+M1 平台 63.3276% 直接赋给新包；必须真实平台回填。
+- 新包 ZIP SHA-256：
+  `02d37906accdf6b49e40733b4e675220f0177b5d71c5662984de68df5e781bb6`。
+
+## A2 STRICT 局部特征 Adapter：有效但未晋级
+
+- attention-local 数值路径修复后，局部专用 34,336 参数残差 Adapter 可稳定改善
+  M1；最佳点 raw `+0.0872pp`、trusted macro `+0.1219pp`、clean-core
+  `+0.1821pp`。
+- 预注册 clean-core 门槛为 `+0.20pp`，最佳点仍差约 2 个 clean-core 样本；
+  不降低门槛、不生成平台包。
+- 更低 anchor、更高 trust、64 维瓶颈以及 local loss 0.75/1.00 均无更好结果，
+  说明继续扩大强度/容量不是下一步。
+- 原 F1 checkpoint 缺失，但 E2 配方、同源 split 和官方数据仍在；下一步严格重建
+  E2→F1，不用 split 不同的主工程 CE5 checkpoint 进行有泄漏风险的选模。
+
+## A2 STRICT + M1 weight 0.35：平台 62.6870%，机制有效但未晋级
+
+- 最新更正后的有效平台分数为 **62.6870%**。
+- 相对同 checkpoint Bare 提升 +2.0349pp，attention-local 的因果方向继续成立。
+- 与已报告 A2 + M1 62.6747% 几乎持平；本地双 seed 显示的 weight 0.35 优势不能可靠预测平台增益。
+- 比 F1 + M1 63.3276% 低 0.6406pp，说明当前主要瓶颈仍是 checkpoint 表征，不是 M1 融合权重。
+- 决策：关闭 A2 STRICT 上的 M1 权重/裁剪小搜索，下一轮回到更强 F1 表征或真正的新机制。
+
+## M1 attention-local：固定定位成立，较低局部权重双 seed 更稳
+
+- 已在本仓库复现最后 block / mean-12-head / top-5 / crop160 的 M1 推理；A2 STRICT seed42 的固定 1:1 融合相对 global raw +0.8525pp，与外部平台 M1 正增益方向一致。
+- `crop ∈ {144,160,176}`、`top-k ∈ {3,5,9}` 网格没有找到比原 `crop160/top5` 更稳的定位参数。
+- 将局部分支权重从 0.50 降至 0.35 后，seed42/3407 raw 分别 +1.0657/+1.0076pp，clean-core +0.8123/+0.7843pp；trusted/proxy 指标也全部同向，500 类覆盖不变。
+- 144/160/176 三尺度局部概率平均的 M2 只提高 seed42 raw，proxy 与 clean-core 均轻微回退，未过全指标同向门槛；不补第二 seed。
+- A2 STRICT seed42 + M1 weight 0.35 已生成审计通过的 24,967 条预测平台包；平台最终 62.6870%，状态为 `platform_valid_not_promoted`。
+- 完整报告：`results/m1_localization_optimization_20260730.md`。
+
+# 发现（2026-07-22，2026-07-30 文档核对）
 
 ## Phase 4 P0–P4：机制实验全部关闭
 

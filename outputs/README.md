@@ -2,7 +2,7 @@
 
 每个子目录对应一个实验，包含 checkpoint、训练日志、评估结果和提交文件。
 
-> **状态核对：2026-07-30；最新实验：2026-07-22。** 当前权威实验结论见根目录 `README.md`、`CURRENT_STAGE_ACCEPTANCE.md` 和 `docs/phase4_results.md`。本文件中的早期“最佳”均按当时阶段理解。
+> **状态核对：2026-07-30；最新实验：2026-07-30。** 当前权威实验结论见根目录 `README.md`、`CURRENT_STAGE_ACCEPTANCE.md` 和 `results/f1_rebuild_20260730.md`。本文件中的早期“最佳”均按当时阶段理解。
 
 ## 基线
 
@@ -116,6 +116,11 @@ M1/M3 与 Bare、Flip TTA 是不同推理协议。完整证据状态见 `results
 详细记录见 `results/submission_registry.csv`。
 
 ## Phase 4（隔离 AEGIS runner）
+
+2026-07-30 新增的 E2→F1 重建与 M1 平台候选位于
+`reproducibility/aegis_f1/outputs/`。候选 ZIP SHA-256 为
+`02d37906accdf6b49e40733b4e675220f0177b5d71c5662984de68df5e781bb6`，
+状态 `audited_pending_platform`；详见 `results/f1_rebuild_20260730.md`。
 
 Phase 4 的原始运行产物位于 `reproducibility/aegis_f1/outputs/`，受该子工程 `.gitignore` 控制；关键结果已抽取到受 Git 跟踪的 `docs/phase4_results.md` 和 `results/phase4_experiments.csv`。
 

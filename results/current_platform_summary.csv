@@ -1,5 +1,6 @@
 result_id,experiment_id,inference_protocol,online_accuracy,evidence_status,checkpoint_sha256,submission_zip_sha256,registry_row,notes
 F1_M1_REPORTED,AEGIS_F1_VISUAL_LORA_CLEAN_CORE,M1_attention_local_crop,0.633276,reported_unverified,7da95e427b959e85cbbf37c99d47d9909b941032e836fc219aaea8e690d72cc4,,F1_M1_REPORTED_20260722,"reported in team assignment; ZIP hash absent locally"
+A2_STRICT_M1_W035_S42,F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT,M1_attention_crop160_top5_global065_local035,0.626870,audited,096f3294bebf262c87bc9f8ffa72d08a31c76eb6cba433af90ba36399b543c9e,ddbbf0b9e408e9fbcd4fc7d00c8c16e647a872634c61625d9c9e9c935d549e66,A2_STRICT_M1_W035_20260730,"platform score corrected by user from 62.8670 to 62.6870; audited local artifacts"
 A2_M1_REPORTED,NR_CL_KNN_DROP,M1_attention_local_crop,0.626747,reported_unverified,,,A2_M1_REPORTED_20260722,"reported in team assignment; checkpoint and ZIP hashes absent locally"
 A2_M3_REPORTED,NR_CL_KNN_DROP,M3,0.620259,reported_unverified,,,A2_M3_REPORTED_20260722,"reported in team assignment; inference manifest and hashes absent locally"
 A2_FLIP_TTA_S42,NR_CL_KNN_DROP,horizontal_flip_2view,0.612128,audited_incomplete,74ad2856e4449a42397edbda599ae79e8a4c6a6fa923624ef4e91a35e20a2a4c,,NR_CL_KNN_DROP_TTA_20260719,"checkpoint artifact audited; prediction and ZIP hashes unavailable"

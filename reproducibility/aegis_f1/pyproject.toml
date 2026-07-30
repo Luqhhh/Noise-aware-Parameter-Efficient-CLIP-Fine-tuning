@@ -41,6 +41,9 @@ aegis-sweep-tta-fusion = "aegis_clip.cli.sweep_tta_fusion:main"
 aegis-sweep-multiprototype-head = "aegis_clip.cli.sweep_multiprototype_head:main"
 aegis-build-multiprototype-checkpoint = "aegis_clip.cli.build_multiprototype_checkpoint:main"
 aegis-sweep-linear-soup = "aegis_clip.cli.sweep_linear_soup:main"
+aegis-sweep-localization = "aegis_clip.cli.sweep_localization:main"
+aegis-cache-local-views = "aegis_clip.cli.cache_local_views:main"
+aegis-train-local-adapter = "aegis_clip.cli.train_local_adapter:main"
 
 [tool.setuptools.packages.find]
 include = ["aegis_clip*"]

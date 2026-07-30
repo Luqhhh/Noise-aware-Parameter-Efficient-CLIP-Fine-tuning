@@ -2,7 +2,7 @@
 
 面向噪声标签数据的细粒度图像识别（500 类，~103K 训练图）。基于 CLIP ViT-B/32 冻结 backbone + 线性分类头，系统消融 head 类型、数据增强和标签噪声的影响，并实现部分解冻基础设施用于后续视觉特征微调。
 
-> **当前状态（文档核对：2026-07-30；最新实验：2026-07-22）**：A2 STRICT 是已审计的最佳 Bare 模型（60.65%），A2 seed=42 + Flip TTA 是已登记的最佳 Flip TTA（61.21%，checkpoint 已审计但 prediction/ZIP 哈希缺失）。Phase 4 的 P0–P4 机制实验均未达到晋级门槛，当前 CLIP ViT-B/32 方法族在本仓库框架内关闭。独立研发侧另报告 F1 + M1 为 63.3276%，但本仓库缺少该提交包的 ZIP SHA-256，按“已报告、待审计回填”管理。权威状态入口见 [`CURRENT_STAGE_ACCEPTANCE.md`](CURRENT_STAGE_ACCEPTANCE.md) 和 [`docs/README.md`](docs/README.md)。
+> **当前状态（2026-07-30）**：A2 STRICT + M1 `crop160/top5/local_weight0.35` 已知平台为 **62.6870%**。局部特征 Adapter 未过 gate，未生成平台包。随后完成同 split E2→F1 严格重建：F1 promotion PASS，M1 相对 global raw +1.2602pp、clean-core +0.9548pp，已生成并审计新包 `02d37906…781bb6`，状态 `audited_pending_platform`。它不能沿用 archived F1+M1 的 63.3276% 分数，需真实平台回填。完整结果见 [`results/f1_rebuild_20260730.md`](results/f1_rebuild_20260730.md)。
 
 ## 已完成工作
 
@@ -67,6 +67,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | 实验 | 平台 | 证据状态 | 说明 |
 |------|------:|----------|------|
 | **AEGIS F1 + M1** | **63.3276%** | 已报告，待补 ZIP SHA-256 | 单 checkpoint；attention 定位局部裁剪与全局概率 1:1 融合 |
+| A2 STRICT + M1 weight 0.35 | **62.6870%** | 已审计 | crop160/top5；相对同 checkpoint Bare +2.0349pp |
 | A2 + M1 | 62.6747% | 已报告，待补完整审计字段 | 同一 M1 协议 |
 | A2 + M3 | 62.0259% | 已报告，待补完整审计字段 | 独立研发侧报告 |
 
@@ -172,10 +173,11 @@ M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归�
 
 ### 下一步
 
-本仓库内不再继续普通 LoRA、routing 或 trust 参数搜索。下一步仅保留两类工作：
+本仓库内不再继续普通 LoRA、routing 或 trust 参数搜索。下一步按以下顺序：
 
-1. 回填独立研发侧 F1/A2 + M1 的完整提交哈希，以及 F2/O1/N3 的真实平台结果；
-2. 若继续研究，必须建立新的机制协议；当前 Phase 4 决策树已走完，不能把未过 gate 的候选重新包装为下一轮调参。
+1. 评测已审计的 F1 rebuild + M1 weight 0.35 包并按 ZIP SHA-256 回填真实分数；
+2. 回填独立研发侧 F1/A2 + M1 的完整提交哈希，以及 F2/O1/N3 的真实平台结果；
+3. 若继续研究，必须建立新的机制协议；当前 Phase 4 决策树和 A2 STRICT 推理权重搜索均已走完，不能把未过 gate 的候选重新包装为下一轮调参。
 
 ## 项目结构
 

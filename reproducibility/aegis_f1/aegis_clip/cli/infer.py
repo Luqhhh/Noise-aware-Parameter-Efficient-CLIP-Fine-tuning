@@ -13,6 +13,11 @@ from tqdm import tqdm
 from aegis_clip.checkpoint import build_from_checkpoint
 from aegis_clip.config import load_config
 from aegis_clip.data import TestImageDataset, load_class_mapping
+from aegis_clip.localization import (
+    extract_attention_crops,
+    forward_with_last_block_attention,
+    fuse_global_local_probabilities,
+)
 from aegis_clip.multiprototype import blend_multiprototype_logits
 from aegis_clip.runtime import seed_worker, set_seed
 from aegis_clip.submission import create_submission
@@ -31,6 +36,16 @@ def main() -> None:
     )
     parser.add_argument("--tta-temperature", type=float, default=1.0)
     parser.add_argument("--acknowledge-tta-risk", action="store_true")
+    parser.add_argument(
+        "--local-view",
+        choices=["none", "attention_crop"],
+        default="none",
+    )
+    parser.add_argument("--local-crop-size", type=int, default=160)
+    parser.add_argument("--local-top-k", type=int, default=5)
+    parser.add_argument("--local-weight", type=float, default=0.5)
+    parser.add_argument("--local-temperature", type=float, default=1.0)
+    parser.add_argument("--acknowledge-local-view-risk", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--device", default="cuda")
     args = parser.parse_args()
@@ -38,6 +53,27 @@ def main() -> None:
         raise ValueError(
             "TTA is a competition gray area; pass --acknowledge-tta-risk explicitly"
         )
+    if (
+        args.local_view != "none"
+        and not args.acknowledge_local_view_risk
+    ):
+        raise ValueError(
+            "Local-view inference changes the inference protocol; pass "
+            "--acknowledge-local-view-risk explicitly"
+        )
+    if args.local_view != "none" and args.tta != "none":
+        raise ValueError(
+            "The audited M1 protocol forbids stacking flip TTA on the local view"
+        )
+    if args.local_view != "none":
+        if not 1 <= args.local_crop_size <= 224:
+            raise ValueError("local-crop-size must be in [1, 224]")
+        if not 1 <= args.local_top_k <= 49:
+            raise ValueError("local-top-k must be in [1, 49]")
+        if not 0.0 <= args.local_weight <= 1.0:
+            raise ValueError("local-weight must be in [0, 1]")
+        if args.local_temperature <= 0.0:
+            raise ValueError("local-temperature must be positive")
     device = torch.device(
         args.device if args.device != "cuda" or torch.cuda.is_available() else "cpu"
     )
@@ -71,6 +107,10 @@ def main() -> None:
     model.eval()
     multiprototype_head = checkpoint.get("multiprototype_head")
     if multiprototype_head is not None:
+        if args.local_view != "none":
+            raise ValueError(
+                "Attention-local inference is not defined for multiprototype heads"
+            )
         multiprototype_head = dict(multiprototype_head)
         multiprototype_head["prototypes"] = multiprototype_head["prototypes"].to(
             device=device, dtype=torch.float32
@@ -81,7 +121,24 @@ def main() -> None:
     for batch in tqdm(loader, desc="Aegis inference"):
         images = batch["images"].to(device, non_blocking=True)
         with torch.autocast(device_type=device.type, enabled=use_amp):
-            if multiprototype_head is None:
+            if args.local_view == "attention_crop":
+                logits, attention = forward_with_last_block_attention(
+                    model, images
+                )
+                local_images, _ = extract_attention_crops(
+                    images,
+                    attention,
+                    crop_size=args.local_crop_size,
+                    top_k=args.local_top_k,
+                )
+                local_logits = model(images=local_images)
+                logits = fuse_global_local_probabilities(
+                    logits,
+                    local_logits,
+                    local_weight=args.local_weight,
+                    temperature=args.local_temperature,
+                )
+            elif multiprototype_head is None:
                 logits = model(images=images)
             else:
                 logits, features = model(images=images, return_features=True)
@@ -122,17 +179,51 @@ def main() -> None:
         args.output_dir,
         args.checkpoint,
         inference_mode=(
-            args.tta
-            if args.tta == "none" or args.tta_fusion == "mean_logits"
-            else f"{args.tta}:{args.tta_fusion}:t={args.tta_temperature:g}"
+            (
+                "attention_crop:"
+                f"topk={args.local_top_k}:"
+                f"crop={args.local_crop_size}:"
+                f"weight={args.local_weight:g}:"
+                f"t={args.local_temperature:g}"
+            )
+            if args.local_view != "none"
+            else (
+                args.tta
+                if args.tta == "none" or args.tta_fusion == "mean_logits"
+                else f"{args.tta}:{args.tta_fusion}:t={args.tta_temperature:g}"
+            )
         ),
-        tta_risk_acknowledged=args.acknowledge_tta_risk,
+        tta_risk_acknowledged=(
+            args.acknowledge_tta_risk or args.acknowledge_local_view_risk
+        ),
         valid_labels={str(value).zfill(4) for value in idx_to_class.values()},
         extra_manifest={
             "corrupt_images": corrupt_count,
             "tta_fusion": args.tta_fusion if args.tta != "none" else "none",
             "tta_temperature": (
                 float(args.tta_temperature) if args.tta != "none" else 1.0
+            ),
+            "local_view": args.local_view,
+            "local_crop_size": (
+                int(args.local_crop_size)
+                if args.local_view != "none"
+                else None
+            ),
+            "local_top_k": (
+                int(args.local_top_k) if args.local_view != "none" else None
+            ),
+            "local_weight": (
+                float(args.local_weight)
+                if args.local_view != "none"
+                else None
+            ),
+            "local_temperature": (
+                float(args.local_temperature)
+                if args.local_view != "none"
+                else None
+            ),
+            "local_view_risk_acknowledged": bool(
+                args.acknowledge_local_view_risk
             ),
             "prediction_head": (
                 "linear_plus_multiprototype"

@@ -2,7 +2,7 @@
 
 ## Scope
 
-本验收状态覆盖主仓库截至 `7c8b966` 的代码和截至 2026-07-22 的本地实验产物。2026-07-30 的工作只同步文档与结果索引，没有启动新训练。
+本验收状态覆盖主仓库截至 `7c8b966` 的历史代码、截至 2026-07-22 的训练产物，以及 2026-07-30 新增的 M1 attention-local 推理优化、局部特征 Adapter 实验和同 split E2→F1 严格重建。A2 STRICT Adapter 未通过 gate；F1 重建通过 gate 并生成待平台候选。
 
 原 `docs/phase4_plan.md` 已确认有意删除，并由以下最终产物取代：
 
@@ -14,11 +14,12 @@
 
 不同推理协议分别管理，不能把 M1、Flip TTA 和 Bare 混成同一消融。
 
-### Reported external inference anchors
+### M1 inference anchors
 
 | Experiment | Inference | Platform | Evidence status |
 |---|---|---:|---|
 | AEGIS F1 | M1 attention-guided local crop | **63.3276%** | `reported_unverified`：本仓库缺 ZIP SHA-256 |
+| A2 STRICT seed 42 | crop160 / top5 / global 0.65 + local 0.35 | **62.6870%** | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | A2 | M1 attention-guided local crop | 62.6747% | `reported_unverified`：缺 checkpoint/ZIP 哈希 |
 | A2 | M3 | 62.0259% | `reported_unverified`：缺推理 manifest/哈希 |
 
@@ -34,6 +35,25 @@
 | AEGIS F1 | Bare | 60.5159% | registered with checkpoint/ZIP SHA-256 |
 
 权威机器可读摘要：`results/current_platform_summary.csv`。
+
+A2 STRICT + M1 weight 0.35 的最终平台分数为 62.6870%，相对同 checkpoint Bare +2.0349pp，但低于 F1 + M1 0.6406pp，判定为 `platform_valid_not_promoted`。完整证据见 `results/m1_localization_optimization_20260730.md`。
+
+## Local Feature Adapter Acceptance
+
+A2 STRICT 局部特征 Adapter 已完成首轮和六个有界消融。最佳 clean-core 增益
+`+0.1821pp`，低于预注册 `+0.20pp`，因此状态为 `best_not_promoted`，没有测试
+提交包。完整证据见 `results/local_adapter_a2_strict_20260730.md`。
+
+## F1 Rebuild Acceptance
+
+同源 split 的 E2→F1 重建已完成。E2 raw `70.3470%`；F1 相对 epoch 0
+clean-core `+0.4092pp`、raw `+0.2230pp`、漂移 `0.3982%`、500 类，
+promotion PASS。M1 weight 0.35 相对 F1 global raw `+1.2602pp`、
+clean-core `+0.9548pp`，trusted/proxy 同向。
+
+提交包 `02d37906accdf6b49e40733b4e675220f0177b5d71c5662984de68df5e781bb6`
+已审计通过，状态 `audited_pending_platform`。真实平台分数回填前不得写入平台结果表。
+完整证据见 `results/f1_rebuild_20260730.md`。
 
 ## Phase 4 Final Acceptance
 
@@ -91,3 +111,7 @@ Phase 4 没有平台候选，不补多 seed，不继续 threshold/rank/lr 网格
 - [ ] F2/O1/N3 获得平台反馈后回填
 - [x] A2 STRICT seed 3407 补齐 checkpoint/prediction/ZIP 哈希
 - [ ] 修复并复跑当前 2 个 pytest 失败项
+- [x] A2 STRICT + M1 weight 0.35 平台 62.6870% 已回填
+- [x] A2 STRICT 局部特征 Adapter 负结果与 gate 证据已归档
+- [x] E2→F1 重建与 M1 新候选完成审计
+- [ ] F1 重建 M1 候选获得平台反馈后回填
