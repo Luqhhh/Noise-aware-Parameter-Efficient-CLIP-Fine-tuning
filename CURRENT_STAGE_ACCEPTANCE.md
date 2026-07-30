@@ -1,116 +1,93 @@
-# CURRENT STAGE ACCEPTANCE — 2026-07-12
+# CURRENT STAGE ACCEPTANCE — 2026-07-30
 
-## Modified Files
+## Scope
 
-| File | Change |
-|---|---|
-| `experiments/baseline/train.py` | Added `--allow-overwrite` flag, `_prepare_fresh_run_artifacts()` guard, fixed CSV header logic (`log_header = not log_file.exists()`), reload best.pt before post-eval, added micro/macro consistency hard-checks, expanded `eval_results.json` with `post_eval_checkpoint`, `post_eval_checkpoint_epoch`, `post_eval_micro_accuracy`, `post_eval_macro_accuracy`, `micro_macro_gap` |
-| `experiments/baseline/evaluate.py` | Flexible seed access (`train_seed` → `split_seed` → `seed` → 42), `--output-json` flag, streaming SHA-256 for checkpoint and val CSV, default output renamed to `reeval_best.json`, expanded output JSON |
-| `scripts/build_submission_manifest.py` | NEW: Builds auditable `submission_manifest.json` with streaming SHA-256 hashes, label validation (`^\d{4}$`), prediction count check, ZIP-internal CSV hash match, checkpoint best_val_acc vs reeval micro consistency |
-| `scripts/register_submission.py` | NEW: Registers submission from manifest into `results/submission_registry.csv`, rejects duplicate ZIP hashes |
-| `tests/test_run_artifact_guard.py` | NEW: 7 tests — fresh-run refusal, `--allow-overwrite` removal, resume bypass, missing checkpoint |
-| `tests/test_best_checkpoint_post_eval.py` | NEW: 4 tests — best.pt reload vs in-memory divergence, strict load, missing checkpoint |
-| `tests/test_metric_consistency.py` | NEW: 7 tests — micro-macro gap = micro − macro (1e-10 precision), balanced/imbalanced/single-class/random, bottom-10% aggregation |
-| `tests/test_submission_manifest.py` | NEW: 11 tests — SHA-256 streaming vs full read, ZIP CSV hash match, extra/missing file detection, label format validation, prediction count, duplicate rejection, manifest schema completeness |
-| `results/ablation.csv` | Updated E0_STRICT → `pending_clean_rerun`, D3_STRICT → `valid_seed42_pending_multiseed`, F0_STRICT → `control_complete_no_gain`, F1_STRICT → `below_gain_threshold`, old F1/F1b/F2 → `invalid_stage_leakage`, all with reeval metrics |
-| `README.md` | Updated test count (147), added local vs platform distinction, D3 platform submission table, reeval-based strict protocol table |
-| `results/submission_registry.csv` | NEW: D3_STRICT_20260712_123554 registered with all hashes and platform 57.3397% |
-| `outputs/d3_strict/seed42/checkpoints/reeval_best.json` | NEW: D3 reevaluation from best.pt |
-| `outputs/f0_strict/seed42/checkpoints/reeval_best.json` | NEW: F0 reevaluation from best.pt |
-| `outputs/f1_strict/seed42/checkpoints/reeval_best.json` | NEW: F1 reevaluation from best.pt |
-| `outputs/d3_strict/seed42/submissions/submission_manifest.json` | NEW: D3 submission manifest |
+本验收状态覆盖主仓库截至 `7c8b966` 的代码和截至 2026-07-22 的本地实验产物。2026-07-30 的工作只同步文档与结果索引，没有启动新训练。
 
-## Test Results
+原 `docs/phase4_plan.md` 已确认有意删除，并由以下最终产物取代：
 
-```
-147 passed, 8 warnings in 67.33s
-```
+- `docs/phase4_results.md`
+- `results/phase4_experiments.csv`
+- `results/current_platform_summary.csv`
 
-All existing tests (111) + new tests (36) pass.
+## Current Platform Anchors
 
-### New Test Breakdown
+不同推理协议分别管理，不能把 M1、Flip TTA 和 Bare 混成同一消融。
 
-| Test File | Tests | Key Coverage |
+### Reported external inference anchors
+
+| Experiment | Inference | Platform | Evidence status |
+|---|---|---:|---|
+| AEGIS F1 | M1 attention-guided local crop | **63.3276%** | `reported_unverified`：本仓库缺 ZIP SHA-256 |
+| A2 | M1 attention-guided local crop | 62.6747% | `reported_unverified`：缺 checkpoint/ZIP 哈希 |
+| A2 | M3 | 62.0259% | `reported_unverified`：缺推理 manifest/哈希 |
+
+### Audited Bare / Flip TTA anchors
+
+| Experiment | Inference | Platform | Status |
+|---|---|---:|---|
+| A2 `NR_CL_KNN_DROP` seed 42 | horizontal flip | **61.2128%** | checkpoint audited；prediction/ZIP hashes unavailable |
+| A2 STRICT seed 42 | horizontal flip mean-prob T=0.5 | **61.1487%** | registered with ZIP SHA-256 |
+| AEGIS F1 | horizontal flip mean-prob T=0.5 | 61.1007% | registered with ZIP SHA-256 |
+| A2 STRICT seed 42 | Bare | **60.6521%** | registered with checkpoint/ZIP SHA-256 |
+| A2 STRICT seed 3407 | Bare | **60.6441%** | registered with checkpoint/prediction/ZIP SHA-256 |
+| AEGIS F1 | Bare | 60.5159% | registered with checkpoint/ZIP SHA-256 |
+
+权威机器可读摘要：`results/current_platform_summary.csv`。
+
+## Phase 4 Final Acceptance
+
+| Phase | Mechanism | Evidence | Acceptance |
+|---|---|---|---|
+| P0 | Multiprototype / LDA / Ridge | proxy 改善伴随 raw 回退；Ridge 基线胜出 | CLOSED |
+| P1 | Same-trajectory checkpoint averaging | SWA-1/2/3 不及 epoch 6；greedy soup 等价 epoch 6 | CLOSED |
+| P2 | Clean-Routed LoRA | hard gate 无独立干预；soft gate +0.042pp clean-core，低于 +0.20pp 门槛 | CLOSED |
+| P3 | Trusted Prototype-Contrastive | clean-core −0.084pp；499/500 类 | CLOSED |
+| P4 | Dynamic Trust Refresh | 刷新后所有 epoch 低于刷新前 | CLOSED |
+
+Phase 4 没有平台候选，不补多 seed，不继续 threshold/rank/lr 网格。完整报告见 `docs/phase4_results.md`。
+
+## Noise-Robust Wave A Acceptance
+
+| Experiment | Result | Acceptance |
 |---|---|---|
-| `test_run_artifact_guard.py` | 7 | fresh-run refusal, allow-overwrite, resume bypass, missing checkpoint |
-| `test_best_checkpoint_post_eval.py` | 4 | best.pt reload correctness, strict load, missing file |
-| `test_metric_consistency.py` | 7 | micro-macro gap identity (1e-10), edge cases |
-| `test_submission_manifest.py` | 11 | SHA-256, ZIP validation, labels, duplicates, schema |
+| A0 OOF zero p<0.001 | Bare 59.90%，TTA 60.31% | CONTROL |
+| A2 CL+kNN consensus drop 991 | seed42 TTA 61.21%；seed3407 TTA 60.31% | BEST FROZEN, seed-sensitive |
+| A3 consensus relabel 100 | TTA 59.89% | CLOSED |
+| A1 classwise drop 8680 | TTA 59.55% | CLOSED |
 
-## E0/D3/F0/F1 Final Consistency Metrics
+机器可读记录见 `results/noise_robust_wave.csv`。
 
-### D3_STRICT (reeval_best.json)
+## Tests and Documentation
 
-| Metric | Value |
+- 根目录 `tests/` 当前可收集 405 个测试；2026-07-30 实跑结果为 **402 passed、1 skipped、2 failed**。
+- `tests/test_integration.py::test_full_pipeline_smoke`：CPU 单进程 DataLoader 配置了非零 `timeout`，触发 `_SingleProcessDataLoaderIter requires timeout == 0`。
+- `tests/test_oof_soft_targets.py::test_oof_targets_map_stable_image_keys_and_return_probabilities`：float32 返回值与十进制字面量进行精确列表相等比较，`0.8000000119... != 0.8`。
+- 标准命令为 `pytest -q tests`；直接运行裸 `pytest` 会扫描被忽略的 `.claude/worktrees/`，造成重复模块收集冲突，因此不能作为本仓库验收命令。
+- 早期设计和执行计划保留为历史快照；当前文档入口及优先级见 `docs/README.md`。
+- Phase 4 原始 `reproducibility/aegis_f1/outputs/` 仍按子工程规则忽略；关键指标已抽取进受跟踪的 Markdown/CSV。
+
+## External Candidate Status
+
+截至本仓库现有证据：
+
+| Candidate | Status |
 |---|---|
-| micro_accuracy | 0.7065723148507174 |
-| macro_accuracy | 0.7060997486114502 |
-| micro_macro_gap | 0.00047256623926716923 |
-| Verify: micro − macro | 0.0004725662392672 ✓ |
-| Verify: micro == best_val_acc | 0.7065723148507174 == 0.7065723148507174 ✓ |
-| checkpoint_epoch | 49 |
-| val_samples | 10,316 |
-| checkpoint_sha256 | 45cbfb1eed38eed7efcfb014063082c3067a70407b0d52a152633aeed675cda3 |
-| val_csv_sha256 | 70a63d5a5f358a9f1ea5613c45c0904d1a30cbab8cd8241db70363d5de417c2c |
+| F2 + M1 | submission package audited; platform result not recorded |
+| O1 + M1 | submission package audited; platform result not recorded |
+| N3 + M1 | submission package audited; platform result not recorded |
+| O3 | stopped before training because reference reproduction audit failed |
 
-### F0_STRICT (reeval_best.json)
+这些候选位于 `/home/x28639/projects/...` 独立仓库，当前机器不存在对应目录。不得把“待平台”擅自更新为完成；获得真实分数后必须回填平台分数、上传时间和 ZIP SHA-256。
 
-| Metric | Value |
-|---|---|
-| micro_accuracy | 0.7063784412563009 |
-| macro_accuracy | 0.7059394717216492 |
-| micro_macro_gap | 0.00043896953465172306 |
-| Verify: micro − macro | 0.0004389695346517 ✓ |
-| checkpoint_epoch | 5 |
-| checkpoint_sha256 | eb846bd50fc4697073b96c2dcd521bc66427a9013c7da4aebbebc74dedd6073c |
+## Remaining Documentation Backfill
 
-### F1_STRICT (reeval_best.json)
-
-| Metric | Value |
-|---|---|
-| micro_accuracy | 0.7078324932144242 |
-| macro_accuracy | 0.7074584364891052 |
-| micro_macro_gap | 0.00037405672531898304 |
-| Verify: micro − macro | 0.00037405672531898304 ✓ |
-| checkpoint_epoch | 4 |
-| checkpoint_sha256 | 57119016f6b59a0bc3bec0518eb6834099c244e4f56bd8278fe6e4d37f9d225f |
-
-### E0_STRICT
-
-**Status: Clean rerun in progress.** Legacy run archived to:
-`outputs/archive/e0_strict_seed42_legacy_20260712_203451/`
-
-## D3 − E0 Delta
-
-**Pending** — will be computed after E0 clean rerun completes.
-
-## D3 Local-Platform Gap
-
-| Metric | Value |
-|---|---|
-| Local micro (strict validation) | 0.7065723148507174 (70.6572%) |
-| Platform online accuracy | 0.573397 (57.3397%) |
-| **Gap** | **0.1331753148507174 (13.3175pp)** |
-
-## Unresolved Issues
-
-1. **E0_STRICT clean rerun incomplete** — training started 2026-07-12 20:35 CST; estimated completion ~2-3 hours (50 epochs with early stopping patience=10)
-2. **D3 − E0 paired delta** — cannot be computed until E0 completes
-3. **D3 platform submission** — pred_results.csv has 24,966 predictions (1 fewer than test set's 24,967 images); likely 1 corrupted test image skipped by inference; platform accepted 24,966
-4. **split_seed/train_seed** — not stored in submission manifest (manifest built from reeval_best.json which doesn't include these); registry fields are empty for D3_STRICT
-5. **Multi-seed confirmation** — D3_STRICT status is `valid_seed42_pending_multiseed`; seeds 3407/2026 not yet evaluated
-
-## Verification Checklist
-
-- [x] Non-resume fresh run cannot write to existing run directory
-- [x] train_log.csv has only one header (fresh run deletes stale CSV)
-- [x] Post-training metrics computed from best.pt
-- [x] best_val_acc == post_eval_micro_accuracy
-- [x] micro_macro_gap == micro − macro
-- [x] D3/F0/F1 reeval_best.json generated
-- [ ] E0_STRICT clean rerun completed (IN PROGRESS)
-- [ ] E0 no manual stop (pending completion)
-- [x] E0 and D3 share same master-val (both use outputs/master_splits/seed42/val.csv)
-- [x] submission_manifest contains checkpoint/CSV/ZIP SHA-256 hashes
-- [x] Platform 57.3397% registered
-- [x] pytest 147/147 passed
+- [x] Phase 4 最终结果进入受跟踪报告和 CSV
+- [x] README/progress/findings/outputs 索引同步
+- [x] A2 STRICT seed 3407 的 60.64% 状态修正
+- [x] Wave A 结果表补齐
+- [x] 历史计划与当前权威文档分层
+- [ ] F1/A2 + M1/M3 补齐提交 ZIP SHA-256
+- [ ] F2/O1/N3 获得平台反馈后回填
+- [x] A2 STRICT seed 3407 补齐 checkpoint/prediction/ZIP 哈希
+- [ ] 修复并复跑当前 2 个 pytest 失败项

@@ -2,6 +2,8 @@
 
 面向噪声标签数据的细粒度图像识别（500 类，~103K 训练图）。基于 CLIP ViT-B/32 冻结 backbone + 线性分类头，系统消融 head 类型、数据增强和标签噪声的影响，并实现部分解冻基础设施用于后续视觉特征微调。
 
+> **当前状态（文档核对：2026-07-30；最新实验：2026-07-22）**：A2 STRICT 是已审计的最佳 Bare 模型（60.65%），A2 seed=42 + Flip TTA 是已登记的最佳 Flip TTA（61.21%，checkpoint 已审计但 prediction/ZIP 哈希缺失）。Phase 4 的 P0–P4 机制实验均未达到晋级门槛，当前 CLIP ViT-B/32 方法族在本仓库框架内关闭。独立研发侧另报告 F1 + M1 为 63.3276%，但本仓库缺少该提交包的 ZIP SHA-256，按“已报告、待审计回填”管理。权威状态入口见 [`CURRENT_STAGE_ACCEPTANCE.md`](CURRENT_STAGE_ACCEPTANCE.md) 和 [`docs/README.md`](docs/README.md)。
+
 ## 已完成工作
 
 ### 1. Baseline 建立与优化
@@ -34,7 +36,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - 203/1032 组高置信度仲裁，829 组低置信度整组移除
 - 最终过滤 1,892 张图片
 
-**历史探索结果**：旧独立 split 上 D3 达到 70.53%（+0.67pp vs 旧 E0），但因验证集与 E0 不共享，该 +0.67pp 不作为严格消融证据。当前严格 paired delta 等待 E0_STRICT 干净重跑完成后计算。
+**历史探索结果**：旧独立 split 上 D3 达到 70.53%（+0.67pp vs 旧 E0），但因验证集与 E0 不共享，该 +0.67pp 不作为严格消融证据。E0_STRICT 后续已完成，严格同源结果为 E0_STRICT 70.5409%、D3_STRICT 70.6572%，D3−E0 = +0.1163pp。
 
 ### 4. 部分解冻基础设施
 
@@ -48,7 +50,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 ### 5. 测试覆盖
 
-322 个测试全部通过，新增：
+根目录 `tests/` 当前包含 405 个可收集测试。2026-07-30 实跑 `pytest -q tests` 的结果为 **402 passed、1 skipped、2 failed**：集成烟雾测试在 CPU 单进程 DataLoader 上因非零 `timeout` 失败，OOF soft-target 测试因 float32 精确相等断言失败。两项均已记录为现存测试问题，当前不能声明全量测试通过。重点覆盖包括：
 - `test_partial_unfreeze.py`（16 tests）：参数冻结/解冻、train mode 行为
 - `test_discriminative_optimizer.py`（11 tests）：参数组结构、LR/WD 正确性、覆盖率
 - `test_init_checkpoint.py`（4 tests）：权重加载、跨架构兼容、requires_grad 保持
@@ -58,7 +60,17 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - `test_metric_consistency.py`（7 tests）：micro-macro gap 一致性、bottom-10% 计算
 - `test_submission_manifest.py`（18 tests）：SHA-256 哈希、ZIP vs CSV hash 区分、标签格式、预测计数、重复登记拒绝、manifest schema
 
-### 6. 平台结果总览（updated 2026-07-20）
+### 6. 平台结果总览（updated 2026-07-30）
+
+**跨推理协议的已知平台锚点：**
+
+| 实验 | 平台 | 证据状态 | 说明 |
+|------|------:|----------|------|
+| **AEGIS F1 + M1** | **63.3276%** | 已报告，待补 ZIP SHA-256 | 单 checkpoint；attention 定位局部裁剪与全局概率 1:1 融合 |
+| A2 + M1 | 62.6747% | 已报告，待补完整审计字段 | 同一 M1 协议 |
+| A2 + M3 | 62.0259% | 已报告，待补完整审计字段 | 独立研发侧报告 |
+
+M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归因。三条 M1 分数来自 2026-07-22 团队同步文档；缺失字段已在提交登记表中显式留空，不能视为完整可复现记录。
 
 **Top TTA 分数：**
 
@@ -98,52 +110,53 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | 实验 | 操作 | 样本 | Bare | TTA | vs A0 TTA | 判定 |
 |------|------|------|------|------|-----------|------|
 | A0 `NR_CTRL_FIXED` | p<0.001 零权重 | 6,354 (7%) | 59.90% | 60.31% | — | 对照基线 |
-| **A2** `NR_CL_KNN_DROP` | 三方共识删除 | 991 (1.1%) | **60.64%** | **61.21%** | **+0.90** | ✅ 最佳冻结 |
+| **A2** `NR_CL_KNN_DROP` | 三方共识删除 | 991 (1.1%) | **60.64%*** | **61.21%** | **+0.90** | ✅ 最佳冻结 |
 | A3 `NR_CONSENSUS_RELABEL` | 5-signal relabel | 100 (0.1%) | — | 59.89% | −0.42 | ❌ 关闭 |
 | A1 `NR_CL_CLASSWISE_DROP` | CL classwise 删除 | 8,680 (9.5%) | — | 59.55% | −0.76 | ❌ 关闭 |
 
-> **注意**：A1 和 A3 均在全局黑名单引入前完成训练，即 991 个三方共识确认错标样本仍以 weight=1.0 参与训练。但即使补上黑名单，relabel 100 个或低精度删除 8680 个带来的边际增益也大概率淹没在噪声里。
+> \* A2 seed=42 Bare 60.64% 来自当时实验回填，但 `submission_registry.csv` 缺少对应提交行与哈希，按 `reported_incomplete` 管理。A1 和 A3 均在全局黑名单引入前完成训练，即 991 个三方共识确认错标样本仍以 weight=1.0 参与训练。
 
 **多 seed 稳定性：**
 
 | 实验 | seed | 本地 Val | 平台 Bare | 平台 TTA | Paired Delta vs s42 |
 |------|------|----------|----------|----------|---------------------|
-| A2 | 42 | 69.44% | 59.81% | **61.21%** | — |
+| A2 | 42 | 69.44% | 60.64%* | **61.21%** | — |
 | A2 | 3407 | 69.39% | 59.81% | **60.31%** | −0.07pp (p=0.457) |
 | A2 STRICT | 42 | 69.64% | **60.65%** | **61.15%** | — |
 | A2 STRICT | 3407 | — | **60.64%** | — | −0.01pp |
 
 > A2 多 seed 稳定性确认：本地 paired delta 仅 7 张图差异（p=0.457），但平台 TTA 波动达 0.90pp。A2 STRICT LoRA 双 seed Bare 仅差 0.01pp（60.65% vs 60.64%），确认 LoRA 增益高度稳定。所有后续实验必须跑双 seed 验证。
 
-**基线定义：**
+**已审计基线定义：**
 - **平台 Bare 最佳**：A2 STRICT = **60.65%**（A2 parent + visual LoRA rank-8, clean filter, distill）
 - **平台 TTA 最佳**：A2 seed=42 = **61.21%**（frozen CLIP + GCE q=0.5 + MixUp + kNN consensus drop）
 - **最佳冻结合理期望**：约 60.76% TTA（A2 两 seed 平均）
 - **训练基线**：s_d3_mixup (GCE q=0.5 + MixUp, d3_strict) —— 所有 OOF 实验的配对对照
 
-**核心发现（2026-07-20 修订）：**
+**核心发现（2026-07-22 修订）：**
 - **Purification 精度 > 覆盖面**：删 991 个高精度样本 > 删 6354 个中精度 > 删 8680 个低精度。精度碾压数量。
 - **删除 > 重标**：A3 五信号共识 relabel 100 个样本（0.1%）反而有害（−0.42pp）。OOF 预测准确率 ~69% 不足以支撑可靠重标。当你确定标签错了但不确定正确答案时，删除比重标更安全。
 - **冻结 CLIP + GCE + MixUp 上限已触达**：A0→A2 本地 paired delta 仅 +17 张图（0.165pp, p=0.196），平台天花板 ~60.5-61% TTA。Purification 的边际增益已饱和。
 - **单 seed 不可靠**：A2 seed=42 TTA 61.21% vs seed=3407 TTA 60.31% = 0.90pp 波动。所有候选必须在 seed=3407 上验证后才能宣称收益。
 - **本地 val 与平台持续反相关**：A3 本地最高（69.47%）平台最差（59.89%）。本地分数不能用于模型选择。
-- **突破上限的唯一出路是 visual LoRA PEFT**：AEGIS F1 证明了在干净监督上 LoRA 能贡献 ~0.6pp bare。A2 parent swap (STRICT) 进一步提升 bare 至 60.65%（+0.14pp vs F1 E2），但增益边际。
+- **Visual LoRA 的增益成立但已进入边际区**：AEGIS F1 证明干净监督上的 LoRA 有效；A2 parent swap (STRICT) 将 Bare 提升至 60.65%，但 Phase 4 的 routing、prototype-contrastive、dynamic trust 等后续机制均未达到晋级门槛。
 - **Split-lineage protocol 至关重要**：原始 A2 parent swap 因 parent (d3_strict) 与 child (AEGIS prepare) 使用不同 split，导致本地 raw_micro 从真实 69.43% 假胀至 79.22%（+8.5pp 假信号）。修复后 epoch-0 baseline 精确匹配，证实验证必须与训练用同一 split。
 - **A2 parent swap 确认成立**：双 seed promotion 通过，bare +0.14pp, TTA +0.05pp vs F1 E2 parent。方向正确但收益太小，不进参数搜索。
+- **Phase 4 全部关闭**：结构化 Head、同轨迹 checkpoint averaging、Clean-Routed LoRA、Trusted Prototype-Contrastive、Dynamic Trust Refresh 均未通过预注册 gate；详见 [`docs/phase4_results.md`](docs/phase4_results.md)。
 
-### 7. 本地评估与待完成
+### 7. 本地评估与当前状态
 
 **已完成 (d3_strict, seed=42, reeval from best.pt):**
 
 | Experiment | Local Micro | Local Macro | Best Epoch | Platform Bare | Platform TTA |
 |---|---|---|---|---|---|
-| **A2** `NR_CL_KNN_DROP` | 69.44% | 69.45% | 48 | **60.64%** | **61.21%** |
-| **A2** `NR_CL_KNN_DROP` seed=3407 | 69.39% | 69.40% | 43 | — | **60.31%** |
+| **A2** `NR_CL_KNN_DROP` | 69.44% | 69.45% | 48 | **60.64%*** | **61.21%** |
+| **A2** `NR_CL_KNN_DROP` seed=3407 | 69.39% | 69.40% | 43 | 59.81% | **60.31%** |
 | **A3** `NR_CONSENSUS_RELABEL_V2` | 69.47% | 69.47% | 40 | — | **59.89%** |
 | **A1** `NR_CL_CLASSWISE_DROP` | 68.61% | 68.61% | 45 | — | **59.55%** |
 | **A0** `nr_ctrl_fixed` (reject_policy=drop) | 69.33% | — | 50 | 59.90% | 60.31% |
 | **A2 STRICT** `F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT` | 69.71% | 69.71% | 2 (raw) / 6 (clean_core) | **60.65%** | **61.15%** |
-| **A2 STRICT** seed=3407 | 69.82% | 69.83% | 3 (raw) / 5-6 (clean_core) | 待提交 | — |
+| **A2 STRICT** seed=3407 | 69.82% | 69.83% | 3 (raw) / 5-6 (clean_core) | **60.64%** | — |
 | s_d3_mixup（MixUp d3 control） | 69.47% | 69.47% | 40 | 59.86% | — |
 | s_oof_zero_0001_ff（OOF p<0.001, final_fit） | — | — | — | **60.29%** | **60.51%** |
 | s_oof_zero_0001（OOF zero-weight p<0.001） | 69.37% | 69.37% | 44 | 59.96% | 60.28% |
@@ -155,11 +168,14 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 > ⚠️ **Important**: 本地 val 不能预测平台表现。A3 本地最高（69.47%）平台最差（59.89%）。所有模型选择必须以平台 Bare/TTA 为准，本地分数仅作辅助诊断。**单 seed 平台结果不可靠**（A2 两 seed TTA 差 0.90pp），所有候选必须在 seed=3407 上验证。
 
-**已关闭方向**：Dropout、ColorJitter/RandomErasing、Cosine Head、Label Smoothing、Head EMA、EMA Loss、Prototype Weighting、CE 下部分解冻、Head-only EMA Teacher + Consistency、GCE q=0.9、4-view TTA、vertical flip、OOF 3-tier discrete weight、OOF relabel/pseudo-label（A3 5-signal 共识仍有害）、Classwise CL-only drop（A1 −0.76pp）、ELR（本地 −1.2pp vs OOF）、PEFT LN-tune（freeze_clip=true 模式下无增益）、Rejected 半监督回收、NR_COMBINED_CLEAN_CORE（Layer 2/3 均为负信号）
+**已关闭方向**：Dropout、ColorJitter/RandomErasing、Cosine Head、Label Smoothing、Head EMA、EMA Loss、Prototype Weighting、CE 下部分解冻、Head-only EMA Teacher + Consistency、GCE q=0.9、4-view TTA、vertical flip、OOF 3-tier discrete weight、OOF relabel/pseudo-label、Classwise CL-only drop、ELR、PEFT LN-tune、Rejected 半监督回收、NR_COMBINED_CLEAN_CORE，以及 Phase 4 的结构化 Head、checkpoint averaging、Clean Routing、Prototype-Contrastive、Dynamic Trust Refresh。
 
 ### 下一步
 
-**A2 + visual LoRA（`implementary_plan.md`）**：AEGIS F1 已验证在干净监督上 LoRA 可贡献 ~0.6pp bare。将 AEGIS F1 的 LoRA 配方移植到 A2 parent checkpoint，配合全局黑名单和 feature distillation，是当前唯一有明确上行空间的方向。
+本仓库内不再继续普通 LoRA、routing 或 trust 参数搜索。下一步仅保留两类工作：
+
+1. 回填独立研发侧 F1/A2 + M1 的完整提交哈希，以及 F2/O1/N3 的真实平台结果；
+2. 若继续研究，必须建立新的机制协议；当前 Phase 4 决策树已走完，不能把未过 gate 的候选重新包装为下一轮调参。
 
 ## 项目结构
 
@@ -170,7 +186,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 │   └── cosine/          # Cosine Head 实验（委托 baseline）
 ├── configs/             # 每个实验一个 YAML
 ├── scripts/             # 数据准备、超参搜索、去重仲裁、提交验证
-├── tests/               # 322 个 pytest 测试
+├── tests/               # 405 项：402 passed / 1 skipped / 2 failed（2026-07-30）
 ├── reproducibility/     # 隔离的外部实验快照（含 AEGIS F1）
 ├── outputs/             # 实验结果（tracked in git，*.pt 忽略）
 └── docs/superpowers/    # 设计文档与实施计划

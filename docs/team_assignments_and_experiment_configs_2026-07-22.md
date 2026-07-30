@@ -2,11 +2,13 @@
 
 日期：2026-07-22
 
-团队仓库基线：`origin/main`，commit `50bb7df`
+当时团队仓库基线：`origin/main`，commit `50bb7df`。当前主仓库实验同步基线为 `7c8b966`。
 
 独立研发仓库：`/home/x28639/projects/AegisCLIP-F6-A2LoRA`
 
 本文用于统一人员分工、待评测候选、固定实验配置与合规边界。新增训练、缓存和提交包保留在独立 Aegis 工程中；团队当前开发工作树不被占用或覆盖。任何 GPU 任务启动前必须确认无人占卡，并禁止多人写入同一输出目录。
+
+> **2026-07-30 状态审计**：本机没有文中 `/home/x28639/projects/...` 独立仓库，主仓库也没有 2026-07-22 之后的平台回填证据。因此 F2/O1/N3 仍保持“待平台”，O3 仍为训练前停止；不得从包已审计推断为平台已完成。F1/A2 的 M1/M3 已知分数已进入 `results/current_platform_summary.csv` 和 `results/submission_registry.csv`，但缺失字段仍明确标记为 `reported_unverified`。
 
 ## 一、人员分工
 
@@ -36,7 +38,7 @@
 | 2 | O1 + M1 | `/home/x28639/projects/AegisCLIP-F6-A2LoRA/outputs/O1_A2_ADAPTFORMER_MIXUP_GATE/seed42/submissions/m1/submission.zip` | `73cb20eda8063306071c09f40c2aeab0318549506bf71c05d8f570e37e5f0043` | 审计通过，待平台 |
 | 3 | N3 + M1 | `/home/x28639/projects/AegisCLIP-F6-A2LoRA/outputs/N3_A2_ADAPTFORMER_GATE/seed42/submissions/m1/submission.zip` | `0b189c0669d1844787e860c936ede6eb1b1dfbacac07159e8623a7bc9b6fcbbb` | 审计通过，待平台 |
 
-已知平台锚点：F1 + M1 为 `63.3276`，A2 + M1 为 `62.6747`，A2 + M3 为 `62.0259`。本地 validation 标签带噪，平台测试标签干净，因此本地结果只用于安全门控，最终排序以平台分数为准。
+已知平台锚点：F1 + M1 为 `63.3276`，A2 + M1 为 `62.6747`，A2 + M3 为 `62.0259`。这些分数缺少本仓库可验证的提交包证据，当前状态是 `reported_unverified`。本地 validation 标签带噪，平台测试标签干净，因此本地结果只用于安全门控，最终排序以平台分数为准。
 
 ## 三、公共 M1 推理配置
 

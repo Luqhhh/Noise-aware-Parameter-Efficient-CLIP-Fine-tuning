@@ -1,10 +1,22 @@
 # 执行进度
 
-## 2026-07-21 Phase 4 突破实验执行中
+## 2026-07-30 文档与结果索引同步
+
+- 已核对截至 `7c8b966` 的提交历史和 2026-07-22 之前的全部 Phase 4 本地产物；没有发现更新提交之后的新实验运行。
+- 原 `docs/phase4_plan.md` 已确认有意删除，由 `docs/phase4_results.md` 和 `results/phase4_experiments.csv` 取代。
+- README、CURRENT_STAGE_ACCEPTANCE、findings、outputs 索引和结果表已统一到 Phase 4 最终状态。
+- F1 + M1 63.3276%、A2 + M1 62.6747%、A2 + M3 62.0259% 作为独立研发侧已报告锚点登记；因本仓库缺少提交 ZIP 哈希，状态标为 `reported_unverified`。
+- F2/O1/N3 截至现有证据仍是“提交包已审计、待平台”；独立研发仓库不在当前机器，无法推断后续平台结果。
+- `pytest -q tests` 实跑：402 passed、1 skipped、2 failed；失败为 CPU DataLoader 非零 timeout 与 float32 精确相等断言，已进入当前验收未决项。
+
+## 2026-07-22 Phase 4 突破实验完成
 
 - **P0 结构化分类头**：多原型 (MP-1~6) 和 LDA/Ridge (SH-1~6) 全部未通过晋级 gate。raw_fixed < raw_broken 始终成立，关闭方向。
-- **P1 Checkpoint Averaging**：修改 trainer 保存逐 epoch checkpoint，P1_A2_STRICT_EPOCH_CKPTS 训练进行中（epoch 1/6）。
-- **P2 Clean-Routed LoRA**：`encode_image_with_routing()` 已实现，trainer gating logic 已完成，CR-0/CR-1/CR-2 配置文件已创建。
+- **P1 Checkpoint Averaging**：6 epoch 完整结束；SWA-1/2/3 均未超过 epoch 6 clean-core，greedy soup 只保留 epoch 6，关闭方向。
+- **P2 Clean-Routed LoRA**：CR-0/CR-1/CR-2 均完成。Hard gate 与现有 selection threshold 重合；Soft gate clean-core 仅 +0.042pp 且 raw/proxy 下降，关闭方向。
+- **P3 Trusted Prototype-Contrastive**：最佳 clean-core 比 CR-0 低 0.084pp，且只覆盖 499 类，promotion 失败，关闭方向。
+- **P4 Dynamic Trust Refresh**：epoch 2 刷新后所有 epoch 的 clean-core 均低于刷新前，关闭方向。
+- **最终结论**：P0–P4 无平台候选；当前 CLIP ViT-B/32 方法族在本仓库框架内到顶，不继续普通参数搜索。
 - **A2 STRICT seed=3407 平台 Bare = 60.64%**（vs seed=42 Bare 60.65%，双 seed 仅差 0.01pp），LoRA 增益高度稳定。
 - **增强特征缓存**：horizontal_flip 缓存已生成并审计通过（103,218 samples, 512-dim）。
 

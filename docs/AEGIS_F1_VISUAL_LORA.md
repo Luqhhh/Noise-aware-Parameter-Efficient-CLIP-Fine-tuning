@@ -1,5 +1,7 @@
 # AEGIS F1: noise-aware visual LoRA
 
+> **Status update (2026-07-30)**: this report's Bare/Flip results remain audited and unchanged. A later team record reports F1 + M1 at 63.3276%, but the corresponding ZIP SHA-256 is unavailable in this repository, so that result is tracked as `reported_unverified` in `results/current_platform_summary.csv`. Phase 4 follow-up mechanisms are all closed; see `phase4_results.md`.
+
 ## Identity
 
 `AEGIS_F1_VISUAL_LORA_CLEAN_CORE` is not the deprecated legacy `F1-strict` run mentioned in the root README. The legacy run was invalidated by validation leakage. AEGIS F1 was developed in an isolated runner, source commit `d542fc6`, and is preserved under `reproducibility/aegis_f1/`.
@@ -30,6 +32,7 @@ The gate improved raw accuracy, high-confidence accuracy and flip consistency wi
 |---|---:|---|
 | Bare | **60.5159%** | `6c81b7e38d5688cd67c36cb50868c2de507e0fc4fef3b69b9180c65f29f7a363` |
 | Horizontal flip, mean probabilities, T=0.5 | **61.1007%** | `5773f52944af998ac349b7091386282484d8c7dcbc8af296461ae1978dd96657` |
+| M1 attention-guided local crop | **63.3276%** | unavailable (`reported_unverified`) |
 
 Bare improves the previous registered best bare score (60.2876%) by 0.2283 percentage points. TTA improves the previous registered best TTA score (60.5100%) by 0.5907 points and improves the same F1 checkpoint's bare result by 0.5848 points.
 
@@ -42,4 +45,3 @@ The TTA path uses the same single checkpoint but performs two forward passes (or
 ## Reproduction
 
 Use the isolated runner in `reproducibility/aegis_f1/`; do not substitute the legacy `configs/robust_lora.yaml`. The legacy team LoRA updates only the last block's output projection and is not equivalent to AEGIS F1.
-

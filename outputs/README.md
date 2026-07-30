@@ -2,6 +2,8 @@
 
 每个子目录对应一个实验，包含 checkpoint、训练日志、评估结果和提交文件。
 
+> **状态核对：2026-07-30；最新实验：2026-07-22。** 当前权威实验结论见根目录 `README.md`、`CURRENT_STAGE_ACCEPTANCE.md` 和 `docs/phase4_results.md`。本文件中的早期“最佳”均按当时阶段理解。
+
 ## 基线
 
 | 目录 | 实验 ID | 说明 | 本地 Acc | 平台 |
@@ -81,6 +83,18 @@ Cosine head 在所有学习率下均显著弱于 linear head（~6pp 差距），
 
 ## 平台提交记录
 
+### 已报告的 M1/M3 锚点
+
+| 提交 | 平台分数 | 证据状态 |
+|------|---------:|----------|
+| **AEGIS F1 + M1** | **63.3276%** | 独立研发侧已报告；本仓库待补 ZIP SHA-256 |
+| A2 + M1 | 62.6747% | 独立研发侧已报告；待补 checkpoint/ZIP 哈希 |
+| A2 + M3 | 62.0259% | 独立研发侧已报告；待补推理 manifest 和哈希 |
+
+M1/M3 与 Bare、Flip TTA 是不同推理协议。完整证据状态见 `results/current_platform_summary.csv`。
+
+### 已审计的 Bare / Flip TTA
+
 | 提交 | 平台分数 | vs ref |
 |------|---------|--------|
 | **A2 NR_CL_KNN_DROP s42 + Flip TTA** | **61.21%** | +3.87pp |
@@ -100,3 +114,20 @@ Cosine head 在所有学习率下均显著弱于 linear head（~6pp 差距），
 | ref | 57.34% | — |
 
 详细记录见 `results/submission_registry.csv`。
+
+## Phase 4（隔离 AEGIS runner）
+
+Phase 4 的原始运行产物位于 `reproducibility/aegis_f1/outputs/`，受该子工程 `.gitignore` 控制；关键结果已抽取到受 Git 跟踪的 `docs/phase4_results.md` 和 `results/phase4_experiments.csv`。
+
+| 目录 | 阶段 | 最终状态 |
+|------|------|----------|
+| `reproducibility/aegis_f1/outputs/phase4/p0_multiprototype/` | P0 多原型 | 关闭：proxy 上升但 raw 净破坏 44 |
+| `reproducibility/aegis_f1/outputs/phase4/p0_structural_lda/` | P0 LDA | 关闭：raw 回退 |
+| `reproducibility/aegis_f1/outputs/phase4/p0_structural_ridge/` | P0 Ridge | 关闭：基线胜出 |
+| `reproducibility/aegis_f1/outputs/P1_A2_STRICT_EPOCH_CKPTS/` | P1 averaging 基础轨迹 | 完成：epoch 6 最强 clean-core |
+| `reproducibility/aegis_f1/outputs/phase4/p1_averaging/` | P1 SWA/soup | 关闭：无平均方案胜出 |
+| `reproducibility/aegis_f1/outputs/P2_CR0_BASELINE/` | P2 对照 | 完成 |
+| `reproducibility/aegis_f1/outputs/P2_CR1_HARD_GATE/` | P2 hard gate | 关闭 |
+| `reproducibility/aegis_f1/outputs/P2_CR2_SOFT_GATE/` | P2 soft gate | 关闭 |
+| `reproducibility/aegis_f1/outputs/P3_PROTO_CONTRASTIVE/` | P3 prototype-contrastive | 关闭：499 类，promotion 失败 |
+| `reproducibility/aegis_f1/outputs/P4_DYNAMIC_TRUST/` | P4 dynamic trust | 关闭：刷新后回退 |

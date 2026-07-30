@@ -1,4 +1,16 @@
-# 最新发现（2026-07-21）
+# 最新发现（2026-07-22，2026-07-30 文档核对）
+
+## Phase 4 P0–P4：机制实验全部关闭
+
+- **P0 结构化 Head**：多原型 proxy macro 虽提升约 0.26pp，但 raw 净破坏 44 个预测；LDA 同样以 raw 回退换 proxy 增益；Ridge 最优仍是原 head。
+- **P1 Checkpoint Averaging**：SWA-1/2/3 的 clean-core 均低于 epoch 6；greedy soup 只保留 epoch 6，未形成有效平均。
+- **P2 Clean Routing**：Hard gate 与现有样本选择阈值重合；Soft gate clean-core 仅 +0.042pp，同时 raw −0.039pp、proxy macro −0.083pp，未达到 +0.20pp gate。
+- **P3 Prototype-Contrastive**：clean-core −0.084pp，预测类别数 499，promotion 失败。
+- **P4 Dynamic Trust**：epoch 2 刷新后 clean-core 全部下降；最佳点仍在刷新前。
+- **总判断**：Phase 4 没有平台候选，普通 LoRA/routing/trust 参数搜索停止。完整数据见 `docs/phase4_results.md` 和 `results/phase4_experiments.csv`。
+- **推理侧单独进展**：独立研发侧报告 F1 + M1 63.3276%，高于本仓库已审计 Flip TTA；因本地缺少 ZIP SHA-256，仅作为 `reported_unverified` 锚点。
+
+# 发现（2026-07-21）
 
 ## A2_AEGIS_PARENT_SWAP：Split-lineage 协议修复与最终结论
 
@@ -8,7 +20,7 @@
 - **LoRA 真实增益 +0.19~0.39pp**（vs 假 +8.5pp），双 seed promotion 通过
 - **平台 Bare = 60.65%（+0.14pp vs F1 E2），TTA = 61.15%（+0.05pp vs F1 E2）**
 - **A2 STRICT seed=3407 平台 Bare = 60.64%（vs seed=42 Bare 60.65%，双 seed 仅差 0.01pp，LoRA 增益高度稳定）**
-- **结论：A2 parent swap 确认成立但收益边际**，不进入 P3/P4 参数搜索
+- **结论：A2 parent swap 确认成立但收益边际**，不进入 P3/P4 参数网格；后续最小机制验证已完成并全部关闭
 - **教训**：parent-child split 必须完全相同（SHA-256 级别验证），epoch-0 evaluation 是必不或缺的 parent swap gate
 
 # 发现（2026-07-20）
@@ -26,11 +38,11 @@
 - A2（三方共识 delete 991，1.1%）：TTA 61.21%（+0.90pp vs A0）
 - 结论：**精度 > 覆盖面**，删除 > 重标
 
-## Purification 天花板已触达
+## Purification 天花板已触达（当时判断，后续 Phase 4 已验证）
 
 - A0→A2 本地 paired delta 仅 +17 张图（0.165pp, p=0.196）
 - 冻结 CLIP + GCE + MixUp 框架下，数据筛选层的边际增益已饱和
-- 唯一的出路是 visual LoRA PEFT
+- 当时判断唯一上行方向是 visual LoRA PEFT；后续 A2 STRICT 证实小幅正收益，Phase 4 则证实其扩展机制没有达到晋级门槛
 
 ## 已关闭方向
 

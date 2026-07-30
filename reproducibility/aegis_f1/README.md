@@ -1,5 +1,7 @@
 # AegisCLIP-Noise-Robust
 
+> **仓库快照状态（2026-07-30）**：本目录保留独立 Aegis runner 与历史复现说明。其后完成的 AEGIS F1、A2 parent swap 和 Phase 4 P0–P4 最终结论，以主仓库的 `../../docs/AEGIS_F1_VISUAL_LORA.md`、`../../docs/phase4_results.md` 和 `../../CURRENT_STAGE_ACCEPTANCE.md` 为准；本页下方的“主实验顺序”是原始协议，不表示当前仍在执行。
+
 面向噪声标签细粒度图像识别比赛的独立工程。目标不是堆叠论文名词，而是在赛规允许的 OpenAI CLIP ViT-B/32 上建立一条可复现、可消融、可回退的高分路线。
 
 工程位置：
@@ -36,7 +38,7 @@
 
 完整对应关系见 [赛规合规矩阵](docs/COMPETITION_COMPLIANCE.md)。
 
-## 已完成的工程验证
+## 已完成的初始工程验证
 
 - 独立 `.venv` 已按锁定依赖创建；
 - 26 项 CPU 自动测试通过；
