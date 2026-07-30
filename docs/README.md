@@ -35,7 +35,7 @@
 - Bare、Flip TTA、M1/M3 是不同推理协议，必须分栏比较。
 - 2026-07-30 的 A2 STRICT + M1 weight 0.35 平台为 62.6870%，状态 `platform_valid_not_promoted`；双 seed 本地证据、提交哈希和平台复盘见 `../results/m1_localization_optimization_20260730.md`。
 - A2 STRICT 局部特征 Adapter 最佳 clean-core 增益 +0.1821pp，低于 +0.20pp gate；未生成测试提交，结果见 `../results/local_adapter_a2_strict_20260730.md`。
-- E2→F1 同 split 重建已完成，F1 promotion PASS；M1 weight 0.35 包已审计、待平台，结果见 `../results/f1_rebuild_20260730.md`。
+- E2→F1 同 split 重建已完成，F1 promotion PASS；M1 weight 0.35 包已审计，平台 62.9791%，状态 `platform_valid_not_promoted`，结果见 `../results/f1_rebuild_20260730.md`。
 - `audited` 表示本仓库有完整 checkpoint/提交产物哈希；`audited_incomplete` 表示平台分数和 checkpoint 可核验、但 prediction/ZIP 字段仍缺失；`reported_incomplete` 表示分数见于本仓库历史实验回填但缺对应注册行；`reported_unverified` 表示只有团队回填分数，缺少本仓库可验证的提交包。
 - 本地 noisy validation 只用于安全 gate，平台分数才用于最终排序。
 - 未通过预注册 gate 的实验必须保留负结果，但不得生成平台候选。

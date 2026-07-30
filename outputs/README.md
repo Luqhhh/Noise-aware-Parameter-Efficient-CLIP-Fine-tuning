@@ -83,11 +83,12 @@ Cosine head 在所有学习率下均显著弱于 linear head（~6pp 差距），
 
 ## 平台提交记录
 
-### 已报告的 M1/M3 锚点
+### M1/M3 平台记录
 
 | 提交 | 平台分数 | 证据状态 |
 |------|---------:|----------|
 | **AEGIS F1 + M1** | **63.3276%** | 独立研发侧已报告；本仓库待补 ZIP SHA-256 |
+| F1 REBUILD R1 + M1 weight 0.35 | 62.9791% | checkpoint/prediction/ZIP 哈希齐全 |
 | A2 + M1 | 62.6747% | 独立研发侧已报告；待补 checkpoint/ZIP 哈希 |
 | A2 + M3 | 62.0259% | 独立研发侧已报告；待补推理 manifest 和哈希 |
 
@@ -120,7 +121,8 @@ M1/M3 与 Bare、Flip TTA 是不同推理协议。完整证据状态见 `results
 2026-07-30 新增的 E2→F1 重建与 M1 平台候选位于
 `reproducibility/aegis_f1/outputs/`。候选 ZIP SHA-256 为
 `02d37906accdf6b49e40733b4e675220f0177b5d71c5662984de68df5e781bb6`，
-状态 `audited_pending_platform`；详见 `results/f1_rebuild_20260730.md`。
+平台 62.9791%，状态 `platform_valid_not_promoted`；详见
+`results/f1_rebuild_20260730.md`。
 
 Phase 4 的原始运行产物位于 `reproducibility/aegis_f1/outputs/`，受该子工程 `.gitignore` 控制；关键结果已抽取到受 Git 跟踪的 `docs/phase4_results.md` 和 `results/phase4_experiments.csv`。
 

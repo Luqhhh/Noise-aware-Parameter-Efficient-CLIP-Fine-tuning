@@ -2,7 +2,7 @@
 
 面向噪声标签数据的细粒度图像识别（500 类，~103K 训练图）。基于 CLIP ViT-B/32 冻结 backbone + 线性分类头，系统消融 head 类型、数据增强和标签噪声的影响，并实现部分解冻基础设施用于后续视觉特征微调。
 
-> **当前状态（2026-07-30）**：A2 STRICT + M1 `crop160/top5/local_weight0.35` 已知平台为 **62.6870%**。局部特征 Adapter 未过 gate，未生成平台包。随后完成同 split E2→F1 严格重建：F1 promotion PASS，M1 相对 global raw +1.2602pp、clean-core +0.9548pp，已生成并审计新包 `02d37906…781bb6`，状态 `audited_pending_platform`。它不能沿用 archived F1+M1 的 63.3276% 分数，需真实平台回填。完整结果见 [`results/f1_rebuild_20260730.md`](results/f1_rebuild_20260730.md)。
+> **当前状态（2026-07-30）**：同 split E2→F1 严格重建通过 promotion，M1 `crop160/top5/local_weight0.35` 平台为 **62.9791%**，比 A2 STRICT + M1 62.6870% 高 `+0.2921pp`，但仍比已报告原 F1 + M1 63.3276% 低 `0.3485pp`，状态 `platform_valid_not_promoted`。候选 ZIP `02d37906…781bb6` 的 checkpoint/prediction/ZIP 哈希均已审计。完整结果见 [`results/f1_rebuild_20260730.md`](results/f1_rebuild_20260730.md)。
 
 ## 已完成工作
 
@@ -67,11 +67,12 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 | 实验 | 平台 | 证据状态 | 说明 |
 |------|------:|----------|------|
 | **AEGIS F1 + M1** | **63.3276%** | 已报告，待补 ZIP SHA-256 | 单 checkpoint；attention 定位局部裁剪与全局概率 1:1 融合 |
+| F1 REBUILD R1 + M1 weight 0.35 | **62.9791%** | 已审计 | crop160/top5；比 A2 STRICT + M1 高 0.2921pp |
 | A2 STRICT + M1 weight 0.35 | **62.6870%** | 已审计 | crop160/top5；相对同 checkpoint Bare +2.0349pp |
 | A2 + M1 | 62.6747% | 已报告，待补完整审计字段 | 同一 M1 协议 |
 | A2 + M3 | 62.0259% | 已报告，待补完整审计字段 | 独立研发侧报告 |
 
-M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归因。三条 M1 分数来自 2026-07-22 团队同步文档；缺失字段已在提交登记表中显式留空，不能视为完整可复现记录。
+M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归因。AEGIS F1 + M1、A2 + M1 和 A2 + M3 三条历史锚点来自 2026-07-22 团队同步文档；缺失字段已在提交登记表中显式留空。F1 REBUILD R1 + M1 则有本仓库完整审计哈希和真实平台回填。
 
 **Top TTA 分数：**
 

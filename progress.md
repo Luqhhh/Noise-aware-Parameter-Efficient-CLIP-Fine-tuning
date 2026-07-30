@@ -13,7 +13,9 @@
   macro；按多指标规则保留 0.35。
 - 新平台包已审计：24,967 条、500 类、0 损坏图；ZIP SHA-256
   `02d37906accdf6b49e40733b4e675220f0177b5d71c5662984de68df5e781bb6`，
-  状态 `audited_pending_platform`。
+  平台 **62.9791%**，状态 `platform_valid_not_promoted`。
+- 相对 A2 STRICT + M1 62.6870% 提升 `+0.2921pp`；相对已报告原 F1 + M1
+  63.3276% 仍低 `0.3485pp`。当前历史最高仍为 63.3276%。
 - 相关测试 29 passed；Aegis 子工程全量 75 passed、1 个既有 `p4_ablation`
   stage 校验失败；两个新配置独立加载通过。
 - 完整报告见 `results/f1_rebuild_20260730.md`。

@@ -1,6 +1,6 @@
 # 最新发现（2026-07-30）
 
-## E2→F1 严格重建成功，M1 新候选待平台
+## E2→F1 严格重建成功，M1 平台 62.9791%
 
 - 原 F1 checkpoint 虽缺失，但同 split 重建的 E2 父模型 raw `70.3470%`，
   超 archived 父模型 `+0.1163pp`；lineage 审计无泄漏。
@@ -12,6 +12,9 @@
   F1+M1 平台 63.3276% 直接赋给新包；必须真实平台回填。
 - 新包 ZIP SHA-256：
   `02d37906accdf6b49e40733b4e675220f0177b5d71c5662984de68df5e781bb6`。
+- 平台最终为 **62.9791%**：比 A2 STRICT + M1 高 `0.2921pp`，说明更强
+  checkpoint 表征部分转移到平台；但比已报告原 F1 + M1 低 `0.3485pp`，
+  状态 `platform_valid_not_promoted`。
 
 ## A2 STRICT 局部特征 Adapter：有效但未晋级
 
