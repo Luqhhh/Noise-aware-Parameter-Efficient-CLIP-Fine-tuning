@@ -94,7 +94,7 @@ lineage:
 promotion:
   minimum_selector_gain: 0.002
   minimum_raw_micro_gain: -0.001
-  maximum_mean_feature_drift: 0.01
+  maximum_mean_feature_drift: 0.15
   required_predicted_class_count: 500
 
 evaluation:
@@ -103,8 +103,8 @@ evaluation:
   selector_metric: clean_core_micro
   clean_core_threshold: 0.70
   measure_flip_consistency: true
-  drift_budget: 0.01
-  drift_penalty: 2.0
+  drift_budget: 0.15
+  drift_penalty: 0.0
 
 output:
   root: ../outputs

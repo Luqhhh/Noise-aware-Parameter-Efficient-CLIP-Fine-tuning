@@ -5,7 +5,7 @@
 ## 1. 分支、血缘与查重
 
 - 专用分支：`agent/t75-r288-training`
-- 起点：`origin/main@04c4111`
+- 起点：`origin/main@04c4111`；启动前同步至 `origin/main@6abf640`
 - 实验 ID：`T75_R288_ARCHIVED_E2_W060`
 - 执行人：x28639 / Codex
 - 父 checkpoint：`E2_MIXUP_CE5_REPLICA` epoch 44
@@ -33,6 +33,8 @@ T75-R288 结果、重复分支或正在执行的训练。团队 `main` 中的通
 - GCE q=0.5；不启用 pseudo-label correction、prior、输出拉平、MixUp 或测试时训练。
 - 8 epochs；batch 64；AMP；head lr 5e-5；backbone lr 2e-5；无早停。
 - 由于 288px 与 224px 父特征不在同一输入空间，feature distillation 固定关闭。
+- 同理，288px 相对 224px 冻结特征的 drift 不再进入 selector；`drift_penalty=0`，仅以
+  宽松的 `15%` 上限排除失控模型，而不把分辨率改变本身误判成训练退化。
 - 输出仅写入本工作区 `reproducibility/aegis_f1/outputs/T75_R288_ARCHIVED_E2_W060/`。
 
 唯一正式命令：
@@ -53,7 +55,7 @@ PYTHONPATH=$PWD /home/x28639/projects/AegisCLIP-Noise-Robust/.venv/bin/python \
 
 1. clean-core selector 相对 epoch 0 至少 `+0.20pp`；
 2. raw micro 相对 epoch 0 不低于 `-0.10pp`；
-3. mean feature drift `<=1%`；
+3. mean feature drift `<=15%`；该阈值只作失控保护，不参与 selector；
 4. 预测覆盖 500 类；
 5. 父子 train/val 路径与标签 lineage 审计通过。
 
@@ -71,3 +73,8 @@ PYTHONPATH=$PWD /home/x28639/projects/AegisCLIP-Noise-Robust/.venv/bin/python \
 
 正式启动前再次 fetch `main` 并查重；若 `main` 出现同实验结果、团队有 GPU 进程、父模型
 或输入哈希不匹配、配置测试失败、比赛合规边界变化，则停止。T75 全程与 prior 路线正交。
+
+第一次启动检查时，`main` 从 `04c4111` 前进到 `6abf640`，说明 288px 相对 224px 父特征
+天然会产生约 4%–10% drift；原 1% drift budget 与惩罚会错误压低 clean-core selector。
+训练尚未启动，故先合并团队修复，并把本实验同样改为 `drift_budget=0.15`、
+`drift_penalty=0.0`。这只修正跨分辨率评估口径，不改变训练梯度、数据或模型容量。
