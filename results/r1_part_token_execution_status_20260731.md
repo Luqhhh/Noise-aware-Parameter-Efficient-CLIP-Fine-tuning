@@ -1,6 +1,6 @@
 # R1 Part-Token Residual 执行状态（2026-07-31）
 
-状态：**EXECUTION_CLAIMED_NOT_STARTED**
+状态：**TRAIN_CACHE_PASSED**
 
 ## 1. 分支与查重
 
@@ -38,3 +38,19 @@
 
 用户已给出项目内缓存与训练的持续授权，但团队资源占用、重复实验、规则风险和外部平台上传
 仍是自动停止条件。结果无论成功或失败均按阶段单独提交，禁止与其他实验积攒推送。
+
+## 4. Train cache 执行结果
+
+- 执行时间：2026-07-31；单次正式执行成功，墙钟时间 206 秒。
+- 输出：`outputs/R1_F1_M1_PART_TOKEN_RESIDUAL/seed42/cache/train_bs128.pt`（511 MiB）。
+- cache SHA-256：`12d4ff2de3c5e857a1814fa9caca037a22c79a477e7f945eeb56983b90579db4`。
+- 内置 `validate_part_token_cache`：通过；所有 logits、local features、part features、标签与置信度均为有限值，且不存在零 part feature。
+- 样本与路径：65,473 个样本、65,473 个唯一训练路径；与官方 validation 路径交集为 0。
+- 类别覆盖：标签 0–499，覆盖 500 类；每类 26–185 个高置信样本。
+- clean probability：最小值 0.700010538，满足预注册阈值 0.70。
+- 父 checkpoint SHA-256：`7da95e427b959e85cbbf37c99d47d9909b941032e836fc219aaea8e690d72cc4`，精确匹配协议。
+- split CSV SHA-256：`a4a47bcc54bdbf1afce6713815d6c39c2d9b34a905f06553b80b4d21f5e6c6bb`，精确匹配协议。
+- 执行元数据：CUDA、AMP 开启、batch size 128、4 workers；符合预注册配置。
+- part pool：`cls_cosine_topk_v1`，top-8，temperature 0.07，来源为同一局部视图的最终 patch tokens；符合协议。
+
+结论：train cache 内容门禁通过，允许在下一阶段重新同步 `main`、查重并检查团队 GPU 后执行一次固定的 validation cache。当前仍未读取 test，未训练 Adapter，也未生成提交包。
