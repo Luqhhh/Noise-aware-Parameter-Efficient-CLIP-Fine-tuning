@@ -1,6 +1,6 @@
 # R1 Part-Token Residual 执行状态（2026-07-31）
 
-状态：**TRAIN_CACHE_PASSED**
+状态：**VALIDATION_CACHE_PASSED**
 
 ## 1. 分支与查重
 
@@ -54,3 +54,19 @@
 - part pool：`cls_cosine_topk_v1`，top-8，temperature 0.07，来源为同一局部视图的最终 patch tokens；符合协议。
 
 结论：train cache 内容门禁通过，允许在下一阶段重新同步 `main`、查重并检查团队 GPU 后执行一次固定的 validation cache。当前仍未读取 test，未训练 Adapter，也未生成提交包。
+
+## 5. Validation cache 执行结果
+
+- 单次正式执行成功，墙钟时间 42.6 秒。
+- 输出：`outputs/R1_F1_M1_PART_TOKEN_RESIDUAL/seed42/cache/validation_bs128.pt`（81 MiB）。
+- cache SHA-256：`5ac38ca0aff1b8555f6f788cb934bfe36a315b3e1f6408e11e95234eb7dcc7b3`。
+- 内置 `validate_part_token_cache`：通过；10,316 个样本与 10,316 个唯一路径，覆盖标签 0–499 共 500 类，每类 18–23 个样本。
+- 与 train cache 路径交集为 0；train/validation 的 part pool 规格完全相同。
+- validation CSV SHA-256：`54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e`。
+- 父 checkpoint SHA-256 精确匹配：`7da95e427b959e85cbbf37c99d47d9909b941032e836fc219aaea8e690d72cc4`。
+- 执行元数据：CUDA、AMP 开启、batch size 128、4 workers；part pool 为 top-8/temperature0.07，均符合协议。
+- F1 center 数值复现：最大绝对 logit 差为 0，预测一致率 1.0。
+- F1+M1 数值复现：最大绝对 logit 差为 `3.814697265625e-06`，预测一致率 1.0；通过 `≤4e-6` 门禁。
+- 所有 logits、local features、part features、标签与置信度均为有限值。
+
+结论：validation cache 与两个冻结参考均通过 fail-closed 门禁，允许在下一阶段重新同步 `main`、查重并检查团队进程后执行一次固定的 CPU Adapter 训练。当前仍未读取 test，也未生成提交包。
