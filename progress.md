@@ -6,6 +6,16 @@
 
 # 执行进度
 
+## 2026-07-31 Balanced-prior 0.75：平台 67.2848%，新平台最佳
+
+- P70-PA-004 = W050 + M1/Flip + prior strength 0.75，平台 **67.2848%**，
+  新审计完整平台最佳，相对 W060+1.0（67.2007%）`+0.0841pp`。
+- **强度曲线 0.75 > 1.0**：测试集非完美均衡（467×50 + 33×49），1.0 过矫正；
+  用户坚持测中间值被证实正确。
+- 下一候选 P70-PA-005（W060 + 0.75，更优基座 + 已验证强度）待上传。
+- 已按哈希登记到 `results/current_platform_summary.csv` 与
+  `results/submission_registry.csv`。
+
 ## 2026-07-31 Balanced-prior 1.0：平台 67.2007%，距 70 分仅 2.80pp
 
 - P70-PA-002 = W060（更多数据 F1）+ M1/Flip + prior strength 1.0，平台
