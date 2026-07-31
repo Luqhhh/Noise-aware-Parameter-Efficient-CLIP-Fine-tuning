@@ -1,6 +1,6 @@
 # O3-R1 执行状态与团队边界（2026-07-31）
 
-状态：**TRAIN_CACHE_GATE_PASSED（训练缓存门禁通过；Adapter 训练未启动）**
+状态：**ADAPTER_GATE_FAILED（训练正常完成，但准确率门禁未通过；禁止生成提交）**
 
 ## 1. 分支与血缘
 
@@ -38,7 +38,7 @@ O2 已观察到的局部判别增益，同时避免共享 LoRA/分类头导致�
 
 ## 4. 执行授权与停止边界
 
-预执行版本提交时，下列操作均未执行；截至本次更新，前两项已按顺序完成：
+预执行版本提交时，下列操作均未执行；截至本次更新，前三项已按顺序完成：
 
 1. GPU validation cache 重建；
 2. GPU train cache 生成；
@@ -111,11 +111,47 @@ CUDA 与 AMP 均与预注册一致；缓存加载器同时完成所有张量的�
 结论：**O3-R1 train cache 完整性门禁通过。** 该结果只允许进入固定 CPU Adapter 训练，
 不代表模型提升，也不授权平台上传。
 
-## 7. 后续固定顺序
+## 7. 固定 CPU Adapter 训练结果
+
+训练前第三次同步 `origin/main@04c4111`，未发现新提交、重复实验或团队进程；32 个逻辑 CPU
+的系统负载约 `0.46`，O3-R1 专属 checkpoint 目录不存在。训练严格使用预注册参数：seed 42、
+`512→32→512`、residual scale `0.25`、dropout `0.1`、AdamW、lr `5e-4`、weight decay
+`1e-4`、batch `1024`、最多 20 epochs、patience 5、GCE q `0.5`、local loss weight
+`0.25`、feature anchor weight `2.0`，并固定在 CPU 上运行。
+
+正式训练一次运行成功，约 30 秒完成，在 epoch 13 早停；最佳安全 epoch 为 8。权威门禁结果：
+
+| 检查 | 实际结果 | 门槛 | 判定 |
+|---|---:|---:|---|
+| clean-core micro 相对 F1+M1 | `+0.1487255 pp` | `>=+0.20 pp` | **FAIL** |
+| trusted macro 相对 F1+M1 | `+0.1994252 pp` | `>=0.00 pp` | PASS |
+| raw micro 相对 F1+M1 | `+0.1938701 pp` | `>=-0.10 pp` | PASS |
+| local feature drift | `0.00180197`（约 `0.1802%`） | `<=0.01` | PASS |
+| epoch-0 Adapter / M1 复现 | bit-exact / reproduced | 必须通过 | PASS |
+| F1 global path | bit-exact | 必须通过 | PASS |
+
+最佳 epoch 8 的 clean-core micro 为 `82.395887%`，基线为 `82.247162%`；raw micro 从
+`71.636295%` 升至 `71.830165%`，trusted macro 从 `81.273472%` 升至 `81.472898%`。
+所有安全 epoch 均覆盖 500 类，无空类别。局部分支本身的 raw micro 从 `66.867000%` 升至
+`68.233812%`，说明局部 Adapter 确实学到互补信息，但融合后的 clean-core 增量不足以跨过
+预注册门槛。
+
+产物：
+
+- `gate.json`：334 bytes；SHA-256 `26fefc3b0468b47e4bbdb8a097c7c24053679df1a4470f3e60b1c296ab7d28f8`
+- `history.json`：22,654 bytes；SHA-256 `bc592b81cf379bc677727bce21d8da1d32d02bdef68892b1ec8f8579ed78338f`
+- `best_adapter.pt`：143,969 bytes；SHA-256 `11e5cd8dd7d844e25a8310c02ba268dd729c3ab125cf17a105dbac1b03d968c8`
+- `best.pt`：356,505,716 bytes；SHA-256 `bcb04ceeb56555ac3dfe54216d9fdb1137beacf1ee371f8492496f06efd06fb5`
+
+结论：**O3-R1 正式门禁失败。** 唯一失败项是 clean-core micro 增量距离门槛仍差
+`0.0512745 pp`。不得事后放宽门槛、不得生成测试预测或平台提交；该失败仍保留并立即推送，
+作为后续正交实验的排除证据。
+
+## 8. 后续固定顺序
 
 1. 再次同步 `main` 并复核重复项；
 2. batch-128 validation cache 与逐位复现门禁已完成并通过；
 3. train cache 已生成一次，完整性门禁已完成并通过；
-4. 按持续授权和原协议执行一次固定 CPU Adapter 训练；
-5. 结果产生后立即补充本文件并推送；失败结果同样保留；
-6. 只有全部预注册门槛通过，才另行请求是否允许生成平台候选。
+4. 固定 CPU Adapter 已执行一次，权威准确率门禁失败；
+5. 本失败结果立即补充并单独推送；
+6. O3-R1 到此停止，不生成测试预测或提交包；后续新假设必须重新预注册并独立建分支。
