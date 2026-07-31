@@ -188,7 +188,7 @@ M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归�
 
 本仓库内不再继续普通 LoRA、routing 或 trust 参数搜索。下一步按以下顺序：
 
-1. ✅ F1 rebuild + M1/Flip 0.40/0.50 包已按 ZIP SHA-256 回填真实平台分数 **63.7802%**（新平台最佳）；
+1. ✅ 70+ 平台战役推进中（详见 [`results/70p_campaign_20260731.md`](results/70p_campaign_20260731.md)）：balanced-prior 校准已把平台从 63.7802%（M1/Flip）推到 **67.2007%**（W060 + prior 1.0），距离 70 分仅 2.80pp；更多数据训练（trust 阈值 0.70→0.50）单调有效；
 2. 平台名额优先用于已经完成训练和审计的 **F2 + M1 → O1 + M1 → N3 + M1**（完整独立实验总账见 [`docs/aegis_independent_experiments_2026-07-22.md`](docs/aegis_independent_experiments_2026-07-22.md)）；O3-R1、Q1A、R1 与 T0/T1 尚未运行，T0/T1 需明确授权后才可启动；
 3. 若继续研究，必须建立新的机制协议；当前 Phase 4 决策树和 A2 STRICT 推理权重搜索均已走完，不能把未过 gate 的候选重新包装为下一轮调参。
 

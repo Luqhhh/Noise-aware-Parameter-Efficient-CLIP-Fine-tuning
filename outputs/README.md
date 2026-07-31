@@ -129,9 +129,10 @@ M1/M3 与 Bare、Flip TTA 是不同推理协议。完整证据状态见 `results
 
 同日新增的 M1 + Flip 候选使用同一 F1 REBUILD R1 checkpoint，ZIP SHA-256 为
 `67f4eda57291e34096edcb0545b142fd0a3114fb1c76eb1e17996afe87d692e0`，
-平台 **63.7802%**；其上的 balanced-prior 校准（ZIP `c0bbcee6…af6d6`）平台
-**65.5786%**，新的审计完整平台最佳。详见 `results/m1_flip_optimization_20260730.md`
-与 `results/prior_alignment_20260731.md`。
+平台 **63.7802%**；其上的 balanced-prior 校准 0.25（ZIP `c0bbcee6…af6d6`）
+平台 **65.5786%**，prior 1.0 + W060（ZIP `12e0ec30…5edb`）平台 **67.2007%**
+（当前审计完整平台最佳）。详见 `results/m1_flip_optimization_20260730.md`、
+`results/prior_alignment_20260731.md` 与 `results/70p_campaign_20260731.md`。
 
 Phase 4 的原始运行产物位于 `reproducibility/aegis_f1/outputs/`，受该子工程 `.gitignore` 控制；关键结果已抽取到受 Git 跟踪的 `docs/phase4_results.md` 和 `results/phase4_experiments.csv`。
 

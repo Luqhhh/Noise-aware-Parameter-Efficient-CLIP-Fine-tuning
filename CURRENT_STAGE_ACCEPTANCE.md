@@ -2,7 +2,7 @@
 
 ## Scope
 
-本验收状态覆盖主仓库截至 `7c8b966` 的历史代码、截至 2026-07-22 的训练产物，以及 2026-07-30 新增的 M1 attention-local 推理优化、局部特征 Adapter 实验、同 split E2→F1 严格重建、M1 + Flip 四视图融合和 2026-07-31 的 balanced-prior 推理校准。A2 STRICT Adapter 未通过 gate；F1 重建通过 gate，M1 平台为 62.9791%；M1 + Flip + balanced-prior 0.25 平台实测 65.5786%，新的审计完整平台最佳。
+本验收状态覆盖主仓库截至 `7c8b966` 的历史代码、截至 2026-07-22 的训练产物，以及 2026-07-30 新增的 M1 attention-local 推理优化、局部特征 Adapter 实验、同 split E2→F1 严格重建、M1 + Flip 四视图融合和 2026-07-31 的 balanced-prior 推理校准。A2 STRICT Adapter 未通过 gate；F1 重建通过 gate，M1 平台为 62.9791%；M1 + Flip + balanced-prior 0.25 平台实测 65.5786%，其上的 prior 1.0（W060 checkpoint）平台 **67.2007%**，新的审计完整平台最佳。
 
 原 `docs/phase4_plan.md` 已确认有意删除，并由以下最终产物取代：
 
@@ -76,12 +76,17 @@ clean-core micro `+0.2728pp`、clean-core macro `+0.0931pp`，覆盖 500 类。
 
 ## Balanced-Prior Calibration Acceptance
 
-在 M1 + Flip 包（`c0bbcee6…af6d6`）上叠加 `align_logits_to_prior` 均衡先验
-校准（strength 0.25，IPF 类别偏置拟合）。模型测试预测严重不均衡（最差类 2 /
-最好类 190 个预测，均衡期望 ~50/类）；校准到 uniform 先验后平台 **65.5786%**，
-相对无校准包 `+1.7984pp`，新的审计完整平台最佳。校准只改推理 logits，不训练、
-不改模型；local→platform gap 由 8.35pp 收窄至 6.55pp。完整证据见
-`results/prior_alignment_20260731.md`。
+`align_logits_to_prior` 均衡先验校准（IPF 类别偏置拟合）在本任务价值巨大：
+模型测试预测严重不均衡（最差类 2 / 最好类 ~190 个预测，均衡期望 ~50/类），
+平台测试类别均衡。已实测两个强度：
+
+- **strength 0.25**（R1 checkpoint）：平台 **65.5786%**，相对无校准包 `+1.7984pp`；
+- **strength 1.0**（W060 checkpoint）：平台 **67.2007%**，相对 0.25 再
+  `+1.6221pp`，新的审计完整平台最佳，strength 1.0 确认最优。
+
+校准只改推理 logits，不训练、不改模型；累计把 local→platform gap 由 8.35pp
+收窄至 5.08pp，距离 70 分 `2.80pp`。完整证据见
+`results/prior_alignment_20260731.md` 与 `results/70p_campaign_20260731.md`。
 
 ## Phase 4 Final Acceptance
 

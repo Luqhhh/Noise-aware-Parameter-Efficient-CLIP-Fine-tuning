@@ -18,7 +18,7 @@
 - 已按哈希登记到 `results/current_platform_summary.csv` 与
   `results/submission_registry.csv`。
 
-## 2026-07-31 Balanced-prior 校准：平台 65.5786%，新平台最佳
+## 2026-07-31 Balanced-prior 校准：平台 65.5786%（当时新平台最佳，后被 prior 1.0 超越）
 
 - 70+ 战役启动（`results/70p_campaign_20260731.md`）：Claude 生成审计候选，
   用户只负责上传平台测试。
@@ -30,7 +30,7 @@
 - 已按哈希登记到 `results/current_platform_summary.csv` 与
   `results/submission_registry.csv`；报告见 `results/prior_alignment_20260731.md`。
 
-## 2026-07-31 M1 + Flip 平台结果：63.7802%，新平台最佳
+## 2026-07-31 M1 + Flip 平台结果：63.7802%（当时新平台最佳，后被 prior 校准超越）
 
 - M1 + Flip `local0.40/flip0.50` 平台实测 **63.7802%**，成为新的审计完整平台
   最佳（原 F1 + M1 63.3276% 仅为 `reported_unverified` 锚点）。
