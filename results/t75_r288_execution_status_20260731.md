@@ -1,6 +1,6 @@
 # T75-R288 执行状态与预注册（2026-07-31）
 
-状态：**PREREGISTERED_NOT_STARTED**
+状态：**TRAINING_GATE_FAILED（训练完成；禁止 localization、测试推理与提交）**
 
 ## 1. 分支、血缘与查重
 
@@ -78,3 +78,60 @@ PYTHONPATH=$PWD /home/x28639/projects/AegisCLIP-Noise-Robust/.venv/bin/python \
 天然会产生约 4%–10% drift；原 1% drift budget 与惩罚会错误压低 clean-core selector。
 训练尚未启动，故先合并团队修复，并把本实验同样改为 `drift_budget=0.15`、
 `drift_penalty=0.0`。这只修正跨分辨率评估口径，不改变训练梯度、数据或模型容量。
+
+## 6. 正式运行结果
+
+第二次启动门禁确认 `origin/main@6abf640` 未再变化，分支干净、无重复 PR、无团队训练或
+GPU 计算进程、专属输出目录不存在；父 checkpoint、train/val CSV 和 trust bundle 哈希
+均与预注册一致。正式命令只运行一次，从约 `21:30:45` 至 `22:26:41`，耗时
+`3356.5s`（约 55分56秒），退出码 0。PIL 只报告既有图片的 EXIF/透明调色板元数据提示，
+没有图片读取失败、非有限损失或样本丢失。
+
+Lineage 审计通过：父子 train 均为 92,902 张、val 均为 10,316 张，train/val 交叉重叠
+为 0，标签不一致为 0；父 checkpoint SHA-256 为
+`50e05d09921a0f9bf852589cae848b926c61892e6952f1082dfa25daae2e3ff6`。
+
+epoch 0（未适应 288px）为 raw `70.046532%`、clean-core `80.070311%`、drift
+`3.976548%`。训练器按 clean-core 选择 epoch 4：
+
+| 指标 | epoch 0 | 最佳 epoch 4 | 变化 |
+|---|---:|---:|---:|
+| raw micro | `70.046532%` | `70.880187%` | `+0.833654pp` |
+| clean-core micro | `80.070311%` | `80.949163%` | `+0.878853pp` |
+| trusted macro | `79.281437%` | `80.137515%` | `+0.856078pp` |
+| proxy macro | `78.289396%` | `79.016405%` | `+0.727009pp` |
+| mean feature drift | `3.976548%` | `21.290892%` | `+17.314344pp` |
+| predicted classes | `500` | `500` | 不变 |
+
+内置 promotion：
+
+| 检查 | 结果 | 判定 |
+|---|---:|---|
+| selector gain `>=+0.20pp` | `+0.878853pp` | PASS |
+| raw floor `>=-0.10pp` | `+0.833654pp` | PASS |
+| class coverage | `500` | PASS |
+| trained epoch selected | epoch 4 | PASS |
+| drift budget `<=15%` | `21.290892%` | **FAIL** |
+
+相对 224px W060 的突破门禁：raw `70.880187%` 刚超过 `70.8797%` 门槛约
+`0.000487pp`，但 clean-core `80.949163%` 低于 `81.5259%` 门槛 `0.576737pp`；
+其本身也比 224px W060 clean-core `81.3259%` 低 `0.376737pp`。因此双层门禁均失败。
+
+产物：
+
+- `best.pt`：356,368,714 bytes；SHA-256
+  `2692afbe733263fee3820ed47f2b62e6253da7b927821932955070b18be80e22`
+- `promotion.json`：289 bytes；SHA-256
+  `d2c44cfa663ecf7912ceb8cff0641d039847ee3359debfada62c8ac149e2363d`
+- `split_lineage_audit.json`：1,481 bytes；SHA-256
+  `335b812520f1b968cd7759c838e7a4a8d0cd2532e9f741d2cdc3235f1d61afd2`
+- `artifact_manifest.json`：4,848 bytes；SHA-256
+  `6c8fb35b9f3ec531b6c45def7f43b75dda7d9cf505f27056928b36f08b1f6850`
+- `metrics.csv`：4,458 bytes；SHA-256
+  `70b59474cf24c9a73d7ad29f3955d9a993cb92ca6536df201e61dd4562f43725`
+
+结论：**T75-R288 正式失败并停止。** 288px 训练能把 noisy-val raw 相对 224px W060
+抬高约 `0.3005pp`，但 clean-core 同时下降且视觉漂移远超保护上限，说明当前无跨分辨率
+锚定的 LoRA 在拟合高分辨率统计时破坏了可靠结构。不得据 raw 单项生成 288px localization、
+测试预测或平台提交，不得事后放宽 drift/clean-core 门槛。后续若继续高分辨率方向，必须作为
+新的独立假设解决“跨分辨率结构保持”，而不是扫描当前学习率或 epoch。
