@@ -1,6 +1,6 @@
 # O3-R1 执行状态与团队边界（2026-07-31）
 
-状态：**VALIDATION_CACHE_GATE_PASSED（验证缓存门禁通过；train cache 与 Adapter 训练未启动）**
+状态：**TRAIN_CACHE_GATE_PASSED（训练缓存门禁通过；Adapter 训练未启动）**
 
 ## 1. 分支与血缘
 
@@ -36,17 +36,18 @@ O2 已观察到的局部判别增益，同时避免共享 LoRA/分类头导致�
 - 输出只能写入 O3-R1 专属目录，禁止覆盖团队正在运行的输出。
 - 本分支只承载 O3-R1；后续结果无论成功或失败均立即追加并单独推送，不与其他实验合并提交。
 
-## 4. 未授权事项
+## 4. 执行授权与停止边界
 
-预执行版本提交时，下列操作均**未执行**：
+预执行版本提交时，下列操作均未执行；截至本次更新，前两项已按顺序完成：
 
 1. GPU validation cache 重建；
 2. GPU train cache 生成；
 3. CPU Adapter 训练；
 4. 测试集推理、提交包生成或平台评测。
 
-任何 GPU 操作必须同时满足：用户明确授权、团队群内确认实验编号和执行人、启动前再次拉取
-最新 `main`、确认没有重复实验，并确认团队 GPU 空闲。若任一条件不满足，保持停止状态。
+用户于 2026-07-31 补充持续授权：后续项目内缓存与训练阶段不再逐次请求，只要启动前重新
+同步最新 `main`、确认没有重复实验、规则风险或团队任务占用，即可按预注册顺序直接执行。
+平台上传仍不自动进行；若发现团队进程、协议不兼容或合规风险，必须立即停止并报告。
 
 ## 5. Validation cache 执行结果
 
@@ -81,11 +82,40 @@ O2 已观察到的局部判别增益，同时避免共享 LoRA/分类头导致�
 AMP 数值布局改变少量 attention top-5 选择；batch-128 已恢复到平台 F1+M1 的冻结数值条件。
 该结论只授权进入下一道独立门禁，不代表 Adapter 会提升准确率。
 
-## 6. 后续固定顺序
+## 6. Train cache 执行结果
+
+开始前再次同步 `origin/main@04c4111`；O3-R1 分支相对 `main` 仅包含本实验的两个记录
+commit，工作区干净，开放 PR 只有本实验 PR #10，未发现重复实验或团队训练进程。训练 CSV
+的 SHA-256 为
+`a4a47bcc54bdbf1afce6713815d6c39c2d9b34a905f06553b80b4d21f5e6c6bb`；含
+`65,473` 个唯一训练路径、500 类、每类 26–185 张，与 `10,316` 张验证集零重叠。
+
+正式缓存一次运行成功，命令固定使用 CUDA、AMP、`batch_size=64`、`crop_size=160`、
+`top_patches=5`、`num_workers=4`，耗时约 201 秒，退出码为 0。仅出现两条透明调色板
+元数据提示，没有图片读取失败或非有限张量。
+
+产物：
+
+- 路径：`/home/x28639/projects/AegisCLIP-F6-A2LoRA/outputs/O3_R1_F1_LOCAL_ONLY_FEATURE_ADAPTER/seed42/cache/train.pt`
+- 大小：`400,895,006` bytes
+- SHA-256：`0869a2e788153afee198ae274ee609d300dbbd9b8604ab759dc4b209b02ed45f`
+- 样本：`65,473`；唯一路径：`65,473`；类别：`500`
+- 最低 clean probability：`0.7000105381011963`
+- 父 checkpoint SHA-256：`7da95e427b959e85cbbf37c99d47d9909b941032e836fc219aaea8e690d72cc4`
+- 环境：RTX 4060 Laptop GPU；PyTorch `2.13.0+cu130`；CUDA `13.0`；AMP enabled
+
+完整性审计的 14 项检查全部通过：样本数、唯一路径、类别覆盖及每类范围、clean threshold、
+训练/验证零重叠、父 checkpoint、源 CSV、batch size、worker 数、crop size、top-patch 数、
+CUDA 与 AMP 均与预注册一致；缓存加载器同时完成所有张量的形状、对齐与有限值检查。
+
+结论：**O3-R1 train cache 完整性门禁通过。** 该结果只允许进入固定 CPU Adapter 训练，
+不代表模型提升，也不授权平台上传。
+
+## 7. 后续固定顺序
 
 1. 再次同步 `main` 并复核重复项；
 2. batch-128 validation cache 与逐位复现门禁已完成并通过；
-3. train cache 尚不存在；获得新的明确 GPU 授权后，才允许按原协议生成一次；
-4. train cache 完整性门禁通过后，才允许执行一次固定 CPU Adapter 训练；
+3. train cache 已生成一次，完整性门禁已完成并通过；
+4. 按持续授权和原协议执行一次固定 CPU Adapter 训练；
 5. 结果产生后立即补充本文件并推送；失败结果同样保留；
 6. 只有全部预注册门槛通过，才另行请求是否允许生成平台候选。
