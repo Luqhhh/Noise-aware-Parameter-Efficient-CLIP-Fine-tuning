@@ -1,6 +1,6 @@
 # O3-R1 执行状态与团队边界（2026-07-31）
 
-状态：**PREPARED_NOT_STARTED（已认领准备，未启动缓存或训练）**
+状态：**VALIDATION_CACHE_GATE_PASSED（验证缓存门禁通过；train cache 与 Adapter 训练未启动）**
 
 ## 1. 分支与血缘
 
@@ -38,7 +38,7 @@ O2 已观察到的局部判别增益，同时避免共享 LoRA/分类头导致�
 
 ## 4. 未授权事项
 
-截至本文件提交时，下列操作均**未执行**：
+预执行版本提交时，下列操作均**未执行**：
 
 1. GPU validation cache 重建；
 2. GPU train cache 生成；
@@ -48,11 +48,44 @@ O2 已观察到的局部判别增益，同时避免共享 LoRA/分类头导致�
 任何 GPU 操作必须同时满足：用户明确授权、团队群内确认实验编号和执行人、启动前再次拉取
 最新 `main`、确认没有重复实验，并确认团队 GPU 空闲。若任一条件不满足，保持停止状态。
 
-## 5. 后续固定顺序
+## 5. Validation cache 执行结果
+
+用户于 2026-07-31 明确授权 `O3-R1 batch-128 validation cache`。启动前重新同步
+`origin/main@04c4111`，开放 PR 只有本实验的草稿 PR，未发现重复 O3-R1 分支或运行进程；
+父 F1 checkpoint SHA-256 与预注册值完全一致：
+`7da95e427b959e85cbbf37c99d47d9909b941032e836fc219aaea8e690d72cc4`。
+
+缓存命令固定使用 CUDA、AMP、`batch_size=128`、`crop_size=160`、`top_patches=5`、
+`num_workers=4`。正式进程从 `2026-07-31T20:57:37+08:00` 运行至
+`2026-07-31T20:58:18+08:00`，耗时约 41 秒，退出码为 0。PIL 报告了已有图片的 EXIF 与
+透明调色板元数据警告，但没有图片读取失败、非有限张量或样本缺失。
+
+产物：
+
+- 路径：`/home/x28639/projects/AegisCLIP-F6-A2LoRA/outputs/O3_R1_F1_LOCAL_ONLY_FEATURE_ADAPTER/seed42/cache/validation_bs128.pt`
+- 大小：`63,168,621` bytes
+- SHA-256：`eb9c362f1c59646e30d0d20e9c02bbb8966bddbfcf542da1b5ce04e1dbf9a1d5`
+- 样本：`10,316`
+- 环境：RTX 4060 Laptop GPU；PyTorch `2.13.0+cu130`；CUDA `13.0`；AMP enabled
+
+严格复现门禁：
+
+| 检查 | 实际结果 | 门槛 | 判定 |
+|---|---:|---:|---|
+| center 最大绝对 logit 差 | `0.0` | `0.0` | PASS |
+| center prediction agreement | `1.0` | `1.0` | PASS |
+| M1 最大绝对 logit 差 | `3.814697265625e-06` | `<=4e-6` | PASS |
+| M1 prediction agreement | `1.0` | `1.0` | PASS |
+
+结论：**O3-R1 validation cache 复现门禁通过。** 原 O3 的训练前失败可归因于 batch-64
+AMP 数值布局改变少量 attention top-5 选择；batch-128 已恢复到平台 F1+M1 的冻结数值条件。
+该结论只授权进入下一道独立门禁，不代表 Adapter 会提升准确率。
+
+## 6. 后续固定顺序
 
 1. 再次同步 `main` 并复核重复项；
-2. 获得明确 GPU 授权后，仅重建 batch-128 validation cache；
-3. 先执行原协议的逐位复现门控，失败即记录并关闭；
-4. 门控通过后再生成 train cache，并执行一次固定 CPU Adapter 训练；
+2. batch-128 validation cache 与逐位复现门禁已完成并通过；
+3. train cache 尚不存在；获得新的明确 GPU 授权后，才允许按原协议生成一次；
+4. train cache 完整性门禁通过后，才允许执行一次固定 CPU Adapter 训练；
 5. 结果产生后立即补充本文件并推送；失败结果同样保留；
 6. 只有全部预注册门槛通过，才另行请求是否允许生成平台候选。
