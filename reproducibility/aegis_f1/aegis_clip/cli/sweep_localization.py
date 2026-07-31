@@ -19,6 +19,7 @@ from aegis_clip.features import FrozenFeatureStore
 from aegis_clip.localization import (
     extract_attention_crops,
     forward_with_last_block_attention,
+    fuse_global_local_flip_probabilities,
     fuse_global_local_probabilities,
     fuse_global_multilocal_probabilities,
     parse_int_sequence,
@@ -79,6 +80,8 @@ def main() -> None:
     parser.add_argument("--crop-sizes", default="160")
     parser.add_argument("--top-ks", default="5")
     parser.add_argument("--local-weights", default="0.5")
+    parser.add_argument("--include-horizontal-flip", action="store_true")
+    parser.add_argument("--flip-weights", default="0.5")
     parser.add_argument("--temperature", type=float, default=1.0)
     parser.add_argument("--batch-size", type=int)
     parser.add_argument("--device", default="cuda")
@@ -91,8 +94,11 @@ def main() -> None:
     crop_sizes = parse_int_sequence(args.crop_sizes)
     top_ks = parse_int_sequence(args.top_ks)
     local_weights = _parse_float_sequence(args.local_weights)
+    flip_weights = _parse_float_sequence(args.flip_weights)
     if any(not 0.0 <= value <= 1.0 for value in local_weights):
         raise ValueError("All local weights must be in [0, 1]")
+    if any(not 0.0 <= value <= 1.0 for value in flip_weights):
+        raise ValueError("All flip weights must be in [0, 1]")
     if args.temperature <= 0.0:
         raise ValueError("temperature must be positive")
 
@@ -146,6 +152,10 @@ def main() -> None:
     local_logits_parts: dict[tuple[int, int], list[torch.Tensor]] = {
         key: [] for key in candidate_keys
     }
+    flipped_global_logits_parts: list[torch.Tensor] = []
+    flipped_local_logits_parts: dict[
+        tuple[int, int], list[torch.Tensor]
+    ] = {key: [] for key in candidate_keys}
     labels_parts: list[torch.Tensor] = []
     clean_parts: list[torch.Tensor] = []
     pseudo_parts: list[torch.Tensor] = []
@@ -184,6 +194,32 @@ def main() -> None:
                 or y1 == image_height
                 for x0, y0, x1, y1 in boxes
             )
+        if args.include_horizontal_flip:
+            flipped_images = torch.flip(images, dims=(3,))
+            with torch.autocast(device_type=device.type, enabled=use_amp):
+                (
+                    flipped_global_logits,
+                    flipped_attention,
+                ) = forward_with_last_block_attention(
+                    model,
+                    flipped_images,
+                )
+            flipped_global_logits_parts.append(
+                flipped_global_logits.float().cpu()
+            )
+            for key in candidate_keys:
+                crop_size, top_k = key
+                flipped_crops, _ = extract_attention_crops(
+                    flipped_images,
+                    flipped_attention,
+                    crop_size=crop_size,
+                    top_k=top_k,
+                )
+                with torch.autocast(device_type=device.type, enabled=use_amp):
+                    flipped_local_logits = model(images=flipped_crops)
+                flipped_local_logits_parts[key].append(
+                    flipped_local_logits.float().cpu()
+                )
 
     global_logits = torch.cat(global_logits_parts)
     noisy = torch.cat(labels_parts)
@@ -200,6 +236,19 @@ def main() -> None:
     local_logits_by_key = {
         key: torch.cat(parts) for key, parts in local_logits_parts.items()
     }
+    flipped_global_logits = (
+        torch.cat(flipped_global_logits_parts)
+        if args.include_horizontal_flip
+        else None
+    )
+    flipped_local_logits_by_key = (
+        {
+            key: torch.cat(parts)
+            for key, parts in flipped_local_logits_parts.items()
+        }
+        if args.include_horizontal_flip
+        else {}
+    )
     global_metrics = _metrics(
         global_prediction,
         noisy=noisy,
@@ -244,7 +293,9 @@ def main() -> None:
             "edge_clamped_fraction": box_edge_counts[key] / len(dataset),
             "local": local_metrics,
             "fusions": [],
+            "stacked_flip_fusions": [],
         }
+        m1_metrics_by_weight: dict[float, dict[str, float | int]] = {}
         for local_weight in local_weights:
             fused = fuse_global_local_probabilities(
                 global_logits,
@@ -276,6 +327,69 @@ def main() -> None:
                     ),
                 }
             )
+            m1_metrics_by_weight[local_weight] = fused_metrics
+        if args.include_horizontal_flip:
+            assert flipped_global_logits is not None
+            flipped_local_logits = flipped_local_logits_by_key[key]
+            flipped_local_prediction = flipped_local_logits.argmax(dim=1)
+            common["flipped_local"] = _metrics(
+                flipped_local_prediction,
+                noisy=noisy,
+                proxy=proxy,
+                clean_weight=clean_weight,
+                proxy_weight=proxy_weight,
+                num_classes=num_classes,
+                clean_core_threshold=clean_core_threshold,
+            )
+            for local_weight in local_weights:
+                m1_metrics = m1_metrics_by_weight[local_weight]
+                for flip_weight in flip_weights:
+                    fused = fuse_global_local_flip_probabilities(
+                        global_logits,
+                        local_logits,
+                        flipped_global_logits,
+                        flipped_local_logits,
+                        local_weight=local_weight,
+                        flip_weight=flip_weight,
+                        temperature=args.temperature,
+                    )
+                    fused_metrics = _metrics(
+                        fused.argmax(dim=1),
+                        noisy=noisy,
+                        proxy=proxy,
+                        clean_weight=clean_weight,
+                        proxy_weight=proxy_weight,
+                        num_classes=num_classes,
+                        clean_core_threshold=clean_core_threshold,
+                    )
+                    common["stacked_flip_fusions"].append(
+                        {
+                            "local_weight": local_weight,
+                            "flip_weight": flip_weight,
+                            "temperature": float(args.temperature),
+                            **fused_metrics,
+                            "raw_micro_delta_vs_m1": (
+                                float(fused_metrics["raw_micro"])
+                                - float(m1_metrics["raw_micro"])
+                            ),
+                            "trusted_macro_delta_vs_m1": (
+                                float(fused_metrics["trusted_macro"])
+                                - float(m1_metrics["trusted_macro"])
+                            ),
+                            "proxy_macro_delta_vs_m1": (
+                                float(fused_metrics["proxy_macro"])
+                                - float(m1_metrics["proxy_macro"])
+                            ),
+                            "clean_core_micro_delta_vs_m1": (
+                                float(fused_metrics["clean_core_micro"])
+                                - float(m1_metrics["clean_core_micro"])
+                            ),
+                            "clean_core_macro_delta_vs_m1": (
+                                float(fused_metrics["clean_core_macro"])
+                                - float(m1_metrics["clean_core_macro"])
+                            ),
+                        }
+                    )
         candidates.append(common)
 
     multiscale_candidates: list[dict[str, Any]] = []
@@ -336,8 +450,12 @@ def main() -> None:
             multiscale_candidates.append(multiscale)
 
     payload = {
-        "format_version": 1,
-        "protocol": "last_block_mean_head_topk_attention_crop",
+        "format_version": 2,
+        "protocol": (
+            "last_block_mean_head_topk_attention_crop_plus_horizontal_flip"
+            if args.include_horizontal_flip
+            else "last_block_mean_head_topk_attention_crop"
+        ),
         "checkpoint": str(Path(args.checkpoint).resolve()),
         "checkpoint_sha256": sha256_file(args.checkpoint),
         "checkpoint_epoch": int(checkpoint.get("epoch", -1)),
@@ -345,6 +463,22 @@ def main() -> None:
         "samples": len(dataset),
         "clean_core_threshold": clean_core_threshold,
         "global": global_metrics,
+        "flipped_global": (
+            _metrics(
+                flipped_global_logits.argmax(dim=1),
+                noisy=noisy,
+                proxy=proxy,
+                clean_weight=clean_weight,
+                proxy_weight=proxy_weight,
+                num_classes=num_classes,
+                clean_core_threshold=clean_core_threshold,
+            )
+            if flipped_global_logits is not None
+            else None
+        ),
+        "flip_weights": (
+            list(flip_weights) if args.include_horizontal_flip else []
+        ),
         "candidates": candidates,
         "multiscale_candidates": multiscale_candidates,
     }

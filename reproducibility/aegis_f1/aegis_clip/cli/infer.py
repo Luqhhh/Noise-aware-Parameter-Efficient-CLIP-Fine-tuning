@@ -1,4 +1,4 @@
-"""Bare or explicitly acknowledged flip-TTA inference with fail-closed output."""
+"""Audited bare, flip, local-view, or explicitly stacked inference."""
 
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ from aegis_clip.data import TestImageDataset, load_class_mapping
 from aegis_clip.localization import (
     extract_attention_crops,
     forward_with_last_block_attention,
+    fuse_global_local_flip_probabilities,
     fuse_global_local_probabilities,
 )
 from aegis_clip.multiprototype import blend_multiprototype_logits
@@ -35,6 +36,7 @@ def main() -> None:
         "--tta-fusion", choices=sorted(TTA_FUSION_MODES), default="mean_logits"
     )
     parser.add_argument("--tta-temperature", type=float, default=1.0)
+    parser.add_argument("--tta-view-weight", type=float, default=0.5)
     parser.add_argument("--acknowledge-tta-risk", action="store_true")
     parser.add_argument(
         "--local-view",
@@ -61,9 +63,20 @@ def main() -> None:
             "Local-view inference changes the inference protocol; pass "
             "--acknowledge-local-view-risk explicitly"
         )
-    if args.local_view != "none" and args.tta != "none":
+    if not 0.0 <= args.tta_view_weight <= 1.0:
+        raise ValueError("tta-view-weight must be in [0, 1]")
+    stacked_local_tta = args.local_view != "none" and args.tta != "none"
+    if stacked_local_tta and args.tta_fusion != "mean_probabilities":
         raise ValueError(
-            "The audited M1 protocol forbids stacking flip TTA on the local view"
+            "Stacked local-view TTA requires --tta-fusion mean_probabilities"
+        )
+    if stacked_local_tta and args.tta_temperature != args.local_temperature:
+        raise ValueError(
+            "Stacked local-view TTA requires identical TTA and local temperatures"
+        )
+    if not stacked_local_tta and args.tta_view_weight != 0.5:
+        raise ValueError(
+            "tta-view-weight is only defined for stacked local-view TTA"
         )
     if args.local_view != "none":
         if not 1 <= args.local_crop_size <= 224:
@@ -122,7 +135,7 @@ def main() -> None:
         images = batch["images"].to(device, non_blocking=True)
         with torch.autocast(device_type=device.type, enabled=use_amp):
             if args.local_view == "attention_crop":
-                logits, attention = forward_with_last_block_attention(
+                global_logits, attention = forward_with_last_block_attention(
                     model, images
                 )
                 local_images, _ = extract_attention_crops(
@@ -132,12 +145,38 @@ def main() -> None:
                     top_k=args.local_top_k,
                 )
                 local_logits = model(images=local_images)
-                logits = fuse_global_local_probabilities(
-                    logits,
-                    local_logits,
-                    local_weight=args.local_weight,
-                    temperature=args.local_temperature,
-                )
+                if args.tta == "horizontal_flip":
+                    flipped_images = torch.flip(images, dims=(3,))
+                    (
+                        flipped_global_logits,
+                        flipped_attention,
+                    ) = forward_with_last_block_attention(
+                        model,
+                        flipped_images,
+                    )
+                    flipped_local_images, _ = extract_attention_crops(
+                        flipped_images,
+                        flipped_attention,
+                        crop_size=args.local_crop_size,
+                        top_k=args.local_top_k,
+                    )
+                    flipped_local_logits = model(images=flipped_local_images)
+                    logits = fuse_global_local_flip_probabilities(
+                        global_logits,
+                        local_logits,
+                        flipped_global_logits,
+                        flipped_local_logits,
+                        local_weight=args.local_weight,
+                        flip_weight=args.tta_view_weight,
+                        temperature=args.local_temperature,
+                    )
+                else:
+                    logits = fuse_global_local_probabilities(
+                        global_logits,
+                        local_logits,
+                        local_weight=args.local_weight,
+                        temperature=args.local_temperature,
+                    )
             elif multiprototype_head is None:
                 logits = model(images=images)
             else:
@@ -145,7 +184,7 @@ def main() -> None:
                 logits = blend_multiprototype_logits(
                     logits, features, multiprototype_head
                 )
-            if args.tta == "horizontal_flip":
+            if args.tta == "horizontal_flip" and args.local_view == "none":
                 if multiprototype_head is None:
                     second_logits = model(images=torch.flip(images, dims=(3,)))
                 else:
@@ -173,35 +212,46 @@ def main() -> None:
         raise RuntimeError(
             f"Refusing to publish: Pillow failed to decode {corrupt_count} test images"
         )
+    if args.local_view != "none":
+        inference_mode = (
+            "attention_crop_flip:" if stacked_local_tta else "attention_crop:"
+        )
+        inference_mode += (
+            f"topk={args.local_top_k}:"
+            f"crop={args.local_crop_size}:"
+            f"local_weight={args.local_weight:g}:"
+        )
+        if stacked_local_tta:
+            inference_mode += f"flip_weight={args.tta_view_weight:g}:"
+        inference_mode += f"t={args.local_temperature:g}"
+    elif args.tta == "none" or args.tta_fusion == "mean_logits":
+        inference_mode = args.tta
+    else:
+        inference_mode = (
+            f"{args.tta}:{args.tta_fusion}:t={args.tta_temperature:g}"
+        )
     manifest = create_submission(
         predictions,
         expected_names,
         args.output_dir,
         args.checkpoint,
-        inference_mode=(
-            (
-                "attention_crop:"
-                f"topk={args.local_top_k}:"
-                f"crop={args.local_crop_size}:"
-                f"weight={args.local_weight:g}:"
-                f"t={args.local_temperature:g}"
-            )
-            if args.local_view != "none"
-            else (
-                args.tta
-                if args.tta == "none" or args.tta_fusion == "mean_logits"
-                else f"{args.tta}:{args.tta_fusion}:t={args.tta_temperature:g}"
-            )
-        ),
+        inference_mode=inference_mode,
         tta_risk_acknowledged=(
             args.acknowledge_tta_risk or args.acknowledge_local_view_risk
         ),
         valid_labels={str(value).zfill(4) for value in idx_to_class.values()},
         extra_manifest={
             "corrupt_images": corrupt_count,
-            "tta_fusion": args.tta_fusion if args.tta != "none" else "none",
+            "tta_fusion": (
+                "weighted_mean_probabilities"
+                if stacked_local_tta
+                else args.tta_fusion if args.tta != "none" else "none"
+            ),
             "tta_temperature": (
                 float(args.tta_temperature) if args.tta != "none" else 1.0
+            ),
+            "tta_view_weight": (
+                float(args.tta_view_weight) if stacked_local_tta else None
             ),
             "local_view": args.local_view,
             "local_crop_size": (

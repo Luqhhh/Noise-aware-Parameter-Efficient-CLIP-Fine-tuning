@@ -4,6 +4,7 @@ import torch
 from aegis_clip.localization import (
     attention_weighted_centers,
     extract_attention_crops,
+    fuse_global_local_flip_probabilities,
     fuse_global_local_probabilities,
     fuse_global_multilocal_probabilities,
     parse_int_sequence,
@@ -71,6 +72,46 @@ def test_multilocal_fusion_averages_local_probabilities_before_global_fusion() -
     assert torch.allclose(fused.exp(), expected)
 
 
+def test_global_local_flip_fusion_matches_two_stage_probability_blend() -> None:
+    global_logits = torch.tensor([[4.0, 0.0]])
+    local_logits = torch.tensor([[0.0, 2.0]])
+    flipped_global_logits = torch.tensor([[1.0, 0.0]])
+    flipped_local_logits = torch.tensor([[0.0, 3.0]])
+    fused = fuse_global_local_flip_probabilities(
+        global_logits,
+        local_logits,
+        flipped_global_logits,
+        flipped_local_logits,
+        local_weight=0.35,
+        flip_weight=0.25,
+    )
+    global_probability = (
+        0.75 * global_logits.softmax(dim=1)
+        + 0.25 * flipped_global_logits.softmax(dim=1)
+    )
+    local_probability = (
+        0.75 * local_logits.softmax(dim=1)
+        + 0.25 * flipped_local_logits.softmax(dim=1)
+    )
+    expected = 0.65 * global_probability + 0.35 * local_probability
+    assert torch.allclose(fused.exp(), expected)
+
+
+def test_global_local_flip_fusion_reduces_to_m1_when_flip_weight_is_zero() -> None:
+    views = [torch.randn(3, 5) for _ in range(4)]
+    fused = fuse_global_local_flip_probabilities(
+        *views,
+        local_weight=0.4,
+        flip_weight=0.0,
+    )
+    expected = fuse_global_local_probabilities(
+        views[0],
+        views[1],
+        local_weight=0.4,
+    )
+    assert torch.allclose(fused, expected)
+
+
 def test_multilocal_fusion_requires_a_local_view() -> None:
     with pytest.raises(ValueError, match="At least one"):
         fuse_global_multilocal_probabilities(torch.randn(2, 3), [])
@@ -84,6 +125,15 @@ def test_probability_fusion_rejects_invalid_weight(weight: float) -> None:
             torch.randn(2, 3),
             local_weight=weight,
         )
+
+
+@pytest.mark.parametrize("weight", [-0.1, 1.1])
+def test_global_local_flip_fusion_rejects_invalid_flip_weight(
+    weight: float,
+) -> None:
+    views = [torch.randn(2, 3) for _ in range(4)]
+    with pytest.raises(ValueError, match="flip_weight"):
+        fuse_global_local_flip_probabilities(*views, flip_weight=weight)
 
 
 def test_parse_int_sequence_rejects_duplicates() -> None:

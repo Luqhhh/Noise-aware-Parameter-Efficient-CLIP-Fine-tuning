@@ -207,6 +207,52 @@ def fuse_global_local_probabilities(
     return fused.clamp_min(torch.finfo(fused.dtype).tiny).log()
 
 
+def fuse_global_local_flip_probabilities(
+    global_logits: torch.Tensor,
+    local_logits: torch.Tensor,
+    flipped_global_logits: torch.Tensor,
+    flipped_local_logits: torch.Tensor,
+    *,
+    local_weight: float = 0.5,
+    flip_weight: float = 0.5,
+    temperature: float = 1.0,
+) -> torch.Tensor:
+    """Fuse deterministic global/local streams across original and flipped views."""
+    views = (
+        global_logits,
+        local_logits,
+        flipped_global_logits,
+        flipped_local_logits,
+    )
+    if global_logits.ndim != 2 or any(
+        value.shape != global_logits.shape for value in views[1:]
+    ):
+        raise ValueError("All view logits must have identical [N,C] shapes")
+    if not 0.0 <= local_weight <= 1.0:
+        raise ValueError("local_weight must be in [0, 1]")
+    if not 0.0 <= flip_weight <= 1.0:
+        raise ValueError("flip_weight must be in [0, 1]")
+    if temperature <= 0.0:
+        raise ValueError("temperature must be positive")
+
+    probabilities = [
+        F.softmax(value.float() / temperature, dim=1) for value in views
+    ]
+    global_probabilities = (
+        (1.0 - flip_weight) * probabilities[0]
+        + flip_weight * probabilities[2]
+    )
+    local_probabilities = (
+        (1.0 - flip_weight) * probabilities[1]
+        + flip_weight * probabilities[3]
+    )
+    fused = (
+        (1.0 - local_weight) * global_probabilities
+        + local_weight * local_probabilities
+    )
+    return fused.clamp_min(torch.finfo(fused.dtype).tiny).log()
+
+
 def fuse_global_multilocal_probabilities(
     global_logits: torch.Tensor,
     local_logits: Sequence[torch.Tensor],
