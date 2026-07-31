@@ -1,6 +1,6 @@
 # T76 LoRA Depth-8 Rank-4 执行状态与预注册（2026-07-31）
 
-状态：**M1_CONTROL_RECORDED_CANDIDATE_PENDING**
+状态：**M1_GATE_FAILED_CLOSED_GLOBAL_TRAINING_POSITIVE**
 
 ## 1. 分支、查重与血缘
 
@@ -157,3 +157,28 @@ M1+flip 晋级门：
 - control JSON SHA-256：`54ee60d8b9c9389b172a119e05701fa436cf6c5834eb2907a1295fe924b85f55`。
 
 control 审计通过。按顺序规则，必须先单独提交并推送该结果；随后再次同步 `main`、查重与检查团队 GPU，才允许执行一次 T76 candidate 命令。
+
+## 9. T76 M1+flip 候选结果与最终门禁
+
+再次确认无团队计算进程、候选输出不存在后，固定 candidate 命令只执行一次，48.3 秒成功完成；没有重试、覆盖、参数扫描或事后调参。
+
+- T76 checkpoint SHA-256：`996857951856d743001d837dbd55d7259ed08f1db1479ca91fff5aafd9dd3a23`，与预注册值精确一致。
+- validation samples：10,316；predicted classes：500。
+- candidate JSON SHA-256：`01822177ee662ede5c82b6ed96dfcb56f658c1da66a7990c2f4a9457e261ddac`。
+- control JSON SHA-256：`54ee60d8b9c9389b172a119e05701fa436cf6c5834eb2907a1295fe924b85f55`。
+
+| 指标 | 原始 F1 control | T76 candidate | 差值 | 预注册门禁 |
+|---|---:|---:|---:|---|
+| raw micro | 72.120976% | 72.130668% | +0.009692pp | **FAIL**，要求至少 +0.15pp |
+| clean-core micro | 82.558137% | 82.585180% | +0.027043pp | **FAIL**，要求至少 +0.15pp |
+| trusted macro | 81.653237% | 81.599635% | -0.053603pp | **FAIL**，要求不回退 |
+| proxy macro | 80.265319% | 80.228132% | -0.037187pp | **FAIL**，要求不回退 |
+| raw macro | 72.099763% | 72.113031% | +0.013268pp | 观察项 |
+| clean-core macro | 82.978582% | 82.956862% | -0.021720pp | 观察项 |
+| predicted classes | 500 | 500 | 0 | PASS |
+
+因此，固定 M1+flip 晋级门未通过，当前 T76 路径立即关闭：**不读取 test、不生成提交包、不进行平台评测，也不围绕本次结果扫描 localization 参数**。
+
+该关闭结论不否定第 6 节的全局训练发现。在严格 matched-budget 对照中，depth8-rank4 相对原始 depth4-rank8 的 raw、clean-core、trusted macro 与 proxy macro 均提高约 0.20–0.26pp，说明更广的跨层 LoRA 覆盖是一个可复现价值较高的正交结构信号；但固定 M1 局部—全局融合几乎抹平了该收益。进一步拆分可见，T76 的 local-only raw 比 control 高 +0.029081pp，但无 flip 的 M1 fusion raw 低 -0.019383pp，最终 flip fusion 只剩 +0.009692pp，表明瓶颈位于现有局部融合与新全局表征的匹配，而不是全局模型本身失效。
+
+下一步建议由团队在当前缺失于本机的 W050 重建父 checkpoint 上独立复现 `last8 × rank4 × alpha4`；若再评估 M1/flip0.60，应作为新的、事先注册的独立实验，而不能作为 T76 的事后补救。本 T76 实验至此完整关闭并保留正、负两层结论。
