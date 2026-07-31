@@ -1,6 +1,6 @@
 # T76 LoRA Depth-8 Rank-4 执行状态与预注册（2026-07-31）
 
-状态：**PREREGISTERED_PREFLIGHT_PASSED_NOT_STARTED**
+状态：**TRAINING_AND_STRUCTURE_GATES_PASSED_M1_PENDING**
 
 ## 1. 分支、查重与血缘
 
@@ -68,3 +68,45 @@ PYTHONPATH=$PWD /home/x28639/projects/AegisCLIP-Noise-Robust/.venv/bin/python \
 - trust bundle SHA-256：`52e59a991a5eb3c57abdfabee5647423726f51fbdd3da2ce377467664d173608`。
 
 静态门禁通过，但训练尚未启动。配置与预注册必须先独立提交、推送并建立草稿 PR；随后再次同步 `main`、查重并检查团队进程。
+
+## 6. 正式训练结果
+
+启动前再次确认 `origin/main@f1fe860` 未变化、分支干净、只有本实验 PR #13、无团队 GPU 计算进程、专属输出不存在；正式命令只执行一次。运行从约 23:00:31 至 23:40:19，墙钟时间 2,388.2 秒（39 分 48 秒），退出码 0。图像库仅报告既有 EXIF/透明调色板元数据提示，没有读取失败、非有限损失、数据超时或样本丢失。
+
+Lineage 审计通过：parent/child train 均为 92,902，validation 均为 10,316；双向交叉重叠为 0，标签不一致为 0，父 checkpoint SHA-256 精确匹配预注册值。
+
+训练器按 clean-core selector 选择 epoch 4：
+
+| 指标 | epoch 0 | T76 最佳 epoch 4 | 相对 epoch 0 |
+|---|---:|---:|---:|
+| raw micro | 70.230709% | 70.928657% | +0.697947pp |
+| clean-core micro | 80.759868% | 81.787455% | +1.027584pp |
+| trusted macro | 79.920453% | 80.827421% | +0.906968pp |
+| proxy macro | 78.824830% | 79.648054% | +0.823224pp |
+| mean feature drift | 0.000083% | 0.487214% | +0.487131pp |
+| predicted classes | 500 | 500 | 不变 |
+
+训练器内置 promotion 五项全部通过：selector gain、raw floor、drift budget、500 类覆盖和训练 epoch 选择均为 PASS；权威 `promotion.json passed=true`。
+
+相对原始 F1 的 matched-control 结构门：
+
+| 指标 | 原 F1 epoch 4 | T76 epoch 4 | 差值 | 门槛 |
+|---|---:|---:|---:|---:|
+| raw micro | 70.676619% | 70.928657% | +0.252038pp | ≥-0.10pp |
+| clean-core micro | 81.530559% | 81.787455% | +0.256896pp | ≥+0.20pp |
+| trusted macro | 80.607790% | 80.827421% | +0.219631pp | ≥0pp |
+| proxy macro | 79.447788% | 79.648054% | +0.200266pp | 观察项 |
+| mean feature drift | 0.408131% | 0.487214% | +0.079083pp | T76 ≤1% |
+
+结构门全部通过。该结果支持“固定参数预算，把 LoRA 从后 4 层 rank8 分布到后 8 层 rank4”优于同父、同数据、同训练协议的后层集中方案；它也与 T70-03 的 rank16 负结果形成正交对照。
+
+核心产物：
+
+- `best.pt`（epoch 4）SHA-256：`996857951856d743001d837dbd55d7259ed08f1db1479ca91fff5aafd9dd3a23`。
+- `promotion.json` SHA-256：`afd43776cee39c526339eab44723e49f70581f7e1641167bdbfe78b2ecf931ab`。
+- `best_evaluation.json` SHA-256：`b32f01fc298770049780f3ea4128caf308dc9e9489fda6f433548ece4ff3e58e`。
+- `artifact_manifest.json` SHA-256：`f9c9b05e49e55cd383e202e0a54387e911b7058d5b690e41a58d64e43e61c76a`。
+- `split_lineage_audit.json` SHA-256：`335b812520f1b968cd7759c838e7a4a8d0cd2532e9f741d2cdc3235f1d61afd2`。
+- `metrics.csv` SHA-256：`be9a99998a4eba0762e46420298a4ce5590f256d1718ba8248a990e0a2ccc254`。
+
+按预注册规则，本阶段允许进入一次固定 validation M1+flip 对照，但仍未读取 test、未生成提交包、未进行 prior 或输出拉平。训练结果必须先作为独立提交推送，随后重新同步 `main`、查重与检查团队 GPU。
