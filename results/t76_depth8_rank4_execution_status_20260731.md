@@ -1,6 +1,6 @@
 # T76 LoRA Depth-8 Rank-4 执行状态与预注册（2026-07-31）
 
-状态：**TRAINING_PASSED_M1_PAIR_PREREGISTERED_NOT_STARTED**
+状态：**M1_CONTROL_RECORDED_CANDIDATE_PENDING**
 
 ## 1. 分支、查重与血缘
 
@@ -142,3 +142,18 @@ M1+flip 晋级门：
 - 四项同时通过才允许另行考虑 test 推理；否则保留全局训练正结果，但关闭当前 T76 的测试与提交路径。
 
 执行前必须再次 fetch `main`、查重并检查团队 GPU。先运行原始 F1 对照并审计/记录，再运行 T76 候选；任一命令失败不自动重试。
+
+## 8. 原始 F1 M1+flip 对照结果
+
+同步 `origin/main@0107f73` 后确认新增内容只涉及 R256 负结论与 W060 flip0.60 调优，不含 T76 或代码冲突；本分支已合并最新 `main`。无团队计算进程且 control 输出不存在后，固定 control 命令只执行一次，51.1 秒成功完成。
+
+- checkpoint SHA-256：`7da95e427b959e85cbbf37c99d47d9909b941032e836fc219aaea8e690d72cc4`，与预注册原始 F1 精确一致。
+- validation samples：10,316；predicted classes：500。
+- M1+flip raw micro：72.120976%。
+- trusted macro：81.653237%。
+- proxy macro：80.265319%。
+- clean-core micro：82.558137%。
+- clean-core macro：82.978582%。
+- control JSON SHA-256：`54ee60d8b9c9389b172a119e05701fa436cf6c5834eb2907a1295fe924b85f55`。
+
+control 审计通过。按顺序规则，必须先单独提交并推送该结果；随后再次同步 `main`、查重与检查团队 GPU，才允许执行一次 T76 candidate 命令。
