@@ -1,6 +1,6 @@
 # T77 Value/Output LoRA 执行状态与预注册（2026-07-31）
 
-状态：**PREREGISTERED_STATIC_PASS_TRAINING_PENDING**
+状态：**USER_STOPPED_AFTER_EPOCH2_INVALID_FOR_PROMOTION**
 
 ## 1. 分支、查重与边界
 
@@ -87,3 +87,20 @@ M1+flip 最终门：
 - checkpoint SHA 精确匹配并覆盖 500 类。
 
 任一项失败即关闭 T77：不读 test、不生成提交包、不做 localization/rank/depth/target 扫描。若全部通过，才允许另行进行一次固定 test 推理与合规审计。任何 W050 复现或 flip0.60 重调都必须作为新的独立预注册实验，不能作为 T77 的事后补救。
+
+## 6. 用户停止记录（2026-08-01）
+
+正式命令按预注册只启动一次。用户在 epoch2 完整评估结束、epoch3 训练过程中要求停止，进程组已收到 TERM 并退出，GPU 已释放。该运行没有完成 6 epochs，也没有生成最终 promotion/manifest，因此所有 checkpoint 均标记为**中断产物，不具备晋级、test 或提交资格**；不自动续跑、不从中断点恢复。
+
+截至停止时的完整可审计中间指标：
+
+| 指标 | epoch0 | epoch1 | epoch2 | epoch2 vs epoch0 |
+|---|---:|---:|---:|---:|
+| raw micro | 70.230711% | 70.715392% | 70.851105% | +0.620394pp |
+| clean-core micro | 80.759871% | 81.341267% | 81.584638% | +0.824767pp |
+| trusted macro | 79.920471% | 80.427212% | 80.660397% | +0.739926pp |
+| proxy macro | 78.824788% | 79.350168% | 79.462588% | +0.637800pp |
+| flip agreement | 88.571149% | 88.968593% | 89.143080% | +0.571931pp |
+| mean feature drift | 0.000083% | 0.297827% | 0.418127% | +0.418043pp |
+
+epoch2 已超过预注册 raw 结构阈值 70.826619%，但 clean-core 81.584638% 仍低于 81.680559% 约 0.095921pp；训练曲线仍在上升，然而未完成协议，不能据此宣布 T77 通过或失败。该正向趋势只作为未来重新预注册时的研究依据。
