@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 import random
 import tempfile
@@ -12,7 +13,7 @@ import numpy as np
 import torch
 
 from aegis_clip.config import public_config
-from aegis_clip.model import AegisCLIP, build_model
+from aegis_clip.model import AegisCLIP, build_model, interpolate_visual_positional_embedding
 
 
 def save_checkpoint(
@@ -68,6 +69,29 @@ def load_initial_weights(
     if state is None:
         raise ValueError("Checkpoint does not contain model weights")
     state = dict(state)
+    # Resolution-adaptive init: when the model runs at a different input
+    # resolution than the checkpoint, bicubically interpolate the source
+    # visual position embedding so the backbone patch grid matches the target.
+    # This lets a 224px parent initialise a higher-resolution child.
+    if "visual.positional_embedding" in state and hasattr(model, "visual"):
+        target = getattr(model.visual, "positional_embedding", None)
+        if target is not None and tuple(target.shape) != tuple(
+            state["visual.positional_embedding"].shape
+        ):
+            source = state["visual.positional_embedding"]
+            target_tokens = int(target.shape[0] - 1)
+            source_tokens = int(source.shape[0] - 1)
+            target_size = int(round(math.sqrt(target_tokens)))
+            source_size = int(round(math.sqrt(source_tokens)))
+            if (
+                target_size * target_size == target_tokens
+                and source_size * source_size == source_tokens
+            ):
+                state["visual.positional_embedding"] = (
+                    interpolate_visual_positional_embedding(
+                        source, (target_size, target_size)
+                    )
+                )
     if getattr(model, "peft_mode", None) == "visual_lora":
         _remap_base_weights_for_parametrized_model(model, state)
     incompatible = model.load_state_dict(state, strict=False)

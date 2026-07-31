@@ -1,6 +1,10 @@
 import torch
 
-from aegis_clip.checkpoint import resume_checkpoint, save_checkpoint
+from aegis_clip.checkpoint import (
+    load_initial_weights,
+    resume_checkpoint,
+    save_checkpoint,
+)
 from aegis_clip.losses import EarlyLearningRegularizer
 from aegis_clip.trust_subspace import OnlineTrustGradientSubspace
 
@@ -100,3 +104,40 @@ def test_checkpoint_restores_trust_subspace_auxiliary(tmp_path) -> None:
     projection, ratio = restored.project(torch.tensor([2.0, 3.0]))
     assert torch.equal(projection, torch.tensor([2.0, 0.0]))
     assert 0.0 < ratio < 1.0
+
+
+class ResolutionAwareModel(torch.nn.Module):
+    """Minimal model exposing a visual position embedding for resolution loading."""
+
+    def __init__(self, pos_shape: tuple[int, int]) -> None:
+        super().__init__()
+        self.peft_mode = "frozen"
+        self.visual = torch.nn.Module()
+        self.visual.positional_embedding = torch.nn.Parameter(
+            torch.randn(*pos_shape)
+        )
+        self.classifier = torch.nn.Linear(pos_shape[1], 10)
+
+
+def test_load_initial_weights_interpolates_position_embedding(tmp_path) -> None:
+    # 224px = 7x7 patches + CLS = 50 tokens; 288px = 9x9 + CLS = 82 tokens.
+    source = ResolutionAwareModel((50, 512))
+    path = tmp_path / "source.pt"
+    torch.save({"model_state_dict": source.state_dict()}, path)
+    target = ResolutionAwareModel((82, 512))
+    original_positions = target.visual.positional_embedding[1:].clone()
+    load_initial_weights(target, path, torch.device("cpu"))
+    assert tuple(target.visual.positional_embedding.shape) == (82, 512)
+    # CLS token is preserved exactly by the bicubic interpolation.
+    assert torch.allclose(
+        target.visual.positional_embedding[0],
+        source.visual.positional_embedding[0],
+        atol=1.0e-6,
+    )
+    # The checkpoint's 49-grid positions were interpolated into the 81-grid
+    # (proves the load actually replaced the target's random init).
+    assert not torch.allclose(
+        target.visual.positional_embedding[1:],
+        original_positions,
+        atol=1.0e-4,
+    )
