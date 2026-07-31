@@ -2,11 +2,11 @@
 
 > **历史快照**：本页记录 2026-07-16 至 2026-07-17 的独立工程验证，不是当前项目总状态。2026-07-22 完成的 Phase 4 结论见主仓库 `docs/phase4_results.md`；当前验收见 `CURRENT_STAGE_ACCEPTANCE.md`。
 
-记录日期：2026-07-16；最近更新：2026-07-17。这里只记录本工程真实运行得到的证据，不把烟雾测试或历史项目成绩写成正式竞赛结果。
+记录日期：2026-07-16；最近更新：2026-07-22。这里只记录本工程真实运行得到的证据，不把烟雾测试、本地诊断或历史项目成绩写成正式竞赛结果。
 
 ## 工程门禁
 
-- 自动测试：40/40 通过；
+- 初始自动测试：40/40 通过；最新团队整合快照：201/201 通过；
 - Python：3.12.3；
 - PyTorch：2.13.0+cu130；
 - GPU：NVIDIA GeForce RTX 4060 Laptop GPU；
@@ -138,3 +138,30 @@ D1 使用完整官方训练集进行固定 7 epoch 的最终重训，并从 D0 �
 - 预测数量：24,967；损坏图片：0；提交包已通过允许 TTA 的独立审计。
 
 结论：D1 Flip TTA 的有效平台成绩为 **59.85%**；队长仅确认 Bare 平台成绩更低，但尚未提供精确值。因此可以确认水平翻转 TTA 带来正收益，但暂时无法量化具体提升幅度。
+
+## T0/T1：可信梯度子空间实现门禁（2026-07-22）
+
+- 严格配对配置已加入：T0/T1 只允许 `experiment_id` 与 `trust.subspace_projection.mode` 不同；自动测试逐字段验证；
+- rank-8 FIFO 两遍 MGS、AMP-safe 梯度构造、checkpoint auxiliary state 恢复和自动 gate 均通过 CPU 单元测试；
+- 团队整合后完整回归：`201 passed in 7.54s`；
+- T0/T1 正式 GPU 训练均未启动，未生成 validation cache、test 预测或提交 ZIP；
+- 因此当前状态只能写作 `pre_registered / not_run`，不得写作正向实验结果或平台候选。
+
+权威协议：[`T1_F1_TRUST_SUBSPACE_GRADIENT_PROTOCOL_2026-07-22.md`](T1_F1_TRUST_SUBSPACE_GRADIENT_PROTOCOL_2026-07-22.md)。
+
+## U0：数字类别 Prompt 可行性审计（2026-07-22）
+
+冻结 OpenAI CLIP ViT-B/32，固定模板 `a photo of a {class_id}`，只在官方 train 内固定 validation 上运行；没有读取 test、没有训练参数、没有生成提交。
+
+| 指标 | 结果 |
+|---|---:|
+| raw validation accuracy | `0.232648%` |
+| clean-core accuracy | `0.229854%` |
+| 有预测类别 | `210 / 500` |
+| 文本两两非对角余弦均值 | `0.978551` |
+| 90% / 99% 能量秩 | `1 / 5` |
+| 与 F1 同 ID 权重余弦均值 | `-0.010036` |
+
+产物 `audit.json` SHA-256 为 `694a114eb3dced2b7b298d50948e5738988bc3965d58b0779b7c19efb261cff1`；独立输出路径重跑哈希相同且逐字节一致。结论仅为 direct numeric shared-context CoOp infeasible；这是 `local_audit_only`，不是平台成绩。
+
+权威记录：[`U0_NUMERIC_CLASS_PROMPT_FEASIBILITY_AUDIT_2026-07-22.md`](U0_NUMERIC_CLASS_PROMPT_FEASIBILITY_AUDIT_2026-07-22.md)。

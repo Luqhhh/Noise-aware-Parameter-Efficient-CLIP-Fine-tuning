@@ -75,6 +75,12 @@
 - **总判断**：Phase 4 没有平台候选，普通 LoRA/routing/trust 参数搜索停止。完整数据见 `docs/phase4_results.md` 和 `results/phase4_experiments.csv`。
 - **推理侧单独进展**：独立研发侧报告 F1 + M1 63.3276%，高于本仓库已审计 Flip TTA；因本地缺少 ZIP SHA-256，仅作为 `reported_unverified` 锚点。
 
+## A2 LoRA 平台测试结果（2026-07-22）
+
+- A2_LORA_MIN：裸推理 **61.1167%**；horizontal_flip TTA **61.6574%**。
+- A2_LORA_FULL：裸推理 **61.5733%**；horizontal_flip TTA **62.1781%**。
+- 当前 A2 LoRA 消融最高为 **A2_LORA_FULL + TTA 62.1781%**；详见 [A2 LoRA 平台结果](docs/a2_lora_platform_results_2026-07-22.md)。
+
 # 发现（2026-07-21）
 
 ## A2_AEGIS_PARENT_SWAP：Split-lineage 协议修复与最终结论

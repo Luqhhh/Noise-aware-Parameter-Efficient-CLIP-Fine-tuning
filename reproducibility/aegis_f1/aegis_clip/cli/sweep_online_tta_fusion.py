@@ -16,6 +16,7 @@ from aegis_clip.data import OnlineImageDataset, TrustBundle
 from aegis_clip.evaluation import weighted_accuracy, weighted_macro_accuracy
 from aegis_clip.features import FrozenFeatureStore
 from aegis_clip.multiprototype import blend_multiprototype_logits
+from aegis_clip.prior_alignment import align_logits_to_prior
 from aegis_clip.runtime import atomic_json_dump, seed_worker, set_seed, sha256_file
 from aegis_clip.tta import TTA_FUSION_MODES, fuse_paired_logits
 
@@ -69,6 +70,14 @@ def main() -> None:
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--temperatures", type=_parse_floats, default=[0.5, 1.0, 2.0])
+    parser.add_argument("--prior-strengths", type=_parse_floats, default=[])
+    parser.add_argument(
+        "--prior-mode",
+        choices=["none", *sorted(TTA_FUSION_MODES)],
+        default="mean_probabilities",
+    )
+    parser.add_argument("--prior-temperature", type=float, default=0.5)
+    parser.add_argument("--prior-iterations", type=int, default=50)
     parser.add_argument("--selection-metric", default="clean_core_micro")
     parser.add_argument("--device", default="cuda")
     args = parser.parse_args()
@@ -78,7 +87,9 @@ def main() -> None:
     device = torch.device(
         args.device if args.device != "cuda" or torch.cuda.is_available() else "cpu"
     )
-    model, preprocess, checkpoint = build_from_checkpoint(args.checkpoint, device)
+    model, preprocess, checkpoint = build_from_checkpoint(
+        args.checkpoint, device, config_override=config
+    )
     feature_config = config["features"]
     feature_store = FrozenFeatureStore(
         feature_config["tensor_path"],
@@ -186,6 +197,32 @@ def main() -> None:
                     "mode": mode,
                     "temperature": float(temperature),
                     **_metrics(scores, **metric_arguments),
+                }
+            )
+    if args.prior_strengths:
+        prior_base = (
+            first
+            if args.prior_mode == "none"
+            else fuse_paired_logits(
+                first,
+                second,
+                mode=args.prior_mode,
+                temperature=float(args.prior_temperature),
+            )
+        )
+        for strength in args.prior_strengths:
+            aligned, alignment_report = align_logits_to_prior(
+                prior_base,
+                strength=float(strength),
+                max_iterations=int(args.prior_iterations),
+            )
+            rows.append(
+                {
+                    "mode": f"{args.prior_mode}+balanced_prior",
+                    "temperature": float(args.prior_temperature),
+                    "prior_strength": float(strength),
+                    "prior_alignment": alignment_report,
+                    **_metrics(aligned, **metric_arguments),
                 }
             )
     if args.selection_metric not in rows[0]:

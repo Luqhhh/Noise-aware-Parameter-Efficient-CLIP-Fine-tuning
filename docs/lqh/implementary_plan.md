@@ -1,3 +1,9 @@
+## A2 LoRA 平台测试结果（2026-07-22）
+
+- A2_LORA_MIN：裸推理 **61.1167%**；horizontal_flip TTA **61.6574%**。
+- A2_LORA_FULL：裸推理 **61.5733%**；horizontal_flip TTA **62.1781%**。
+- 当前 A2 LoRA 消融最高为 **A2_LORA_FULL + TTA 62.1781%**；详见 [A2 LoRA 平台结果](../a2_lora_platform_results_2026-07-22.md)。
+
 # NR_COMBINED_UPGRADE 实施计划
 
 > 在 A2 kNN consensus drop 的基础上，叠加 AEGIS F1 的 visual LoRA + clean filter + feature distillation

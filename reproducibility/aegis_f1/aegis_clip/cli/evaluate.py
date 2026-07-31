@@ -35,14 +35,17 @@ def main() -> None:
     device = torch.device(
         args.device if args.device != "cuda" or torch.cuda.is_available() else "cpu"
     )
-    model, preprocess, checkpoint = build_from_checkpoint(args.checkpoint, device)
+    config = load_config(args.config) if args.config else None
+    model, preprocess, checkpoint = build_from_checkpoint(
+        args.checkpoint, device, config_override=config
+    )
     multiprototype_head = checkpoint.get("multiprototype_head")
     if multiprototype_head is not None:
         multiprototype_head = dict(multiprototype_head)
         multiprototype_head["prototypes"] = multiprototype_head["prototypes"].to(
             device=device, dtype=torch.float32
         )
-    config = load_config(args.config) if args.config else checkpoint["config"]
+    config = config or checkpoint["config"]
     evaluation_config = config.get("evaluation", {})
     measure_flip_consistency = bool(
         evaluation_config.get("measure_flip_consistency", False)

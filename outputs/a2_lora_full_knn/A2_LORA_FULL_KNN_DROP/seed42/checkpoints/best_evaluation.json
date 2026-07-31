@@ -1,0 +1,23 @@
+{
+  "clean_core_macro": 0.7028953433036804,
+  "clean_core_micro": 0.7028676867485046,
+  "clean_core_samples": 10322,
+  "clean_core_threshold": 0.7,
+  "flip_prediction_agreement": 0.8830652832984924,
+  "inference_mode": "none",
+  "mean_cross_entropy": 1.7259821891784668,
+  "mean_feature_cosine": 0.995639979839325,
+  "mean_feature_drift": 0.004360020160675049,
+  "prediction_head": "linear",
+  "proxy_macro": 0.7028953433036804,
+  "proxy_micro": 0.7028676867485046,
+  "raw_macro": 0.7028953433036804,
+  "raw_micro": 0.7028676867485046,
+  "samples": 10322,
+  "selector": 0.7028676867485046,
+  "selector_metric": "raw_micro",
+  "trusted_macro": 0.7028953433036804,
+  "trusted_micro": 0.7028676867485046,
+  "tta_fusion": "none",
+  "tta_temperature": 1.0
+}

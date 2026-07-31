@@ -1,0 +1,88 @@
+{
+  "data": {
+    "class_mapping": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/data/master_splits/seed42/class_to_idx.json",
+    "expected_official_train_samples": 103218,
+    "expected_test_samples": 24967,
+    "external_data": false,
+    "test_root": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning",
+    "test_usage": "inference_only",
+    "train_augmentation": "weak_rrc_flip",
+    "train_csv": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/a2_lora_min_knn_split_train.csv",
+    "train_root": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning",
+    "val_csv": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/a2_lora_full_knn_split_val.csv"
+  },
+  "evaluation": {
+    "batch_size": 128,
+    "drift_budget": 0.01,
+    "drift_penalty": 2.0,
+    "inference_batch_size": 128,
+    "measure_flip_consistency": true,
+    "selector_metric": "raw_micro"
+  },
+  "features": {
+    "manifest_path": null,
+    "paths_path": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/cache/preliminary/clip_vit_b32_openai/image_paths.json",
+    "tensor_path": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/cache/preliminary/clip_vit_b32_openai/features.pt"
+  },
+  "loss": {
+    "epsilon": 1e-07,
+    "feature_distillation_weight": 2.0,
+    "gce_q": 0.5,
+    "mixup_alpha": 0.2,
+    "mixup_probability": 0.2,
+    "name": "gce"
+  },
+  "model": {
+    "backbone": "ViT-B/32",
+    "feature_dim": 512,
+    "lora_adapt_out": true,
+    "lora_adapt_qv": true,
+    "lora_alpha": 16.0,
+    "lora_last_n_blocks": 4,
+    "lora_rank": 8,
+    "num_classes": 500,
+    "peft_mode": "visual_lora",
+    "pretrained": "openai",
+    "use_cached_training": false
+  },
+  "output": {
+    "root": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/a2_lora_full_knn"
+  },
+  "project": {
+    "experiment_id": "A2_LORA_FULL_KNN_DROP",
+    "seed": 42,
+    "stage": "preliminary"
+  },
+  "train": {
+    "amp": true,
+    "backbone_lr": 2e-05,
+    "backbone_weight_decay": 0.0,
+    "batch_size": 64,
+    "deterministic": true,
+    "device": "cuda",
+    "early_stop_patience": 0,
+    "epochs": 6,
+    "head_lr": 0.005,
+    "head_weight_decay": 0.0001,
+    "init_checkpoint": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/a2_parent/seed42/checkpoints/A2_NR_CL_KNN_DROP_seed42_best.pt",
+    "loader_timeout": 120,
+    "lr_warmup_epochs": 1,
+    "max_grad_norm": 1.0,
+    "num_workers": 4,
+    "pin_memory": true,
+    "prefetch_factor": 1
+  },
+  "trust": {
+    "anchor_threshold": 0.7,
+    "bundle_path": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/a2_lora_full_knn/seed42/knn_drop_trust.pt",
+    "correction_start_epoch": 1,
+    "enabled": true,
+    "gradient_projection": {
+      "enabled": false
+    },
+    "minimum_sample_weight": 0.0,
+    "rejected_sample_weight": 0.0,
+    "selection_threshold": 0.0,
+    "weighting_start_epoch": 1
+  }
+}

@@ -1,0 +1,5 @@
+experiment,cache,scope,raw_micro_delta_pp,trusted_macro_delta_pp,clean_core_micro_delta_pp,prediction_count_cv_reduction_pct,max_row_error,max_column_error,solver_converged,gate_passed,decision,platform_score,test_data_used
+V1_F1_M1_KNOWN_BALANCED_PRIOR_TRANSPORT,F1+M1,local_validation_cache,0.300503,0.368792,0.229853,50.026,0.00174832,0.000011444,false,false,closed_no_test_inference,,false
+V1_F1_M1_KNOWN_BALANCED_PRIOR_TRANSPORT,A2+M1,local_validation_cache,-0.077504,0.140643,0.069308,51.074,0.000663519,0.000011444,false,false,closed_no_test_inference,,false
+V2_F1_M1_CONVERGED_KNOWN_BALANCED_PRIOR_TRANSPORT,F1+M1,local_validation_cache,0.300503,0.368792,0.229853,50.026,0.000008702278,0.000009536743,true,false,closed_no_test_inference,,false
+V2_F1_M1_CONVERGED_KNOWN_BALANCED_PRIOR_TRANSPORT,A2+M1,local_validation_cache,-0.077504,0.140721,0.069308,51.130,0.000000596046,0.000013351440,false,false,closed_no_test_inference,,false

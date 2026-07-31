@@ -50,7 +50,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 ### 5. 测试覆盖
 
-根目录 `tests/` 当前包含 405 个可收集测试。2026-07-30 实跑 `pytest -q tests` 的结果为 **402 passed、1 skipped、2 failed**：集成烟雾测试在 CPU 单进程 DataLoader 上因非零 `timeout` 失败，OOF soft-target 测试因 float32 精确相等断言失败。两项均已记录为现存测试问题，当前不能声明全量测试通过。重点覆盖包括：
+根目录 `tests/` 当前包含 405 个可收集测试。2026-07-30 实跑 `pytest -q tests` 的结果为 **402 passed、1 skipped、2 failed**：集成烟雾测试在 CPU 单进程 DataLoader 上因非零 `timeout` 失败，OOF soft-target 测试因 float32 精确相等断言失败。两项均已记录为现存测试问题，当前不能声明全量测试通过；Aegis 隔离实验线另有 **201 项测试全部通过**。重点覆盖包括：
 - `test_partial_unfreeze.py`（16 tests）：参数冻结/解冻、train mode 行为
 - `test_discriminative_optimizer.py`（11 tests）：参数组结构、LR/WD 正确性、覆盖率
 - `test_init_checkpoint.py`（4 tests）：权重加载、跨架构兼容、requires_grad 保持
@@ -59,8 +59,9 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - `test_best_checkpoint_post_eval.py`（4 tests）：best.pt 重载、strict load 校验
 - `test_metric_consistency.py`（7 tests）：micro-macro gap 一致性、bottom-10% 计算
 - `test_submission_manifest.py`（18 tests）：SHA-256 哈希、ZIP vs CSV hash 区分、标签格式、预测计数、重复登记拒绝、manifest schema
+- Aegis 独立套件：配置合规、LoRA/AdaptFormer/visual prompt、OOF 重建、局部推理、M1/M3、多类噪声诊断、Q1 trajectory、T0/T1 可信梯度子空间与 U0 数字 Prompt 审计；最新隔离整合回归 `201 passed`
 
-### 6. 平台结果总览（updated 2026-07-30）
+### 6. 平台结果总览（updated 2026-07-31）
 
 **跨推理协议的已知平台锚点：**
 
@@ -79,6 +80,9 @@ M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归�
 
 | 实验 | 平台 TTA | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
+| **AEGIS F1 + M1 attention-local/global** | **63.33%** | **+5.99pp** | center + attention-local，1:1 概率均值 |
+| **A2 + M1 attention-local/global** | **62.67%** | **+5.33pp** | center + attention-local，1:1 概率均值 |
+| **A2 + M3 complementary fusion** | **62.03%** | **+4.69pp** | Flip 分支 + M1 分支，1:1 概率均值 |
 | **NR_CL_KNN_DROP (A2, kNN consensus drop, seed=42)** | **61.21%** | **+3.87pp** | 2-view Flip TTA |
 | **A2 STRICT (A2 parent + LoRA, lineage-fixed, seed=42)** | **61.15%** | **+3.81pp** | Flip mean-prob T=0.5 |
 | AEGIS F1 (visual LoRA, clean≥0.7, distill) | 61.10% | +3.76pp | Flip mean-prob T=0.5 |
@@ -132,20 +136,25 @@ M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归�
 
 **已审计基线定义：**
 - **平台 Bare 最佳**：A2 STRICT = **60.65%**（A2 parent + visual LoRA rank-8, clean filter, distill）
-- **平台 TTA 最佳**：A2 seed=42 = **61.21%**（frozen CLIP + GCE q=0.5 + MixUp + kNN consensus drop）
+- **平台多视图推理最佳**：F1 + M1 = **63.3276%**（F1 visual LoRA + attention-local/global probability fusion）
+- **平台普通 Flip TTA 最佳**：A2 seed=42 = **61.2128%**（frozen CLIP + GCE q=0.5 + MixUp + kNN consensus drop）
 - **最佳冻结合理期望**：约 60.76% TTA（A2 两 seed 平均）
 - **训练基线**：s_d3_mixup (GCE q=0.5 + MixUp, d3_strict) —— 所有 OOF 实验的配对对照
 
 **核心发现（2026-07-22 修订）：**
+- **attention-local/global 是当前最强跨模型信号**：M1 相对 F1 Flip 提升 +2.2269pp，相对 A2 Flip 提升 +1.4619pp；F1 + M1 达到 63.3276%。
+- **更多视图不等于更好**：A2 + M3 平台 62.0259%，比纯 A2 + M1 低 0.6488pp。带噪本地排序不能代替平台验证，M3 只保留作消融。
 - **Purification 精度 > 覆盖面**：删 991 个高精度样本 > 删 6354 个中精度 > 删 8680 个低精度。精度碾压数量。
 - **删除 > 重标**：A3 五信号共识 relabel 100 个样本（0.1%）反而有害（−0.42pp）。OOF 预测准确率 ~69% 不足以支撑可靠重标。当你确定标签错了但不确定正确答案时，删除比重标更安全。
 - **冻结 CLIP + GCE + MixUp 上限已触达**：A0→A2 本地 paired delta 仅 +17 张图（0.165pp, p=0.196），平台天花板 ~60.5-61% TTA。Purification 的边际增益已饱和。
 - **单 seed 不可靠**：A2 seed=42 TTA 61.21% vs seed=3407 TTA 60.31% = 0.90pp 波动。所有候选必须在 seed=3407 上验证后才能宣称收益。
 - **本地 val 与平台持续反相关**：A3 本地最高（69.47%）平台最差（59.89%）。本地分数不能用于模型选择。
 - **Visual LoRA 的增益成立但已进入边际区**：AEGIS F1 证明干净监督上的 LoRA 有效；A2 parent swap (STRICT) 将 Bare 提升至 60.65%，但 Phase 4 的 routing、prototype-contrastive、dynamic trust 等后续机制均未达到晋级门槛。
+- **表示适配与细粒度局部推理互补**：AEGIS F1 证明干净监督下的 visual LoRA 能贡献 bare 增益；M1 又在 F1 上获得比 A2 更大的平台提升，说明局部细节视图与 LoRA 表示适配存在正协同。
 - **Split-lineage protocol 至关重要**：原始 A2 parent swap 因 parent (d3_strict) 与 child (AEGIS prepare) 使用不同 split，导致本地 raw_micro 从真实 69.43% 假胀至 79.22%（+8.5pp 假信号）。修复后 epoch-0 baseline 精确匹配，证实验证必须与训练用同一 split。
 - **A2 parent swap 确认成立**：双 seed promotion 通过，bare +0.14pp, TTA +0.05pp vs F1 E2 parent。方向正确但收益太小，不进参数搜索。
 - **Phase 4 全部关闭**：结构化 Head、同轨迹 checkpoint averaging、Clean-Routed LoRA、Trusted Prototype-Contrastive、Dynamic Trust Refresh 均未通过预注册 gate；详见 [`docs/phase4_results.md`](docs/phase4_results.md)。
+- **数字类别不能直接继承语义 Prompt 鲁棒性**：U0 固定数字 Prompt 的 raw/clean-core 仅 0.232648%/0.229854%，500 个文本方向的 90% 能量秩为 1；direct numeric shared-context CoOp 已关闭。该结论是 train/validation-only 本地审计，不是平台成绩，也不排除另行设计视觉原型锚定 soft token。
 
 ### 7. 本地评估与当前状态
 
@@ -178,7 +187,7 @@ M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归�
 本仓库内不再继续普通 LoRA、routing 或 trust 参数搜索。下一步按以下顺序：
 
 1. ✅ F1 rebuild + M1/Flip 0.40/0.50 包已按 ZIP SHA-256 回填真实平台分数 **63.7802%**（新平台最佳）；
-2. 回填独立研发侧 F1/A2 + M1 的完整提交哈希，以及 F2/O1/N3 的真实平台结果；
+2. 平台名额优先用于已经完成训练和审计的 **F2 + M1 → O1 + M1 → N3 + M1**（完整独立实验总账见 [`docs/aegis_independent_experiments_2026-07-22.md`](docs/aegis_independent_experiments_2026-07-22.md)）；O3-R1、Q1A、R1 与 T0/T1 尚未运行，T0/T1 需明确授权后才可启动；
 3. 若继续研究，必须建立新的机制协议；当前 Phase 4 决策树和 A2 STRICT 推理权重搜索均已走完，不能把未过 gate 的候选重新包装为下一轮调参。
 
 ## 项目结构
@@ -190,8 +199,9 @@ M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归�
 │   └── cosine/          # Cosine Head 实验（委托 baseline）
 ├── configs/             # 每个实验一个 YAML
 ├── scripts/             # 数据准备、超参搜索、去重仲裁、提交验证
-├── tests/               # 405 项：402 passed / 1 skipped / 2 failed（2026-07-30）
-├── reproducibility/     # 隔离的外部实验快照（含 AEGIS F1）
+├── tests/               # 团队根测试套件（405 项：402 passed / 1 skipped / 2 failed，2026-07-30）
+├── reproducibility/     # 隔离的 Aegis 独立实验线（含 F1 rebuild + M1/Flip，201 项测试）
+
 ├── outputs/             # 实验结果（tracked in git，*.pt 忽略）
 └── docs/superpowers/    # 设计文档与实施计划
 ```
