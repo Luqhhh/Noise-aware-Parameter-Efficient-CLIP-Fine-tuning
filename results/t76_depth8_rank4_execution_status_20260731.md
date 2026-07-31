@@ -1,6 +1,6 @@
 # T76 LoRA Depth-8 Rank-4 执行状态与预注册（2026-07-31）
 
-状态：**TRAINING_AND_STRUCTURE_GATES_PASSED_M1_PENDING**
+状态：**TRAINING_PASSED_M1_PAIR_PREREGISTERED_NOT_STARTED**
 
 ## 1. 分支、查重与血缘
 
@@ -110,3 +110,35 @@ Lineage 审计通过：parent/child train 均为 92,902，validation 均为 10,3
 - `metrics.csv` SHA-256：`be9a99998a4eba0762e46420298a4ce5590f256d1718ba8248a990e0a2ccc254`。
 
 按预注册规则，本阶段允许进入一次固定 validation M1+flip 对照，但仍未读取 test、未生成提交包、未进行 prior 或输出拉平。训练结果必须先作为独立提交推送，随后重新同步 `main`、查重与检查团队 GPU。
+
+## 7. 固定 validation M1+flip 成对对照预注册
+
+为避免把 T76 与不同父模型的团队重建版 F1 混为一谈，M1+flip 阶段固定为同一 archived-E2 血缘的两次确定性 validation 推理：原始 F1 对照与 T76 候选。两者都使用同一 T76 配置提供 validation/trust 元数据，只改变 checkpoint；不扫描 localization 参数。
+
+固定参数：attention top-5、crop160、local weight 0.40、水平翻转、flip weight 0.50、temperature 1.0、batch128。
+
+原始 F1 对照命令：
+
+```bash
+cd /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning-t76-d8r4/reproducibility/aegis_f1
+PYTHONPATH=$PWD /home/x28639/projects/AegisCLIP-Noise-Robust/.venv/bin/python \
+  -m aegis_clip.cli.sweep_localization \
+  --checkpoint /home/x28639/projects/AegisCLIP-Noise-Robust/outputs/F1_VISUAL_LORA_CLEAN_CORE/seed42/checkpoints/best.pt \
+  --config configs/t76_f1_depth8_rank4_archived_e2.yaml \
+  --output outputs/T76_F1_DEPTH8_RANK4_ARCHIVED_E2/seed42/localization/m1_flip_control_original_f1_l040_f050.json \
+  --crop-sizes 160 --top-ks 5 --local-weights 0.4 \
+  --include-horizontal-flip --flip-weights 0.5 \
+  --temperature 1.0 --batch-size 128
+```
+
+T76 候选命令与上式完全相同，只把 checkpoint 换为本实验 `best.pt`，输出换为 `m1_flip_candidate_t76_l040_f050.json`。两次命令各只执行一次，不使用 `--overwrite`。
+
+M1+flip 晋级门：
+
+- T76 raw micro 至少高于原始 F1 `+0.15pp`；
+- T76 clean-core micro 至少高于原始 F1 `+0.15pp`；
+- trusted macro 与 proxy macro 均不得回退；
+- 两者均覆盖 500 类，checkpoint SHA-256 与预注册值一致；
+- 四项同时通过才允许另行考虑 test 推理；否则保留全局训练正结果，但关闭当前 T76 的测试与提交路径。
+
+执行前必须再次 fetch `main`、查重并检查团队 GPU。先运行原始 F1 对照并审计/记录，再运行 T76 候选；任一命令失败不自动重试。
