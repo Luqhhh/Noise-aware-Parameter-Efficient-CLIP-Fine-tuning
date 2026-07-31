@@ -2,7 +2,7 @@
 
 每个子目录对应一个实验，包含 checkpoint、训练日志、评估结果和提交文件。
 
-> **状态核对：2026-07-30；最新实验：2026-07-30。** 当前权威实验结论见根目录 `README.md`、`CURRENT_STAGE_ACCEPTANCE.md` 和 `results/f1_rebuild_20260730.md`。本文件中的早期“最佳”均按当时阶段理解。
+> **状态核对：2026-07-31；最新实验：2026-07-31。** 当前权威实验结论见根目录 `README.md`、`CURRENT_STAGE_ACCEPTANCE.md`、`results/f1_rebuild_20260730.md` 和 `results/m1_flip_optimization_20260730.md`。本文件中的早期“最佳”均按当时阶段理解。
 
 ## 基线
 
@@ -87,7 +87,8 @@ Cosine head 在所有学习率下均显著弱于 linear head（~6pp 差距），
 
 | 提交 | 平台分数 | 证据状态 |
 |------|---------:|----------|
-| **AEGIS F1 + M1** | **63.3276%** | 独立研发侧已报告；本仓库待补 ZIP SHA-256 |
+| **F1 REBUILD R1 + M1/Flip 0.40/0.50** | **63.7802%** | 已审计（新平台最佳）；checkpoint/prediction/ZIP 哈希齐全 |
+| AEGIS F1 + M1 | 63.3276% | 独立研发侧已报告；本仓库待补 ZIP SHA-256 |
 | F1 REBUILD R1 + M1 weight 0.35 | 62.9791% | checkpoint/prediction/ZIP 哈希齐全 |
 | A2 + M1 | 62.6747% | 独立研发侧已报告；待补 checkpoint/ZIP 哈希 |
 | A2 + M3 | 62.0259% | 独立研发侧已报告；待补推理 manifest 和哈希 |
@@ -123,6 +124,11 @@ M1/M3 与 Bare、Flip TTA 是不同推理协议。完整证据状态见 `results
 `02d37906accdf6b49e40733b4e675220f0177b5d71c5662984de68df5e781bb6`，
 平台 62.9791%，状态 `platform_valid_not_promoted`；详见
 `results/f1_rebuild_20260730.md`。
+
+同日新增的 M1 + Flip 候选使用同一 F1 REBUILD R1 checkpoint，ZIP SHA-256 为
+`67f4eda57291e34096edcb0545b142fd0a3114fb1c76eb1e17996afe87d692e0`，
+平台 **63.7802%**，状态 `platform_valid_promoted`，新的审计完整平台最佳；详见
+`results/m1_flip_optimization_20260730.md`。
 
 Phase 4 的原始运行产物位于 `reproducibility/aegis_f1/outputs/`，受该子工程 `.gitignore` 控制；关键结果已抽取到受 Git 跟踪的 `docs/phase4_results.md` 和 `results/phase4_experiments.csv`。
 

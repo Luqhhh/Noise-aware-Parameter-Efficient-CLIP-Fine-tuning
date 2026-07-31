@@ -2,7 +2,7 @@
 
 ## Scope
 
-本验收状态覆盖主仓库截至 `7c8b966` 的历史代码、截至 2026-07-22 的训练产物，以及 2026-07-30 新增的 M1 attention-local 推理优化、局部特征 Adapter 实验和同 split E2→F1 严格重建。A2 STRICT Adapter 未通过 gate；F1 重建通过 gate，M1 平台为 62.9791%。
+本验收状态覆盖主仓库截至 `7c8b966` 的历史代码、截至 2026-07-22 的训练产物，以及 2026-07-30 新增的 M1 attention-local 推理优化、局部特征 Adapter 实验、同 split E2→F1 严格重建和 M1 + Flip 四视图融合。A2 STRICT Adapter 未通过 gate；F1 重建通过 gate，M1 平台为 62.9791%；M1 + Flip 平台实测 63.7802%，新的审计完整平台最佳。
 
 原 `docs/phase4_plan.md` 已确认有意删除，并由以下最终产物取代：
 
@@ -18,9 +18,10 @@
 
 | Experiment | Inference | Platform | Evidence status |
 |---|---|---:|---|
-| AEGIS F1 | M1 attention-guided local crop | **63.3276%** | `reported_unverified`：本仓库缺 ZIP SHA-256 |
-| F1 REBUILD R1 seed 42 | crop160 / top5 / global 0.65 + local 0.35 | **62.9791%** | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
-| A2 STRICT seed 42 | crop160 / top5 / global 0.65 + local 0.35 | **62.6870%** | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
+| F1 REBUILD R1 seed 42 | crop160 / top5 / local 0.40 + Flip 0.50 | **63.7802%** | `audited`（新平台最佳）：checkpoint/prediction/ZIP 哈希齐全 |
+| AEGIS F1 | M1 attention-guided local crop | 63.3276% | `reported_unverified`：本仓库缺 ZIP SHA-256 |
+| F1 REBUILD R1 seed 42 | crop160 / top5 / global 0.65 + local 0.35 | 62.9791% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
+| A2 STRICT seed 42 | crop160 / top5 / global 0.65 + local 0.35 | 62.6870% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | A2 | M1 attention-guided local crop | 62.6747% | `reported_unverified`：缺 checkpoint/ZIP 哈希 |
 | A2 | M3 | 62.0259% | `reported_unverified`：缺推理 manifest/哈希 |
 
@@ -56,6 +57,20 @@ clean-core `+0.9548pp`，trusted/proxy 同向。
 已审计通过，平台 **62.9791%**，比 A2 STRICT + M1 高 `0.2921pp`，比已报告
 原 F1 + M1 低 `0.3485pp`，状态 `platform_valid_not_promoted`。
 完整证据见 `results/f1_rebuild_20260730.md`。
+
+## M1 + Flip Candidate Acceptance
+
+F1 REBUILD R1 上固定 `crop160/top5` 的 8 点有界扫描完成。选中
+`local_weight=0.40, flip_weight=0.50`：相对 62.9791 对应的 M1 weight 0.35，
+raw `+0.3296pp`、trusted macro `+0.1520pp`、proxy macro `+0.1340pp`、
+clean-core micro `+0.2728pp`、clean-core macro `+0.0931pp`，覆盖 500 类。
+
+提交包 `67f4eda57291e34096edcb0545b142fd0a3114fb1c76eb1e17996afe87d692e0`
+经 24,967 条预测、500 类、ZIP 单文件和哈希一致性审计通过。平台实测
+**63.7802%**，状态 `platform_valid_promoted`，新的审计完整平台最佳：相对
+62.9791 对应协议 `+0.8011pp`、相对已报告原 F1 + M1 63.3276% `+0.4526pp`。
+这是带水平翻转 TTA 的单 checkpoint 四视图概率融合，不能与无 Flip M1 混成
+相同推理协议。完整证据见 `results/m1_flip_optimization_20260730.md`。
 
 ## Phase 4 Final Acceptance
 
@@ -117,3 +132,4 @@ Phase 4 没有平台候选，不补多 seed，不继续 threshold/rank/lr 网格
 - [x] A2 STRICT 局部特征 Adapter 负结果与 gate 证据已归档
 - [x] E2→F1 重建与 M1 新候选完成审计
 - [x] F1 重建 M1 平台 62.9791% 已按审计哈希回填
+- [x] F1 重建 M1 + Flip 候选平台 63.7802% 已回填，新的平台最佳

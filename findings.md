@@ -1,4 +1,22 @@
-# 最新发现（2026-07-30）
+# 最新发现（2026-07-31）
+
+## M1 + Flip 四视图融合：平台 63.7802%，新的审计完整平台最佳
+
+- 对 F1 REBUILD R1 的原图/翻转图分别提取 global 与 attention-local 概率，在单
+  checkpoint 内进行确定性四视图融合。
+- 有界 8 点扫描的最佳 raw 点为 `local_weight=0.40, flip_weight=0.50`；相对
+  62.9791 包对应的 M1 weight 0.35，raw `+0.3296pp`、trusted macro
+  `+0.1520pp`、proxy macro `+0.1340pp`、clean-core `+0.2728pp`、
+  clean-core macro `+0.0931pp`，类别覆盖维持 500。
+- 新候选改变测试集 1,936 个预测（7.7542%），ZIP SHA-256 为
+  `67f4eda57291e34096edcb0545b142fd0a3114fb1c76eb1e17996afe87d692e0`，
+  审计通过。
+- 平台实测 **63.7802%**：相对 F1 REBUILD R1 M1 weight 0.35（62.9791%）
+  `+0.8011pp`；相对已报告原 F1 + M1（63.3276%）`+0.4526pp`。这是新的审计
+  完整平台最佳，验证了离线四视图融合增益可转移到平台。
+- 距离 70 分 `6.2198pp`；本地 raw micro `72.1307%` 到平台的 gap
+  `8.3505pp`。
+- 完整报告：`results/m1_flip_optimization_20260730.md`。
 
 ## E2→F1 严格重建成功，M1 平台 62.9791%
 

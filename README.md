@@ -2,7 +2,7 @@
 
 面向噪声标签数据的细粒度图像识别（500 类，~103K 训练图）。基于 CLIP ViT-B/32 冻结 backbone + 线性分类头，系统消融 head 类型、数据增强和标签噪声的影响，并实现部分解冻基础设施用于后续视觉特征微调。
 
-> **当前状态（2026-07-30）**：同 split E2→F1 严格重建通过 promotion，M1 `crop160/top5/local_weight0.35` 平台为 **62.9791%**，比 A2 STRICT + M1 62.6870% 高 `+0.2921pp`，但仍比已报告原 F1 + M1 63.3276% 低 `0.3485pp`，状态 `platform_valid_not_promoted`。候选 ZIP `02d37906…781bb6` 的 checkpoint/prediction/ZIP 哈希均已审计。完整结果见 [`results/f1_rebuild_20260730.md`](results/f1_rebuild_20260730.md)。
+> **当前状态（2026-07-31）**：同 split E2→F1 严格重建通过 promotion；M1 + Flip `local0.40/flip0.50` 平台实测 **63.7802%**，新的审计完整平台最佳，ZIP 为 `67f4eda5…92e0`。M1 `crop160/top5/local_weight0.35` 平台为 **62.9791%**；历史锚点原 F1 + M1 63.3276% 仅为 `reported_unverified`。完整结果见 [`results/m1_flip_optimization_20260730.md`](results/m1_flip_optimization_20260730.md)。
 
 ## 已完成工作
 
@@ -66,13 +66,14 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | 实验 | 平台 | 证据状态 | 说明 |
 |------|------:|----------|------|
-| **AEGIS F1 + M1** | **63.3276%** | 已报告，待补 ZIP SHA-256 | 单 checkpoint；attention 定位局部裁剪与全局概率 1:1 融合 |
-| F1 REBUILD R1 + M1 weight 0.35 | **62.9791%** | 已审计 | crop160/top5；比 A2 STRICT + M1 高 0.2921pp |
-| A2 STRICT + M1 weight 0.35 | **62.6870%** | 已审计 | crop160/top5；相对同 checkpoint Bare +2.0349pp |
+| **F1 REBUILD R1 + M1/Flip 0.40/0.50** | **63.7802%** | 已审计（新平台最佳） | 单 checkpoint；原图/翻转图 × global/local 四视图融合 |
+| AEGIS F1 + M1 | 63.3276% | 已报告，待补 ZIP SHA-256 | 单 checkpoint；attention 定位局部裁剪与全局概率 1:1 融合 |
+| F1 REBUILD R1 + M1 weight 0.35 | 62.9791% | 已审计 | crop160/top5；比 A2 STRICT + M1 高 0.2921pp |
+| A2 STRICT + M1 weight 0.35 | 62.6870% | 已审计 | crop160/top5；相对同 checkpoint Bare +2.0349pp |
 | A2 + M1 | 62.6747% | 已报告，待补完整审计字段 | 同一 M1 协议 |
 | A2 + M3 | 62.0259% | 已报告，待补完整审计字段 | 独立研发侧报告 |
 
-M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归因。AEGIS F1 + M1、A2 + M1 和 A2 + M3 三条历史锚点来自 2026-07-22 团队同步文档；缺失字段已在提交登记表中显式留空。F1 REBUILD R1 + M1 则有本仓库完整审计哈希和真实平台回填。
+M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归因。AEGIS F1 + M1、A2 + M1 和 A2 + M3 三条历史锚点来自 2026-07-22 团队同步文档；缺失字段已在提交登记表中显式留空。F1 REBUILD R1 + M1 与 M1 + Flip 均有本仓库完整审计哈希和真实平台回填。
 
 **Top TTA 分数：**
 
@@ -176,7 +177,7 @@ M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归�
 
 本仓库内不再继续普通 LoRA、routing 或 trust 参数搜索。下一步按以下顺序：
 
-1. 评测已审计的 F1 rebuild + M1 weight 0.35 包并按 ZIP SHA-256 回填真实分数；
+1. ✅ F1 rebuild + M1/Flip 0.40/0.50 包已按 ZIP SHA-256 回填真实平台分数 **63.7802%**（新平台最佳）；
 2. 回填独立研发侧 F1/A2 + M1 的完整提交哈希，以及 F2/O1/N3 的真实平台结果；
 3. 若继续研究，必须建立新的机制协议；当前 Phase 4 决策树和 A2 STRICT 推理权重搜索均已走完，不能把未过 gate 的候选重新包装为下一轮调参。
 

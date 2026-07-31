@@ -1,5 +1,32 @@
 # 执行进度
 
+## 2026-07-31 M1 + Flip 平台结果：63.7802%，新平台最佳
+
+- M1 + Flip `local0.40/flip0.50` 平台实测 **63.7802%**，成为新的审计完整平台
+  最佳（原 F1 + M1 63.3276% 仅为 `reported_unverified` 锚点）。
+- 相对 F1 REBUILD R1 M1 weight 0.35（62.9791%）`+0.8011pp`；相对已报告原
+  F1 + M1（63.3276%）`+0.4526pp`；相对 A2 STRICT + M1（62.6870%）
+  `+1.0932pp`。
+- 距离 70 分 `6.2198pp`；本地 raw micro `72.1307%` 到平台的 gap `8.3505pp`。
+- 已按 checkpoint/prediction/ZIP SHA-256 精确登记到
+  `results/current_platform_summary.csv` 与 `results/submission_registry.csv`，
+  状态 `platform_valid_promoted`。
+
+## 2026-07-30 F1 REBUILD R1：M1 + Flip 新候选
+
+- 已实现单 checkpoint 的原图/水平翻转 × global/attention-local 四视图概率融合，
+  并保留显式 TTA 风险确认与 fail-closed 参数校验。
+- 固定 `crop160/top5`，扫描 4 个 local weight × 2 个 flip weight；选择
+  `local=0.40, flip=0.50`。
+- 相对当前 62.9791 包对应的 M1 weight 0.35，raw `+0.3296pp`、trusted macro
+  `+0.1520pp`、proxy macro `+0.1340pp`、clean-core `+0.2728pp`，500 类覆盖
+  不变。
+- 新包审计通过：24,967 条、500 类、0 损坏图；ZIP SHA-256
+  `67f4eda57291e34096edcb0545b142fd0a3114fb1c76eb1e17996afe87d692e0`。
+- 该包平台实测 63.7802%，新的审计完整平台最佳；精确回填见上方 2026-07-31
+  条目。
+- 完整报告见 `results/m1_flip_optimization_20260730.md`。
+
 ## 2026-07-30 E2→F1 严格重建与 M1 新候选
 
 - 同源 `preliminary/seed42` split 重建 E2 父模型：epoch 39 raw
@@ -15,7 +42,8 @@
   `02d37906accdf6b49e40733b4e675220f0177b5d71c5662984de68df5e781bb6`，
   平台 **62.9791%**，状态 `platform_valid_not_promoted`。
 - 相对 A2 STRICT + M1 62.6870% 提升 `+0.2921pp`；相对已报告原 F1 + M1
-  63.3276% 仍低 `0.3485pp`。当前历史最高仍为 63.3276%。
+  63.3276% 仍低 `0.3485pp`。当时历史最高仍为 63.3276%（2026-07-31 已被
+  M1 + Flip 63.7802% 超越）。
 - 相关测试 29 passed；Aegis 子工程全量 75 passed、1 个既有 `p4_ablation`
   stage 校验失败；两个新配置独立加载通过。
 - 完整报告见 `results/f1_rebuild_20260730.md`。
