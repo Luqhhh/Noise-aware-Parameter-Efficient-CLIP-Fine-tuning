@@ -84,6 +84,11 @@ def main() -> None:
         type=int,
         help="Explicit inference batch size for validation-aligned numerical reproducibility",
     )
+    parser.add_argument(
+        "--dump-logits",
+        metavar="PATH",
+        help="Save the fused logits (before prior alignment) and image names for offline sweeps",
+    )
     args = parser.parse_args()
     if args.tta != "none" and not args.acknowledge_tta_risk:
         raise ValueError(
@@ -339,6 +344,26 @@ def main() -> None:
             f"Refusing to publish: Pillow failed to decode {corrupt_count} test images"
         )
     all_logits = torch.cat(logit_batches, dim=0)
+    if args.dump_logits:
+        torch.save(
+            {
+                "logits": all_logits.detach().float().cpu(),
+                "names": prediction_names,
+                "inference_mode": (
+                    "attention_crop_flip:topk=%d:crop=%d:local_weight=%g:flip_weight=%g:t=%g"
+                    % (
+                        args.local_top_k,
+                        args.local_crop_size,
+                        args.local_weight,
+                        args.tta_view_weight,
+                        args.local_temperature,
+                    )
+                    if args.local_view != "none"
+                    else args.tta
+                ),
+            },
+            args.dump_logits,
+        )
     prior_alignment = None
     if args.prior_alignment_strength > 0.0:
         all_logits, prior_alignment = align_logits_to_prior(

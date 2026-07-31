@@ -42,6 +42,7 @@ aegis-sweep-multiprototype-head = "aegis_clip.cli.sweep_multiprototype_head:main
 aegis-build-multiprototype-checkpoint = "aegis_clip.cli.build_multiprototype_checkpoint:main"
 aegis-sweep-linear-soup = "aegis_clip.cli.sweep_linear_soup:main"
 aegis-sweep-localization = "aegis_clip.cli.sweep_localization:main"
+aegis-sweep-prior-alignment = "aegis_clip.cli.sweep_prior_alignment:main"
 aegis-cache-local-views = "aegis_clip.cli.cache_local_views:main"
 aegis-train-local-adapter = "aegis_clip.cli.train_local_adapter:main"
 aegis-prepare-a2-gate = "aegis_clip.cli.prepare_a2_gate:main"
