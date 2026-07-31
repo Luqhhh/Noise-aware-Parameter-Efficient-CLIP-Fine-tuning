@@ -6,6 +6,18 @@
 
 # 执行进度
 
+## 2026-07-31 Balanced-prior 校准：平台 65.5786%，新平台最佳
+
+- 70+ 战役启动（`results/70p_campaign_20260731.md`）：Claude 生成审计候选，
+  用户只负责上传平台测试。
+- 首个候选 P70-PA-001 = F1 REBUILD R1 + M1/Flip + balanced-prior strength
+  0.25（IPF 均衡先验校准）。模型测试预测严重不均衡（最差类 2 / 最好类 190
+  个预测），校准后平台 **65.5786%**，相对无校准包 `+1.7984pp`。
+- 验证平台测试类别均衡；校准仅改推理 logits，可叠加任何新 checkpoint。
+- 距离 70 分 `4.42pp`；下一步扫描 prior 强度 {0.5, 0.75, 1.0}（P70-PA-002）。
+- 已按哈希登记到 `results/current_platform_summary.csv` 与
+  `results/submission_registry.csv`；报告见 `results/prior_alignment_20260731.md`。
+
 ## 2026-07-31 M1 + Flip 平台结果：63.7802%，新平台最佳
 
 - M1 + Flip `local0.40/flip0.50` 平台实测 **63.7802%**，成为新的审计完整平台

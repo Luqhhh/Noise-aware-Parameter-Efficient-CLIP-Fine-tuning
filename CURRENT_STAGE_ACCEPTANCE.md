@@ -2,7 +2,7 @@
 
 ## Scope
 
-本验收状态覆盖主仓库截至 `7c8b966` 的历史代码、截至 2026-07-22 的训练产物，以及 2026-07-30 新增的 M1 attention-local 推理优化、局部特征 Adapter 实验、同 split E2→F1 严格重建和 M1 + Flip 四视图融合。A2 STRICT Adapter 未通过 gate；F1 重建通过 gate，M1 平台为 62.9791%；M1 + Flip 平台实测 63.7802%，新的审计完整平台最佳。
+本验收状态覆盖主仓库截至 `7c8b966` 的历史代码、截至 2026-07-22 的训练产物，以及 2026-07-30 新增的 M1 attention-local 推理优化、局部特征 Adapter 实验、同 split E2→F1 严格重建、M1 + Flip 四视图融合和 2026-07-31 的 balanced-prior 推理校准。A2 STRICT Adapter 未通过 gate；F1 重建通过 gate，M1 平台为 62.9791%；M1 + Flip + balanced-prior 0.25 平台实测 65.5786%，新的审计完整平台最佳。
 
 原 `docs/phase4_plan.md` 已确认有意删除，并由以下最终产物取代：
 
@@ -18,7 +18,8 @@
 
 | Experiment | Inference | Platform | Evidence status |
 |---|---|---:|---|
-| F1 REBUILD R1 seed 42 | crop160 / top5 / local 0.40 + Flip 0.50 | **63.7802%** | `audited`（新平台最佳）：checkpoint/prediction/ZIP 哈希齐全 |
+| F1 REBUILD R1 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 0.25 | **65.5786%** | `audited`（新平台最佳）：checkpoint/prediction/ZIP 哈希齐全 |
+| F1 REBUILD R1 seed 42 | crop160 / top5 / local 0.40 + Flip 0.50 | 63.7802% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | AEGIS F1 | M1 attention-guided local crop | 63.3276% | `reported_unverified`：本仓库缺 ZIP SHA-256 |
 | F1 REBUILD R1 seed 42 | crop160 / top5 / global 0.65 + local 0.35 | 62.9791% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | A2 STRICT seed 42 | crop160 / top5 / global 0.65 + local 0.35 | 62.6870% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
@@ -71,6 +72,15 @@ clean-core micro `+0.2728pp`、clean-core macro `+0.0931pp`，覆盖 500 类。
 62.9791 对应协议 `+0.8011pp`、相对已报告原 F1 + M1 63.3276% `+0.4526pp`。
 这是带水平翻转 TTA 的单 checkpoint 四视图概率融合，不能与无 Flip M1 混成
 相同推理协议。完整证据见 `results/m1_flip_optimization_20260730.md`。
+
+## Balanced-Prior Calibration Acceptance
+
+在 M1 + Flip 包（`c0bbcee6…af6d6`）上叠加 `align_logits_to_prior` 均衡先验
+校准（strength 0.25，IPF 类别偏置拟合）。模型测试预测严重不均衡（最差类 2 /
+最好类 190 个预测，均衡期望 ~50/类）；校准到 uniform 先验后平台 **65.5786%**，
+相对无校准包 `+1.7984pp`，新的审计完整平台最佳。校准只改推理 logits，不训练、
+不改模型；local→platform gap 由 8.35pp 收窄至 6.55pp。完整证据见
+`results/prior_alignment_20260731.md`。
 
 ## Phase 4 Final Acceptance
 

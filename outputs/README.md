@@ -87,7 +87,8 @@ Cosine head 在所有学习率下均显著弱于 linear head（~6pp 差距），
 
 | 提交 | 平台分数 | 证据状态 |
 |------|---------:|----------|
-| **F1 REBUILD R1 + M1/Flip 0.40/0.50** | **63.7802%** | 已审计（新平台最佳）；checkpoint/prediction/ZIP 哈希齐全 |
+| **F1 REBUILD R1 + M1/Flip + balanced-prior 0.25** | **65.5786%** | 已审计（新平台最佳）；checkpoint/prediction/ZIP 哈希齐全 |
+| F1 REBUILD R1 + M1/Flip 0.40/0.50 | 63.7802% | 已审计（校准前最佳）；checkpoint/prediction/ZIP 哈希齐全 |
 | AEGIS F1 + M1 | 63.3276% | 独立研发侧已报告；本仓库待补 ZIP SHA-256 |
 | F1 REBUILD R1 + M1 weight 0.35 | 62.9791% | checkpoint/prediction/ZIP 哈希齐全 |
 | A2 + M1 | 62.6747% | 独立研发侧已报告；待补 checkpoint/ZIP 哈希 |
@@ -127,8 +128,9 @@ M1/M3 与 Bare、Flip TTA 是不同推理协议。完整证据状态见 `results
 
 同日新增的 M1 + Flip 候选使用同一 F1 REBUILD R1 checkpoint，ZIP SHA-256 为
 `67f4eda57291e34096edcb0545b142fd0a3114fb1c76eb1e17996afe87d692e0`，
-平台 **63.7802%**，状态 `platform_valid_promoted`，新的审计完整平台最佳；详见
-`results/m1_flip_optimization_20260730.md`。
+平台 **63.7802%**；其上的 balanced-prior 校准（ZIP `c0bbcee6…af6d6`）平台
+**65.5786%**，新的审计完整平台最佳。详见 `results/m1_flip_optimization_20260730.md`
+与 `results/prior_alignment_20260731.md`。
 
 Phase 4 的原始运行产物位于 `reproducibility/aegis_f1/outputs/`，受该子工程 `.gitignore` 控制；关键结果已抽取到受 Git 跟踪的 `docs/phase4_results.md` 和 `results/phase4_experiments.csv`。
 

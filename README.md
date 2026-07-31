@@ -2,7 +2,7 @@
 
 面向噪声标签数据的细粒度图像识别（500 类，~103K 训练图）。基于 CLIP ViT-B/32 冻结 backbone + 线性分类头，系统消融 head 类型、数据增强和标签噪声的影响，并实现部分解冻基础设施用于后续视觉特征微调。
 
-> **当前状态（2026-07-31）**：同 split E2→F1 严格重建通过 promotion；M1 + Flip `local0.40/flip0.50` 平台实测 **63.7802%**，新的审计完整平台最佳，ZIP 为 `67f4eda5…92e0`。M1 `crop160/top5/local_weight0.35` 平台为 **62.9791%**；历史锚点原 F1 + M1 63.3276% 仅为 `reported_unverified`。完整结果见 [`results/m1_flip_optimization_20260730.md`](results/m1_flip_optimization_20260730.md)。
+> **当前状态（2026-07-31）**：F1 REBUILD R1 + M1/Flip + **balanced-prior 校准**（strength 0.25）平台实测 **65.5786%**，新的审计完整平台最佳（相对无校准包 +1.7984pp），ZIP 为 `c0bbcee6…6d6`。M1 + Flip `local0.40/flip0.50` 无校准包为 **63.7802%**；M1 `crop160/top5/local_weight0.35` 为 **62.9791%**。完整结果见 [`results/prior_alignment_20260731.md`](results/prior_alignment_20260731.md) 与 [`results/m1_flip_optimization_20260730.md`](results/m1_flip_optimization_20260730.md)。
 
 ## 已完成工作
 
@@ -67,7 +67,8 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | 实验 | 平台 | 证据状态 | 说明 |
 |------|------:|----------|------|
-| **F1 REBUILD R1 + M1/Flip 0.40/0.50** | **63.7802%** | 已审计（新平台最佳） | 单 checkpoint；原图/翻转图 × global/local 四视图融合 |
+| **F1 REBUILD R1 + M1/Flip + balanced-prior 0.25** | **65.5786%** | 已审计（新平台最佳） | M1/Flip 四视图融合 + 均衡先验 IPF 校准；仅改推理 logits |
+| F1 REBUILD R1 + M1/Flip 0.40/0.50 | 63.7802% | 已审计 | 单 checkpoint；原图/翻转图 × global/local 四视图融合 |
 | AEGIS F1 + M1 | 63.3276% | 已报告，待补 ZIP SHA-256 | 单 checkpoint；attention 定位局部裁剪与全局概率 1:1 融合 |
 | F1 REBUILD R1 + M1 weight 0.35 | 62.9791% | 已审计 | crop160/top5；比 A2 STRICT + M1 高 0.2921pp |
 | A2 STRICT + M1 weight 0.35 | 62.6870% | 已审计 | crop160/top5；相对同 checkpoint Bare +2.0349pp |
