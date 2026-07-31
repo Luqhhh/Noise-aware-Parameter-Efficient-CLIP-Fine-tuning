@@ -1,6 +1,6 @@
 # R1 Part-Token Residual 执行状态（2026-07-31）
 
-状态：**VALIDATION_CACHE_PASSED**
+状态：**GATE_FAILED_CLOSED**
 
 ## 1. 分支与查重
 
@@ -70,3 +70,20 @@
 - 所有 logits、local features、part features、标签与置信度均为有限值。
 
 结论：validation cache 与两个冻结参考均通过 fail-closed 门禁，允许在下一阶段重新同步 `main`、查重并检查团队进程后执行一次固定的 CPU Adapter 训练。当前仍未读取 test，也未生成提交包。
+
+## 6. 固定 CPU Adapter 训练与最终门禁
+
+- 单次正式训练成功完成，墙钟时间 24.6 秒；按 patience=5 早停于 epoch 9。
+- epoch-0 精确复现 F1+M1；全局 F1 路径 bit-exact，两个冻结参考审计均通过。
+- 安全候选中的最佳点为 epoch 4：raw micro 71.859246%、clean-core micro 82.382369%、trusted macro 81.404001%。
+- 相对 epoch-0：raw micro `+0.222951pp`，trusted macro `+0.130528pp`，local clean-core micro `+1.189834pp`。
+- 最终 clean-core micro 增量仅 `+0.135207pp`，低于预注册 `+0.20pp` 门槛 `0.064793pp`。
+- clean-core 成对变化：纠正 44、损害 34、净纠正 10，平滑纠正/损害比 1.285714。
+- local feature drift 为 0.001263651（约 0.126365%），低于 1% 上限；500 类均有预测。
+- 权威 `gate.json`：`passed=false`。R1 因唯一未满足项——clean-core micro 增量——严格关闭。
+- `best.pt` SHA-256：`eba1666990efcc168954f30cdbe03451309c64ae7836ed0dce2eaa5552648607`。
+- `best_adapter.pt` SHA-256：`f96e93fff291d4d5fbf2fd7d6c2135805f132114ae4ae72c485ab16574839caf`。
+- `gate.json` SHA-256：`a3e7c4fb81346b2510dd474629c6589904b9fc7c2f12ee37fdbfb0c22ec8319c`。
+- `history.json` SHA-256：`fbc7608dbc101d48db2a4e1d737437629ce96349f572a37493eb2c8ec5933599`。
+
+结论：patch-token 残差信号能明显改善局部分支并小幅改善融合结果，但不足以通过预注册的全局 clean-core 提升门槛。依据停止规则，不重跑、不调参补救、不读取 test、不生成提交包；该失败结果保留用于排除法。
