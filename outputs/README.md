@@ -87,7 +87,8 @@ Cosine head 在所有学习率下均显著弱于 linear head（~6pp 差距），
 
 | 提交 | 平台分数 | 证据状态 |
 |------|---------:|----------|
-| **F1 REBUILD R1 + M1/Flip + balanced-prior 0.25** | **65.5786%** | 已审计（新平台最佳）；checkpoint/prediction/ZIP 哈希齐全 |
+| **W060 + M1/Flip + balanced-prior 1.0** | **67.2007%** | 已审计（新平台最佳）；checkpoint/prediction/ZIP 哈希齐全 |
+| F1 REBUILD R1 + M1/Flip + balanced-prior 0.25 | 65.5786% | 已审计；checkpoint/prediction/ZIP 哈希齐全 |
 | F1 REBUILD R1 + M1/Flip 0.40/0.50 | 63.7802% | 已审计（校准前最佳）；checkpoint/prediction/ZIP 哈希齐全 |
 | AEGIS F1 + M1 | 63.3276% | 独立研发侧已报告；本仓库待补 ZIP SHA-256 |
 | F1 REBUILD R1 + M1 weight 0.35 | 62.9791% | checkpoint/prediction/ZIP 哈希齐全 |

@@ -6,6 +6,18 @@
 
 # 执行进度
 
+## 2026-07-31 Balanced-prior 1.0：平台 67.2007%，距 70 分仅 2.80pp
+
+- P70-PA-002 = W060（更多数据 F1）+ M1/Flip + prior strength 1.0，平台
+  **67.2007%**，相对 prior 0.25 包（65.5786%）`+1.6221pp`。
+- prior 强度 1.0（完全校准均衡先验）确认最优；累计校准把 gap 从 8.35pp 压到
+  5.08pp。
+- "更多数据"训练方向单调有效：trust 阈值 0.70(R1)→0.60(W060)→0.50(W050)，
+  M1+flip raw 72.13→72.20→72.28%，W050 成为最佳 checkpoint。
+- 下一候选 P70-PA-003（W050 + prior 1.0）已审计待上传。
+- 已按哈希登记到 `results/current_platform_summary.csv` 与
+  `results/submission_registry.csv`。
+
 ## 2026-07-31 Balanced-prior 校准：平台 65.5786%，新平台最佳
 
 - 70+ 战役启动（`results/70p_campaign_20260731.md`）：Claude 生成审计候选，

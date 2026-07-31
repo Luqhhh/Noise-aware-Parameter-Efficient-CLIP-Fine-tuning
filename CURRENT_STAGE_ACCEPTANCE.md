@@ -18,7 +18,8 @@
 
 | Experiment | Inference | Platform | Evidence status |
 |---|---|---:|---|
-| F1 REBUILD R1 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 0.25 | **65.5786%** | `audited`（新平台最佳）：checkpoint/prediction/ZIP 哈希齐全 |
+| W060 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 1.0 | **67.2007%** | `audited`（新平台最佳）：checkpoint/prediction/ZIP 哈希齐全 |
+| F1 REBUILD R1 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 0.25 | 65.5786% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | F1 REBUILD R1 seed 42 | crop160 / top5 / local 0.40 + Flip 0.50 | 63.7802% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | AEGIS F1 | M1 attention-guided local crop | 63.3276% | `reported_unverified`：本仓库缺 ZIP SHA-256 |
 | F1 REBUILD R1 seed 42 | crop160 / top5 / global 0.65 + local 0.35 | 62.9791% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |

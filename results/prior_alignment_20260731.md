@@ -2,15 +2,18 @@
 
 ## 结论
 
-在平台最佳 F1 REBUILD R1 + M1/Flip（`local0.40/flip0.50`）之上叠加
-`align_logits_to_prior` 均衡先验校准（strength=0.25，IPF 类别偏置拟合），平台实测
-**65.5786%**，新的审计完整平台最佳：
+均衡先验校准是独立于训练的上行方向，两个已验证强度：
 
-- 相对无校准的 M1+Flip 包（63.7802%）：**+1.7984pp**；
-- 相对 F1 REBUILD R1 + M1 weight 0.35（62.9791%）：+2.5995pp；
-- 相对已报告原 F1 + M1（63.3276%）：+2.2510pp；
-- 距离 70 分：`4.4214pp`；
-- local→platform gap 由 `8.35pp` 收窄至 `6.55pp`。
+- **strength 0.25**（R1 checkpoint + M1/Flip）：平台 **65.5786%**，相对无校准
+  包（63.7802%）`+1.7984pp`；
+- **strength 1.0**（W060 checkpoint + M1/Flip）：平台 **67.2007%**，相对 0.25
+  包再 `+1.6221pp`，相对无校准 M1/Flip `+3.4205pp`。strength 1.0（完全校准到
+  均衡先验）确认最优。
+
+累计效果：
+
+- 距离 70 分：`2.80pp`；
+- local→platform gap 由 `8.35pp` 收窄至 `5.08pp`。
 
 这验证了两个假设：
 1. **平台测试类别均衡**（校准到 uniform 有效）；
@@ -50,6 +53,7 @@ uniform 先验应提升准确率。`align_logits_to_prior` 用迭代比例拟合
 
 ## 下一步
 
-- strength 0.25 已 +1.8pp，验证方向正确；扫描更高强度 `{0.5, 0.75, 1.0}` 判断
-  是否进一步收窄 gap（见 `results/70p_campaign_20260731.md` P70-PA-002）。
+- strength 1.0 确认最优；后续每个新 checkpoint 都叠加 prior 1.0 生成候选包。
+- 当前最佳 checkpoint 为 W050（trust 阈值 0.50，"更多数据"方向），P70-PA-003
+  （W050 + prior 1.0）已审计待上传。
 - 此校准仅改变推理 logits，可与任何新 checkpoint 叠加，是独立于训练的信号。
