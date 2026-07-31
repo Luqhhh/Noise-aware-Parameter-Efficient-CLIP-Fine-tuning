@@ -1,0 +1,112 @@
+# T77: locality-preserving redistribution of the original F1 LoRA budget.
+# Original F1 uses last4 x rank8 on Q/V/out; T77 uses last8 x rank6 on
+# V/out only. Both have 147,456 LoRA parameters and alpha/rank = 1.0.
+project:
+  experiment_id: T77_F1_DEPTH8_RANK6_VALUE_OUT_ARCHIVED_E2
+  seed: 42
+  stage: preliminary
+
+data:
+  train_csv: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/seed42/train.csv
+  val_csv: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/seed42/val.csv
+  class_mapping: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/seed42/class_to_idx.json
+  train_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/train
+  test_root: /home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/test
+  train_augmentation: weak_rrc_flip
+  external_data: false
+  test_usage: inference_only
+  expected_official_train_samples: 103218
+  expected_test_samples: 24967
+
+features:
+  tensor_path: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/features/clip_vit_b32_openai/features.pt
+  paths_path: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/features/clip_vit_b32_openai/image_paths.json
+  manifest_path: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/features/clip_vit_b32_openai/manifest.json
+
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  num_classes: 500
+  feature_dim: 512
+  peft_mode: visual_lora
+  use_cached_training: false
+  lora_last_n_blocks: 8
+  lora_rank: 6
+  lora_alpha: 6.0
+  lora_adapt_qv: true
+  lora_adapt_q: false
+  lora_adapt_v: true
+  lora_adapt_out: true
+
+trust:
+  enabled: true
+  bundle_path: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/trust/cvt_v1.pt
+  weighting_start_epoch: 1
+  correction_start_epoch: 99
+  minimum_sample_weight: 1.0
+  selection_threshold: 0.70
+  rejected_sample_weight: 0.0
+  anchor_threshold: 0.80
+  gradient_projection:
+    enabled: false
+    start_epoch: 1
+    interval: 8
+    minimum_anchor_samples: 8
+
+loss:
+  name: gce
+  gce_q: 0.5
+  epsilon: 1.0e-7
+  ce_warmup_epochs: 0
+  class_prior_adjustment_tau: 0.0
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  feature_distillation_weight: 2.0
+  adaptive_cap:
+    enabled: false
+
+train:
+  device: cuda
+  deterministic: true
+  amp: true
+  epochs: 6
+  batch_size: 64
+  num_workers: 4
+  prefetch_factor: 1
+  loader_timeout: 120
+  pin_memory: true
+  head_lr: 0.00005
+  head_weight_decay: 0.0001
+  backbone_lr: 0.00002
+  backbone_weight_decay: 0.0
+  lr_warmup_epochs: 1
+  max_grad_norm: 1.0
+  early_stop_patience: 0
+  init_checkpoint: /home/x28639/projects/AegisCLIP-Noise-Robust/outputs/E2_MIXUP_CE5_REPLICA/seed42/checkpoints/best.pt
+  require_lineage_for_init_checkpoint: true
+
+lineage:
+  enabled: true
+  parent_experiment_id: E2_MIXUP_CE5_REPLICA
+  parent_train_csv: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/seed42/train.csv
+  parent_val_csv: /home/x28639/projects/AegisCLIP-Noise-Robust/artifacts/stages/preliminary/seed42/val.csv
+  require_same_train: true
+  require_same_val: true
+
+promotion:
+  minimum_selector_gain: 0.002
+  minimum_raw_micro_gain: -0.001
+  maximum_mean_feature_drift: 0.01
+  required_predicted_class_count: 500
+
+evaluation:
+  batch_size: 128
+  inference_batch_size: 128
+  selector_metric: clean_core_micro
+  clean_core_threshold: 0.70
+  measure_flip_consistency: true
+  drift_budget: 0.01
+  drift_penalty: 2.0
+
+output:
+  root: ../outputs

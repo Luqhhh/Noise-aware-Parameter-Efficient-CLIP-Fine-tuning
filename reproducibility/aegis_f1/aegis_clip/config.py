@@ -378,10 +378,13 @@ def validate_config(config: dict[str, Any]) -> None:
             raise ConfigError("visual_lora requires model.lora_rank > 0")
         if float(model.get("lora_alpha", 0.0)) <= 0.0:
             raise ConfigError("visual_lora requires model.lora_alpha > 0")
-        if not bool(model.get("lora_adapt_qv", True)) and not bool(
+        legacy_adapt_qv = bool(model.get("lora_adapt_qv", True))
+        adapt_q = bool(model.get("lora_adapt_q", legacy_adapt_qv))
+        adapt_v = bool(model.get("lora_adapt_v", legacy_adapt_qv))
+        if not adapt_q and not adapt_v and not bool(
             model.get("lora_adapt_out", True)
         ):
-            raise ConfigError("visual_lora must adapt Q/V, output, or both")
+            raise ConfigError("visual_lora must adapt Q/V and/or output")
     if peft_mode == "visual_mlp_adapter":
         if int(model.get("visual_adapter_last_n_blocks", 0)) <= 0:
             raise ConfigError(
