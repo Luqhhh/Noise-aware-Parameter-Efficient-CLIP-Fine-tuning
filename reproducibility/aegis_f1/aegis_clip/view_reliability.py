@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import math
 from typing import Any, Mapping
 
 import torch
+import torch.nn.functional as F
 
 
 VIEW_ORDER: tuple[str, str, str, str] = (
@@ -179,12 +181,140 @@ def validate_cvrg_cache(
     return sample_count
 
 
+
+_PAIR_NAMES = ("01", "02", "03", "12", "13", "23")
+RELIABILITY_FEATURE_NAMES = (
+    "single.max_probability", "single.normalized_entropy", "single.top1_top2_margin",
+    "single.top5_probability_mass", "single.energy", "single.logit_l2",
+    *(f"pair.{pair}.{metric}" for pair in _PAIR_NAMES for metric in ("js_divergence", "top1_equal", "top5_jaccard")),
+    "agreement.top1_fraction",
+    "cosine.original_global_local", "cosine.flipped_global_local",
+    "cosine.global_original_flipped", "cosine.local_original_flipped",
+    "attention.current_entropy", "attention.current_top5_mass",
+    "attention.current_crop_center_x", "attention.current_crop_center_y",
+    "attention.border_contact", "attention.flip_mapped_center_distance",
+    "view.is_original_global", "view.is_original_local", "view.is_flipped_global", "view.is_flipped_local",
+)
+
+@dataclass(frozen=True)
+class FrozenReliabilityGate:
+    feature_names: tuple[str, ...]
+    feature_mean: torch.Tensor
+    feature_scale: torch.Tensor
+    coefficient: torch.Tensor
+    intercept: float
+    regularization_c: float
+    checkpoint_sha256: str
+    validation_cache_sha256: str
+    feature_schema_sha256: str
+    protocol: CVRGProtocol
+
+def _validate_view_inputs(logits, visual, attention, boxes):
+    if logits.ndim != 3 or logits.shape[1:] != (4, CVRG_NUM_CLASSES):
+        raise ValueError("view_logits must have shape [N,4,500]")
+    n = logits.shape[0]
+    if visual.ndim != 3 or visual.shape[:2] != (n, 4) or visual.shape[2] <= 0:
+        raise ValueError("view_features must have shape [N,4,D]")
+    if attention.ndim != 4 or attention.shape[:2] != (n, 2) or attention.shape[2] <= 0 or attention.shape[3] <= 0:
+        raise ValueError("orientation_attention must have shape [N,2,H,P]")
+    if boxes.shape != (n, 2, 4):
+        raise ValueError("crop_boxes must have shape [N,2,4]")
+    for name, value in (("view_logits", logits), ("view_features", visual), ("orientation_attention", attention), ("crop_boxes", boxes)):
+        if not torch.isfinite(value.float()).all():
+            raise ValueError(f"{name} must contain only finite values")
+    return n, int(attention.shape[-1])
+
+def extract_reliability_features(view_logits, view_features, orientation_attention, crop_boxes, *, image_size=224, top_k=5):
+    n, patches = _validate_view_inputs(view_logits, view_features, orientation_attention, crop_boxes)
+    logits = view_logits.float()
+    probs = F.softmax(logits, dim=-1).clamp_min(1e-12)
+    vals, inds = probs.topk(top_k, dim=-1)
+    top1 = probs.argmax(-1)
+    single = torch.stack((probs.max(-1).values, -(probs * probs.log()).sum(-1) / math.log(CVRG_NUM_CLASSES),
+                          vals[..., 0] - vals[..., 1], vals.sum(-1), -torch.logsumexp(logits, -1), logits.norm(dim=-1)), -1)
+    pairwise = []
+    for left, right in ((0,1),(0,2),(0,3),(1,2),(1,3),(2,3)):
+        p, q = probs[:, left], probs[:, right]
+        m = (p + q) * 0.5
+        js = 0.5 * ((p * (p / m).log()).sum(-1) + (q * (q / m).log()).sum(-1))
+        equal = (top1[:, left] == top1[:, right]).float()
+        a, b = inds[:, left], inds[:, right]
+        inter = (a.unsqueeze(-1) == b.unsqueeze(-2)).any(-1).sum(-1).float()
+        pairwise.extend((js, equal, inter / (2 * top_k - inter).clamp_min(1.0)))
+    pairwise = torch.stack(pairwise, -1)[:, None, :].expand(-1, 4, -1)
+    agreement = torch.stack([(top1 == top1[:, i:i+1]).sum(-1) for i in range(4)], -1).max(-1).values.float().div(4)[:,None,None].expand(-1,4,1)
+    vf = F.normalize(view_features.float(), dim=-1)
+    cosine = torch.stack(((vf[:,0]*vf[:,1]).sum(-1),(vf[:,2]*vf[:,3]).sum(-1),(vf[:,0]*vf[:,2]).sum(-1),(vf[:,1]*vf[:,3]).sum(-1)), -1)[:,None,:].expand(-1,4,-1)
+    side = math.isqrt(patches)
+    if side * side != patches:
+        raise ValueError("attention patch count must form a square grid")
+    att = orientation_attention.float().mean(2)
+    att = att / att.sum(-1, keepdim=True).clamp_min(1e-12)
+    ent = -(att.clamp_min(1e-12) * att.clamp_min(1e-12).log()).sum(-1) / math.log(patches)
+    mass = att.topk(min(top_k, patches), -1).values.sum(-1)
+    rows = torch.arange(side, device=logits.device).repeat_interleave(side).float()
+    cols = torch.arange(side, device=logits.device).repeat(side).float()
+    cx = (att * ((cols + .5) / side)).sum(-1)
+    cy = (att * ((rows + .5) / side)).sum(-1)
+    ori = torch.tensor([0,0,1,1], device=logits.device)
+    cb = crop_boxes.float()[:, ori]
+    border = ((cb <= 0) | (cb >= float(image_size))).any(-1).float()
+    oc = (crop_boxes.float()[:,0,:2] + crop_boxes.float()[:,0,2:])*.5 / image_size
+    fc = (crop_boxes.float()[:,1,:2] + crop_boxes.float()[:,1,2:])*.5 / image_size
+    fd = (oc - torch.stack((1-fc[:,0], fc[:,1]), -1)).norm(dim=-1)[:,None].expand(-1,4)
+    attention = torch.stack((ent[:,ori], mass[:,ori], cx[:,ori], cy[:,ori], border, fd), -1)
+    identity = torch.eye(4, device=logits.device)[None].expand(n,-1,-1)
+    features = torch.cat((single, pairwise, agreement, cosine, attention, identity), -1)
+    if features.shape[-1] != 39 or not torch.isfinite(features).all():
+        raise RuntimeError("reliability feature extraction produced an invalid schema")
+    return features, RELIABILITY_FEATURE_NAMES
+
+def predict_view_reliability(features, gate):
+    if features.ndim != 3 or features.shape[1] != 4 or features.shape[-1] != len(gate.feature_names):
+        raise ValueError("features do not match frozen gate")
+    mean = torch.as_tensor(gate.feature_mean, dtype=torch.float32, device=features.device)
+    scale = torch.as_tensor(gate.feature_scale, dtype=torch.float32, device=features.device)
+    coef = torch.as_tensor(gate.coefficient, dtype=torch.float32, device=features.device)
+    if mean.numel() != features.shape[-1] or scale.numel() != features.shape[-1] or coef.numel() != features.shape[-1] or (scale <= 0).any():
+        raise ValueError("frozen gate parameter dimensions are invalid")
+    score = torch.einsum("nvf,f->nv", (features.float()-mean)/scale, coef) + float(gate.intercept)
+    return torch.sigmoid(score).clamp(1e-4, 1-1e-4)
+
+def compute_dynamic_view_weights(reliability, *, base_weights=BASE_VIEW_WEIGHTS):
+    if reliability.ndim != 2 or reliability.shape[1] != 4:
+        raise ValueError("reliability must have shape [N,4]")
+    base = torch.as_tensor(base_weights, dtype=torch.float32, device=reliability.device)
+    if base.shape != (4,) or (base <= 0).any() or not torch.isclose(base.sum(), torch.tensor(1., device=base.device)):
+        raise ValueError("base_weights must be a positive simplex")
+    r = reliability.float().clamp(1e-4, 1-1e-4)
+    return F.softmax(torch.log(base)[None] + torch.log(r) - torch.log1p(-r), 1)
+
+def fuse_dynamic_view_probabilities(view_logits, gate, features):
+    if view_logits.ndim != 3 or view_logits.shape[1:] != (4, CVRG_NUM_CLASSES) or features.shape[:2] != view_logits.shape[:2]:
+        raise ValueError("view_logits and features have incompatible shapes")
+    if torch.count_nonzero(torch.as_tensor(gate.coefficient)) == 0 and float(gate.intercept) == 0:
+        from .localization import fuse_global_local_flip_probabilities
+        fused = fuse_global_local_flip_probabilities(view_logits[:,0],view_logits[:,1],view_logits[:,2],view_logits[:,3], local_weight=gate.protocol.local_weight, flip_weight=gate.protocol.flip_weight, temperature=gate.protocol.temperature)
+        weights = BASE_VIEW_WEIGHTS.to(view_logits.device).expand(view_logits.shape[0],-1)
+        return fused, weights, torch.full_like(weights, .5)
+    reliability = predict_view_reliability(features, gate)
+    weights = compute_dynamic_view_weights(reliability)
+    probs = F.softmax(view_logits.float() / gate.protocol.temperature, -1)
+    return (probs * weights[...,None]).sum(1).clamp_min(torch.finfo(probs.dtype).tiny).log(), weights, reliability
+
+
 __all__ = [
     "BASE_VIEW_WEIGHTS",
     "CVRG_CACHE_FORMAT_VERSION",
     "CVRG_FEATURE_SCHEMA_VERSION",
     "CVRG_NUM_CLASSES",
     "CVRGProtocol",
+    "FrozenReliabilityGate",
+    "RELIABILITY_FEATURE_NAMES",
+    "compute_dynamic_view_weights",
+    "extract_reliability_features",
+    "fuse_dynamic_view_probabilities",
+    "predict_view_reliability",
     "VIEW_ORDER",
     "validate_cvrg_cache",
 ]
