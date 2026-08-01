@@ -6,6 +6,16 @@
 
 # 执行进度
 
+## 2026-08-01 Balanced-prior 0.8：平台 67.3329%，新平台最佳
+
+- P70-PA-007 = W060 + M1/Flip + prior strength 0.8，平台 **67.3329%**，
+  新审计完整平台最佳，相对 0.75（67.2848%）`+0.0481pp`。
+- 强度曲线 0.6/0.75/0.8/1.0，**峰值在 0.8~1.0 之间**；0.85/0.9 包生成中。
+- 平台异常诊断完成：对差异 <500 预测的相近包有缓存 glitch；W060+0.6 确认
+  平台能正确测差异大的包。
+- 已按哈希登记到 `results/current_platform_summary.csv` 与
+  `results/submission_registry.csv`。
+
 ## 2026-07-31 Balanced-prior 0.75：平台 67.2848%，新平台最佳
 
 - P70-PA-004 = W050 + M1/Flip + prior strength 0.75，平台 **67.2848%**，

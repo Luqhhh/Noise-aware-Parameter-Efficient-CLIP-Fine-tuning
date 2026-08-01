@@ -18,7 +18,8 @@
 
 | Experiment | Inference | Platform | Evidence status |
 |---|---|---:|---|
-| W050 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 0.75 | **67.2848%** | `audited`（新平台最佳）：checkpoint/prediction/ZIP 哈希齐全 |
+| W060 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 0.8 | **67.3329%** | `audited`（新平台最佳）：checkpoint/prediction/ZIP 哈希齐全 |
+| W050 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 0.75 | 67.2848% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | W060 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 1.0 | 67.2007% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | F1 REBUILD R1 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 0.25 | 65.5786% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | F1 REBUILD R1 seed 42 | crop160 / top5 / local 0.40 + Flip 0.50 | 63.7802% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
@@ -79,15 +80,19 @@ clean-core micro `+0.2728pp`、clean-core macro `+0.0931pp`，覆盖 500 类。
 
 `align_logits_to_prior` 均衡先验校准（IPF 类别偏置拟合）在本任务价值巨大：
 模型测试预测严重不均衡（最差类 2 / 最好类 ~190 个预测，均衡期望 ~50/类），
-平台测试类别均衡。已实测三个强度：
+平台测试类别均衡。已实测四个强度：
 
-- **strength 0.25**（R1）：平台 **65.5786%**，相对无校准包 `+1.7984pp`；
-- **strength 1.0**（W060）：平台 67.2007%；
-- **strength 0.75**（W050）：平台 **67.2848%**，新的审计完整平台最佳。
-  0.75 优于 1.0——测试集非完美均衡（24,967 = 467×50 + 33×49），1.0 略过矫正。
+- **strength 0.6**（W060）：平台 66.9404%；
+- **strength 0.75**（W050）：平台 67.2848%；
+- **strength 0.8**（W060）：平台 **67.3329%**，新的审计完整平台最佳；
+- **strength 1.0**（W060）：平台 67.2007%。
+
+曲线 0.8 仍上升、1.0 回落，**峰值在 0.8~1.0 之间**（0.85/0.9 待测）。测试集
+非完美均衡（24,967 = 467×50 + 33×49），1.0 略过矫正。0.6 低于 0.75/0.8
+（校准不足）。
 
 校准只改推理 logits，不训练、不改模型；累计把 local→platform gap 由 8.35pp
-收窄至 ~5.0pp，距离 70 分 `2.72pp`。完整证据见
+收窄至 ~4.9pp，距离 70 分 `2.67pp`。完整证据见
 `results/prior_alignment_20260731.md` 与 `results/70p_campaign_20260731.md`。
 
 ## Phase 4 Final Acceptance
