@@ -92,3 +92,4 @@ manual stash/pop or Git's automatic stash mode; never mix the two.
   `git stash pop`.
 - Never use `git push --force` to resolve a non-fast-forward push.
 - `output`: log_dir, submission_dir
+- For future experiment segments, work directly on the checked-out `main` branch: do not create a feature branch. After verification, commit locally and push the commit to `origin/main`; before the next segment, fetch/rebase or pull the latest `origin/main` using the automatic-stash workflow when the worktree is mixed.
