@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import math
 from typing import Any, Mapping
+from pathlib import Path
 
 import torch
 import torch.nn.functional as F
@@ -303,12 +304,83 @@ def fuse_dynamic_view_probabilities(view_logits, gate, features):
     return (probs * weights[...,None]).sum(1).clamp_min(torch.finfo(probs.dtype).tiny).log(), weights, reliability
 
 
+
+CVRG_GATE_FORMAT_VERSION = 1
+
+
+def frozen_gate_to_payload(gate: FrozenReliabilityGate) -> dict[str, object]:
+    if len(gate.feature_names) == 0:
+        raise ValueError("frozen gate must define feature names")
+    if gate.feature_mean.numel() != len(gate.feature_names) or gate.feature_scale.numel() != len(gate.feature_names) or gate.coefficient.numel() != len(gate.feature_names):
+        raise ValueError("frozen gate tensors do not match feature schema")
+    return {
+        "format_version": CVRG_GATE_FORMAT_VERSION,
+        "feature_names": list(gate.feature_names),
+        "feature_mean": torch.as_tensor(gate.feature_mean).detach().float().cpu(),
+        "feature_scale": torch.as_tensor(gate.feature_scale).detach().float().cpu(),
+        "coefficient": torch.as_tensor(gate.coefficient).detach().float().cpu(),
+        "intercept": float(gate.intercept),
+        "regularization_c": float(gate.regularization_c),
+        "checkpoint_sha256": str(gate.checkpoint_sha256),
+        "validation_cache_sha256": str(gate.validation_cache_sha256),
+        "feature_schema_sha256": str(gate.feature_schema_sha256),
+        "protocol": asdict(gate.protocol),
+    }
+
+
+def frozen_gate_from_payload(payload: Mapping[str, Any]) -> FrozenReliabilityGate:
+    if not isinstance(payload, Mapping) or payload.get("format_version") != CVRG_GATE_FORMAT_VERSION:
+        raise ValueError("unsupported frozen gate format")
+    names = tuple(payload.get("feature_names", ()))
+    if not names or any(not isinstance(name, str) or not name for name in names):
+        raise ValueError("frozen gate feature_names are invalid")
+    mean = torch.as_tensor(payload["feature_mean"]).float()
+    scale = torch.as_tensor(payload["feature_scale"]).float()
+    coefficient = torch.as_tensor(payload["coefficient"]).float()
+    if mean.ndim != 1 or scale.shape != mean.shape or coefficient.shape != mean.shape or (scale <= 0).any():
+        raise ValueError("frozen gate tensors are invalid")
+    if len(names) != mean.numel():
+        raise ValueError("frozen gate schema and tensors are misaligned")
+    protocol = payload.get("protocol")
+    _validate_protocol(protocol)
+    return FrozenReliabilityGate(
+        feature_names=names, feature_mean=mean, feature_scale=scale,
+        coefficient=coefficient, intercept=float(payload["intercept"]),
+        regularization_c=float(payload["regularization_c"]),
+        checkpoint_sha256=str(payload["checkpoint_sha256"]),
+        validation_cache_sha256=str(payload["validation_cache_sha256"]),
+        feature_schema_sha256=str(payload["feature_schema_sha256"]),
+        protocol=CVRGProtocol(**dict(protocol)),
+    )
+
+
+def atomic_torch_save(payload: Mapping[str, Any], path: str | Path) -> None:
+    import os
+    import tempfile
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(dir=destination.parent, delete=False) as handle:
+        torch.save(dict(payload), handle)
+        temporary = Path(handle.name)
+    os.replace(temporary, destination)
+
+
+def load_frozen_gate(path: str | Path) -> FrozenReliabilityGate:
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    return frozen_gate_from_payload(payload)
+
+
 __all__ = [
     "BASE_VIEW_WEIGHTS",
     "CVRG_CACHE_FORMAT_VERSION",
     "CVRG_FEATURE_SCHEMA_VERSION",
     "CVRG_NUM_CLASSES",
     "CVRGProtocol",
+    "CVRG_GATE_FORMAT_VERSION",
+    "atomic_torch_save",
+    "frozen_gate_from_payload",
+    "frozen_gate_to_payload",
+    "load_frozen_gate",
     "FrozenReliabilityGate",
     "RELIABILITY_FEATURE_NAMES",
     "compute_dynamic_view_weights",
