@@ -216,8 +216,17 @@ def fuse_global_local_flip_probabilities(
     local_weight: float = 0.5,
     flip_weight: float = 0.5,
     temperature: float = 1.0,
+    global_temperature: float | None = None,
+    local_temperature: float | None = None,
 ) -> torch.Tensor:
-    """Fuse deterministic global/local streams across original and flipped views."""
+    """Fuse deterministic global/local streams across original and flipped views.
+
+    ``temperature`` is the backward-compatible single-value sharpness for all
+    four views.  When ``global_temperature``/``local_temperature`` are supplied,
+    the original+flipped global views use the global temperature and the
+    original+flipped local views use the local temperature, enabling
+    per-branch confidence calibration.
+    """
     views = (
         global_logits,
         local_logits,
@@ -234,17 +243,26 @@ def fuse_global_local_flip_probabilities(
         raise ValueError("flip_weight must be in [0, 1]")
     if temperature <= 0.0:
         raise ValueError("temperature must be positive")
+    if global_temperature is None:
+        global_temperature = temperature
+    if local_temperature is None:
+        local_temperature = temperature
+    if global_temperature <= 0.0:
+        raise ValueError("global_temperature must be positive")
+    if local_temperature <= 0.0:
+        raise ValueError("local_temperature must be positive")
 
-    probabilities = [
-        F.softmax(value.float() / temperature, dim=1) for value in views
-    ]
     global_probabilities = (
-        (1.0 - flip_weight) * probabilities[0]
-        + flip_weight * probabilities[2]
+        (1.0 - flip_weight)
+        * F.softmax(global_logits.float() / global_temperature, dim=1)
+        + flip_weight
+        * F.softmax(flipped_global_logits.float() / global_temperature, dim=1)
     )
     local_probabilities = (
-        (1.0 - flip_weight) * probabilities[1]
-        + flip_weight * probabilities[3]
+        (1.0 - flip_weight)
+        * F.softmax(local_logits.float() / local_temperature, dim=1)
+        + flip_weight
+        * F.softmax(flipped_local_logits.float() / local_temperature, dim=1)
     )
     fused = (
         (1.0 - local_weight) * global_probabilities

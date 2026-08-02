@@ -140,3 +140,39 @@ def test_parse_int_sequence_rejects_duplicates() -> None:
     assert parse_int_sequence("128, 160,192") == (128, 160, 192)
     with pytest.raises(ValueError, match="unique"):
         parse_int_sequence("160,160")
+
+
+def test_flip_fusion_per_branch_temperature_changes_fusion() -> None:
+    torch.manual_seed(0)
+    views = [torch.randn(2, 3) for _ in range(4)]
+    single = fuse_global_local_flip_probabilities(
+        *views, local_weight=0.4, flip_weight=0.5, temperature=1.5
+    )
+    per_branch = fuse_global_local_flip_probabilities(
+        *views,
+        local_weight=0.4,
+        flip_weight=0.5,
+        temperature=1.5,
+        global_temperature=1.0,
+        local_temperature=1.5,
+    )
+    # Different branch temperatures must change the fused logits.
+    assert not torch.allclose(single, per_branch, atol=1.0e-6)
+
+
+def test_flip_fusion_per_branch_temperature_backward_compatible() -> None:
+    torch.manual_seed(1)
+    views = [torch.randn(2, 3) for _ in range(4)]
+    baseline = fuse_global_local_flip_probabilities(
+        *views, local_weight=0.4, flip_weight=0.5, temperature=1.5
+    )
+    explicit = fuse_global_local_flip_probabilities(
+        *views,
+        local_weight=0.4,
+        flip_weight=0.5,
+        temperature=1.5,
+        global_temperature=1.5,
+        local_temperature=1.5,
+    )
+    # Explicit equal temperatures equal the single-temperature default.
+    assert torch.allclose(baseline, explicit, atol=1.0e-6)

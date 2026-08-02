@@ -109,9 +109,12 @@ def main() -> None:
         raise ValueError(
             "Stacked local-view TTA requires --tta-fusion mean_probabilities"
         )
-    if stacked_local_tta and args.tta_temperature != args.local_temperature:
+    if (
+        stacked_local_tta
+        and (args.tta_temperature <= 0.0 or args.local_temperature <= 0.0)
+    ):
         raise ValueError(
-            "Stacked local-view TTA requires identical TTA and local temperatures"
+            "Stacked local-view TTA temperatures must be positive"
         )
     if not stacked_local_tta and args.tta_view_weight != 0.5:
         raise ValueError(
@@ -260,6 +263,8 @@ def main() -> None:
                         local_weight=args.local_weight,
                         flip_weight=args.tta_view_weight,
                         temperature=args.local_temperature,
+                        global_temperature=args.tta_temperature,
+                        local_temperature=args.local_temperature,
                     )
                 else:
                     logits = fuse_global_local_probabilities(
