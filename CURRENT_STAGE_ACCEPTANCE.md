@@ -1,8 +1,8 @@
-# CURRENT STAGE ACCEPTANCE — 2026-07-30
+# CURRENT STAGE ACCEPTANCE — 2026-08-02
 
 ## Scope
 
-本验收状态覆盖主仓库截至 `7c8b966` 的历史代码、截至 2026-07-22 的训练产物，以及 2026-07-30 新增的 M1 attention-local 推理优化、局部特征 Adapter 实验、同 split E2→F1 严格重建、M1 + Flip 四视图融合和 2026-07-31 的 balanced-prior 推理校准。A2 STRICT Adapter 未通过 gate；F1 重建通过 gate，M1 平台为 62.9791%；M1 + Flip + balanced-prior 0.25 平台实测 65.5786%，其上的 prior 1.0（W060 checkpoint）平台 **67.2007%**，新的审计完整平台最佳。
+本验收状态覆盖主仓库截至 `7c8b966` 的历史代码、截至 2026-07-22 的训练产物，以及 2026-07-30 新增的 M1 attention-local 推理优化、局部特征 Adapter 实验、同 split E2→F1 严格重建、M1 + Flip 四视图融合、2026-07-31 的 balanced-prior 推理校准，和 2026-08-02 的 A12（LoRA 全 12 block，广度）训练。A2 STRICT Adapter 未通过 gate；F1 重建通过 gate，M1 平台为 62.9791%；M1 + Flip + balanced-prior 0.25 平台实测 65.5786%，其上的 prior 1.0（W060 checkpoint）平台 67.2007%；温度峰值 1.5 × prior 0.85（W060）平台 **67.5812%**；A12（LoRA 广度）+ M1/Flip + temp1.5 + prior 0.85 平台 **67.6173%**，新的审计完整平台最佳。
 
 原 `docs/phase4_plan.md` 已确认有意删除，并由以下最终产物取代：
 
@@ -18,7 +18,9 @@
 
 | Experiment | Inference | Platform | Evidence status |
 |---|---|---:|---|
-| W060 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 0.8 | **67.3329%** | `audited`（新平台最佳）：checkpoint/prediction/ZIP 哈希齐全 |
+| A12 seed 42 | M1/Flip 0.40/0.50 + temp1.5 + balanced-prior 0.85 | **67.6173%** | `audited`（新平台最佳）：checkpoint/prediction/ZIP 哈希齐全 |
+| W060 seed 42 | M1/Flip 0.40/0.50 + temp1.5 + balanced-prior 0.85 | 67.5812% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
+| W060 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 0.8 | 67.3329% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | W050 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 0.75 | 67.2848% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | W060 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 1.0 | 67.2007% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |
 | F1 REBUILD R1 seed 42 | M1/Flip 0.40/0.50 + balanced-prior 0.25 | 65.5786% | `audited`：checkpoint/prediction/ZIP 哈希齐全 |

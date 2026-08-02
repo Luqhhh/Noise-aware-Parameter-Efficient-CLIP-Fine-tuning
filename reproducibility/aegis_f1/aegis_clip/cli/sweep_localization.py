@@ -16,6 +16,7 @@ from aegis_clip.config import load_config
 from aegis_clip.data import OnlineImageDataset, TrustBundle
 from aegis_clip.evaluation import weighted_accuracy, weighted_macro_accuracy
 from aegis_clip.features import FrozenFeatureStore
+from aegis_clip.image_preprocess import select_inference_preprocess
 from aegis_clip.localization import (
     extract_attention_crops,
     forward_with_last_block_attention,
@@ -83,6 +84,11 @@ def main() -> None:
     parser.add_argument("--include-horizontal-flip", action="store_true")
     parser.add_argument("--flip-weights", default="0.5")
     parser.add_argument("--temperature", type=float, default=1.0)
+    parser.add_argument(
+        "--input-resize-mode",
+        choices=["clip_center_crop", "clip_letterbox"],
+        default="clip_center_crop",
+    )
     parser.add_argument("--batch-size", type=int)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--overwrite", action="store_true")
@@ -107,6 +113,11 @@ def main() -> None:
     )
     model, preprocess, checkpoint = build_from_checkpoint(args.checkpoint, device)
     config = load_config(args.config)
+    preprocess = select_inference_preprocess(
+        preprocess,
+        mode=args.input_resize_mode,
+        input_resolution=int(config["model"].get("input_resolution", 224)),
+    )
     model.eval()
 
     feature_config = config["features"]
@@ -460,6 +471,7 @@ def main() -> None:
         "checkpoint_sha256": sha256_file(args.checkpoint),
         "checkpoint_epoch": int(checkpoint.get("epoch", -1)),
         "config": str(Path(args.config).resolve()),
+        "input_resize_mode": args.input_resize_mode,
         "samples": len(dataset),
         "clean_core_threshold": clean_core_threshold,
         "global": global_metrics,

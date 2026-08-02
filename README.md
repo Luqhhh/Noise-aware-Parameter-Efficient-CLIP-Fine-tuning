@@ -2,7 +2,7 @@
 
 面向噪声标签数据的细粒度图像识别（500 类，~103K 训练图）。基于 CLIP ViT-B/32 冻结 backbone + 线性分类头，系统消融 head 类型、数据增强和标签噪声的影响，并实现部分解冻基础设施用于后续视觉特征微调。
 
-> **当前状态（2026-08-01）**：W060（更多数据 F1）+ M1/Flip + **balanced-prior 校准**（strength 0.8）平台实测 **67.3329%**，新的审计完整平台最佳。强度曲线实测 0.6/0.75/0.8/1.0，峰值在 0.8~1.0 之间。距离 70 分仅 2.67pp。完整结果见 [`results/prior_alignment_20260731.md`](results/prior_alignment_20260731.md) 与 [`results/70p_campaign_20260731.md`](results/70p_campaign_20260731.md)。
+> **当前状态（2026-08-02）**：A12（LoRA 全 12 block，广度）+ M1/Flip + temp1.5 + **balanced-prior 0.85** 平台实测 **67.6173%**，新的审计完整平台最佳（+0.04pp vs W060 67.5812%）。A12 全局更强但本地 M1+flip 略低，平台转正——印证平台是唯一裁判。距离 70 分仅 2.38pp。完整结果见 [`results/70p_campaign_20260731.md`](results/70p_campaign_20260731.md) 与 `results/current_platform_summary.csv`。
 
 ## 已完成工作
 
@@ -67,7 +67,9 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 | 实验 | 平台 | 证据状态 | 说明 |
 |------|------:|----------|------|
-| **W060 + M1/Flip + balanced-prior 0.8** | **67.3329%** | 已审计（新平台最佳） | 更多数据 F1 + M1/Flip 四视图 + prior 0.8（峰值区间） |
+| **A12 + M1/Flip + temp1.5 + balanced-prior 0.85** | **67.6173%** | 已审计（新平台最佳） | LoRA 全 12 block（广度）+ M1/Flip 四视图 + temp1.5 + prior 0.85 |
+| W060 + M1/Flip + temp1.5 + balanced-prior 0.85 | 67.5812% | 已审计 | 温度峰值 1.5 + prior 峰值 0.85 |
+| W060 + M1/Flip + balanced-prior 0.85 | 67.3569% | 已审计 | prior 0.85 峰值（temp1.0） |
 | W050 + M1/Flip + balanced-prior 0.75 | 67.2848% | 已审计 | prior 0.75 略低于 0.8 |
 | W060 + M1/Flip + balanced-prior 1.0 | 67.2007% | 已审计 | prior 1.0 对非完美均衡测试略过矫正 |
 | F1 REBUILD R1 + M1/Flip + balanced-prior 0.25 | 65.5786% | 已审计 | R1 checkpoint + M1/Flip + prior 0.25 |

@@ -6,6 +6,24 @@
 
 # 执行进度
 
+## 2026-08-02 A12（LoRA 全 12 block）：平台 67.6173%，新平台最佳
+
+- T70-08 = LoRA 广度扩展（lora_last_n_blocks 4→12）on W060 数据，平台
+  **67.6173%**，新的审计完整平台最佳，相对 W060+temp1.5+prior0.85
+  （67.5812%）`+0.0361pp`。
+- A12 全局更强（raw 71.07% vs 70.58%，+0.49pp；clean-core 81.69% vs
+  81.33%），但 **本地 M1+flip 融合略低于 W060**（raw 0.7222 vs 0.7241，
+  −0.19pp，任意融合点均为负）——与 R16/high-res 相同的"容量增加伤局部
+  推理"模式，但幅度最小，且**平台实测转正**。再次印证平台是唯一裁判。
+- 训练走完全部 6 epoch，promotion gate 手动核验 PASS（selector_gain
+  +0.0086、raw_gain +0.0078）；best=epoch 6。
+- 推理协议与最佳包一致（M1+flip crop160/top5/l040/f050 + temp1.5 +
+  prior0.85）；audit PASS；与旧最佳差 1,599 预测（6.4%）>500 可靠阈值。
+- ZIP SHA-256 `a4e14f56ce2990220804cf7d78a1d124b39272b14e0ab533449c2432d07854d5`
+  ／checkpoint `a4dbeddd955cfe1e66903df12d5ac13d507b50d646d38f489e6ac4368e047b15`。
+- 距离 70 分 `2.38pp`。已按哈希登记到 `results/current_platform_summary.csv`
+  与 `results/submission_registry.csv`，状态 `platform_valid_promoted`。
+
 ## 2026-08-01 Balanced-prior 0.8：平台 67.3329%，新平台最佳
 
 - P70-PA-007 = W060 + M1/Flip + prior strength 0.8，平台 **67.3329%**，
