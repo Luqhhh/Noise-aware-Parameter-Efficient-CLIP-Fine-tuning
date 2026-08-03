@@ -51,6 +51,7 @@ PEFT_MODES = {
     "ln_post_proj",
     "visual_lora",
     "visual_lora_last_mlp",
+    "visual_lora_mlp_lora",
     "visual_lora_mlp_adapter",
     "visual_mlp_adapter",
     "visual_prompt",
@@ -195,6 +196,7 @@ def validate_config(config: dict[str, Any]) -> None:
         if model.get("peft_mode") not in {
             "visual_lora",
             "visual_lora_last_mlp",
+            "visual_lora_mlp_lora",
             "visual_lora_mlp_adapter",
             "visual_mlp_adapter",
         }:
@@ -370,6 +372,7 @@ def validate_config(config: dict[str, Any]) -> None:
         "ln_post_proj",
         "visual_lora",
         "visual_lora_last_mlp",
+        "visual_lora_mlp_lora",
         "visual_lora_mlp_adapter",
         "visual_mlp_adapter",
         "visual_prompt",
@@ -383,6 +386,7 @@ def validate_config(config: dict[str, Any]) -> None:
     if peft_mode in {
         "visual_lora",
         "visual_lora_last_mlp",
+        "visual_lora_mlp_lora",
         "visual_lora_mlp_adapter",
     }:
         if int(model.get("lora_last_n_blocks", 0)) <= 0:
@@ -399,6 +403,14 @@ def validate_config(config: dict[str, Any]) -> None:
         last_n = int(model.get("full_mlp_last_n_blocks", 0))
         if not 1 <= last_n <= 12:
             raise ConfigError("full_mlp_last_n_blocks must be in [1,12]")
+    if peft_mode == "visual_lora_mlp_lora":
+        last_n = int(model.get("mlp_lora_last_n_blocks", 0))
+        if not 1 <= last_n <= 12:
+            raise ConfigError("mlp_lora_last_n_blocks must be in [1,12]")
+        if int(model.get("mlp_lora_rank", 0)) <= 0:
+            raise ConfigError("mlp_lora_rank must be positive")
+        if float(model.get("mlp_lora_alpha", 0.0)) <= 0.0:
+            raise ConfigError("mlp_lora_alpha must be positive")
     if peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
         if int(model.get("visual_adapter_last_n_blocks", 0)) <= 0:
             raise ConfigError(

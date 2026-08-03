@@ -1781,6 +1781,7 @@ def _validate_effective_spec(spec: dict[str, Any], peft_mode: str) -> None:
         "ln_post_proj",
         "visual_lora",
         "visual_lora_last_mlp",
+        "visual_lora_mlp_lora",
         "visual_lora_mlp_adapter",
         "visual_mlp_adapter",
         "visual_prompt",
@@ -1809,6 +1810,12 @@ def _validate_effective_spec(spec: dict[str, Any], peft_mode: str) -> None:
             raise RuntimeError("Last-MLP mode must keep visual attention frozen")
         if any(".parametrizations." in name for name in names):
             raise RuntimeError("Last-MLP mode must keep inherited LoRA frozen")
+    if peft_mode == "visual_lora_mlp_lora":
+        names = spec["trainable_names"]
+        if not any(".mlp." in name and ".parametrizations." in name for name in names):
+            raise RuntimeError("MLP-LoRA mode has no trainable MLP LoRA")
+        if any(".attn." in name for name in names):
+            raise RuntimeError("MLP-LoRA mode must keep visual attention frozen")
     if peft_mode == "visual_prompt" and not any(
         ".visual_prompt." in name for name in spec["trainable_names"]
     ):

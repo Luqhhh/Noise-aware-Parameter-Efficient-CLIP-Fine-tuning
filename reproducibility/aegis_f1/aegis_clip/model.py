@@ -152,6 +152,41 @@ def install_visual_attention_lora(
     return selected
 
 
+def install_visual_mlp_lora(
+    visual: nn.Module,
+    *,
+    last_n_blocks: int,
+    rank: int,
+    alpha: float,
+) -> list[int]:
+    """Install identity-at-initialisation LoRA on CLIP ViT MLP linears."""
+    try:
+        blocks = visual.transformer.resblocks
+    except AttributeError as exc:
+        raise ValueError("Visual MLP LoRA requires CLIP transformer blocks") from exc
+    block_count = len(blocks)
+    if not 1 <= int(last_n_blocks) <= block_count:
+        raise ValueError(
+            f"mlp_lora_last_n_blocks must be in [1,{block_count}]"
+        )
+    selected = list(range(block_count - int(last_n_blocks), block_count))
+    for index in selected:
+        linears = [
+            module
+            for module in blocks[index].mlp.modules()
+            if isinstance(module, nn.Linear)
+        ]
+        if len(linears) != 2:
+            raise ValueError("Visual MLP LoRA requires exactly two MLP linears")
+        for linear in linears:
+            weight = linear.weight
+            lora = AdditiveLowRankParametrization(
+                int(weight.shape[0]), int(weight.shape[1]), int(rank), float(alpha)
+            ).to(device=weight.device, dtype=weight.dtype)
+            parametrize.register_parametrization(linear, "weight", lora)
+    return selected
+
+
 class ResidualFeatureAdapter(nn.Module):
     """Near-identity bottleneck adapter for frozen CLIP image features."""
 
@@ -387,6 +422,9 @@ class AegisCLIP(nn.Module):
         visual_adapter_scale: float = 0.1,
         visual_adapter_dropout: float = 0.1,
         full_mlp_last_n_blocks: int = 1,
+        mlp_lora_last_n_blocks: int = 12,
+        mlp_lora_rank: int = 4,
+        mlp_lora_alpha: float = 4.0,
         visual_prompt_last_n_blocks: int = 12,
         visual_prompt_num_tokens: int = 5,
         visual_prompt_dropout: float = 0.0,
@@ -402,6 +440,7 @@ class AegisCLIP(nn.Module):
             "ln_post_proj",
             "visual_lora",
             "visual_lora_last_mlp",
+            "visual_lora_mlp_lora",
             "visual_lora_mlp_adapter",
             "visual_mlp_adapter",
             "visual_prompt",
@@ -426,6 +465,10 @@ class AegisCLIP(nn.Module):
         self.visual_adapter_block_indices: list[int] = []
         self.full_mlp_last_n_blocks = int(full_mlp_last_n_blocks)
         self.full_mlp_block_indices: list[int] = []
+        self.mlp_lora_last_n_blocks = int(mlp_lora_last_n_blocks)
+        self.mlp_lora_rank = int(mlp_lora_rank)
+        self.mlp_lora_alpha = float(mlp_lora_alpha)
+        self.mlp_lora_block_indices: list[int] = []
         self.visual_prompt_last_n_blocks = int(visual_prompt_last_n_blocks)
         self.visual_prompt_num_tokens = int(visual_prompt_num_tokens)
         self.visual_prompt_dropout = float(visual_prompt_dropout)
@@ -457,6 +500,7 @@ class AegisCLIP(nn.Module):
         if self.peft_mode in {
             "visual_lora",
             "visual_lora_last_mlp",
+            "visual_lora_mlp_lora",
             "visual_lora_mlp_adapter",
         }:
             self.lora_block_indices = install_visual_attention_lora(
@@ -475,6 +519,13 @@ class AegisCLIP(nn.Module):
                 )
             self.full_mlp_block_indices = list(
                 range(len(blocks) - self.full_mlp_last_n_blocks, len(blocks))
+            )
+        if self.peft_mode == "visual_lora_mlp_lora":
+            self.mlp_lora_block_indices = install_visual_mlp_lora(
+                self.visual,
+                last_n_blocks=self.mlp_lora_last_n_blocks,
+                rank=self.mlp_lora_rank,
+                alpha=self.mlp_lora_alpha,
             )
         if self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
             self.visual_adapter_block_indices = install_visual_mlp_adapters(
@@ -532,6 +583,12 @@ class AegisCLIP(nn.Module):
             for parameter in self.visual.ln_post.parameters():
                 parameter.requires_grad_(True)
             self.visual.proj.requires_grad_(True)
+        elif self.peft_mode == "visual_lora_mlp_lora":
+            for index in self.mlp_lora_block_indices:
+                for module in self.visual.transformer.resblocks[index].mlp.modules():
+                    if isinstance(module, AdditiveLowRankParametrization):
+                        for parameter in module.parameters():
+                            parameter.requires_grad_(True)
         elif self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
             for index in self.visual_adapter_block_indices:
                 for parameter in self.visual.transformer.resblocks[
@@ -836,6 +893,26 @@ class AegisCLIP(nn.Module):
                 if self.peft_mode == "visual_lora_last_mlp"
                 else None
             ),
+            "mlp_lora_last_n_blocks": (
+                self.mlp_lora_last_n_blocks
+                if self.peft_mode == "visual_lora_mlp_lora"
+                else None
+            ),
+            "mlp_lora_block_indices": (
+                self.mlp_lora_block_indices
+                if self.peft_mode == "visual_lora_mlp_lora"
+                else None
+            ),
+            "mlp_lora_rank": (
+                self.mlp_lora_rank
+                if self.peft_mode == "visual_lora_mlp_lora"
+                else None
+            ),
+            "mlp_lora_alpha": (
+                self.mlp_lora_alpha
+                if self.peft_mode == "visual_lora_mlp_lora"
+                else None
+            ),
             "visual_prompt_last_n_blocks": (
                 self.visual_prompt_last_n_blocks
                 if self.peft_mode == "visual_prompt"
@@ -920,6 +997,11 @@ def build_model(
         full_mlp_last_n_blocks=int(
             model_config.get("full_mlp_last_n_blocks", 1)
         ),
+        mlp_lora_last_n_blocks=int(
+            model_config.get("mlp_lora_last_n_blocks", 12)
+        ),
+        mlp_lora_rank=int(model_config.get("mlp_lora_rank", 4)),
+        mlp_lora_alpha=float(model_config.get("mlp_lora_alpha", 4.0)),
         visual_prompt_last_n_blocks=int(
             model_config.get("visual_prompt_last_n_blocks", 12)
         ),

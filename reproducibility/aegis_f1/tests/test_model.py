@@ -420,6 +420,67 @@ def test_lora_last_mlp_trains_only_last_mlp_post_norm_projection_and_head() -> N
     assert "classifier.weight" in trainable
 
 
+def test_hybrid_attention_lora_mlp_lora_trains_only_mlp_low_rank_updates() -> None:
+    visual = TinyAdapterVisual()
+    reference = deepcopy(visual)
+    model = AegisCLIP(
+        visual,
+        num_classes=3,
+        feature_dim=4,
+        peft_mode="visual_lora_mlp_lora",
+        lora_last_n_blocks=2,
+        lora_rank=2,
+        lora_alpha=2.0,
+        mlp_lora_last_n_blocks=2,
+        mlp_lora_rank=2,
+        mlp_lora_alpha=2.0,
+    )
+    images = torch.randn(5, 3, 4, 4)
+    with torch.no_grad():
+        expected = torch.nn.functional.normalize(reference(images), dim=1)
+        actual = model.encode_image(images)
+    assert torch.allclose(actual, expected, atol=1.0e-6)
+
+    model(images=images).sum().backward()
+    trainable = {name for name, value in model.named_parameters() if value.requires_grad}
+    assert model.mlp_lora_block_indices == [0, 1]
+    assert any(".mlp." in name and name.endswith("lora_B") for name in trainable)
+    assert not any(".attn." in name for name in trainable)
+    assert not any(".mlp." in name and name.endswith(".original") for name in trainable)
+    assert any(
+        parameter.grad is not None and torch.count_nonzero(parameter.grad) > 0
+        for name, parameter in model.named_parameters()
+        if ".mlp." in name and name.endswith("lora_B")
+    )
+
+
+def test_mlp_lora_initialises_from_attention_lora_checkpoint(tmp_path) -> None:
+    visual = TinyAdapterVisual()
+    parent = AegisCLIP(
+        deepcopy(visual), num_classes=3, feature_dim=4,
+        peft_mode="visual_lora", lora_last_n_blocks=2,
+        lora_rank=2, lora_alpha=2.0,
+    )
+    child = AegisCLIP(
+        deepcopy(visual), num_classes=3, feature_dim=4,
+        peft_mode="visual_lora_mlp_lora", lora_last_n_blocks=2,
+        lora_rank=2, lora_alpha=2.0, mlp_lora_last_n_blocks=2,
+        mlp_lora_rank=2, mlp_lora_alpha=2.0,
+    )
+    with torch.no_grad():
+        for name, parameter in parent.named_parameters():
+            if ".attn." in name and name.endswith(("q_B", "v_B", "lora_B")):
+                parameter.normal_(mean=0.0, std=0.01)
+    path = tmp_path / "attention_lora_parent.pt"
+    torch.save({"model_state_dict": parent.state_dict(), "epoch": 7}, path)
+    load_initial_weights(child, path, torch.device("cpu"))
+    images = torch.randn(5, 3, 4, 4)
+    parent.eval()
+    child.eval()
+    with torch.no_grad():
+        assert torch.allclose(child(images=images), parent(images=images), atol=1.0e-6)
+
+
 def test_deep_visual_prompt_trains_only_prompt_and_classifier() -> None:
     model = AegisCLIP(
         TinyGridVisual(),
