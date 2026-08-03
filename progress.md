@@ -35,7 +35,7 @@
 - 训练走完全部 6 epoch，promotion gate 手动核验 PASS（selector_gain
   +0.0086、raw_gain +0.0078）；best=epoch 6。
 - 推理协议与最佳包一致（M1+flip crop160/top5/l040/f050 + temp1.5 +
-  prior0.85）；audit PASS；与旧最佳差 1,599 预测（6.4%）>500 可靠阈值。
+  prior0.85）；audit PASS；与旧最佳差 1,599 预测（6.4%）。
 - ZIP SHA-256 `a4e14f56ce2990220804cf7d78a1d124b39272b14e0ab533449c2432d07854d5`
   ／checkpoint `a4dbeddd955cfe1e66903df12d5ac13d507b50d646d38f489e6ac4368e047b15`。
 - 距离 70 分 `2.38pp`。已按哈希登记到 `results/current_platform_summary.csv`
@@ -46,8 +46,9 @@
 - P70-PA-007 = W060 + M1/Flip + prior strength 0.8，平台 **67.3329%**，
   新审计完整平台最佳，相对 0.75（67.2848%）`+0.0481pp`。
 - 强度曲线 0.6/0.75/0.8/1.0，**峰值在 0.8~1.0 之间**；0.85/0.9 包生成中。
-- 平台异常诊断完成：对差异 <500 预测的相近包有缓存 glitch；W060+0.6 确认
-  平台能正确测差异大的包。
+- 平台异常诊断完成：W060+0.75 与 W050+0.75 上报同分；W060+0.6 确认平台能
+  正确测差异大的包（注：2026-08-03 用户确认平台无缓存机制，"同分"为统计
+  巧合而非缓存 glitch，详见 70p_campaign 更正）。
 - 已按哈希登记到 `results/current_platform_summary.csv` 与
   `results/submission_registry.csv`。
 

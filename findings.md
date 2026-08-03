@@ -12,7 +12,8 @@
   −0.19pp vs W060，平台 +0.04pp）→ A12_CORR（M1+flip 0.7233 介于，平台
   +0.07pp vs A12）。本地 M1+flip ±0.2pp 以内不能可靠预测平台方向。
 - 更长训练方向关闭：A12_E10（epoch 6→10）best=epoch9 仅比 A12 原版 +0.01pp
-  clean-core，低于可靠阈值，不生成包。A12 最优 epoch 已在其原始 6-epoch 运行内。
+  clean-core，低于本地 ±0.1pp 平台预测可靠性阈值，不生成包。A12 最优 epoch 已在
+  其原始 6-epoch 运行内。
 - promotion PASS（selector +0.0095、raw +0.0079）；best=epoch 8。
 - ZIP SHA-256：`b2b1924a98ad9179c17d2421c3584a910070e0c611713707079c5ac58f3e0585`。
 
