@@ -6,6 +6,23 @@
 
 # 执行进度
 
+## 2026-08-03 A12_CORR（A12 + 伪标签修正）：平台 67.6853%，新平台最佳
+
+- T70-09 = A12 + 伪标签软修正（correction_start_epoch 2，8 epoch），平台
+  **67.6853%**，新的审计完整平台最佳，相对 A12（67.6173%）`+0.0681pp`。
+- 全局更强（raw 71.21% vs 71.07%、clean-core 81.83% vs 81.69%）；M1+flip
+  融合 0.7233 介于 W060（0.7241）和 A12（0.7222）之间。
+- **关键：伪标签修正与广度 LoRA 兼容**——在 W060 上 CORR 曾因 M1+flip 下降
+  而不叠加（67.1807 回归），在 A12 上从 epoch 4 起持续正向（epoch2 略落后 →
+  epoch3 追平 → epoch4 反超）。连续第二个"全局更强、本地 M1+flip 略降、平台
+  转正"的 checkpoint。
+- promotion PASS（selector_gain +0.0095、raw_gain +0.0089，高于 A12）。
+  best=epoch 8。推理协议与最佳包一致（M1+flip temp1.5 prior0.85）。
+- ZIP SHA-256 `b2b1924a98ad9179c17d2421c3584a910070e0c611713707079c5ac58f3e0585`
+  ／checkpoint `ec6948c96aaa921df1034c78972dec8ca58e88aea04fd7ccbc58b143060a3238`。
+- 距离 70 分 `2.31pp`。已按哈希登记到 `results/current_platform_summary.csv`
+  与 `results/submission_registry.csv`，状态 `platform_valid_promoted`。
+
 ## 2026-08-02 A12（LoRA 全 12 block）：平台 67.6173%，新平台最佳
 
 - T70-08 = LoRA 广度扩展（lora_last_n_blocks 4→12）on W060 数据，平台
