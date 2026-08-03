@@ -400,6 +400,7 @@ class AegisCLIP(nn.Module):
             "visual_ln",
             "ln_post_proj",
             "visual_lora",
+            "visual_lora_mlp_adapter",
             "visual_mlp_adapter",
             "visual_prompt",
         }:
@@ -449,7 +450,7 @@ class AegisCLIP(nn.Module):
             self.classifier = nn.Linear(feature_dim, num_classes)
             nn.init.xavier_uniform_(self.classifier.weight)
             nn.init.zeros_(self.classifier.bias)
-        if self.peft_mode == "visual_lora":
+        if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}:
             self.lora_block_indices = install_visual_attention_lora(
                 self.visual,
                 last_n_blocks=self.lora_last_n_blocks,
@@ -458,7 +459,7 @@ class AegisCLIP(nn.Module):
                 adapt_qv=self.lora_adapt_qv,
                 adapt_out=self.lora_adapt_out,
             )
-        elif self.peft_mode == "visual_mlp_adapter":
+        if self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
             self.visual_adapter_block_indices = install_visual_mlp_adapters(
                 self.visual,
                 last_n_blocks=self.visual_adapter_last_n_blocks,
@@ -504,7 +505,7 @@ class AegisCLIP(nn.Module):
                 ):
                     for parameter in module.parameters():
                         parameter.requires_grad_(True)
-        elif self.peft_mode == "visual_mlp_adapter":
+        elif self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
             for index in self.visual_adapter_block_indices:
                 for parameter in self.visual.transformer.resblocks[
                     index
@@ -528,7 +529,7 @@ class AegisCLIP(nn.Module):
                 ):
                     module.train(True)
         self.feature_adapter.train(mode and self.peft_mode == "feature_adapter")
-        if self.peft_mode == "visual_mlp_adapter":
+        if self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
             for index in self.visual_adapter_block_indices:
                 self.visual.transformer.resblocks[index].adaptmlp.train(mode)
         elif self.peft_mode == "visual_prompt":
@@ -727,23 +728,33 @@ class AegisCLIP(nn.Module):
             ),
             "lora_last_n_blocks": (
                 self.lora_last_n_blocks
-                if self.peft_mode == "visual_lora"
+                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
                 else None
             ),
             "lora_block_indices": (
-                self.lora_block_indices if self.peft_mode == "visual_lora" else None
+                self.lora_block_indices
+                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
+                else None
             ),
             "lora_rank": (
-                self.lora_rank if self.peft_mode == "visual_lora" else None
+                self.lora_rank
+                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
+                else None
             ),
             "lora_alpha": (
-                self.lora_alpha if self.peft_mode == "visual_lora" else None
+                self.lora_alpha
+                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
+                else None
             ),
             "lora_adapt_qv": (
-                self.lora_adapt_qv if self.peft_mode == "visual_lora" else None
+                self.lora_adapt_qv
+                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
+                else None
             ),
             "lora_adapt_out": (
-                self.lora_adapt_out if self.peft_mode == "visual_lora" else None
+                self.lora_adapt_out
+                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
+                else None
             ),
             "classifier_mode": self.classifier_mode,
             "classifier_residual_scale": (
@@ -753,27 +764,27 @@ class AegisCLIP(nn.Module):
             ),
             "visual_adapter_last_n_blocks": (
                 self.visual_adapter_last_n_blocks
-                if self.peft_mode == "visual_mlp_adapter"
+                if self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}
                 else None
             ),
             "visual_adapter_block_indices": (
                 self.visual_adapter_block_indices
-                if self.peft_mode == "visual_mlp_adapter"
+                if self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}
                 else None
             ),
             "visual_adapter_bottleneck": (
                 self.visual_adapter_bottleneck
-                if self.peft_mode == "visual_mlp_adapter"
+                if self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}
                 else None
             ),
             "visual_adapter_scale": (
                 self.visual_adapter_scale
-                if self.peft_mode == "visual_mlp_adapter"
+                if self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}
                 else None
             ),
             "visual_adapter_dropout": (
                 self.visual_adapter_dropout
-                if self.peft_mode == "visual_mlp_adapter"
+                if self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}
                 else None
             ),
             "visual_prompt_last_n_blocks": (

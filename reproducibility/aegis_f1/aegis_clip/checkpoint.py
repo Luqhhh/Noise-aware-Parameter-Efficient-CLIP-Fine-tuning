@@ -92,7 +92,10 @@ def load_initial_weights(
                         source, (target_size, target_size)
                     )
                 )
-    if getattr(model, "peft_mode", None) == "visual_lora":
+    if getattr(model, "peft_mode", None) in {
+        "visual_lora",
+        "visual_lora_mlp_adapter",
+    }:
         _remap_base_weights_for_parametrized_model(model, state)
     incompatible = model.load_state_dict(state, strict=False)
     allowed_missing: set[str] = set()
@@ -102,7 +105,10 @@ def load_initial_weights(
             for name in model.state_dict()
             if name.startswith("feature_adapter.")
         )
-    if getattr(model, "peft_mode", None) == "visual_mlp_adapter":
+    if getattr(model, "peft_mode", None) in {
+        "visual_mlp_adapter",
+        "visual_lora_mlp_adapter",
+    }:
         allowed_missing.update(
             name for name in model.state_dict() if ".adaptmlp." in name
         )
@@ -116,7 +122,10 @@ def load_initial_weights(
         allowed_missing.update(
             {"classifier.residual_weight", "classifier.residual_bias"}
         )
-    if getattr(model, "peft_mode", None) == "visual_lora":
+    if getattr(model, "peft_mode", None) in {
+        "visual_lora",
+        "visual_lora_mlp_adapter",
+    }:
         allowed_missing.update(
             name
             for name in model.state_dict()

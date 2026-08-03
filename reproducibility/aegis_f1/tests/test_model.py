@@ -376,6 +376,26 @@ def test_visual_mlp_adapter_initialises_from_frozen_checkpoint(tmp_path) -> None
         assert torch.equal(adapted(images=images), frozen(images=images))
 
 
+def test_hybrid_lora_adapter_keeps_lora_frozen_and_adapter_trainable() -> None:
+    model = AegisCLIP(
+        TinyAdapterVisual(),
+        num_classes=3,
+        feature_dim=4,
+        peft_mode="visual_lora_mlp_adapter",
+        lora_last_n_blocks=1,
+        lora_rank=2,
+        lora_alpha=2.0,
+        visual_adapter_last_n_blocks=1,
+        visual_adapter_bottleneck=2,
+    )
+
+    trainable = {name for name, value in model.named_parameters() if value.requires_grad}
+    assert any(".adaptmlp." in name for name in trainable)
+    assert not any(".parametrizations." in name for name in trainable)
+    assert model.lora_block_indices == [1]
+    assert model.visual_adapter_block_indices == [1]
+
+
 def test_deep_visual_prompt_trains_only_prompt_and_classifier() -> None:
     model = AegisCLIP(
         TinyGridVisual(),

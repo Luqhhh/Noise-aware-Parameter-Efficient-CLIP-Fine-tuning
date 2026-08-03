@@ -50,6 +50,7 @@ PEFT_MODES = {
     "visual_ln",
     "ln_post_proj",
     "visual_lora",
+    "visual_lora_mlp_adapter",
     "visual_mlp_adapter",
     "visual_prompt",
 }
@@ -190,7 +191,11 @@ def validate_config(config: dict[str, Any]) -> None:
             raise ConfigError("active_forgetting requires mixup_probability=0")
     attention_local = loss.get("attention_local_training", {})
     if attention_local.get("enabled", False):
-        if model.get("peft_mode") not in {"visual_lora", "visual_mlp_adapter"}:
+        if model.get("peft_mode") not in {
+            "visual_lora",
+            "visual_lora_mlp_adapter",
+            "visual_mlp_adapter",
+        }:
             raise ConfigError(
                 "attention_local_training requires online visual LoRA or MLP adapters"
             )
@@ -362,6 +367,7 @@ def validate_config(config: dict[str, Any]) -> None:
         "visual_ln",
         "ln_post_proj",
         "visual_lora",
+        "visual_lora_mlp_adapter",
         "visual_mlp_adapter",
         "visual_prompt",
     }:
@@ -371,7 +377,7 @@ def validate_config(config: dict[str, Any]) -> None:
             )
         if float(train.get("backbone_lr", 0.0)) <= 0.0:
             raise ConfigError("Visual PEFT requires train.backbone_lr > 0")
-    if peft_mode == "visual_lora":
+    if peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}:
         if int(model.get("lora_last_n_blocks", 0)) <= 0:
             raise ConfigError("visual_lora requires model.lora_last_n_blocks > 0")
         if int(model.get("lora_rank", 0)) <= 0:
@@ -382,7 +388,7 @@ def validate_config(config: dict[str, Any]) -> None:
             model.get("lora_adapt_out", True)
         ):
             raise ConfigError("visual_lora must adapt Q/V, output, or both")
-    if peft_mode == "visual_mlp_adapter":
+    if peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
         if int(model.get("visual_adapter_last_n_blocks", 0)) <= 0:
             raise ConfigError(
                 "visual_mlp_adapter requires visual_adapter_last_n_blocks > 0"
