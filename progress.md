@@ -6,6 +6,21 @@
 
 # 执行进度
 
+## 2026-08-03 FLAT（平 LR 子模型）：平台 67.7014%，新平台最佳
+
+- T2 = A12_CORR 配方 + schedule_epochs 16（平 LR）+ 噪声盲 E2 基座，平台
+  **67.7014%**，新的审计完整平台最佳，相对 A12_CORR（67.6853%）`+0.0161pp`。
+- 本地 bare clean 0.8193（+0.1pp vs A12_CORR 0.8183），promotion PASS；
+  但 M1+flip 在验证协议 l040/f050 上持平（0.8249 vs 0.8251）。平台转正——
+  更强的裸表征微弱胜过本地融合指标。
+- 推理协议与最佳包一致（M1+flip l040/f050 + temp1.5 + prior0.85）。
+- ZIP SHA-256 `db2f42f9925081a2ce788a1a826d0b83af7d960c02c44f481b3748956f7974ba`
+  ／checkpoint `6543d93bd7bf3b52f70e30487f2d0be6d37dd9e922d678202503df0c61024b54`。
+- 距离 70 分 `2.30pp`。已登记到 `results/current_platform_summary.csv` 与
+  `results/submission_registry.csv`，状态 `platform_valid_promoted`。
+- 本轮关闭方向：clip_letterbox（负）、信任感知父模型丢弃版（0.7835）与
+  连续加权版（0.8085≈0.8088 持平）。详见 `results/75p_round2_20260803.md`。
+
 ## 2026-08-03 A12_CORR（A12 + 伪标签修正）：平台 67.6853%，新平台最佳
 
 - T70-09 = A12 + 伪标签软修正（correction_start_epoch 2，8 epoch），平台

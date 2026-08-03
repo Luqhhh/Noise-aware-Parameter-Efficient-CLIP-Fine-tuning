@@ -1,5 +1,26 @@
 # 最新发现（2026-08-03）
 
+## FLAT（平 LR 子模型）平台 67.7014%，新平台最佳，距 70 分 2.30pp
+
+- **FLAT = A12_CORR 配方 + schedule_epochs 16（平 LR 余弦衰减）on 噪声盲 E2**，
+  平台实测 **67.7014%**，新的审计完整平台最佳，相对 A12_CORR（67.6853%）
+  `+0.0161pp`。
+- **关键现象：本地 bare clean +0.1pp（0.8193 vs 0.8183），但 M1+flip 持平
+  （l040/f050 上 0.8249 vs 0.8251）**；平台却转正 +0.016pp。又一次印证
+  "平台是唯一裁判"——本地 ±0.1pp 级差异不可靠预测，但更强的裸表征在本轮
+  微弱转正。
+- **flat LR 全程每 epoch 小幅领先** A12_CORR（ep2-8 各 +0.0002~0.0007 clean），
+  平 LR 让 LoRA 在后期保持更高 LR（ep8 仍在初始 50%），提取略多收益。
+- **信任感知父模型方向关闭**：丢弃版（clean 0.7835）和连续加权版（0.8085）
+  均未超过噪声盲 E2（0.8088）。父阶段主要价值在全部数据 + GCE + MixUp。
+- **clip_letterbox 推理关闭**：raw −5pp，全部指标低于 center-crop。
+- ZIP SHA-256：`db2f42f9925081a2ce788a1a826d0b83af7d960c02c44f481b3748956f7974ba`
+  ／checkpoint `6543d93bd7bf3b52f70e30487f2d0be6d37dd9e922d678202503df0c61024b54`。
+- 距离 70 分 `2.30pp`。已按哈希登记到 `results/current_platform_summary.csv`
+  与 `results/submission_registry.csv`，状态 `platform_valid_promoted`。
+
+# 历史发现（2026-08-03 较早）
+
 ## A12_CORR（A12 + 伪标签修正）平台 67.6853%，新平台最佳，距 70 分 2.31pp
 
 - **A12 + 伪标签软修正平台实测 67.6853%**，新的审计完整平台最佳，相对 A12
