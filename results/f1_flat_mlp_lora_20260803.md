@@ -3,6 +3,8 @@
 ## 结论
 
 固定 3 epochs 训练完成，使用最终 `epoch_3.pt` 生成平台候选，不使用本地晋级门槛。
+平台得分为 **67.78147154243601%**，比此前 FLAT 最佳 67.70136580285977%
+提升 **0.080106 个百分点**，成为新的平台最佳。
 该实验冻结 FLAT 已学习的全部 attention-LoRA，在 12 个视觉 Transformer block
 的两层 MLP 线性映射上增加 rank-4 LoRA。MLP-LoRA 共 368,640 个参数；加低学习率
 线性头后总可训练参数为 625,140，attention 参数保持冻结。
@@ -54,7 +56,8 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.train \
 - ZIP SHA-256：
   `afa7cf8863b15218b6dc2975874406f85dc599824c693f4a37ba97cc9ec6efc7`
 - `aegis_clip.cli.audit_submission --allow-tta`：PASS
-- 平台状态：`selected_audited_pending_platform`
+- 平台得分：67.78147154243601%
+- 平台状态：`platform_valid_promoted`（当前最佳，尚未达到 70%）
 
 ## 同轮关闭的推理方向
 
