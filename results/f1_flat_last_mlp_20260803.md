@@ -2,7 +2,8 @@
 
 ## 结论
 
-选择 epoch 2 生成平台候选。该实验从当前平台最佳 FLAT checkpoint 继续训练，
+平台实测 **67.65730764609285%**，低于 FLAT 最佳 67.70136580285977%
+（-0.0441pp），因此关闭、不晋级。该实验从 FLAT checkpoint 继续训练，
 冻结继承的全部 attention-LoRA 和 attention 参数，只更新最后一个视觉 Transformer
 block 的 MLP/`ln_2`、`visual.ln_post`、`visual.proj` 与低学习率分类头，共
 5,375,220 个可训练参数。这样保持 M1 裁剪所使用的注意力图不变，同时允许最终
@@ -53,4 +54,5 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.train \
 - ZIP SHA-256：
   `583e9858f8700d3399ca4dfcfd38c70f783de6293fb3bc8fc6cc6f99a5c47692`
 - `aegis_clip.cli.audit_submission --allow-tta`：PASS
-- 平台状态：`selected_audited_pending_platform`
+- 平台结果：67.65730764609285%（较 FLAT -0.0441pp）
+- 平台状态：`platform_valid_not_promoted`
