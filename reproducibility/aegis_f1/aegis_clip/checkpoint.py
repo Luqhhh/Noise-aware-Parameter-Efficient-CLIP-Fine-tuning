@@ -94,6 +94,7 @@ def load_initial_weights(
                 )
     if getattr(model, "peft_mode", None) in {
         "visual_lora",
+        "visual_lora_last_mlp",
         "visual_lora_mlp_adapter",
     }:
         _remap_base_weights_for_parametrized_model(model, state)
@@ -124,6 +125,7 @@ def load_initial_weights(
         )
     if getattr(model, "peft_mode", None) in {
         "visual_lora",
+        "visual_lora_last_mlp",
         "visual_lora_mlp_adapter",
     }:
         allowed_missing.update(

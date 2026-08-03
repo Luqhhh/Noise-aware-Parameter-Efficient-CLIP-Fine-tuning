@@ -50,6 +50,7 @@ PEFT_MODES = {
     "visual_ln",
     "ln_post_proj",
     "visual_lora",
+    "visual_lora_last_mlp",
     "visual_lora_mlp_adapter",
     "visual_mlp_adapter",
     "visual_prompt",
@@ -193,6 +194,7 @@ def validate_config(config: dict[str, Any]) -> None:
     if attention_local.get("enabled", False):
         if model.get("peft_mode") not in {
             "visual_lora",
+            "visual_lora_last_mlp",
             "visual_lora_mlp_adapter",
             "visual_mlp_adapter",
         }:
@@ -367,6 +369,7 @@ def validate_config(config: dict[str, Any]) -> None:
         "visual_ln",
         "ln_post_proj",
         "visual_lora",
+        "visual_lora_last_mlp",
         "visual_lora_mlp_adapter",
         "visual_mlp_adapter",
         "visual_prompt",
@@ -377,7 +380,11 @@ def validate_config(config: dict[str, Any]) -> None:
             )
         if float(train.get("backbone_lr", 0.0)) <= 0.0:
             raise ConfigError("Visual PEFT requires train.backbone_lr > 0")
-    if peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}:
+    if peft_mode in {
+        "visual_lora",
+        "visual_lora_last_mlp",
+        "visual_lora_mlp_adapter",
+    }:
         if int(model.get("lora_last_n_blocks", 0)) <= 0:
             raise ConfigError("visual_lora requires model.lora_last_n_blocks > 0")
         if int(model.get("lora_rank", 0)) <= 0:
@@ -388,6 +395,10 @@ def validate_config(config: dict[str, Any]) -> None:
             model.get("lora_adapt_out", True)
         ):
             raise ConfigError("visual_lora must adapt Q/V, output, or both")
+    if peft_mode == "visual_lora_last_mlp":
+        last_n = int(model.get("full_mlp_last_n_blocks", 0))
+        if not 1 <= last_n <= 12:
+            raise ConfigError("full_mlp_last_n_blocks must be in [1,12]")
     if peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
         if int(model.get("visual_adapter_last_n_blocks", 0)) <= 0:
             raise ConfigError(

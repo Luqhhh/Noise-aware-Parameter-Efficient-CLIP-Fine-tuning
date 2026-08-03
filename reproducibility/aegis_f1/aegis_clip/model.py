@@ -386,6 +386,7 @@ class AegisCLIP(nn.Module):
         visual_adapter_bottleneck: int = 64,
         visual_adapter_scale: float = 0.1,
         visual_adapter_dropout: float = 0.1,
+        full_mlp_last_n_blocks: int = 1,
         visual_prompt_last_n_blocks: int = 12,
         visual_prompt_num_tokens: int = 5,
         visual_prompt_dropout: float = 0.0,
@@ -400,6 +401,7 @@ class AegisCLIP(nn.Module):
             "visual_ln",
             "ln_post_proj",
             "visual_lora",
+            "visual_lora_last_mlp",
             "visual_lora_mlp_adapter",
             "visual_mlp_adapter",
             "visual_prompt",
@@ -422,6 +424,8 @@ class AegisCLIP(nn.Module):
         self.visual_adapter_scale = float(visual_adapter_scale)
         self.visual_adapter_dropout = float(visual_adapter_dropout)
         self.visual_adapter_block_indices: list[int] = []
+        self.full_mlp_last_n_blocks = int(full_mlp_last_n_blocks)
+        self.full_mlp_block_indices: list[int] = []
         self.visual_prompt_last_n_blocks = int(visual_prompt_last_n_blocks)
         self.visual_prompt_num_tokens = int(visual_prompt_num_tokens)
         self.visual_prompt_dropout = float(visual_prompt_dropout)
@@ -450,7 +454,11 @@ class AegisCLIP(nn.Module):
             self.classifier = nn.Linear(feature_dim, num_classes)
             nn.init.xavier_uniform_(self.classifier.weight)
             nn.init.zeros_(self.classifier.bias)
-        if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}:
+        if self.peft_mode in {
+            "visual_lora",
+            "visual_lora_last_mlp",
+            "visual_lora_mlp_adapter",
+        }:
             self.lora_block_indices = install_visual_attention_lora(
                 self.visual,
                 last_n_blocks=self.lora_last_n_blocks,
@@ -458,6 +466,15 @@ class AegisCLIP(nn.Module):
                 alpha=self.lora_alpha,
                 adapt_qv=self.lora_adapt_qv,
                 adapt_out=self.lora_adapt_out,
+            )
+        if self.peft_mode == "visual_lora_last_mlp":
+            blocks = self.visual.transformer.resblocks
+            if not 1 <= self.full_mlp_last_n_blocks <= len(blocks):
+                raise ValueError(
+                    "full_mlp_last_n_blocks must select valid visual blocks"
+                )
+            self.full_mlp_block_indices = list(
+                range(len(blocks) - self.full_mlp_last_n_blocks, len(blocks))
             )
         if self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
             self.visual_adapter_block_indices = install_visual_mlp_adapters(
@@ -505,6 +522,16 @@ class AegisCLIP(nn.Module):
                 ):
                     for parameter in module.parameters():
                         parameter.requires_grad_(True)
+        elif self.peft_mode == "visual_lora_last_mlp":
+            for index in self.full_mlp_block_indices:
+                block = self.visual.transformer.resblocks[index]
+                for parameter in block.ln_2.parameters():
+                    parameter.requires_grad_(True)
+                for parameter in block.mlp.parameters():
+                    parameter.requires_grad_(True)
+            for parameter in self.visual.ln_post.parameters():
+                parameter.requires_grad_(True)
+            self.visual.proj.requires_grad_(True)
         elif self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
             for index in self.visual_adapter_block_indices:
                 for parameter in self.visual.transformer.resblocks[
@@ -529,6 +556,12 @@ class AegisCLIP(nn.Module):
                 ):
                     module.train(True)
         self.feature_adapter.train(mode and self.peft_mode == "feature_adapter")
+        if self.peft_mode == "visual_lora_last_mlp":
+            for index in self.full_mlp_block_indices:
+                block = self.visual.transformer.resblocks[index]
+                block.ln_2.train(mode)
+                block.mlp.train(mode)
+            self.visual.ln_post.train(mode)
         if self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
             for index in self.visual_adapter_block_indices:
                 self.visual.transformer.resblocks[index].adaptmlp.train(mode)
@@ -728,32 +761,38 @@ class AegisCLIP(nn.Module):
             ),
             "lora_last_n_blocks": (
                 self.lora_last_n_blocks
-                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
+                if self.peft_mode
+                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
                 else None
             ),
             "lora_block_indices": (
                 self.lora_block_indices
-                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
+                if self.peft_mode
+                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
                 else None
             ),
             "lora_rank": (
                 self.lora_rank
-                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
+                if self.peft_mode
+                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
                 else None
             ),
             "lora_alpha": (
                 self.lora_alpha
-                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
+                if self.peft_mode
+                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
                 else None
             ),
             "lora_adapt_qv": (
                 self.lora_adapt_qv
-                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
+                if self.peft_mode
+                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
                 else None
             ),
             "lora_adapt_out": (
                 self.lora_adapt_out
-                if self.peft_mode in {"visual_lora", "visual_lora_mlp_adapter"}
+                if self.peft_mode
+                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
                 else None
             ),
             "classifier_mode": self.classifier_mode,
@@ -785,6 +824,16 @@ class AegisCLIP(nn.Module):
             "visual_adapter_dropout": (
                 self.visual_adapter_dropout
                 if self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}
+                else None
+            ),
+            "full_mlp_last_n_blocks": (
+                self.full_mlp_last_n_blocks
+                if self.peft_mode == "visual_lora_last_mlp"
+                else None
+            ),
+            "full_mlp_block_indices": (
+                self.full_mlp_block_indices
+                if self.peft_mode == "visual_lora_last_mlp"
                 else None
             ),
             "visual_prompt_last_n_blocks": (
@@ -867,6 +916,9 @@ def build_model(
         ),
         visual_adapter_dropout=float(
             model_config.get("visual_adapter_dropout", 0.1)
+        ),
+        full_mlp_last_n_blocks=int(
+            model_config.get("full_mlp_last_n_blocks", 1)
         ),
         visual_prompt_last_n_blocks=int(
             model_config.get("visual_prompt_last_n_blocks", 12)

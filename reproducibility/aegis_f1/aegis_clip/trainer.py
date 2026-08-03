@@ -1780,6 +1780,7 @@ def _validate_effective_spec(spec: dict[str, Any], peft_mode: str) -> None:
         "visual_ln",
         "ln_post_proj",
         "visual_lora",
+        "visual_lora_last_mlp",
         "visual_lora_mlp_adapter",
         "visual_mlp_adapter",
         "visual_prompt",
@@ -1800,6 +1801,14 @@ def _validate_effective_spec(spec: dict[str, Any], peft_mode: str) -> None:
             raise RuntimeError("Hybrid PEFT mode has no trainable MLP adapters")
         if any(".parametrizations." in name for name in spec["trainable_names"]):
             raise RuntimeError("Hybrid PEFT mode must keep inherited LoRA frozen")
+    if peft_mode == "visual_lora_last_mlp":
+        names = spec["trainable_names"]
+        if not any(".mlp." in name for name in names):
+            raise RuntimeError("Last-MLP mode has no trainable visual MLP")
+        if any(".attn." in name for name in names):
+            raise RuntimeError("Last-MLP mode must keep visual attention frozen")
+        if any(".parametrizations." in name for name in names):
+            raise RuntimeError("Last-MLP mode must keep inherited LoRA frozen")
     if peft_mode == "visual_prompt" and not any(
         ".visual_prompt." in name for name in spec["trainable_names"]
     ):

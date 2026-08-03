@@ -396,6 +396,30 @@ def test_hybrid_lora_adapter_keeps_lora_frozen_and_adapter_trainable() -> None:
     assert model.visual_adapter_block_indices == [1]
 
 
+def test_lora_last_mlp_trains_only_last_mlp_post_norm_projection_and_head() -> None:
+    model = AegisCLIP(
+        TinyAdapterVisual(),
+        num_classes=3,
+        feature_dim=4,
+        peft_mode="visual_lora_last_mlp",
+        lora_last_n_blocks=2,
+        lora_rank=2,
+        lora_alpha=2.0,
+        full_mlp_last_n_blocks=1,
+    )
+
+    trainable = {name for name, value in model.named_parameters() if value.requires_grad}
+    assert model.full_mlp_block_indices == [1]
+    assert any("resblocks.1.mlp." in name for name in trainable)
+    assert any("resblocks.1.ln_2." in name for name in trainable)
+    assert not any("resblocks.0.mlp." in name for name in trainable)
+    assert not any(".attn." in name for name in trainable)
+    assert not any(".parametrizations." in name for name in trainable)
+    assert "visual.proj" in trainable
+    assert "visual.ln_post.weight" in trainable
+    assert "classifier.weight" in trainable
+
+
 def test_deep_visual_prompt_trains_only_prompt_and_classifier() -> None:
     model = AegisCLIP(
         TinyGridVisual(),
