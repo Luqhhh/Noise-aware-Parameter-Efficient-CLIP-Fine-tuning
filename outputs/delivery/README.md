@@ -1,0 +1,30 @@
+# 最终提交包交付（2026-08-03）
+
+## 提交包列表（均审计通过）
+
+### 1. `current_best_a12corr/` —— 已验证最佳（推荐）
+- 模型：A12_CORR（LoRA 全 12 block + 伪标签修正，on E2 父模型）
+- 推理：M1 attention-crop + flip 四视图（crop160/top5/l040/f050）+ temp1.5 + prior0.85
+- **平台 67.6853%**（审计完整平台最佳，已实测）
+- ZIP SHA-256：`b2b1924a98ad9179c17d2421c3584a910070e0c611713707079c5ac58f3e0585`
+- checkpoint：`ec6948c9…a3238`
+
+### 2. `flat_child_l040_f050/` —— 本轮新候选
+- 模型：FLAT（A12_CORR 配方 + schedule_epochs 16 平 LR，on E2 父模型）
+- 推理：M1+flip（crop160/top5/l040/f050）+ temp1.5 + prior0.85（与验证协议一致）
+- 本地：bare clean 0.8193（+0.1pp vs A12_CORR）；M1+flip clean 0.8249 ≈ A12_CORR 0.8251
+- 与 A12_CORR 预测差 631 处（2.53%），独立 checkpoint
+- ZIP SHA-256：`db2f42f9925081a2ce788a1a826d0b83af7d960c02c44f481b3748956f7974ba`
+- checkpoint：`6543d93b…b54`
+
+## 上传建议
+- 先上传 `current_best_a12corr`（平台验证过 67.69%）。
+- 再上传 `flat_child_l040_f050` 实测对比——本地持平，但平台是唯一裁判，
+  可能 +0.05~0.1pp 或持平。两者保留平台分数更高者。
+
+## 平台要求
+- CSV 格式 `image_name.jpg, 0001`（comma+space，4 位补零标签）
+- 24,967 条预测，500 类全覆盖
+
+## 完整实验记录
+`/home/lux1/noise/results/75p_round2_20260803.md`
