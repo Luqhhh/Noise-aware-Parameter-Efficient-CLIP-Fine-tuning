@@ -141,7 +141,8 @@
 - 最佳 `local_loss_weight=0.50`：raw `+0.0872pp`、trusted macro
   `+0.1219pp`、clean-core `+0.1821pp`、漂移 `0.6538%`、覆盖 500 类。
 - 因 clean-core 未达到预注册 `+0.20pp` 门槛，全部候选
-  `gate_failed/best_not_promoted`；不生成测试提交，关闭该分支。
+  `gate_failed/best_not_promoted`；未生成测试提交，关闭该分支
+  （注：平台实测为准，本地门槛仅作内部提示）。
 - 本机保留与原 F1 父模型同配方的 CE5+MixUp 训练资料；已启动同 split 的 E2
   重建，若复现父基线再进入 F1 LoRA，不使用 split 不同的现成 checkpoint 冒充父模型。
 - 完整报告见 `results/local_adapter_a2_strict_20260730.md`。
@@ -160,7 +161,7 @@
 - A2 STRICT seed 42 复现固定 M1 (`crop160/top5/weight0.50`)：raw +0.8525pp、clean-core +0.3501pp。
 - 小范围定位网格确认 `crop160/top5` 仍是最稳组合；不改定位机制，只将局部分支权重降至 0.35。
 - M1 weight 0.35 双 seed 同向：raw +1.0657/+1.0076pp，clean-core +0.8123/+0.7843pp，均覆盖 500 类。
-- 后续多尺度 M2 在 seed42 虽将 raw 推至 70.8777%，但 proxy macro 和 clean-core 分别比单尺度候选低 0.0156/0.0140pp；未满足全指标同向门槛，停止且不补 seed3407。
+- 后续多尺度 M2 在 seed42 虽将 raw 推至 70.8777%，但 proxy macro 和 clean-core 分别比单尺度候选低 0.0156/0.0140pp；停止且未补 seed3407。
 - 已生成并审计 A2 STRICT seed42 + M1 weight 0.35 平台包；ZIP SHA-256 为 `ddbbf0b9e408e9fbcd4fc7d00c8c16e647a872634c61625d9c9e9c935d549e66`。
 - 平台最终为 62.6870%，状态 `platform_valid_not_promoted`；70 分目标尚未达成。
 - Aegis 子工程相关测试 25 passed；新增入口关闭 local view 后，Bare 预测与既有 24,967 条提交逐字节一致。全量 71 passed、1 failed；唯一失败是既有 Phase 4 配置使用 `stage: p4_ablation`，而当前 config validator 只接受三个比赛 stage，与本轮改动无关。
@@ -193,7 +194,7 @@
 - epoch-0 = 69.43%（精确匹配 A2 本地），LoRA 真实增益 +0.19~0.39pp
 - 平台 Bare = 60.65%（+0.14pp vs F1），TTA = 61.15%（+0.05pp vs F1）
 - A2 STRICT seed=3407 平台 Bare = 60.64%，双 seed Bare 差 0.01pp → LoRA 增益确认稳定
-- 结论：A2 parent swap 确认正收益但边际，P3/P4 不追
+- 结论：A2 parent swap 确认正收益但边际，未继续投入 P3/P4 机制探索
 - 分支 fix/a2-aegis-parent-lineage 已合并 main，协议修复已归档
 
 ## 2026-07-15 OOF 执行（Windows 续跑）

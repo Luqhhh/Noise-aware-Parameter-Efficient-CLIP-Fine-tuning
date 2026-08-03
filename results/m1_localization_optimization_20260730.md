@@ -28,7 +28,7 @@
 
 定位网格覆盖 `crop ∈ {144,160,176}`、`top-k ∈ {3,5,9}`。seed 42 上 `crop160/top5/weight0.35` 同时取得最高 trusted macro、proxy macro 和 clean-core；`crop160/top9/weight0.45` 的 raw 仅高 0.0387pp，但其 trusted/proxy/clean-core 均更低，因此不晋级。
 
-另验证了把 144/160/176 三种裁剪概率平均后再与 global 融合的多尺度 M2。seed42 最佳点 `top9/weight0.45` 的 raw 为 70.8777%，但相对单尺度晋级候选，proxy macro 低 0.0156pp、clean-core 低 0.0140pp，没有满足“raw/trusted/proxy/clean-core 全部同向”的预设门槛，因此停止在 seed42，不补第二 seed、不生成平台包。
+另验证了把 144/160/176 三种裁剪概率平均后再与 global 融合的多尺度 M2。seed42 最佳点 `top9/weight0.45` 的 raw 为 70.8777%，但相对单尺度晋级候选，proxy macro 低 0.0156pp、clean-core 低 0.0140pp。停止在 seed42，未补第二 seed、未生成平台包（注：平台实测为准，本地同向门槛仅作内部提示）。
 
 ## 平台候选
 

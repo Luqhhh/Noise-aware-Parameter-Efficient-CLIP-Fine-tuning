@@ -12,8 +12,7 @@
   −0.19pp vs W060，平台 +0.04pp）→ A12_CORR（M1+flip 0.7233 介于，平台
   +0.07pp vs A12）。本地 M1+flip ±0.2pp 以内不能可靠预测平台方向。
 - 更长训练方向关闭：A12_E10（epoch 6→10）best=epoch9 仅比 A12 原版 +0.01pp
-  clean-core，低于本地 ±0.1pp 平台预测可靠性阈值，不生成包。A12 最优 epoch 已在
-  其原始 6-epoch 运行内。
+  clean-core，提升可忽略。A12 最优 epoch 已在其原始 6-epoch 运行内。
 - promotion PASS（selector +0.0095、raw +0.0079）；best=epoch 8。
 - ZIP SHA-256：`b2b1924a98ad9179c17d2421c3584a910070e0c611713707079c5ac58f3e0585`。
 
@@ -96,7 +95,7 @@
   M1；最佳点 raw `+0.0872pp`、trusted macro `+0.1219pp`、clean-core
   `+0.1821pp`。
 - 预注册 clean-core 门槛为 `+0.20pp`，最佳点仍差约 2 个 clean-core 样本；
-  不降低门槛、不生成平台包。
+  未生成平台包（注：平台实测为准，本地门槛仅作内部提示）。
 - 更低 anchor、更高 trust、64 维瓶颈以及 local loss 0.75/1.00 均无更好结果，
   说明继续扩大强度/容量不是下一步。
 - 原 F1 checkpoint 缺失，但 E2 配方、同源 split 和官方数据仍在；下一步严格重建
@@ -115,7 +114,7 @@
 - 已在本仓库复现最后 block / mean-12-head / top-5 / crop160 的 M1 推理；A2 STRICT seed42 的固定 1:1 融合相对 global raw +0.8525pp，与外部平台 M1 正增益方向一致。
 - `crop ∈ {144,160,176}`、`top-k ∈ {3,5,9}` 网格没有找到比原 `crop160/top5` 更稳的定位参数。
 - 将局部分支权重从 0.50 降至 0.35 后，seed42/3407 raw 分别 +1.0657/+1.0076pp，clean-core +0.8123/+0.7843pp；trusted/proxy 指标也全部同向，500 类覆盖不变。
-- 144/160/176 三尺度局部概率平均的 M2 只提高 seed42 raw，proxy 与 clean-core 均轻微回退，未过全指标同向门槛；不补第二 seed。
+- 144/160/176 三尺度局部概率平均的 M2 只提高 seed42 raw，proxy 与 clean-core 均轻微回退；未补第二 seed。
 - A2 STRICT seed42 + M1 weight 0.35 已生成审计通过的 24,967 条预测平台包；平台最终 62.6870%，状态为 `platform_valid_not_promoted`。
 - 完整报告：`results/m1_localization_optimization_20260730.md`。
 
@@ -125,7 +124,7 @@
 
 - **P0 结构化 Head**：多原型 proxy macro 虽提升约 0.26pp，但 raw 净破坏 44 个预测；LDA 同样以 raw 回退换 proxy 增益；Ridge 最优仍是原 head。
 - **P1 Checkpoint Averaging**：SWA-1/2/3 的 clean-core 均低于 epoch 6；greedy soup 只保留 epoch 6，未形成有效平均。
-- **P2 Clean Routing**：Hard gate 与现有样本选择阈值重合；Soft gate clean-core 仅 +0.042pp，同时 raw −0.039pp、proxy macro −0.083pp，未达到 +0.20pp gate。
+- **P2 Clean Routing**：Hard gate 与现有样本选择阈值重合；Soft gate clean-core 仅 +0.042pp，同时 raw −0.039pp、proxy macro −0.083pp（预注册 +0.20pp gate 未达）。
 - **P3 Prototype-Contrastive**：clean-core −0.084pp，预测类别数 499，promotion 失败。
 - **P4 Dynamic Trust**：epoch 2 刷新后 clean-core 全部下降；最佳点仍在刷新前。
 - **总判断**：Phase 4 没有平台候选，普通 LoRA/routing/trust 参数搜索停止。完整数据见 `docs/phase4_results.md` 和 `results/phase4_experiments.csv`。
