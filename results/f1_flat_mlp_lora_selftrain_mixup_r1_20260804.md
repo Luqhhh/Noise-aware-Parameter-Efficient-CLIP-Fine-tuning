@@ -8,7 +8,10 @@ full-fit 父 checkpoint、同一教师信任包、同一 seed、学习率和固�
 单模型、单 checkpoint，测试集仅用于推理。
 
 原验证划分包含在完整训练集中，因此以下本地指标只用于数值健康检查，不能解释为
-独立泛化提升。配置固定选择 `last_epoch`，不设置本地晋级门槛，等待平台测试判定。
+独立泛化提升。配置固定选择 `last_epoch`，不设置本地晋级门槛。平台实测
+**68.04582048303762%**，比无 MixUp 的 self-training R1 最佳 68.1099050746986%
+下降 **0.064085 个百分点**，因此不晋级。该结果也再次说明重叠诊断指标不能代替
+平台测试；后续不沿此 MixUp 配方继续。
 
 ## 数据、信任包与谱系
 
@@ -79,6 +82,7 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
   `ede3a92ace7d6b39c4d0861b293bedaec20e7a233aed2d983bbf75b61c1553d0`
 - `aegis_clip.cli.audit_submission --allow-tta`：PASS
 - ZIP 只包含根目录文件 `pred_results.csv`
-- 桌面副本逐字节一致
-- 平台得分：待测试
-- 平台状态：`platform_pending`
+- 上传时桌面副本逐字节一致；判定不晋级后已恢复 68.109905% 最佳包
+- 平台得分：68.04582048303762%
+- 相对当前最佳：-0.064085 个百分点
+- 平台状态：`platform_valid_not_promoted`
