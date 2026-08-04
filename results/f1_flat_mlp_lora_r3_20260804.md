@@ -6,6 +6,9 @@
 3 个更低学习率 epoch。attention-LoRA 继续冻结，只更新全 12 层 rank-4
 MLP-LoRA 与分类头。使用最终 `epoch_3.pt` 生成平台候选，不使用本地晋级门槛。
 
+平台实测 **67.92566187367325%**，比 R2 的 67.86558256899107% 提升
+**0.060079 个百分点**，成为新的平台最佳。
+
 ## 复现
 
 ```bash
@@ -50,7 +53,7 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
   --acknowledge-balanced-test-prior --batch-size 128
 ```
 
-- 单模型、单 checkpoint；推理协议与 67.8656% R2 最佳包完全一致
+- 单模型、单 checkpoint；推理协议与 67.8656% R2 包完全一致
 - prediction count：24,967；classes：500；corrupt images：0
 - 相对 R2 平台最佳包改变预测：388（1.55%）
 - CSV SHA-256：
@@ -59,4 +62,5 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
   `a8144d9925082c72c232b3ea347d84828fdc66279ada981805a71a2f6a33db2d`
 - `aegis_clip.cli.audit_submission --allow-tta`：PASS
 - 桌面副本 SHA-256 完全一致
-- 平台状态：`selected_audited_pending_platform`
+- 平台得分：67.92566187367325%
+- 平台状态：`platform_valid_promoted`（当前最佳，尚未达到 70%）
