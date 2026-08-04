@@ -7,7 +7,8 @@
 采用较低 `alpha=0.35`，类别双向上限 6%，随后以更低学习率固定续训 3 个 epoch。
 
 诊断验证集包含于完整训练集，所有本地指标只用于数值健康检查；固定提交 epoch 3，
-不设置本地晋级门槛。平台结果待回传。
+不设置本地晋级门槛。平台实测 **68.13393679657148%**，比 self-training R1
+的 68.1099050746986% 提升 **0.024032 个百分点**，成为新的审计完整平台最佳。
 
 ## 教师信任包
 
@@ -88,4 +89,6 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
   `7ac34fc92e8dac21a37332d99f39a712d8fb8dd65c93b0afc540f000c6bf82d4`
 - 提交审计：PASS；ZIP 只含根目录 `pred_results.csv`
 - 桌面副本逐字节一致
-- 平台状态：`platform_pending`
+- 平台得分：68.13393679657148%
+- 相对 self-training R1：+0.024032 个百分点
+- 平台状态：`platform_valid_promoted`
