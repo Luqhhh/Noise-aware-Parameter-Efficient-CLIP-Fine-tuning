@@ -819,37 +819,67 @@ class AegisCLIP(nn.Module):
             "lora_last_n_blocks": (
                 self.lora_last_n_blocks
                 if self.peft_mode
-                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
+                in {
+                    "visual_lora",
+                    "visual_lora_last_mlp",
+                    "visual_lora_mlp_lora",
+                    "visual_lora_mlp_adapter",
+                }
                 else None
             ),
             "lora_block_indices": (
                 self.lora_block_indices
                 if self.peft_mode
-                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
+                in {
+                    "visual_lora",
+                    "visual_lora_last_mlp",
+                    "visual_lora_mlp_lora",
+                    "visual_lora_mlp_adapter",
+                }
                 else None
             ),
             "lora_rank": (
                 self.lora_rank
                 if self.peft_mode
-                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
+                in {
+                    "visual_lora",
+                    "visual_lora_last_mlp",
+                    "visual_lora_mlp_lora",
+                    "visual_lora_mlp_adapter",
+                }
                 else None
             ),
             "lora_alpha": (
                 self.lora_alpha
                 if self.peft_mode
-                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
+                in {
+                    "visual_lora",
+                    "visual_lora_last_mlp",
+                    "visual_lora_mlp_lora",
+                    "visual_lora_mlp_adapter",
+                }
                 else None
             ),
             "lora_adapt_qv": (
                 self.lora_adapt_qv
                 if self.peft_mode
-                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
+                in {
+                    "visual_lora",
+                    "visual_lora_last_mlp",
+                    "visual_lora_mlp_lora",
+                    "visual_lora_mlp_adapter",
+                }
                 else None
             ),
             "lora_adapt_out": (
                 self.lora_adapt_out
                 if self.peft_mode
-                in {"visual_lora", "visual_lora_last_mlp", "visual_lora_mlp_adapter"}
+                in {
+                    "visual_lora",
+                    "visual_lora_last_mlp",
+                    "visual_lora_mlp_lora",
+                    "visual_lora_mlp_adapter",
+                }
                 else None
             ),
             "classifier_mode": self.classifier_mode,

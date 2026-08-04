@@ -452,6 +452,17 @@ def test_hybrid_attention_lora_mlp_lora_trains_only_mlp_low_rank_updates() -> No
         for name, parameter in model.named_parameters()
         if ".mlp." in name and name.endswith("lora_B")
     )
+    spec = model.effective_spec()
+    assert spec["lora_last_n_blocks"] == 2
+    assert spec["lora_block_indices"] == [0, 1]
+    assert spec["lora_rank"] == 2
+    assert spec["lora_alpha"] == 2.0
+    assert spec["lora_adapt_qv"] is True
+    assert spec["lora_adapt_out"] is True
+    assert spec["mlp_lora_last_n_blocks"] == 2
+    assert spec["mlp_lora_block_indices"] == [0, 1]
+    assert spec["mlp_lora_rank"] == 2
+    assert spec["mlp_lora_alpha"] == 2.0
 
 
 def test_mlp_lora_initialises_from_attention_lora_checkpoint(tmp_path) -> None:
