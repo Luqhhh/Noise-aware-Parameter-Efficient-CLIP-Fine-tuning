@@ -11,6 +11,10 @@ Sinkhorn 分配与精确整数近均衡配额。24,967 张测试图被严格分�
 本候选不使用验证集得分作晋级条件。它用于直接检验平台测试集是否接近官方声明
 的均衡类先验，平台结果是唯一裁判。
 
+平台实测 **67.53714903672848%**，比同 checkpoint 的 prior-0.85 候选
+67.86558256899107% 下降 **0.328434 个百分点**。精确 49/50 配额对平台分布
+过度修正，该方向关闭。
+
 ## 方法与复现
 
 先对固定融合 logits 以 temperature 0.5、100 iterations 做软均衡 Sinkhorn；
@@ -43,4 +47,5 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer_exact_transport_submission \
 - `aegis_clip.cli.audit_submission --allow-tta`：PASS
 - 回归测试：`253 passed, 8 warnings`
 - 桌面副本 SHA-256 完全一致
-- 平台状态：`selected_audited_pending_platform`
+- 平台得分：67.53714903672848%
+- 平台状态：`platform_valid_not_promoted`
