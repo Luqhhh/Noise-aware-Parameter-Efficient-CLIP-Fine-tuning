@@ -9,7 +9,11 @@
 
 由于原验证划分已并入训练，训练期间对该划分的所有指标都只是数值健康检查，
 不具备独立验证意义，也不用于选 epoch。配置固定采用 `last_epoch`，最终由
-`epoch_3.pt` 生成平台候选，不设置本地晋级门槛。平台结果待回填。
+`epoch_3.pt` 生成平台候选，不设置本地晋级门槛。
+
+平台实测 **67.95770416950374%**，比此前 R3 最佳 67.92566187367325%
+提升 **0.032042 个百分点**，成为新的审计完整平台最佳。full-fit 方向获得平台
+正增益，后续实验以该 checkpoint 为父模型继续推进。
 
 ## 数据与谱系审计
 
@@ -98,5 +102,6 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
 - `aegis_clip.cli.audit_submission --allow-tta`：PASS
 - ZIP 只包含一个根目录文件 `pred_results.csv`
 - 桌面副本逐字节一致，SHA-256 完全相同
-- 平台得分：待提交
-- 平台状态：`pending`
+- 平台得分：67.95770416950374%
+- 相对 R3：+0.032042 个百分点
+- 平台状态：`platform_valid_promoted`
