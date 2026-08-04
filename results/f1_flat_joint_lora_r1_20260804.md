@@ -7,6 +7,10 @@
 attention-LoRA 与全 12 层 rank-4 MLP-LoRA 联合更新；OpenAI CLIP 基础权重继续
 冻结。最终固定 `epoch_3.pt` 生成平台候选，不使用本地晋级条件。
 
+平台实测 **67.92165658669444%**，比 R3 最佳 67.92566187367325% 低
+**0.004005 个百分点**。联合更新与 R3 基本持平但未晋级，attention-LoRA 联合
+续训方向关闭，平台最佳仍为 R3。
+
 ## 实现与验证
 
 - `visual_lora_mlp_lora` 默认行为不变；联合 attention-LoRA 训练为显式可选开关
@@ -68,4 +72,5 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
   `339040d932699e75131eaf9c5df651525b8ad54739d93c7132910cf1c9e2d8b4`
 - `aegis_clip.cli.audit_submission --allow-tta`：PASS
 - 桌面副本 SHA-256 完全一致
-- 平台状态：`selected_audited_pending_platform`
+- 平台得分：67.92165658669444%
+- 平台状态：`platform_valid_not_promoted`
