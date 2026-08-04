@@ -6,6 +6,10 @@
 3 个更低学习率 epoch。attention-LoRA 显式冻结，只更新全 12 层 rank-4
 MLP-LoRA 与分类头。最终固定 `epoch_3.pt` 生成平台候选，不使用本地晋级门槛。
 
+平台实测 **67.91765129971562%**，比 R3 最佳 67.92566187367325% 低
+**0.008011 个百分点**。继续降低 MLP-LoRA 学习率未带来平台增益，平台最佳仍为
+R3，该续训阶梯在 R4 关闭。
+
 ## 复现
 
 ```bash
@@ -60,4 +64,5 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
   `93e024d26892aedea2570a9c64d8dd4a71f3be3e96d0cc582cbc20ca8443bf6c`
 - `aegis_clip.cli.audit_submission --allow-tta`：PASS
 - 桌面副本 SHA-256 完全一致
-- 平台状态：`selected_audited_pending_platform`
+- 平台得分：67.91765129971562%
+- 平台状态：`platform_valid_not_promoted`
