@@ -77,3 +77,38 @@ def test_parent_val_overlap_requires_explicit_fullfit_permission(tmp_path: Path)
             checkpoint_path=str(checkpoint),
             output_path=tmp_path / "audit.json",
         )
+
+
+def test_exact_overlapping_fullfit_parent_replay_is_audited(tmp_path: Path) -> None:
+    config, child_train, child_val, checkpoint, parent_val = _fullfit_fixture(tmp_path)
+    config["lineage"]["parent_train_csv"] = str(child_train)
+    config["lineage"]["allow_parent_train_in_child_val"] = True
+    audit = run_lineage_audit(
+        config,
+        child_train_csv=str(child_train),
+        child_val_csv=str(child_val),
+        checkpoint_path=str(checkpoint),
+        output_path=tmp_path / "audit.json",
+    )
+    assert audit["protocol_valid"] is True
+    assert audit["exact_overlapping_parent_replay"] is True
+    assert audit["child_val_in_parent_train"] == 2
+
+
+def test_overlapping_parent_replay_rejects_changed_child_train(tmp_path: Path) -> None:
+    config, child_train, child_val, checkpoint, parent_val = _fullfit_fixture(tmp_path)
+    parent_full_train = tmp_path / "parent_full_train.csv"
+    parent_rows = pd.read_csv(child_train)
+    parent_rows.to_csv(parent_full_train, index=False)
+    config["lineage"]["parent_train_csv"] = str(parent_full_train)
+    config["lineage"]["allow_parent_train_in_child_val"] = True
+    changed_rows = parent_rows.iloc[:-1]
+    changed_rows.to_csv(child_train, index=False)
+    with pytest.raises(LineageAuditError, match="overlapping parent replay requires"):
+        run_lineage_audit(
+            config,
+            child_train_csv=str(child_train),
+            child_val_csv=str(child_val),
+            checkpoint_path=str(checkpoint),
+            output_path=tmp_path / "audit.json",
+        )

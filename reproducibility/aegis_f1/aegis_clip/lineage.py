@@ -73,9 +73,17 @@ def run_lineage_audit(
     allow_parent_val_in_child_train = bool(
         lineage.get("allow_parent_val_in_child_train", False)
     )
+    allow_parent_train_in_child_val = bool(
+        lineage.get("allow_parent_train_in_child_val", False)
+    )
     exact_parent_fullfit = (
         child_train_keys == parent_train_keys | parent_val_keys
         and child_val_keys == parent_val_keys
+    )
+    exact_overlapping_parent_replay = (
+        child_train_keys == parent_train_keys
+        and child_val_keys == parent_val_keys
+        and parent_val_keys <= parent_train_keys
     )
 
     label_mismatches = sorted(
@@ -111,12 +119,19 @@ def run_lineage_audit(
         "child_val_equals_parent_val": child_val_keys == parent_val_keys,
         "allow_parent_val_in_child_train": allow_parent_val_in_child_train,
         "exact_parent_fullfit": exact_parent_fullfit,
+        "allow_parent_train_in_child_val": allow_parent_train_in_child_val,
+        "exact_overlapping_parent_replay": exact_overlapping_parent_replay,
         "label_mismatches": len(label_mismatches),
         "label_mismatch_examples": label_mismatches[:10],
     }
 
     errors: list[str] = []
-    if audit["child_val_in_parent_train"]:
+    if allow_parent_train_in_child_val and not exact_overlapping_parent_replay:
+        errors.append(
+            "overlapping parent replay requires unchanged child train and val splits, "
+            "with the parent val split fully contained in parent train"
+        )
+    if audit["child_val_in_parent_train"] and not allow_parent_train_in_child_val:
         errors.append(
             f"{audit['child_val_in_parent_train']} child validation samples "
             f"were seen by parent training"
