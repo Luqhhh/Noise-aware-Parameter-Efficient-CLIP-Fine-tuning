@@ -425,6 +425,7 @@ class AegisCLIP(nn.Module):
         mlp_lora_last_n_blocks: int = 12,
         mlp_lora_rank: int = 4,
         mlp_lora_alpha: float = 4.0,
+        mlp_lora_train_attention: bool = False,
         visual_prompt_last_n_blocks: int = 12,
         visual_prompt_num_tokens: int = 5,
         visual_prompt_dropout: float = 0.0,
@@ -468,6 +469,7 @@ class AegisCLIP(nn.Module):
         self.mlp_lora_last_n_blocks = int(mlp_lora_last_n_blocks)
         self.mlp_lora_rank = int(mlp_lora_rank)
         self.mlp_lora_alpha = float(mlp_lora_alpha)
+        self.mlp_lora_train_attention = bool(mlp_lora_train_attention)
         self.mlp_lora_block_indices: list[int] = []
         self.visual_prompt_last_n_blocks = int(visual_prompt_last_n_blocks)
         self.visual_prompt_num_tokens = int(visual_prompt_num_tokens)
@@ -589,6 +591,15 @@ class AegisCLIP(nn.Module):
                     if isinstance(module, AdditiveLowRankParametrization):
                         for parameter in module.parameters():
                             parameter.requires_grad_(True)
+            if self.mlp_lora_train_attention:
+                for index in self.lora_block_indices:
+                    for module in self.visual.transformer.resblocks[index].attn.modules():
+                        if isinstance(
+                            module,
+                            (AdditiveLowRankParametrization, QVLowRankParametrization),
+                        ):
+                            for parameter in module.parameters():
+                                parameter.requires_grad_(True)
         elif self.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
             for index in self.visual_adapter_block_indices:
                 for parameter in self.visual.transformer.resblocks[
@@ -943,6 +954,11 @@ class AegisCLIP(nn.Module):
                 if self.peft_mode == "visual_lora_mlp_lora"
                 else None
             ),
+            "mlp_lora_train_attention": (
+                self.mlp_lora_train_attention
+                if self.peft_mode == "visual_lora_mlp_lora"
+                else None
+            ),
             "visual_prompt_last_n_blocks": (
                 self.visual_prompt_last_n_blocks
                 if self.peft_mode == "visual_prompt"
@@ -1032,6 +1048,9 @@ def build_model(
         ),
         mlp_lora_rank=int(model_config.get("mlp_lora_rank", 4)),
         mlp_lora_alpha=float(model_config.get("mlp_lora_alpha", 4.0)),
+        mlp_lora_train_attention=bool(
+            model_config.get("mlp_lora_train_attention", False)
+        ),
         visual_prompt_last_n_blocks=int(
             model_config.get("visual_prompt_last_n_blocks", 12)
         ),

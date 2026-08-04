@@ -1814,7 +1814,14 @@ def _validate_effective_spec(spec: dict[str, Any], peft_mode: str) -> None:
         names = spec["trainable_names"]
         if not any(".mlp." in name and ".parametrizations." in name for name in names):
             raise RuntimeError("MLP-LoRA mode has no trainable MLP LoRA")
-        if any(".attn." in name for name in names):
+        trains_attention = bool(spec.get("mlp_lora_train_attention", False))
+        if trains_attention and not any(
+            ".attn." in name and ".parametrizations." in name for name in names
+        ):
+            raise RuntimeError(
+                "Joint MLP-LoRA mode has no trainable attention LoRA"
+            )
+        if not trains_attention and any(".attn." in name for name in names):
             raise RuntimeError("MLP-LoRA mode must keep visual attention frozen")
     if peft_mode == "visual_prompt" and not any(
         ".visual_prompt." in name for name in spec["trainable_names"]

@@ -463,6 +463,38 @@ def test_hybrid_attention_lora_mlp_lora_trains_only_mlp_low_rank_updates() -> No
     assert spec["mlp_lora_block_indices"] == [0, 1]
     assert spec["mlp_lora_rank"] == 2
     assert spec["mlp_lora_alpha"] == 2.0
+    assert spec["mlp_lora_train_attention"] is False
+
+
+def test_hybrid_attention_lora_mlp_lora_can_jointly_train_low_rank_updates() -> None:
+    model = AegisCLIP(
+        TinyAdapterVisual(),
+        num_classes=3,
+        feature_dim=4,
+        peft_mode="visual_lora_mlp_lora",
+        lora_last_n_blocks=2,
+        lora_rank=2,
+        lora_alpha=2.0,
+        mlp_lora_last_n_blocks=2,
+        mlp_lora_rank=2,
+        mlp_lora_alpha=2.0,
+        mlp_lora_train_attention=True,
+    )
+    images = torch.randn(5, 3, 4, 4)
+    model(images=images).sum().backward()
+
+    trainable = {name for name, value in model.named_parameters() if value.requires_grad}
+    assert any(".mlp." in name and name.endswith("lora_B") for name in trainable)
+    assert any(".attn." in name and name.endswith("q_B") for name in trainable)
+    assert any(".attn." in name and name.endswith("v_B") for name in trainable)
+    assert any(".attn." in name and name.endswith("lora_B") for name in trainable)
+    assert not any(name.endswith(".original") for name in trainable)
+    assert any(
+        parameter.grad is not None and torch.count_nonzero(parameter.grad) > 0
+        for name, parameter in model.named_parameters()
+        if ".attn." in name and name.endswith(("q_B", "v_B", "lora_B"))
+    )
+    assert model.effective_spec()["mlp_lora_train_attention"] is True
 
 
 def test_mlp_lora_initialises_from_attention_lora_checkpoint(tmp_path) -> None:

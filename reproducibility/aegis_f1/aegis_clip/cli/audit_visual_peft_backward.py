@@ -121,11 +121,12 @@ def audit_visual_peft_backward(
         if not torch.equal(parameter.detach(), before[name]):
             changed_without_step.append(name)
 
-    peft_marker = (
-        ".visual_prompt."
-        if model.peft_mode == "visual_prompt"
-        else ".adaptmlp."
-    )
+    if model.peft_mode == "visual_prompt":
+        peft_marker = ".visual_prompt."
+    elif model.peft_mode in {"visual_mlp_adapter", "visual_lora_mlp_adapter"}:
+        peft_marker = ".adaptmlp."
+    else:
+        peft_marker = ".parametrizations."
     adapter_rows = [row for row in trainable if peft_marker in row["name"]]
     head_rows = [row for row in trainable if row["name"].startswith("classifier.")]
     if not adapter_rows or not head_rows:
