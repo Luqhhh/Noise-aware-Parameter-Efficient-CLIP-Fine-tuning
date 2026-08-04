@@ -70,6 +70,13 @@ def run_lineage_audit(
     parent_val_keys = set(parent_val)
     child_train_keys = set(child_train)
     child_val_keys = set(child_val)
+    allow_parent_val_in_child_train = bool(
+        lineage.get("allow_parent_val_in_child_train", False)
+    )
+    exact_parent_fullfit = (
+        child_train_keys == parent_train_keys | parent_val_keys
+        and child_val_keys == parent_val_keys
+    )
 
     label_mismatches = sorted(
         key
@@ -102,6 +109,8 @@ def run_lineage_audit(
         "child_train_in_parent_val": len(child_train_keys & parent_val_keys),
         "child_train_equals_parent_train": child_train_keys == parent_train_keys,
         "child_val_equals_parent_val": child_val_keys == parent_val_keys,
+        "allow_parent_val_in_child_train": allow_parent_val_in_child_train,
+        "exact_parent_fullfit": exact_parent_fullfit,
         "label_mismatches": len(label_mismatches),
         "label_mismatch_examples": label_mismatches[:10],
     }
@@ -112,12 +121,21 @@ def run_lineage_audit(
             f"{audit['child_val_in_parent_train']} child validation samples "
             f"were seen by parent training"
         )
-    if audit["child_train_in_parent_val"]:
+    if allow_parent_val_in_child_train and not exact_parent_fullfit:
+        errors.append(
+            "full-fit child train must exactly equal parent train union parent val, "
+            "and child diagnostic val must equal parent val"
+        )
+    if audit["child_train_in_parent_val"] and not allow_parent_val_in_child_train:
         errors.append(
             f"{audit['child_train_in_parent_val']} child training samples "
             f"overlap parent validation"
         )
-    if lineage.get("require_same_train", True) and not audit["child_train_equals_parent_train"]:
+    if (
+        not allow_parent_val_in_child_train
+        and lineage.get("require_same_train", True)
+        and not audit["child_train_equals_parent_train"]
+    ):
         errors.append("child train split differs from parent train split")
     if lineage.get("require_same_val", True) and not audit["child_val_equals_parent_val"]:
         errors.append("child val split differs from parent val split")
