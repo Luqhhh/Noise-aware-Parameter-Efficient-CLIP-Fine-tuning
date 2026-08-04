@@ -8,7 +8,11 @@
 全 12 层 rank-4 MLP-LoRA 与分类头 3 个 epoch。attention-LoRA 继续冻结。
 
 原验证划分已包含在父/子训练集中，所以所有本地指标仅用于数值健康检查；配置固定
-采用 `last_epoch`，不设置本地晋级门槛。平台结果待回填。
+采用 `last_epoch`，不设置本地晋级门槛。
+
+平台实测 **68.1099050746986%**，比 full-fit 父模型 67.95770416950374%
+提升 **0.152201 个百分点**，成为新的审计完整平台最佳。严格受限的 892 个教师
+纠正带来了明确平台增益，后续优先沿教师监督与训练正则化方向推进。
 
 ## 教师信任包
 
@@ -94,5 +98,6 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
 - `aegis_clip.cli.audit_submission --allow-tta`：PASS
 - ZIP 只包含根目录文件 `pred_results.csv`
 - 桌面副本逐字节一致
-- 平台得分：待提交
-- 平台状态：`pending`
+- 平台得分：68.1099050746986%
+- 相对 full-fit 父模型：+0.152201 个百分点
+- 平台状态：`platform_valid_promoted`
