@@ -7,6 +7,9 @@
 MLP-LoRA 与分类头。按平台唯一裁判原则，使用最终 `epoch_3.pt` 直接生成候选，
 本地指标只用于确认数值有限、500 类覆盖完整与训练轨迹正常。
 
+平台实测 **67.86558256899107%**，比父候选 67.78147154243601% 提升
+**0.084111 个百分点**，成为新的平台最佳。
+
 一次独立 AMP 尝试在首步有限梯度审计中检测到视觉梯度 `inf`，在任何有效更新
 前失败关闭。正式续训使用 FP32、batch 32，并从独立输出目录完成。
 
@@ -65,4 +68,5 @@ python3 -m aegis_clip.cli.infer \
   `f3a2f9c8a58c0560f403ecdbfcec943c3946ac992f36a828afbea3364da0eb19`
 - `aegis_clip.cli.audit_submission --allow-tta`：PASS
 - 桌面副本 SHA-256 完全一致
-- 平台状态：`selected_audited_pending_platform`
+- 平台得分：67.86558256899107%
+- 平台状态：`platform_valid_promoted`（当前最佳，尚未达到 70%）
