@@ -23,6 +23,162 @@ V2_CHECK_INTERVAL = 10
 V2_CONVERGENCE_TOLERANCE = 1.0e-5
 
 
+def confidence_selected_near_uniform_quotas(
+    scores: torch.Tensor,
+) -> tuple[torch.Tensor, dict[str, Any]]:
+    """Choose integer floor/ceil quotas using each class's marginal support.
+
+    When ``N`` is not divisible by ``C``, exactly ``N % C`` classes receive
+    ``ceil(N/C)`` slots.  The extra slots go to classes with the strongest
+    score at their prospective final slot, so the unknown missing test items
+    are inferred from the model rather than tied to class index order.
+    """
+    values = torch.as_tensor(scores).detach().float().cpu()
+    if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] < 2:
+        raise ValueError("scores must have non-empty [N,C] shape with C>=2")
+    if not torch.isfinite(values).all():
+        raise ValueError("scores must be finite")
+    sample_count, num_classes = values.shape
+    base, remainder = divmod(int(sample_count), int(num_classes))
+    quotas = torch.full((num_classes,), base, dtype=torch.long)
+    support_rank = base + 1
+    support = values.topk(support_rank, dim=0).values[-1]
+    extra_classes = torch.argsort(
+        support, descending=True, stable=True
+    )[:remainder]
+    quotas[extra_classes] += 1
+    lower_quota_classes = torch.nonzero(quotas == base).flatten().tolist()
+    return quotas, {
+        "base_quota": base,
+        "extra_slot_classes": int(remainder),
+        "lower_quota_classes": lower_quota_classes,
+        "quota_min": int(quotas.min()),
+        "quota_max": int(quotas.max()),
+        "quota_sum": int(quotas.sum()),
+    }
+
+
+def exact_quota_prediction(
+    scores: torch.Tensor,
+    quotas: torch.Tensor,
+    *,
+    initial_prediction: torch.Tensor | None = None,
+) -> tuple[torch.Tensor, dict[str, float | int | bool]]:
+    """Repair an argmax assignment to exact integer quotas deterministically.
+
+    Only rows from overfull source classes are moved.  Scarce target classes
+    are filled first, and each move takes the available row with the smallest
+    score loss while respecting the remaining source capacity.
+    """
+    values = torch.as_tensor(scores).detach().float().cpu()
+    quota = torch.as_tensor(quotas).detach().long().flatten().cpu()
+    if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] < 2:
+        raise ValueError("scores must have non-empty [N,C] shape with C>=2")
+    if not torch.isfinite(values).all():
+        raise ValueError("scores must be finite")
+    if quota.numel() != values.shape[1] or bool((quota < 0).any()):
+        raise ValueError("quotas must be non-negative with one value per class")
+    if int(quota.sum()) != values.shape[0]:
+        raise ValueError("quotas must sum to the number of rows")
+
+    if initial_prediction is None:
+        current = values.argmax(dim=1)
+    else:
+        current = torch.as_tensor(initial_prediction).detach().long().flatten().cpu()
+        if current.numel() != values.shape[0]:
+            raise ValueError("initial_prediction must contain one label per row")
+        if bool((current < 0).any()) or bool((current >= values.shape[1]).any()):
+            raise ValueError("initial_prediction contains an invalid class")
+        current = current.clone()
+
+    initial_counts = torch.bincount(current, minlength=values.shape[1])
+    excess = (initial_counts - quota).clamp_min(0)
+    deficit = (quota - initial_counts).clamp_min(0)
+    if int(excess.sum()) != int(deficit.sum()):
+        raise RuntimeError("quota excess and deficit do not balance")
+
+    used = torch.zeros(values.shape[0], dtype=torch.bool)
+    target_difficulty: list[tuple[float, int]] = []
+    for target in torch.nonzero(deficit, as_tuple=False).flatten().tolist():
+        eligible = excess[current] > 0
+        rows = torch.nonzero(eligible, as_tuple=False).flatten()
+        needed = int(deficit[target])
+        if rows.numel() < needed:
+            raise RuntimeError("not enough overfull rows to fill a quota")
+        losses = values[rows, current[rows]] - values[rows, target]
+        boundary_loss = losses.topk(needed, largest=False).values[-1]
+        target_difficulty.append((float(boundary_loss), int(target)))
+
+    total_score_loss = 0.0
+    maximum_score_loss = 0.0
+    for _, target in sorted(
+        target_difficulty,
+        key=lambda item: (-item[0], item[1]),
+    ):
+        for _ in range(int(deficit[target])):
+            eligible = (~used) & (excess[current] > 0)
+            rows = torch.nonzero(eligible, as_tuple=False).flatten()
+            if rows.numel() == 0:
+                raise RuntimeError("quota repair exhausted eligible source rows")
+            losses = values[rows, current[rows]] - values[rows, target]
+            local_index = int(torch.argmin(losses))
+            row = int(rows[local_index])
+            source = int(current[row])
+            loss = float(losses[local_index])
+            current[row] = int(target)
+            used[row] = True
+            excess[source] -= 1
+            total_score_loss += loss
+            maximum_score_loss = max(maximum_score_loss, loss)
+
+    final_counts = torch.bincount(current, minlength=values.shape[1])
+    exact = bool(torch.equal(final_counts, quota))
+    if not exact:
+        raise RuntimeError("quota repair did not produce the requested counts")
+    return current, {
+        "exact_quota_match": exact,
+        "moved_rows": int(used.sum()),
+        "initial_count_min": int(initial_counts.min()),
+        "initial_count_max": int(initial_counts.max()),
+        "final_count_min": int(final_counts.min()),
+        "final_count_max": int(final_counts.max()),
+        "total_score_loss": total_score_loss,
+        "maximum_score_loss": maximum_score_loss,
+    }
+
+
+def exact_near_uniform_transport_prediction(
+    logits: torch.Tensor,
+    *,
+    temperature: float = 0.5,
+    iterations: int = V1_ITERATIONS,
+) -> tuple[torch.Tensor, dict[str, Any]]:
+    """Sinkhorn-calibrate logits, then enforce confidence-selected 49/50 quotas."""
+    values = torch.as_tensor(logits).detach().float().cpu()
+    if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] < 2:
+        raise ValueError("logits must have non-empty [N,C] shape with C>=2")
+    if not torch.isfinite(values).all():
+        raise ValueError("logits must be finite")
+    target_counts = uniform_target_counts(values.shape[0], values.shape[1])
+    allocation, sinkhorn = log_sinkhorn_allocation(
+        values,
+        target_counts,
+        temperature=float(temperature),
+        iterations=int(iterations),
+    )
+    scores = allocation.clamp_min(torch.finfo(allocation.dtype).tiny).log()
+    quotas, quota_selection = confidence_selected_near_uniform_quotas(scores)
+    prediction, repair = exact_quota_prediction(scores, quotas)
+    return prediction, {
+        "sinkhorn": sinkhorn,
+        "quota_selection": quota_selection,
+        "repair": repair,
+        "hard_balance": hard_balance_diagnostics(
+            prediction, num_classes=values.shape[1]
+        ),
+    }
+
+
 def uniform_target_counts(
     sample_count: int,
     num_classes: int,
@@ -311,4 +467,3 @@ def v2_gate_decision(
             name for name, item in checks.items() if not bool(item["passed"])
         ],
     }
-

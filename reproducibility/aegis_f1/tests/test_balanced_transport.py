@@ -2,7 +2,10 @@ import torch
 
 from aegis_clip.balanced_transport import (
     balanced_transport_prediction,
+    confidence_selected_near_uniform_quotas,
     converged_balanced_transport_prediction,
+    exact_near_uniform_transport_prediction,
+    exact_quota_prediction,
     hard_balance_diagnostics,
     paired_change_summary,
     uniform_target_counts,
@@ -51,6 +54,55 @@ def test_converged_balanced_transport_records_fixed_stopping_rule() -> None:
     assert sinkhorn["converged"] is True
     assert sinkhorn["maximum_row_absolute_error"] <= 1.0e-5
     assert sinkhorn["maximum_column_absolute_error"] <= 1.0e-5
+
+
+def test_confidence_selected_quotas_use_only_floor_and_ceil() -> None:
+    scores = torch.arange(35, dtype=torch.float32).reshape(7, 5)
+    quotas, diagnostics = confidence_selected_near_uniform_quotas(scores)
+    assert int(quotas.sum()) == 7
+    assert int((quotas == 1).sum()) == 3
+    assert int((quotas == 2).sum()) == 2
+    assert diagnostics["base_quota"] == 1
+    assert diagnostics["extra_slot_classes"] == 2
+
+
+def test_exact_quota_repair_is_deterministic_and_exact() -> None:
+    scores = torch.tensor(
+        [
+            [9.0, 2.0, 1.0],
+            [8.0, 7.5, 1.0],
+            [7.0, 6.8, 1.0],
+            [6.0, 1.0, 5.8],
+            [1.0, 8.0, 2.0],
+            [1.0, 7.0, 6.9],
+            [1.0, 2.0, 8.0],
+        ]
+    )
+    quotas = torch.tensor([2, 2, 3])
+    first, diagnostics = exact_quota_prediction(scores, quotas)
+    second, _ = exact_quota_prediction(scores, quotas)
+    assert torch.equal(first, second)
+    assert torch.equal(torch.bincount(first, minlength=3), quotas)
+    assert diagnostics["exact_quota_match"] is True
+
+
+def test_exact_near_uniform_transport_has_integer_near_uniform_counts() -> None:
+    logits = torch.tensor(
+        [
+            [8.0, 0.0, 0.0],
+            [7.0, 0.0, 0.0],
+            [6.0, 0.0, 0.0],
+            [5.0, 4.0, 0.0],
+            [0.0, 8.0, 0.0],
+            [0.0, 7.0, 6.0],
+            [0.0, 0.0, 8.0],
+        ]
+    )
+    prediction, report = exact_near_uniform_transport_prediction(logits)
+    counts = torch.bincount(prediction, minlength=3)
+    assert sorted(counts.tolist()) == [2, 2, 3]
+    assert report["repair"]["exact_quota_match"] is True
+    assert report["hard_balance"]["prediction_count_max"] == 3
 
 
 def test_paired_change_summary_reports_net_repairs() -> None:
@@ -124,4 +176,3 @@ def test_v2_gate_requires_solver_convergence() -> None:
     result = v2_gate_decision({"f1_m1": f1, "a2_m1": a2})
     assert result["passed"] is False
     assert "a2_m1_sinkhorn_converged" in result["failed_checks"]
-
