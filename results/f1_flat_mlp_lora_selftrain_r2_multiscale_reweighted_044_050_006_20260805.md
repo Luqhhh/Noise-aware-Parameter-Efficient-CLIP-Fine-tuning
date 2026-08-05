@@ -45,5 +45,7 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer_reweighted_multiscale_submission
 
 ## Status
 
-Candidate generated and audited; platform score pending. The promoted
-68.678656% package remains recoverable for immediate rollback.
+Platform score: `68.65462410381704%`, which is 6 correct predictions and
+`0.02403172187288` percentage points below the promoted `0.45/0.50/0.05`
+result. This candidate is valid but not promoted. The `68.67865582568992%`
+package remains the platform best and is recoverable for immediate rollback.
