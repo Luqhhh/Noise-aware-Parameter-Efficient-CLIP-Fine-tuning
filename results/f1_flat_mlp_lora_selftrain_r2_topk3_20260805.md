@@ -56,5 +56,11 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer_reweighted_multiscale_submission
 - ZIP SHA-256: `1456d246106600cd171b8f4d4daa8ad84756f1cf30d9c78ba5927cd4fc8c7daf`
 - Manifest SHA-256: `719d66b63bd4a9189607a26ed54a4b55aacbb8508df10863474f485e1585fdd7`
 
-The desktop submission was replaced and hash-verified. Platform result is
-pending; no promotion decision has been made.
+The desktop submission was replaced and hash-verified.
+
+## Status
+
+Platform score: `68.63860295590179%` (17,137 / 24,967), which is 10 correct
+predictions and `0.04005286978813` percentage points below the top-k=5 R2
+platform best. The candidate is valid but not promoted. The diagnostic local
+top-k advantage did not transfer reliably to the platform.
