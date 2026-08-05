@@ -2,9 +2,30 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, Sequence
 
 import torch
+
+
+def parse_shared_top_k(inference_modes: Sequence[str]) -> int:
+    """Extract one identical attention top-k value from nested dump modes."""
+    if not inference_modes:
+        raise ValueError("At least one inference mode is required")
+    values: list[int] = []
+    for mode in inference_modes:
+        matches = re.findall(r"(?:^|:)topk=(\d+)(?::|$)", str(mode))
+        if len(matches) != 1:
+            raise ValueError(
+                f"Inference mode must contain exactly one topk value: {mode!r}"
+            )
+        value = int(matches[0])
+        if value <= 0:
+            raise ValueError("Attention top-k must be positive")
+        values.append(value)
+    if len(set(values)) != 1:
+        raise ValueError(f"Nested dumps use different top-k values: {values}")
+    return values[0]
 
 
 def parse_scale_weights(

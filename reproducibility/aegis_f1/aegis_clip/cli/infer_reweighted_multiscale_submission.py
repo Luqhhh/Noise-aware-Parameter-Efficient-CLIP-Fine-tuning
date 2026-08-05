@@ -15,6 +15,7 @@ from aegis_clip.prior_alignment import align_logits_to_prior
 from aegis_clip.runtime import sha256_file
 from aegis_clip.scale_reweighting import (
     parse_scale_weights,
+    parse_shared_top_k,
     reconstruct_nested_scale_probabilities,
     weighted_scale_probabilities,
 )
@@ -84,6 +85,9 @@ def main() -> None:
         mode = str(payloads[name]["inference_mode"])
         if fragment not in mode:
             raise ValueError(f"{name} dump mode {mode!r} does not contain {fragment!r}")
+    top_k = parse_shared_top_k(
+        [str(payloads[name]["inference_mode"]) for name in paths]
+    )
 
     config = load_config(args.config)
     num_classes = int(config["model"]["num_classes"])
@@ -126,7 +130,8 @@ def main() -> None:
     weight_text = "-".join(f"{value:g}" for value in weights)
     inference_mode = (
         "attention_reweighted_multiscale_flip:"
-        f"crops={scale_text}:weights={weight_text}:balanced_prior={args.strength:g}"
+        f"topk={top_k}:crops={scale_text}:weights={weight_text}:"
+        f"balanced_prior={args.strength:g}"
     )
     manifest = create_submission(
         predictions,
@@ -149,6 +154,7 @@ def main() -> None:
             },
             "scales": list(scales),
             "scale_weights": list(weights),
+            "local_top_k": int(top_k),
             "scale_reconstruction": reconstruction,
             "prior_alignment": alignment,
         },
