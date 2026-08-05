@@ -65,4 +65,8 @@ submission checkpoint `epoch_3.pt` and all inference caches were retained.
 
 ## Status
 
-Audited and pending platform score. No local promotion gate was applied.
+Platform score: `68.62658709496536%`, which is 13 correct predictions and
+`0.05206873072456` percentage points below the R2 `0.45/0.50/0.05` best.
+The candidate is valid but not promoted. This confirms again that the higher
+overlapping local metrics do not reliably transfer to the platform; no local
+promotion gate was applied.
