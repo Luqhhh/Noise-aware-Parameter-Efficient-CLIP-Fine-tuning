@@ -80,5 +80,7 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer_reweighted_multiscale_submission
 
 ## Status
 
-Candidate generated and audited; platform score pending. The equal-weight
-68.546481% package remains recoverable and is not deleted.
+Platform score: **68.59855008611368%** (17,127 / 24,967 correct). This improves
+on the equal-weight 128/144/160 platform best by **0.052069 percentage points**,
+or exactly 13 additional correct predictions, and is promoted as the new
+audited best. The prior equal-weight package remains recoverable.
