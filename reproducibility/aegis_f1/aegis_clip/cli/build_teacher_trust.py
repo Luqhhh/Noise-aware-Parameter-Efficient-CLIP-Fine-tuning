@@ -12,6 +12,12 @@ from torch.utils.data import DataLoader
 from aegis_clip.checkpoint import build_from_checkpoint
 from aegis_clip.data import OnlineImageDataset
 from aegis_clip.features import FrozenFeatureStore, canonical_sample_path
+from aegis_clip.localization import (
+    extract_attention_crops,
+    forward_with_last_block_attention,
+    fuse_global_multilocal_probabilities,
+    parse_int_sequence,
+)
 from aegis_clip.runtime import atomic_json_dump, seed_worker, sha256_file
 from aegis_clip.teacher_trust import augment_teacher_trust
 
@@ -36,13 +42,53 @@ def main() -> None:
     parser.add_argument(
         "--teacher-logits-cache",
         help=(
-            "Optional reusable center/flip teacher-logit cache. If the file "
+            "Optional reusable two-view teacher-logit cache. If the file "
             "exists it is verified and reused; otherwise it is created atomically."
         ),
     )
     parser.add_argument("--overwrite-teacher-logits-cache", action="store_true")
+    parser.add_argument(
+        "--teacher-view",
+        choices=["center_flip", "attention_multiscale"],
+        default="center_flip",
+    )
+    parser.add_argument("--local-crop-sizes", default="128,144,160")
+    parser.add_argument("--local-top-k", type=int, default=5)
+    parser.add_argument("--local-weight", type=float, default=0.4)
+    parser.add_argument("--local-temperature", type=float, default=1.5)
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
+
+    local_crop_sizes = parse_int_sequence(args.local_crop_sizes)
+    if args.local_top_k <= 0:
+        raise ValueError("local-top-k must be positive")
+    if not 0.0 <= float(args.local_weight) <= 1.0:
+        raise ValueError("local-weight must be in [0, 1]")
+    if float(args.local_temperature) <= 0.0:
+        raise ValueError("local-temperature must be positive")
+    teacher_view_spec = {
+        "mode": str(args.teacher_view),
+        "local_crop_sizes": (
+            list(local_crop_sizes)
+            if args.teacher_view == "attention_multiscale"
+            else None
+        ),
+        "local_top_k": (
+            int(args.local_top_k)
+            if args.teacher_view == "attention_multiscale"
+            else None
+        ),
+        "local_weight": (
+            float(args.local_weight)
+            if args.teacher_view == "attention_multiscale"
+            else None
+        ),
+        "local_temperature": (
+            float(args.local_temperature)
+            if args.teacher_view == "attention_multiscale"
+            else None
+        ),
+    }
 
     checkpoint_path = Path(args.checkpoint).resolve()
     train_csv = Path(args.train_csv).resolve()
@@ -55,9 +101,7 @@ def main() -> None:
     checkpoint_sha256 = sha256_file(checkpoint_path)
     train_csv_sha256 = sha256_file(train_csv)
     cache_path = (
-        Path(args.teacher_logits_cache).resolve()
-        if args.teacher_logits_cache
-        else None
+        Path(args.teacher_logits_cache).resolve() if args.teacher_logits_cache else None
     )
     reuse_cache = bool(
         cache_path is not None
@@ -83,6 +127,21 @@ def main() -> None:
             raise ValueError("teacher logits cache checkpoint SHA-256 mismatch")
         if cache["train_csv_sha256"] != train_csv_sha256:
             raise ValueError("teacher logits cache train CSV SHA-256 mismatch")
+        cached_view_spec = cache.get(
+            "teacher_view_spec",
+            {
+                "mode": "center_flip",
+                "local_crop_sizes": None,
+                "local_top_k": None,
+                "local_weight": None,
+                "local_temperature": None,
+            },
+        )
+        if cached_view_spec != teacher_view_spec:
+            raise ValueError(
+                "teacher logits cache view specification mismatch: "
+                f"cached={cached_view_spec!r} requested={teacher_view_spec!r}"
+            )
         center_logits = torch.as_tensor(cache["center_logits"]).float().cpu()
         flip_logits = torch.as_tensor(cache["flip_logits"]).float().cpu()
         labels = torch.as_tensor(cache["labels"]).long().flatten().cpu()
@@ -121,8 +180,50 @@ def main() -> None:
         paths = []
         for batch in loader:
             images = batch["images"].to(device, non_blocking=True)
-            center_parts.append(model(images=images).float().cpu())
-            flip_parts.append(model(images=torch.flip(images, dims=[3])).float().cpu())
+            if args.teacher_view == "center_flip":
+                center_logits_batch = model(images=images)
+                flip_logits_batch = model(images=torch.flip(images, dims=[3]))
+            else:
+                center_global, center_attention = forward_with_last_block_attention(
+                    model, images
+                )
+                center_local = []
+                for crop_size in local_crop_sizes:
+                    crops, _ = extract_attention_crops(
+                        images,
+                        center_attention,
+                        crop_size=crop_size,
+                        top_k=int(args.local_top_k),
+                    )
+                    center_local.append(model(images=crops))
+                center_logits_batch = fuse_global_multilocal_probabilities(
+                    center_global,
+                    center_local,
+                    local_weight=float(args.local_weight),
+                    temperature=float(args.local_temperature),
+                )
+
+                flipped_images = torch.flip(images, dims=[3])
+                flip_global, flip_attention = forward_with_last_block_attention(
+                    model, flipped_images
+                )
+                flip_local = []
+                for crop_size in local_crop_sizes:
+                    crops, _ = extract_attention_crops(
+                        flipped_images,
+                        flip_attention,
+                        crop_size=crop_size,
+                        top_k=int(args.local_top_k),
+                    )
+                    flip_local.append(model(images=crops))
+                flip_logits_batch = fuse_global_multilocal_probabilities(
+                    flip_global,
+                    flip_local,
+                    local_weight=float(args.local_weight),
+                    temperature=float(args.local_temperature),
+                )
+            center_parts.append(center_logits_batch.float().cpu())
+            flip_parts.append(flip_logits_batch.float().cpu())
             label_parts.append(batch["label"].long().cpu())
             paths.extend(canonical_sample_path(path) for path in batch["path"])
         center_logits = torch.cat(center_parts)
@@ -141,6 +242,7 @@ def main() -> None:
                     "checkpoint_sha256": checkpoint_sha256,
                     "train_csv": str(train_csv),
                     "train_csv_sha256": train_csv_sha256,
+                    "teacher_view_spec": teacher_view_spec,
                 },
                 cache_temporary,
             )
@@ -184,7 +286,8 @@ def main() -> None:
         maximum_class_fraction=args.maximum_class_fraction,
     )
     output.setdefault("metadata", {})["teacher_augmentation"] = {
-        "method": "two_view_bounded_teacher_trust_v1",
+        "method": "two_view_bounded_teacher_trust_v2",
+        "teacher_view_spec": teacher_view_spec,
         "checkpoint": str(checkpoint_path),
         "checkpoint_sha256": sha256_file(checkpoint_path),
         "train_csv": str(train_csv),
@@ -212,6 +315,7 @@ def main() -> None:
                 sha256_file(cache_path) if cache_path else None
             ),
             "teacher_logits_cache_reused": reuse_cache,
+            "teacher_view_spec": teacher_view_spec,
         }
     )
     atomic_json_dump(audit, audit_path)
