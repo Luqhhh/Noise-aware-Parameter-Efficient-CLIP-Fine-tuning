@@ -17,6 +17,7 @@ from aegis_clip.image_preprocess import select_inference_preprocess
 from aegis_clip.local_feature_adapter import load_local_feature_adapter
 from aegis_clip.local_inference import (
     adapted_local_view_logits,
+    adapted_part_token_local_view_logits,
     attention_local_adapter_global_logits,
     attention_local_global_logits,
     attention_part_token_adapter_global_logits,
@@ -82,6 +83,11 @@ def main() -> None:
         "--adapt-local-features",
         action="store_true",
         help="Apply the checkpoint-embedded O3 adapter to every local crop",
+    )
+    parser.add_argument(
+        "--adapt-part-token-features",
+        action="store_true",
+        help="Apply the checkpoint-embedded part-token adapter to every local crop",
     )
     parser.add_argument("--acknowledge-local-view-risk", action="store_true")
     parser.add_argument("--prior-alignment-strength", type=float, default=0.0)
@@ -162,6 +168,15 @@ def main() -> None:
             raise ValueError("local-temperature must be positive")
     if args.adapt_local_features and args.local_view == "none":
         raise ValueError("--adapt-local-features requires an attention local view")
+    if args.adapt_part_token_features and args.local_view == "none":
+        raise ValueError(
+            "--adapt-part-token-features requires an attention local view"
+        )
+    if args.adapt_local_features and args.adapt_part_token_features:
+        raise ValueError(
+            "--adapt-local-features and --adapt-part-token-features are "
+            "mutually exclusive"
+        )
     if args.tta in {
         "attention_local_global",
         "attention_local_adapter_global",
@@ -233,6 +248,12 @@ def main() -> None:
     part_token_adapter = (
         load_part_token_adapter(checkpoint, device)
         if args.tta == "attention_part_token_adapter_global"
+        or args.adapt_part_token_features
+        else None
+    )
+    part_pool_spec = (
+        checkpoint["part_token_adapter"]["spec"]["part_pool_spec"]
+        if part_token_adapter is not None
         else None
     )
     multiprototype_head = checkpoint.get("multiprototype_head")
@@ -273,13 +294,21 @@ def main() -> None:
                         crop_size=crop_size,
                         top_k=args.local_top_k,
                     )
-                    local_logits_views.append(
-                        adapted_local_view_logits(
+                    if args.adapt_local_features:
+                        local_logits = adapted_local_view_logits(
                             model, local_feature_adapter, local_images
                         )
-                        if args.adapt_local_features
-                        else model(images=local_images)
-                    )
+                    elif args.adapt_part_token_features:
+                        local_logits = adapted_part_token_local_view_logits(
+                            model,
+                            part_token_adapter,
+                            local_images,
+                            part_top_patches=int(part_pool_spec["top_patches"]),
+                            part_temperature=float(part_pool_spec["temperature"]),
+                        )
+                    else:
+                        local_logits = model(images=local_images)
+                    local_logits_views.append(local_logits)
                 if args.tta == "horizontal_flip":
                     flipped_images = torch.flip(images, dims=(3,))
                     (
@@ -297,15 +326,31 @@ def main() -> None:
                             crop_size=crop_size,
                             top_k=args.local_top_k,
                         )
-                        flipped_local_logits_views.append(
-                            adapted_local_view_logits(
+                        if args.adapt_local_features:
+                            flipped_local_logits = adapted_local_view_logits(
                                 model,
                                 local_feature_adapter,
                                 flipped_local_images,
                             )
-                            if args.adapt_local_features
-                            else model(images=flipped_local_images)
-                        )
+                        elif args.adapt_part_token_features:
+                            flipped_local_logits = (
+                                adapted_part_token_local_view_logits(
+                                    model,
+                                    part_token_adapter,
+                                    flipped_local_images,
+                                    part_top_patches=int(
+                                        part_pool_spec["top_patches"]
+                                    ),
+                                    part_temperature=float(
+                                        part_pool_spec["temperature"]
+                                    ),
+                                )
+                            )
+                        else:
+                            flipped_local_logits = model(
+                                images=flipped_local_images
+                            )
+                        flipped_local_logits_views.append(flipped_local_logits)
                     if args.local_view == "attention_multiscale":
                         logits = fuse_global_multilocal_flip_probabilities(
                             global_logits,
@@ -367,9 +412,6 @@ def main() -> None:
             elif args.tta == "attention_part_token_adapter_global":
                 if part_token_adapter is None:
                     raise RuntimeError("R1 part-token adapter was not loaded")
-                part_pool_spec = checkpoint["part_token_adapter"]["spec"][
-                    "part_pool_spec"
-                ]
                 logits = attention_part_token_adapter_global_logits(
                     model,
                     part_token_adapter,
@@ -455,6 +497,11 @@ def main() -> None:
                         else ""
                     )
                     + (":adapter=o3" if args.adapt_local_features else "")
+                    + (
+                        ":adapter=part_token"
+                        if args.adapt_part_token_features
+                        else ""
+                    )
                     if args.local_view != "none"
                     else args.tta
                 ),
@@ -496,6 +543,8 @@ def main() -> None:
         inference_mode += f"t={args.local_temperature:g}"
         if args.adapt_local_features:
             inference_mode += ":adapter=o3"
+        elif args.adapt_part_token_features:
+            inference_mode += ":adapter=part_token"
     elif args.tta == "attention_local_global":
         inference_mode = "attention_local_global:crop=160:top5:mean_probabilities"
     elif args.tta == "attention_local_adapter_global":
@@ -638,6 +687,7 @@ def main() -> None:
                     "epoch_zero_baseline": "F1+M1",
                 }
                 if args.tta == "attention_part_token_adapter_global"
+                or args.adapt_part_token_features
                 else None
             ),
             "complementary_flip_local_global": (

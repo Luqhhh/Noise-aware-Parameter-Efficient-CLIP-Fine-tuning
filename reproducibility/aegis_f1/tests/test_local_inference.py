@@ -2,11 +2,13 @@ import torch
 from torch import nn
 
 from aegis_clip.local_inference import (
+    adapted_part_token_local_view_logits,
     attention_guided_crop,
     complementary_flip_local_fusion,
     native_visual_forward_with_patch_features,
 )
 from aegis_clip.model import AegisCLIP
+from aegis_clip.part_token_adapter import PartTokenResidualAdapter
 
 
 class _TinyBlock(nn.Module):
@@ -139,3 +141,32 @@ def test_native_patch_capture_preserves_scored_logits() -> None:
         torch.ones(3, 4),
         atol=1.0e-6,
     )
+
+
+def test_zero_part_token_adapter_preserves_local_view_logits() -> None:
+    model = AegisCLIP(
+        _TinyGridVisual(),
+        num_classes=3,
+        feature_dim=4,
+        peft_mode="frozen",
+    )
+    model.eval()
+    adapter = PartTokenResidualAdapter(
+        feature_dim=4,
+        bottleneck_dim=2,
+        residual_scale=0.25,
+        dropout=0.1,
+    )
+    adapter.eval()
+    images = torch.randn(3, 3, 2, 2)
+
+    with torch.no_grad():
+        expected = model(images=images)
+        actual = adapted_part_token_local_view_logits(
+            model,
+            adapter,
+            images,
+            part_top_patches=2,
+        )
+
+    assert torch.equal(actual, expected.float())

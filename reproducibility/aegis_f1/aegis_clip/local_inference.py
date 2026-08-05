@@ -275,6 +275,33 @@ def adapted_local_view_logits(
     )
 
 
+def adapted_part_token_local_view_logits(
+    model: AegisCLIP,
+    adapter: PartTokenResidualAdapter,
+    local_images: torch.Tensor,
+    *,
+    part_top_patches: int = 8,
+    part_temperature: float = 0.07,
+) -> torch.Tensor:
+    """Adapt one local view with its own patch tokens and anchored logits."""
+    base_logits, local_features, patch_features = (
+        native_visual_forward_with_patch_features(model, local_images)
+    )
+    part_features = pool_cls_aligned_patch_features(
+        local_features,
+        patch_features,
+        top_patches=part_top_patches,
+        temperature=part_temperature,
+    )
+    adapted_features = adapter(local_features, part_features)
+    return anchored_classifier_residual_logits(
+        base_logits,
+        local_features,
+        adapted_features,
+        model.classifier.weight,
+    )
+
+
 def attention_part_token_adapter_global_logits(
     model: AegisCLIP,
     adapter: PartTokenResidualAdapter,

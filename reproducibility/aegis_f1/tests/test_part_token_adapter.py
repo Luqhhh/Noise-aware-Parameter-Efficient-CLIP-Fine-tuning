@@ -1,10 +1,12 @@
 import math
+import sys
 
 import pytest
 import torch
 import torch.nn.functional as F
 
 from aegis_clip.cli.train_part_token_adapter import train_part_token_adapter
+from aegis_clip.cli.infer import main as infer_main
 from aegis_clip.local_feature_adapter import fuse_global_local_log_probabilities
 from aegis_clip.part_token_adapter import (
     PART_POOL_METHOD,
@@ -128,6 +130,31 @@ def test_load_part_token_adapter_round_trip() -> None:
     for expected, actual in zip(source.parameters(), restored.parameters()):
         assert torch.equal(expected, actual)
     assert not restored.training
+
+
+def test_inference_rejects_both_local_adapter_types(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "infer",
+            "--checkpoint",
+            "unused.pt",
+            "--output-dir",
+            str(tmp_path),
+            "--local-view",
+            "attention_crop",
+            "--acknowledge-local-view-risk",
+            "--adapt-local-features",
+            "--adapt-part-token-features",
+        ],
+    )
+
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        infer_main()
 
 
 def test_part_token_training_materialises_composite_checkpoint(tmp_path) -> None:
