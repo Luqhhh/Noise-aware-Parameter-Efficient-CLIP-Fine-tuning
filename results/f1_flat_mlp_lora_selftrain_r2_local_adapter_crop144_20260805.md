@@ -72,4 +72,9 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
 - ZIP SHA-256: `abdaa32624261238af82604b1dff50243384ec0e7c6532d2f69a4ce706bcf8c3`
 - Manifest SHA-256: `be86bcc9074b1bc8e171c7c695a9948c9cec07cfd169ffaeffcbe4edd7748669`
 
-The desktop package was replaced and hash-verified. Platform result is pending.
+The desktop package was replaced and hash-verified.
+
+Platform score: `68.85889373973644%` (17,192 / 24,967), a new best. This is 9
+additional correct predictions and `0.03604758280931` percentage points above
+the crop160-trained Adapter. The candidate is promoted. Reaching 70% still
+requires 285 additional correct predictions.
