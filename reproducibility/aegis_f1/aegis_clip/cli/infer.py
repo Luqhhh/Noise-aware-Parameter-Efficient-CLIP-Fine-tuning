@@ -10,7 +10,7 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from aegis_clip.checkpoint import build_from_checkpoint
+from aegis_clip.checkpoint import _atomic_torch_save, build_from_checkpoint
 from aegis_clip.config import load_config
 from aegis_clip.data import TestImageDataset, load_class_mapping
 from aegis_clip.image_preprocess import select_inference_preprocess
@@ -424,7 +424,7 @@ def main() -> None:
         )
     all_logits = torch.cat(logit_batches, dim=0)
     if args.dump_logits:
-        torch.save(
+        _atomic_torch_save(
             {
                 "logits": all_logits.detach().float().cpu(),
                 "names": prediction_names,

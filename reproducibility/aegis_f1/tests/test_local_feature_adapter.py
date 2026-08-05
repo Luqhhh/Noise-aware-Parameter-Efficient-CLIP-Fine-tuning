@@ -1,3 +1,4 @@
+import copy
 import math
 
 import pytest
@@ -11,8 +12,10 @@ from aegis_clip.cli.train_local_feature_adapter import (
 from aegis_clip.local_feature_adapter import (
     BottleneckLocalFeatureAdapter,
     fuse_global_local_log_probabilities,
+    fuse_global_with_local_log_probabilities,
     load_local_feature_adapter,
     validate_local_adapter_cache,
+    weighted_local_log_probabilities,
 )
 
 
@@ -38,6 +41,24 @@ def test_probability_fusion_matches_direct_mean() -> None:
     assert torch.allclose(
         fused.logsumexp(dim=1), torch.zeros(6), atol=1.0e-6, rtol=0.0
     )
+
+
+def test_weighted_multiscale_probability_fusion_matches_direct_mean() -> None:
+    global_logits = torch.randn(6, 3)
+    local_logits = torch.randn(6, 3, 3)
+    weights = torch.tensor([0.45, 0.50, 0.05])
+
+    local_log_probability = weighted_local_log_probabilities(local_logits, weights)
+    fused = fuse_global_with_local_log_probabilities(
+        global_logits, local_log_probability
+    )
+    expected_local = (F.softmax(local_logits, dim=2) * weights.view(1, -1, 1)).sum(
+        dim=1
+    )
+    expected = (F.softmax(global_logits, dim=1) + expected_local) / 2.0
+
+    assert torch.allclose(local_log_probability.exp(), expected_local, atol=1.0e-7)
+    assert torch.allclose(fused.exp(), expected, atol=1.0e-7, rtol=1.0e-6)
 
 
 def test_reference_audit_allows_only_registered_fusion_roundoff() -> None:
@@ -143,12 +164,27 @@ def test_local_adapter_training_materialises_single_composite_checkpoint(
 
     train_cache = cache(["train-a.jpg", "train-b.jpg", "train-c.jpg"])
     validation_cache = cache(["val-a.jpg", "val-b.jpg", "val-c.jpg"])
+    train_cache_second = copy.deepcopy(train_cache)
+    validation_cache_second = copy.deepcopy(validation_cache)
+    for payload in (train_cache_second, validation_cache_second):
+        second_features = F.normalize(
+            torch.randn(len(payload["paths"]), 512, generator=generator), dim=1
+        )
+        payload["local_features"] = second_features
+        payload["local_logits"] = F.linear(
+            second_features, classifier_weight, classifier_bias
+        )
     train_path = tmp_path / "train.pt"
+    train_second_path = tmp_path / "train-second.pt"
     validation_path = tmp_path / "validation.pt"
+    validation_second_path = tmp_path / "validation-second.pt"
     center_path = tmp_path / "center.pt"
     m1_path = tmp_path / "m1.pt"
+    m1_second_path = tmp_path / "m1-second.pt"
     torch.save(train_cache, train_path)
+    torch.save(train_cache_second, train_second_path)
     torch.save(validation_cache, validation_path)
+    torch.save(validation_cache_second, validation_second_path)
     torch.save(
         {
             "paths": validation_cache["paths"],
@@ -166,15 +202,26 @@ def test_local_adapter_training_materialises_single_composite_checkpoint(
         },
         m1_path,
     )
+    torch.save(
+        {
+            "paths": validation_cache_second["paths"],
+            "logits": fuse_global_local_log_probabilities(
+                validation_cache_second["global_logits"],
+                validation_cache_second["local_logits"],
+            ),
+        },
+        m1_second_path,
+    )
 
     result = train_local_feature_adapter(
         parent_path,
-        train_path,
-        validation_path,
+        [train_path, train_second_path],
+        [validation_path, validation_second_path],
         tmp_path / "output",
         center_reference_path=center_path,
-        m1_reference_path=m1_path,
+        m1_reference_path=[m1_path, m1_second_path],
         expected_train_samples=3,
+        scale_weights=[0.7, 0.3],
         bottleneck_dim=2,
         batch_size=2,
         max_epochs=1,
@@ -185,4 +232,8 @@ def test_local_adapter_training_materialises_single_composite_checkpoint(
     composite = torch.load(result, map_location="cpu", weights_only=False)
     assert "local_feature_adapter" in composite
     assert composite["local_feature_adapter"]["spec"]["shared_classifier"] is True
+    assert composite["local_feature_adapter"]["spec"]["num_scales"] == 2
+    assert composite["local_feature_adapter"]["spec"]["scale_weights"] == pytest.approx(
+        [0.7, 0.3]
+    )
     assert (tmp_path / "output" / "gate.json").is_file()

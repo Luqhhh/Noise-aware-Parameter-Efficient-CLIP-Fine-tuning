@@ -90,10 +90,47 @@ def fuse_global_local_log_probabilities(
         or global_logits.shape != local_logits.shape
     ):
         raise ValueError("Global and local logits must have equal [N,C] shape")
+    return fuse_global_with_local_log_probabilities(
+        global_logits, F.log_softmax(local_logits.float(), dim=1)
+    )
+
+
+def fuse_global_with_local_log_probabilities(
+    global_logits: torch.Tensor,
+    local_log_probabilities: torch.Tensor,
+) -> torch.Tensor:
+    """Fuse global logits with an already-normalised local distribution."""
+    if (
+        global_logits.ndim != 2
+        or local_log_probabilities.ndim != 2
+        or global_logits.shape != local_log_probabilities.shape
+    ):
+        raise ValueError("Global and local values must have equal [N,C] shape")
     return torch.logaddexp(
         F.log_softmax(global_logits.float(), dim=1),
-        F.log_softmax(local_logits.float(), dim=1),
+        local_log_probabilities.float(),
     ) - math.log(2.0)
+
+
+def weighted_local_log_probabilities(
+    local_logits: torch.Tensor,
+    scale_weights: torch.Tensor,
+) -> torch.Tensor:
+    """Fuse one shared Adapter's scale logits using a weighted probability mean."""
+    if local_logits.ndim != 3:
+        raise ValueError("Multiscale local logits must have shape [N,S,C]")
+    weights = torch.as_tensor(
+        scale_weights, dtype=torch.float32, device=local_logits.device
+    ).flatten()
+    if weights.numel() != local_logits.shape[1]:
+        raise ValueError("Scale-weight count does not match local-logit scales")
+    if not torch.isfinite(weights).all() or (weights <= 0.0).any():
+        raise ValueError("Scale weights must be finite and positive")
+    weights = weights / weights.sum()
+    return torch.logsumexp(
+        F.log_softmax(local_logits.float(), dim=2) + weights.log().view(1, -1, 1),
+        dim=1,
+    )
 
 
 def validate_local_adapter_cache(

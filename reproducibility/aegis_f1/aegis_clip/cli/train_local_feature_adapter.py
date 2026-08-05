@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +18,9 @@ from aegis_clip.checkpoint import _atomic_torch_save
 from aegis_clip.local_feature_adapter import (
     BottleneckLocalFeatureAdapter,
     fuse_global_local_log_probabilities,
+    fuse_global_with_local_log_probabilities,
     validate_local_adapter_cache,
+    weighted_local_log_probabilities,
 )
 from aegis_clip.runtime import atomic_json_dump, set_seed, sha256_file
 
@@ -28,6 +31,50 @@ def _load_cache(path: str | Path) -> dict[str, Any]:
         payload, expected_feature_dim=512, expected_num_classes=500
     )
     return payload
+
+
+def _path_list(value: str | Path | Sequence[str | Path]) -> list[Path]:
+    if isinstance(value, (str, Path)):
+        return [Path(value).resolve()]
+    paths = [Path(path).resolve() for path in value]
+    if not paths:
+        raise ValueError("At least one cache path is required")
+    return paths
+
+
+def _normalise_scale_weights(
+    scale_weights: Sequence[float] | None, count: int
+) -> torch.Tensor:
+    if scale_weights is None:
+        return torch.full((int(count),), 1.0 / float(count))
+    weights = torch.as_tensor(list(scale_weights), dtype=torch.float32).flatten()
+    if weights.numel() != int(count):
+        raise ValueError("Scale-weight count must match the number of caches")
+    if not torch.isfinite(weights).all() or (weights <= 0.0).any():
+        raise ValueError("Scale weights must be finite and positive")
+    return weights / weights.sum()
+
+
+def _validate_aligned_caches(caches: Sequence[dict[str, Any]], *, context: str) -> None:
+    if not caches:
+        raise ValueError(f"At least one {context} cache is required")
+    reference = caches[0]
+    for index, cache in enumerate(caches[1:], start=1):
+        if list(cache["paths"]) != list(reference["paths"]):
+            raise ValueError(f"{context} cache {index} path order is misaligned")
+        for name in (
+            "labels",
+            "clean_probability",
+            "pseudo_labels",
+            "correction_alpha",
+            "global_logits",
+        ):
+            if not torch.equal(
+                torch.as_tensor(cache[name]), torch.as_tensor(reference[name])
+            ):
+                raise ValueError(f"{context} cache {index} {name} is misaligned")
+        if str(cache["checkpoint_sha256"]) != str(reference["checkpoint_sha256"]):
+            raise ValueError(f"{context} cache {index} checkpoint is misaligned")
 
 
 def _classifier_from_checkpoint(
@@ -115,9 +162,36 @@ def _evaluate(
     *,
     batch_size: int = 4096,
 ) -> tuple[dict[str, float | int], torch.Tensor]:
-    global_values = torch.as_tensor(cache["global_logits"]).float()
-    cached_local_logits = torch.as_tensor(cache["local_logits"]).float()
-    local_features = torch.as_tensor(cache["local_features"]).float()
+    return _evaluate_multiscale(
+        adapter,
+        [cache],
+        torch.ones(1),
+        classifier_weight,
+        classifier_bias,
+        device,
+        batch_size=batch_size,
+    )
+
+
+def _evaluate_multiscale(
+    adapter: BottleneckLocalFeatureAdapter | None,
+    caches: Sequence[dict[str, Any]],
+    scale_weights: torch.Tensor,
+    classifier_weight: torch.Tensor,
+    classifier_bias: torch.Tensor,
+    device: torch.device,
+    *,
+    batch_size: int = 4096,
+) -> tuple[dict[str, float | int], torch.Tensor]:
+    _validate_aligned_caches(caches, context="validation")
+    weights = _normalise_scale_weights(scale_weights.tolist(), len(caches)).to(device)
+    global_values = torch.as_tensor(caches[0]["global_logits"]).float()
+    cached_local_logits = [
+        torch.as_tensor(cache["local_logits"]).float() for cache in caches
+    ]
+    local_features = [
+        torch.as_tensor(cache["local_features"]).float() for cache in caches
+    ]
     fused_parts: list[torch.Tensor] = []
     local_prediction_parts: list[torch.Tensor] = []
     drift_sum = 0.0
@@ -126,38 +200,51 @@ def _evaluate(
     if adapter is not None:
         adapter.eval()
     with torch.no_grad():
-        for start in range(0, len(local_features), int(batch_size)):
-            stop = min(start + int(batch_size), len(local_features))
+        for start in range(0, len(local_features[0]), int(batch_size)):
+            stop = min(start + int(batch_size), len(local_features[0]))
             global_logits = global_values[start:stop].to(device)
-            base_features = local_features[start:stop].to(device)
-            if adapter is None:
-                local_logits = cached_local_logits[start:stop].to(device)
-                adapted_features = base_features
-            else:
-                adapted_features = adapter(base_features)
-                local_logits = F.linear(
-                    adapted_features,
-                    classifier_weight.to(device),
-                    classifier_bias.to(device),
+            scale_logits: list[torch.Tensor] = []
+            for scale_index, scale_features in enumerate(local_features):
+                base_features = scale_features[start:stop].to(device)
+                if adapter is None:
+                    local_logits = cached_local_logits[scale_index][start:stop].to(
+                        device
+                    )
+                    adapted_features = base_features
+                else:
+                    adapted_features = adapter(base_features)
+                    local_logits = F.linear(
+                        adapted_features, classifier_weight, classifier_bias
+                    )
+                scale_logits.append(local_logits)
+                drift_sum += float(
+                    weights[scale_index]
+                    * (
+                        1.0
+                        - F.cosine_similarity(adapted_features, base_features, dim=1)
+                    ).sum()
                 )
-            fused = fuse_global_local_log_probabilities(global_logits, local_logits)
+                norm_drift_sum += float(
+                    weights[scale_index]
+                    * (adapted_features.norm(dim=1) - base_features.norm(dim=1))
+                    .abs()
+                    .sum()
+                )
+            local_log_probability = weighted_local_log_probabilities(
+                torch.stack(scale_logits, dim=1), weights
+            )
+            fused = fuse_global_with_local_log_probabilities(
+                global_logits, local_log_probability
+            )
             fused_parts.append(fused.cpu())
-            local_prediction_parts.append(local_logits.argmax(1).cpu())
-            drift_sum += float(
-                (1.0 - F.cosine_similarity(adapted_features, base_features, dim=1)).sum()
-            )
-            norm_drift_sum += float(
-                (adapted_features.norm(dim=1) - base_features.norm(dim=1))
-                .abs()
-                .sum()
-            )
+            local_prediction_parts.append(local_log_probability.argmax(1).cpu())
             agreement_sum += int(
-                (global_logits.argmax(1) == local_logits.argmax(1)).sum()
+                (global_logits.argmax(1) == local_log_probability.argmax(1)).sum()
             )
     fused_logits = torch.cat(fused_parts)
     local_predictions = torch.cat(local_prediction_parts)
-    metrics = _prediction_metrics(fused_logits.argmax(1), cache)
-    local_metrics = _prediction_metrics(local_predictions, cache)
+    metrics = _prediction_metrics(fused_logits.argmax(1), caches[0])
+    local_metrics = _prediction_metrics(local_predictions, caches[0])
     metrics.update(
         {
             f"local_{name}": value
@@ -173,12 +260,12 @@ def _evaluate(
             }
         }
     )
-    metrics["local_feature_drift"] = drift_sum / max(len(local_features), 1)
+    metrics["local_feature_drift"] = drift_sum / max(len(local_features[0]), 1)
     metrics["local_feature_norm_drift"] = norm_drift_sum / max(
-        len(local_features), 1
+        len(local_features[0]), 1
     )
     metrics["local_global_prediction_agreement"] = agreement_sum / max(
-        len(local_features), 1
+        len(local_features[0]), 1
     )
     return metrics, fused_logits
 
@@ -198,13 +285,14 @@ def _delta_pp(
 
 def train_local_feature_adapter(
     parent_checkpoint_path: str | Path,
-    train_cache_path: str | Path,
-    validation_cache_path: str | Path,
+    train_cache_path: str | Path | Sequence[str | Path],
+    validation_cache_path: str | Path | Sequence[str | Path],
     output_dir: str | Path,
     *,
     center_reference_path: str | Path,
-    m1_reference_path: str | Path,
+    m1_reference_path: str | Path | Sequence[str | Path],
     expected_train_samples: int,
+    scale_weights: Sequence[float] | None = None,
     seed: int = 42,
     bottleneck_dim: int = 32,
     residual_scale: float = 0.25,
@@ -220,38 +308,55 @@ def train_local_feature_adapter(
     device_name: str = "cpu",
 ) -> Path:
     parent_checkpoint_path = Path(parent_checkpoint_path).resolve()
-    train_cache_path = Path(train_cache_path).resolve()
-    validation_cache_path = Path(validation_cache_path).resolve()
+    train_cache_paths = _path_list(train_cache_path)
+    validation_cache_paths = _path_list(validation_cache_path)
+    m1_reference_paths = _path_list(m1_reference_path)
     output_dir = Path(output_dir).resolve()
-    train_cache = _load_cache(train_cache_path)
-    validation_cache = _load_cache(validation_cache_path)
-    if len(train_cache["paths"]) != int(expected_train_samples):
-        raise ValueError("O3 high-clean training cache count is unexpected")
-    if float(torch.as_tensor(train_cache["clean_probability"]).min()) < 0.70:
-        raise ValueError("O3 training cache contains a sample below clean threshold")
-    if set(train_cache["paths"]) & set(validation_cache["paths"]):
+    if not (
+        len(train_cache_paths) == len(validation_cache_paths) == len(m1_reference_paths)
+    ):
+        raise ValueError("Train, validation, and M1-reference counts must match")
+    weights = _normalise_scale_weights(scale_weights, len(train_cache_paths))
+    train_caches = [_load_cache(path) for path in train_cache_paths]
+    validation_caches = [_load_cache(path) for path in validation_cache_paths]
+    _validate_aligned_caches(train_caches, context="training")
+    _validate_aligned_caches(validation_caches, context="validation")
+    for train_cache in train_caches:
+        if len(train_cache["paths"]) != int(expected_train_samples):
+            raise ValueError("O3 high-clean training cache count is unexpected")
+        if float(torch.as_tensor(train_cache["clean_probability"]).min()) < 0.70:
+            raise ValueError("O3 training cache contains a sample below clean threshold")
+    if set(train_caches[0]["paths"]) & set(validation_caches[0]["paths"]):
         raise ValueError("O3 train and validation caches overlap")
     parent_sha256 = sha256_file(parent_checkpoint_path)
-    if {
-        str(train_cache["checkpoint_sha256"]),
-        str(validation_cache["checkpoint_sha256"]),
-    } != {parent_sha256}:
+    cache_parent_hashes = {
+        str(cache["checkpoint_sha256"]) for cache in [*train_caches, *validation_caches]
+    }
+    if cache_parent_hashes != {parent_sha256}:
         raise ValueError("O3 caches do not match the parent checkpoint")
     classifier_weight, classifier_bias, parent_checkpoint = (
         _classifier_from_checkpoint(parent_checkpoint_path)
     )
-    center_audit = _reference_audit(
-        validation_cache, center_reference_path, fused=False
-    )
-    m1_audit = _reference_audit(validation_cache, m1_reference_path, fused=True)
+    center_audits = [
+        _reference_audit(cache, center_reference_path, fused=False)
+        for cache in validation_caches
+    ]
+    m1_audits = [
+        _reference_audit(cache, reference, fused=True)
+        for cache, reference in zip(validation_caches, m1_reference_paths)
+    ]
     exact_audit = {
         "maximum_absolute_logit_difference": 0.0,
         "prediction_agreement": 1.0,
     }
-    reference_audit_passed = _reference_audits_pass(center_audit, m1_audit)
+    reference_audit_passed = all(
+        _reference_audits_pass(center, m1)
+        for center, m1 in zip(center_audits, m1_audits)
+    )
     if not reference_audit_passed:
         raise ValueError(
-            f"O3 cache reference audit failed: center={center_audit}, m1={m1_audit}"
+            "O3 cache reference audit failed: "
+            f"center={center_audits}, m1={m1_audits}"
         )
 
     set_seed(int(seed), deterministic=True)
@@ -266,16 +371,18 @@ def train_local_feature_adapter(
     ).to(device)
     classifier_weight = classifier_weight.to(device)
     classifier_bias = classifier_bias.to(device)
-    baseline_metrics, baseline_logits = _evaluate(
+    baseline_metrics, baseline_logits = _evaluate_multiscale(
         None,
-        validation_cache,
+        validation_caches,
+        weights,
         classifier_weight,
         classifier_bias,
         device,
     )
-    epoch_zero_metrics, epoch_zero_logits = _evaluate(
+    epoch_zero_metrics, epoch_zero_logits = _evaluate_multiscale(
         adapter,
-        validation_cache,
+        validation_caches,
+        weights,
         classifier_weight,
         classifier_bias,
         device,
@@ -291,9 +398,15 @@ def train_local_feature_adapter(
         raise RuntimeError(f"O3 zero-initialisation audit failed: {epoch_zero_audit}")
 
     dataset = TensorDataset(
-        torch.as_tensor(train_cache["local_features"]).float(),
-        torch.as_tensor(train_cache["global_logits"]).float(),
-        torch.as_tensor(train_cache["labels"]).long(),
+        torch.stack(
+            [
+                torch.as_tensor(cache["local_features"]).float()
+                for cache in train_caches
+            ],
+            dim=1,
+        ),
+        torch.as_tensor(train_caches[0]["global_logits"]).float(),
+        torch.as_tensor(train_caches[0]["labels"]).long(),
     )
     generator = torch.Generator().manual_seed(int(seed))
     loader = DataLoader(
@@ -326,12 +439,14 @@ def train_local_feature_adapter(
         "gce_q": float(gce_q),
         "local_loss_weight": float(local_loss_weight),
         "feature_anchor_weight": float(feature_anchor_weight),
+        "num_scales": len(train_caches),
+        "scale_weights": [float(value) for value in weights],
         "optimizer": "AdamW",
         "scheduler": "CosineAnnealingLR",
         "selection": "best clean-core micro among safety-eligible epochs",
         "parameter_scan": False,
-        "center_reference_audit": center_audit,
-        "m1_reference_audit": m1_audit,
+        "center_reference_audits": center_audits,
+        "m1_reference_audits": m1_audits,
         "m1_fusion_recompute_tolerance": 4.0e-6,
         "reference_audit_passed": reference_audit_passed,
         "epoch_zero_audit": epoch_zero_audit,
@@ -355,17 +470,29 @@ def train_local_feature_adapter(
             global_logits = global_logits.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
             optimizer.zero_grad(set_to_none=True)
-            adapted = adapter(local_features)
+            batch_samples, batch_scales, feature_dim = local_features.shape
+            adapted = adapter(local_features.flatten(0, 1)).view(
+                batch_samples, batch_scales, feature_dim
+            )
             local_logits = F.linear(adapted, classifier_weight, classifier_bias)
-            fused = fuse_global_local_log_probabilities(
-                global_logits, local_logits
+            local_log_probability = weighted_local_log_probabilities(
+                local_logits, weights.to(device)
+            )
+            fused = fuse_global_with_local_log_probabilities(
+                global_logits, local_log_probability
             )
             fused_loss = _gce_from_log_probabilities(fused, labels, float(gce_q))
-            local_log_probability = F.log_softmax(local_logits.float(), dim=1)
             local_loss = _gce_from_log_probabilities(
                 local_log_probability, labels, float(gce_q)
             )
-            anchor_loss = (adapted - local_features).square().sum(dim=1).mean()
+            anchor_loss = (
+                (
+                    (adapted - local_features).square().sum(dim=2)
+                    * weights.to(device).view(1, -1)
+                )
+                .sum(dim=1)
+                .mean()
+            )
             loss = (
                 fused_loss
                 + float(local_loss_weight) * local_loss
@@ -380,9 +507,10 @@ def train_local_feature_adapter(
             anchor_loss_sum += float(anchor_loss.detach()) * count
             samples += count
         scheduler.step()
-        metrics, _ = _evaluate(
+        metrics, _ = _evaluate_multiscale(
             adapter,
-            validation_cache,
+            validation_caches,
+            weights,
             classifier_weight,
             classifier_bias,
             device,
@@ -460,7 +588,9 @@ def train_local_feature_adapter(
             best_metrics, baseline_metrics, "raw_micro"
         ),
         "local_feature_drift": float(best_metrics["local_feature_drift"]),
-        "global_path_bit_exact": center_audit == exact_audit,
+        "global_path_bit_exact": all(
+            center_audit == exact_audit for center_audit in center_audits
+        ),
         "epoch_zero_m1_bit_exact": reference_audit_passed,
         "passed": bool(
             _delta_pp(best_metrics, baseline_metrics, "clean_core_micro") >= 0.20
@@ -473,14 +603,20 @@ def train_local_feature_adapter(
     }
     adapter_payload = {
         "format_version": 1,
-        "experiment": "O3_F1_LOCAL_ONLY_FEATURE_ADAPTER",
+        "experiment": (
+            "O3_F1_SHARED_MULTISCALE_LOCAL_ONLY_FEATURE_ADAPTER"
+            if len(train_caches) > 1
+            else "O3_F1_LOCAL_ONLY_FEATURE_ADAPTER"
+        ),
         "state_dict": best_state,
         "spec": {
             "feature_dim": 512,
             "bottleneck_dim": int(bottleneck_dim),
             "residual_scale": float(residual_scale),
             "dropout": float(dropout),
-            "fusion": "1:1_global_adapted_local_probability_mean",
+            "fusion": "1:1_global_weighted_adapted_local_probability_mean",
+            "num_scales": len(train_caches),
+            "scale_weights": [float(value) for value in weights],
             "shared_classifier": True,
         },
         "protocol": protocol,
@@ -490,10 +626,12 @@ def train_local_feature_adapter(
         "lineage": {
             "parent_checkpoint": str(parent_checkpoint_path),
             "parent_checkpoint_sha256": parent_sha256,
-            "train_cache": str(train_cache_path),
-            "train_cache_sha256": sha256_file(train_cache_path),
-            "validation_cache": str(validation_cache_path),
-            "validation_cache_sha256": sha256_file(validation_cache_path),
+            "train_caches": [str(path) for path in train_cache_paths],
+            "train_cache_sha256s": [sha256_file(path) for path in train_cache_paths],
+            "validation_caches": [str(path) for path in validation_cache_paths],
+            "validation_cache_sha256s": [
+                sha256_file(path) for path in validation_cache_paths
+            ],
         },
     }
     _atomic_torch_save(adapter_payload, output_dir / "best_adapter.pt")
@@ -507,12 +645,16 @@ def train_local_feature_adapter(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--parent-checkpoint", required=True)
-    parser.add_argument("--train-cache", required=True)
-    parser.add_argument("--validation-cache", required=True)
+    parser.add_argument("--train-cache", required=True, action="append")
+    parser.add_argument("--validation-cache", required=True, action="append")
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--center-reference", required=True)
-    parser.add_argument("--m1-reference", required=True)
+    parser.add_argument("--m1-reference", required=True, action="append")
     parser.add_argument("--expected-train-samples", type=int, required=True)
+    parser.add_argument(
+        "--scale-weights",
+        help="Comma-separated positive weights matching repeated cache arguments",
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--bottleneck-dim", type=int, default=32)
     parser.add_argument("--residual-scale", type=float, default=0.25)
@@ -536,6 +678,11 @@ def main() -> None:
             center_reference_path=args.center_reference,
             m1_reference_path=args.m1_reference,
             expected_train_samples=args.expected_train_samples,
+            scale_weights=(
+                [float(value) for value in args.scale_weights.split(",")]
+                if args.scale_weights
+                else None
+            ),
             seed=args.seed,
             bottleneck_dim=args.bottleneck_dim,
             residual_scale=args.residual_scale,
