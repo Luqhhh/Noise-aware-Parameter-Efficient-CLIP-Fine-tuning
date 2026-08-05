@@ -28,6 +28,23 @@ def parse_shared_top_k(inference_modes: Sequence[str]) -> int:
     return values[0]
 
 
+def parse_shared_local_adapter(inference_modes: Sequence[str]) -> str | None:
+    """Require nested dumps to use the same optional local adapter marker."""
+    if not inference_modes:
+        raise ValueError("At least one inference mode is required")
+    values: list[str | None] = []
+    for mode in inference_modes:
+        matches = re.findall(r"(?:^|:)adapter=([a-zA-Z0-9_-]+)(?::|$)", str(mode))
+        if len(matches) > 1:
+            raise ValueError(
+                f"Inference mode contains multiple adapter markers: {mode!r}"
+            )
+        values.append(matches[0] if matches else None)
+    if len(set(values)) != 1:
+        raise ValueError(f"Nested dumps use different local adapters: {values}")
+    return values[0]
+
+
 def parse_scale_weights(
     scales_value: str,
     weights_value: str,

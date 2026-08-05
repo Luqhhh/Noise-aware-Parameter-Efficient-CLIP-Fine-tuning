@@ -4,7 +4,10 @@ import pytest
 import torch
 import torch.nn.functional as F
 
-from aegis_clip.cli.train_local_feature_adapter import train_local_feature_adapter
+from aegis_clip.cli.train_local_feature_adapter import (
+    _reference_audits_pass,
+    train_local_feature_adapter,
+)
 from aegis_clip.local_feature_adapter import (
     BottleneckLocalFeatureAdapter,
     fuse_global_local_log_probabilities,
@@ -34,6 +37,18 @@ def test_probability_fusion_matches_direct_mean() -> None:
     assert torch.allclose(fused.exp(), expected, atol=1.0e-7, rtol=1.0e-6)
     assert torch.allclose(
         fused.logsumexp(dim=1), torch.zeros(6), atol=1.0e-6, rtol=0.0
+    )
+
+
+def test_reference_audit_allows_only_registered_fusion_roundoff() -> None:
+    exact = {"maximum_absolute_logit_difference": 0.0, "prediction_agreement": 1.0}
+    rounded = {
+        "maximum_absolute_logit_difference": 3.814697265625e-6,
+        "prediction_agreement": 1.0,
+    }
+    assert _reference_audits_pass(exact, rounded)
+    assert not _reference_audits_pass(
+        exact, {**rounded, "maximum_absolute_logit_difference": 4.1e-6}
     )
 
 

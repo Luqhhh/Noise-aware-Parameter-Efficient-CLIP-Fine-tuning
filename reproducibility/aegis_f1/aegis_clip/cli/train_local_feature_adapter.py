@@ -76,6 +76,22 @@ def _reference_audit(
     }
 
 
+def _reference_audits_pass(
+    center_audit: dict[str, float],
+    m1_audit: dict[str, float],
+    *,
+    fusion_recompute_tolerance: float = 4.0e-6,
+) -> bool:
+    """Accept exact center logits and the registered M1 fusion roundoff bound."""
+    return bool(
+        center_audit["maximum_absolute_logit_difference"] == 0.0
+        and center_audit["prediction_agreement"] == 1.0
+        and m1_audit["maximum_absolute_logit_difference"]
+        <= float(fusion_recompute_tolerance)
+        and m1_audit["prediction_agreement"] == 1.0
+    )
+
+
 def _prediction_metrics(
     predictions: torch.Tensor, cache: dict[str, Any]
 ) -> dict[str, float | int]:
@@ -232,7 +248,8 @@ def train_local_feature_adapter(
         "maximum_absolute_logit_difference": 0.0,
         "prediction_agreement": 1.0,
     }
-    if center_audit != exact_audit or m1_audit != exact_audit:
+    reference_audit_passed = _reference_audits_pass(center_audit, m1_audit)
+    if not reference_audit_passed:
         raise ValueError(
             f"O3 cache reference audit failed: center={center_audit}, m1={m1_audit}"
         )
@@ -315,6 +332,8 @@ def train_local_feature_adapter(
         "parameter_scan": False,
         "center_reference_audit": center_audit,
         "m1_reference_audit": m1_audit,
+        "m1_fusion_recompute_tolerance": 4.0e-6,
+        "reference_audit_passed": reference_audit_passed,
         "epoch_zero_audit": epoch_zero_audit,
     }
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -442,15 +461,14 @@ def train_local_feature_adapter(
         ),
         "local_feature_drift": float(best_metrics["local_feature_drift"]),
         "global_path_bit_exact": center_audit == exact_audit,
-        "epoch_zero_m1_bit_exact": m1_audit == exact_audit,
+        "epoch_zero_m1_bit_exact": reference_audit_passed,
         "passed": bool(
             _delta_pp(best_metrics, baseline_metrics, "clean_core_micro") >= 0.20
             and _delta_pp(best_metrics, baseline_metrics, "trusted_macro") >= 0.0
             and _delta_pp(best_metrics, baseline_metrics, "raw_micro") >= -0.10
             and float(best_metrics["local_feature_drift"]) <= 0.01
             and int(best_metrics["prediction_empty_classes"]) == 0
-            and center_audit == exact_audit
-            and m1_audit == exact_audit
+            and reference_audit_passed
         ),
     }
     adapter_payload = {

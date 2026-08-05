@@ -16,6 +16,7 @@ from aegis_clip.data import TestImageDataset, load_class_mapping
 from aegis_clip.image_preprocess import select_inference_preprocess
 from aegis_clip.local_feature_adapter import load_local_feature_adapter
 from aegis_clip.local_inference import (
+    adapted_local_view_logits,
     attention_local_adapter_global_logits,
     attention_local_global_logits,
     attention_part_token_adapter_global_logits,
@@ -28,6 +29,7 @@ from aegis_clip.localization import (
     fuse_global_local_probabilities,
     fuse_global_multilocal_flip_probabilities,
     fuse_global_multilocal_probabilities,
+    normalized_probability_weights,
     parse_int_sequence,
 )
 from aegis_clip.multiprototype import blend_multiprototype_logits
@@ -69,9 +71,18 @@ def main() -> None:
     )
     parser.add_argument("--local-crop-size", type=int, default=160)
     parser.add_argument("--local-crop-sizes", default="144,160,176")
+    parser.add_argument(
+        "--local-scale-weights",
+        help="Comma-separated multiscale local probability weights",
+    )
     parser.add_argument("--local-top-k", type=int, default=5)
     parser.add_argument("--local-weight", type=float, default=0.5)
     parser.add_argument("--local-temperature", type=float, default=1.0)
+    parser.add_argument(
+        "--adapt-local-features",
+        action="store_true",
+        help="Apply the checkpoint-embedded O3 adapter to every local crop",
+    )
     parser.add_argument("--acknowledge-local-view-risk", action="store_true")
     parser.add_argument("--prior-alignment-strength", type=float, default=0.0)
     parser.add_argument("--prior-alignment-iterations", type=int, default=50)
@@ -99,6 +110,17 @@ def main() -> None:
         if args.local_view == "attention_multiscale"
         else (int(args.local_crop_size),)
     )
+    local_scale_weights = (
+        normalized_probability_weights(
+            args.local_scale_weights,
+            len(local_crop_sizes),
+            name="local-scale-weights",
+        )
+        if args.local_scale_weights is not None
+        else None
+    )
+    if local_scale_weights is not None and args.local_view != "attention_multiscale":
+        raise ValueError("--local-scale-weights requires attention_multiscale")
     if args.tta != "none" and not args.acknowledge_tta_risk:
         raise ValueError(
             "TTA is a competition gray area; pass --acknowledge-tta-risk explicitly"
@@ -138,6 +160,8 @@ def main() -> None:
             raise ValueError("local-weight must be in [0, 1]")
         if args.local_temperature <= 0.0:
             raise ValueError("local-temperature must be positive")
+    if args.adapt_local_features and args.local_view == "none":
+        raise ValueError("--adapt-local-features requires an attention local view")
     if args.tta in {
         "attention_local_global",
         "attention_local_adapter_global",
@@ -203,7 +227,7 @@ def main() -> None:
     model.eval()
     local_feature_adapter = (
         load_local_feature_adapter(checkpoint, device)
-        if args.tta == "attention_local_adapter_global"
+        if args.tta == "attention_local_adapter_global" or args.adapt_local_features
         else None
     )
     part_token_adapter = (
@@ -249,7 +273,13 @@ def main() -> None:
                         crop_size=crop_size,
                         top_k=args.local_top_k,
                     )
-                    local_logits_views.append(model(images=local_images))
+                    local_logits_views.append(
+                        adapted_local_view_logits(
+                            model, local_feature_adapter, local_images
+                        )
+                        if args.adapt_local_features
+                        else model(images=local_images)
+                    )
                 if args.tta == "horizontal_flip":
                     flipped_images = torch.flip(images, dims=(3,))
                     (
@@ -268,7 +298,13 @@ def main() -> None:
                             top_k=args.local_top_k,
                         )
                         flipped_local_logits_views.append(
-                            model(images=flipped_local_images)
+                            adapted_local_view_logits(
+                                model,
+                                local_feature_adapter,
+                                flipped_local_images,
+                            )
+                            if args.adapt_local_features
+                            else model(images=flipped_local_images)
                         )
                     if args.local_view == "attention_multiscale":
                         logits = fuse_global_multilocal_flip_probabilities(
@@ -281,6 +317,7 @@ def main() -> None:
                             temperature=args.local_temperature,
                             global_temperature=args.tta_temperature,
                             local_temperature=args.local_temperature,
+                            local_scale_weights=local_scale_weights,
                         )
                     else:
                         logits = fuse_global_local_flip_probabilities(
@@ -291,6 +328,7 @@ def main() -> None:
                             local_weight=args.local_weight,
                             flip_weight=args.tta_view_weight,
                             temperature=args.local_temperature,
+                            local_scale_weights=local_scale_weights,
                             global_temperature=args.tta_temperature,
                             local_temperature=args.local_temperature,
                         )
@@ -410,6 +448,13 @@ def main() -> None:
                             args.local_temperature,
                         )
                     )
+                    + (
+                        ":weights="
+                        + "-".join(f"{value:g}" for value in local_scale_weights)
+                        if local_scale_weights is not None
+                        else ""
+                    )
+                    + (":adapter=o3" if args.adapt_local_features else "")
                     if args.local_view != "none"
                     else args.tta
                 ),
@@ -439,12 +484,18 @@ def main() -> None:
             inference_mode += "crops=" + "-".join(
                 str(value) for value in local_crop_sizes
             ) + ":"
+            if local_scale_weights is not None:
+                inference_mode += "weights=" + "-".join(
+                    f"{value:g}" for value in local_scale_weights
+                ) + ":"
         else:
             inference_mode += f"crop={args.local_crop_size}:"
         inference_mode += f"local_weight={args.local_weight:g}:"
         if stacked_local_tta:
             inference_mode += f"flip_weight={args.tta_view_weight:g}:"
         inference_mode += f"t={args.local_temperature:g}"
+        if args.adapt_local_features:
+            inference_mode += ":adapter=o3"
     elif args.tta == "attention_local_global":
         inference_mode = "attention_local_global:crop=160:top5:mean_probabilities"
     elif args.tta == "attention_local_adapter_global":
@@ -515,6 +566,11 @@ def main() -> None:
                 if args.local_view == "attention_multiscale"
                 else None
             ),
+            "local_scale_weights": (
+                list(local_scale_weights)
+                if local_scale_weights is not None
+                else None
+            ),
             "local_top_k": (
                 int(args.local_top_k) if args.local_view != "none" else None
             ),
@@ -570,6 +626,7 @@ def main() -> None:
                     "global_path": "native_parent_checkpoint_unchanged",
                 }
                 if args.tta == "attention_local_adapter_global"
+                or args.adapt_local_features
                 else None
             ),
             "part_token_adapter": (

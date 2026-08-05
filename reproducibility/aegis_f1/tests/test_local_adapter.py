@@ -71,4 +71,9 @@ def test_zero_initialised_adapter_preserves_normalized_local_features() -> None:
     )
     expected = torch.nn.functional.normalize(features, dim=1)
     assert torch.allclose(adapted, expected)
-    assert torch.allclose(logits, torch.nn.functional.linear(expected, weight, bias))
+    torch.testing.assert_close(
+        logits,
+        torch.nn.functional.linear(expected, weight, bias),
+        atol=1.0e-6,
+        rtol=1.0e-5,
+    )

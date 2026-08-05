@@ -15,6 +15,7 @@ from aegis_clip.prior_alignment import align_logits_to_prior
 from aegis_clip.runtime import sha256_file
 from aegis_clip.scale_reweighting import (
     parse_scale_weights,
+    parse_shared_local_adapter,
     parse_shared_top_k,
     reconstruct_nested_scale_probabilities,
     weighted_scale_probabilities,
@@ -88,6 +89,15 @@ def main() -> None:
     top_k = parse_shared_top_k(
         [str(payloads[name]["inference_mode"]) for name in paths]
     )
+    local_adapter = parse_shared_local_adapter(
+        [str(payloads[name]["inference_mode"]) for name in paths]
+    )
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+    adapter_payload = checkpoint.get("local_feature_adapter")
+    if local_adapter is not None and not isinstance(adapter_payload, dict):
+        raise ValueError("Nested dumps declare a local adapter absent from checkpoint")
+    if local_adapter is None and isinstance(adapter_payload, dict):
+        adapter_payload = None
 
     config = load_config(args.config)
     num_classes = int(config["model"]["num_classes"])
@@ -133,6 +143,8 @@ def main() -> None:
         f"topk={top_k}:crops={scale_text}:weights={weight_text}:"
         f"balanced_prior={args.strength:g}"
     )
+    if local_adapter is not None:
+        inference_mode += f":adapter={local_adapter}"
     manifest = create_submission(
         predictions,
         expected_names,
@@ -155,6 +167,14 @@ def main() -> None:
             "scales": list(scales),
             "scale_weights": list(weights),
             "local_top_k": int(top_k),
+            "local_feature_adapter": (
+                {
+                    **adapter_payload["spec"],
+                    "gate": adapter_payload["gate"],
+                }
+                if adapter_payload is not None
+                else None
+            ),
             "scale_reconstruction": reconstruction,
             "prior_alignment": alignment,
         },

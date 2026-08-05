@@ -277,8 +277,9 @@ def fuse_global_multilocal_probabilities(
     *,
     local_weight: float = 0.5,
     temperature: float = 1.0,
+    local_scale_weights: Sequence[float] | None = None,
 ) -> torch.Tensor:
-    """Fuse a global view with the mean probability of deterministic local views."""
+    """Fuse a global view with weighted deterministic local probabilities."""
     if not local_logits:
         raise ValueError("At least one local-view tensor is required")
     if any(value.shape != global_logits.shape for value in local_logits):
@@ -288,13 +289,20 @@ def fuse_global_multilocal_probabilities(
     if temperature <= 0.0:
         raise ValueError("temperature must be positive")
     global_probabilities = F.softmax(global_logits.float() / temperature, dim=1)
-    mean_local = torch.stack(
+    weights = normalized_probability_weights(
+        local_scale_weights, len(local_logits), name="local_scale_weights"
+    )
+    stacked_local = torch.stack(
         [
             F.softmax(value.float() / temperature, dim=1)
             for value in local_logits
         ],
         dim=0,
-    ).mean(dim=0)
+    )
+    mean_local = (
+        stacked_local
+        * torch.tensor(weights, device=stacked_local.device)[:, None, None]
+    ).sum(dim=0)
     fused = (
         (1.0 - local_weight) * global_probabilities
         + local_weight * mean_local
@@ -313,8 +321,9 @@ def fuse_global_multilocal_flip_probabilities(
     temperature: float = 1.0,
     global_temperature: float | None = None,
     local_temperature: float | None = None,
+    local_scale_weights: Sequence[float] | None = None,
 ) -> torch.Tensor:
-    """Fuse global/flip views with the mean of paired multi-scale local views."""
+    """Fuse global/flip views with weighted paired multi-scale local views."""
     if not local_logits:
         raise ValueError("At least one local-view tensor is required")
     if len(local_logits) != len(flipped_local_logits):
@@ -352,9 +361,16 @@ def fuse_global_multilocal_flip_probabilities(
         * F.softmax(flipped.float() / local_temperature, dim=1)
         for original, flipped in zip(local_logits, flipped_local_logits)
     ]
-    mean_local_probabilities = torch.stack(
-        paired_local_probabilities, dim=0
-    ).mean(dim=0)
+    weights = normalized_probability_weights(
+        local_scale_weights,
+        len(paired_local_probabilities),
+        name="local_scale_weights",
+    )
+    stacked_local = torch.stack(paired_local_probabilities, dim=0)
+    mean_local_probabilities = (
+        stacked_local
+        * torch.tensor(weights, device=stacked_local.device)[:, None, None]
+    ).sum(dim=0)
     fused = (
         (1.0 - local_weight) * global_probabilities
         + local_weight * mean_local_probabilities
@@ -372,4 +388,30 @@ def parse_int_sequence(value: str | Sequence[int]) -> tuple[int, ...]:
         raise ValueError("At least one integer value is required")
     if len(parsed) != len(set(parsed)):
         raise ValueError("Sequence values must be unique")
+    return parsed
+
+
+def normalized_probability_weights(
+    values: str | Sequence[float] | None,
+    expected_count: int,
+    *,
+    name: str = "weights",
+) -> tuple[float, ...]:
+    """Parse a non-negative probability vector or return equal weights."""
+    if int(expected_count) <= 0:
+        raise ValueError("expected_count must be positive")
+    if values is None:
+        return tuple(1.0 / int(expected_count) for _ in range(int(expected_count)))
+    if isinstance(values, str):
+        parsed = tuple(
+            float(item.strip()) for item in values.split(",") if item.strip()
+        )
+    else:
+        parsed = tuple(float(item) for item in values)
+    if len(parsed) != int(expected_count):
+        raise ValueError(f"{name} count must match local crop count")
+    if any(value < 0.0 for value in parsed):
+        raise ValueError(f"{name} must be non-negative")
+    if abs(sum(parsed) - 1.0) > 1.0e-8:
+        raise ValueError(f"{name} must sum to one")
     return parsed

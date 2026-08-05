@@ -3,6 +3,7 @@ import torch
 
 from aegis_clip.scale_reweighting import (
     parse_scale_weights,
+    parse_shared_local_adapter,
     parse_shared_top_k,
     reconstruct_nested_scale_probabilities,
     weighted_scale_probabilities,
@@ -58,6 +59,18 @@ def test_shared_top_k_is_extracted_and_must_match() -> None:
         parse_shared_top_k([modes[0], modes[1].replace("topk=3", "topk=5")])
     with pytest.raises(ValueError, match="exactly one"):
         parse_shared_top_k(["attention_multiscale_flip:crops=128-144-160"])
+
+
+def test_shared_local_adapter_is_optional_and_must_match() -> None:
+    plain = [
+        "attention_multiscale_flip:topk=5:crops=128-144-160",
+        "attention_multiscale_flip:topk=5:crops=144-160",
+    ]
+    assert parse_shared_local_adapter(plain) is None
+    adapted = [f"{mode}:adapter=o3" for mode in plain]
+    assert parse_shared_local_adapter(adapted) == "o3"
+    with pytest.raises(ValueError, match="different local adapters"):
+        parse_shared_local_adapter([adapted[0], plain[1]])
 
 
 def test_materially_negative_reconstruction_fails_closed() -> None:

@@ -259,6 +259,22 @@ def attention_local_adapter_global_logits(
     }
 
 
+def adapted_local_view_logits(
+    model: AegisCLIP,
+    adapter: BottleneckLocalFeatureAdapter,
+    local_images: torch.Tensor,
+) -> torch.Tensor:
+    """Adapt one already-cropped local view while anchoring native logits."""
+    base_logits, base_features = model(images=local_images, return_features=True)
+    adapted_features = adapter(base_features)
+    return anchored_classifier_residual_logits(
+        base_logits,
+        base_features,
+        adapted_features,
+        model.classifier.weight,
+    )
+
+
 def attention_part_token_adapter_global_logits(
     model: AegisCLIP,
     adapter: PartTokenResidualAdapter,

@@ -8,6 +8,7 @@ from aegis_clip.localization import (
     fuse_global_local_probabilities,
     fuse_global_multilocal_flip_probabilities,
     fuse_global_multilocal_probabilities,
+    normalized_probability_weights,
     parse_int_sequence,
 )
 
@@ -73,6 +74,23 @@ def test_multilocal_fusion_averages_local_probabilities_before_global_fusion() -
     assert torch.allclose(fused.exp(), expected)
 
 
+def test_multilocal_fusion_uses_declared_scale_weights() -> None:
+    global_logits = torch.tensor([[3.0, 0.0]])
+    local_logits = [torch.tensor([[0.0, 2.0]]), torch.tensor([[1.0, 0.0]])]
+    fused = fuse_global_multilocal_probabilities(
+        global_logits,
+        local_logits,
+        local_weight=0.4,
+        local_scale_weights=(0.75, 0.25),
+    )
+    expected_local = (
+        0.75 * local_logits[0].softmax(dim=1)
+        + 0.25 * local_logits[1].softmax(dim=1)
+    )
+    expected = 0.6 * global_logits.softmax(dim=1) + 0.4 * expected_local
+    assert torch.allclose(fused.exp(), expected)
+
+
 def test_global_local_flip_fusion_matches_two_stage_probability_blend() -> None:
     global_logits = torch.tensor([[4.0, 0.0]])
     local_logits = torch.tensor([[0.0, 2.0]])
@@ -132,6 +150,37 @@ def test_multilocal_flip_fusion_averages_paired_local_probabilities() -> None:
     assert torch.allclose(fused.exp(), expected)
 
 
+def test_multilocal_flip_fusion_uses_declared_scale_weights() -> None:
+    global_logits = torch.tensor([[4.0, 0.0]])
+    flipped_global_logits = torch.tensor([[2.0, 0.0]])
+    local_logits = [torch.tensor([[0.0, 3.0]]), torch.tensor([[1.0, 0.0]])]
+    flipped_local_logits = [
+        torch.tensor([[0.0, 2.0]]),
+        torch.tensor([[0.0, 1.0]]),
+    ]
+    fused = fuse_global_multilocal_flip_probabilities(
+        global_logits,
+        local_logits,
+        flipped_global_logits,
+        flipped_local_logits,
+        local_weight=0.4,
+        flip_weight=0.25,
+        local_scale_weights=(0.75, 0.25),
+    )
+    global_probability = (
+        0.75 * global_logits.softmax(dim=1)
+        + 0.25 * flipped_global_logits.softmax(dim=1)
+    )
+    paired = [
+        0.75 * original.softmax(dim=1) + 0.25 * flipped.softmax(dim=1)
+        for original, flipped in zip(local_logits, flipped_local_logits)
+    ]
+    expected = 0.6 * global_probability + 0.4 * (
+        0.75 * paired[0] + 0.25 * paired[1]
+    )
+    assert torch.allclose(fused.exp(), expected)
+
+
 def test_multilocal_flip_fusion_rejects_mismatched_view_counts() -> None:
     with pytest.raises(ValueError, match="counts must match"):
         fuse_global_multilocal_flip_probabilities(
@@ -185,6 +234,17 @@ def test_parse_int_sequence_rejects_duplicates() -> None:
     assert parse_int_sequence("128, 160,192") == (128, 160, 192)
     with pytest.raises(ValueError, match="unique"):
         parse_int_sequence("160,160")
+
+
+def test_probability_weights_validate_count_sign_and_sum() -> None:
+    assert normalized_probability_weights(None, 2) == (0.5, 0.5)
+    assert normalized_probability_weights("0.75,0.25", 2) == (0.75, 0.25)
+    with pytest.raises(ValueError, match="count"):
+        normalized_probability_weights("1", 2)
+    with pytest.raises(ValueError, match="non-negative"):
+        normalized_probability_weights("1.1,-0.1", 2)
+    with pytest.raises(ValueError, match="sum to one"):
+        normalized_probability_weights("0.4,0.4", 2)
 
 
 def test_flip_fusion_per_branch_temperature_changes_fusion() -> None:
