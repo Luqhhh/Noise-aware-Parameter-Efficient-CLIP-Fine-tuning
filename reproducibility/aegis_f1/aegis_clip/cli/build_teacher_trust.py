@@ -33,6 +33,14 @@ def main() -> None:
     parser.add_argument("--admission-clean-probability", type=float, default=0.65)
     parser.add_argument("--correction-alpha", type=float, default=0.50)
     parser.add_argument("--maximum-class-fraction", type=float, default=0.08)
+    parser.add_argument(
+        "--teacher-logits-cache",
+        help=(
+            "Optional reusable center/flip teacher-logit cache. If the file "
+            "exists it is verified and reused; otherwise it is created atomically."
+        ),
+    )
+    parser.add_argument("--overwrite-teacher-logits-cache", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
 
@@ -44,47 +52,106 @@ def main() -> None:
     if (destination.exists() or audit_path.exists()) and not args.overwrite:
         raise FileExistsError("teacher trust output exists; pass --overwrite")
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model, preprocess, checkpoint = build_from_checkpoint(checkpoint_path, device)
-    config = checkpoint["config"]
-    features = config["features"]
-    feature_store = FrozenFeatureStore(
-        features["tensor_path"],
-        features["paths_path"],
-        features.get("manifest_path"),
-        expected_dim=int(config["model"].get("feature_dim", 512)),
+    checkpoint_sha256 = sha256_file(checkpoint_path)
+    train_csv_sha256 = sha256_file(train_csv)
+    cache_path = (
+        Path(args.teacher_logits_cache).resolve()
+        if args.teacher_logits_cache
+        else None
     )
-    dataset = OnlineImageDataset(
-        train_csv,
-        config["data"]["train_root"],
-        preprocess,
-        feature_store,
-        trust_bundle=None,
+    reuse_cache = bool(
+        cache_path is not None
+        and cache_path.exists()
+        and not args.overwrite_teacher_logits_cache
     )
-    loader = DataLoader(
-        dataset,
-        batch_size=int(args.batch_size),
-        shuffle=False,
-        num_workers=int(args.num_workers),
-        pin_memory=device.type == "cuda",
-        persistent_workers=int(args.num_workers) > 0,
-        worker_init_fn=seed_worker,
-    )
-    model.eval()
-    center_parts: list[torch.Tensor] = []
-    flip_parts: list[torch.Tensor] = []
-    label_parts: list[torch.Tensor] = []
-    paths: list[str] = []
-    for batch in loader:
-        images = batch["images"].to(device, non_blocking=True)
-        center_parts.append(model(images=images).float().cpu())
-        flip_parts.append(model(images=torch.flip(images, dims=[3])).float().cpu())
-        label_parts.append(batch["label"].long().cpu())
-        paths.extend(str(path) for path in batch["path"])
+    if reuse_cache:
+        cache = torch.load(cache_path, map_location="cpu", weights_only=False)
+        required_cache = {
+            "center_logits",
+            "flip_logits",
+            "labels",
+            "paths",
+            "checkpoint_sha256",
+            "train_csv_sha256",
+        }
+        missing_cache = required_cache - set(cache)
+        if missing_cache:
+            raise ValueError(
+                f"teacher logits cache is missing fields: {sorted(missing_cache)}"
+            )
+        if cache["checkpoint_sha256"] != checkpoint_sha256:
+            raise ValueError("teacher logits cache checkpoint SHA-256 mismatch")
+        if cache["train_csv_sha256"] != train_csv_sha256:
+            raise ValueError("teacher logits cache train CSV SHA-256 mismatch")
+        center_logits = torch.as_tensor(cache["center_logits"]).float().cpu()
+        flip_logits = torch.as_tensor(cache["flip_logits"]).float().cpu()
+        labels = torch.as_tensor(cache["labels"]).long().flatten().cpu()
+        paths = [canonical_sample_path(path) for path in cache["paths"]]
+    else:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model, preprocess, checkpoint = build_from_checkpoint(checkpoint_path, device)
+        config = checkpoint["config"]
+        features = config["features"]
+        feature_store = FrozenFeatureStore(
+            features["tensor_path"],
+            features["paths_path"],
+            features.get("manifest_path"),
+            expected_dim=int(config["model"].get("feature_dim", 512)),
+        )
+        dataset = OnlineImageDataset(
+            train_csv,
+            config["data"]["train_root"],
+            preprocess,
+            feature_store,
+            trust_bundle=None,
+        )
+        loader = DataLoader(
+            dataset,
+            batch_size=int(args.batch_size),
+            shuffle=False,
+            num_workers=int(args.num_workers),
+            pin_memory=device.type == "cuda",
+            persistent_workers=int(args.num_workers) > 0,
+            worker_init_fn=seed_worker,
+        )
+        model.eval()
+        center_parts: list[torch.Tensor] = []
+        flip_parts: list[torch.Tensor] = []
+        label_parts: list[torch.Tensor] = []
+        paths = []
+        for batch in loader:
+            images = batch["images"].to(device, non_blocking=True)
+            center_parts.append(model(images=images).float().cpu())
+            flip_parts.append(model(images=torch.flip(images, dims=[3])).float().cpu())
+            label_parts.append(batch["label"].long().cpu())
+            paths.extend(canonical_sample_path(path) for path in batch["path"])
+        center_logits = torch.cat(center_parts)
+        flip_logits = torch.cat(flip_parts)
+        labels = torch.cat(label_parts)
+        if cache_path is not None:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            cache_temporary = cache_path.with_suffix(cache_path.suffix + ".tmp")
+            torch.save(
+                {
+                    "center_logits": center_logits,
+                    "flip_logits": flip_logits,
+                    "labels": labels,
+                    "paths": paths,
+                    "checkpoint": str(checkpoint_path),
+                    "checkpoint_sha256": checkpoint_sha256,
+                    "train_csv": str(train_csv),
+                    "train_csv_sha256": train_csv_sha256,
+                },
+                cache_temporary,
+            )
+            os.replace(cache_temporary, cache_path)
 
-    center_logits = torch.cat(center_parts)
-    flip_logits = torch.cat(flip_parts)
-    labels = torch.cat(label_parts)
+    if center_logits.ndim != 2 or center_logits.shape != flip_logits.shape:
+        raise ValueError("teacher logits cache must contain equal [N,C] tensors")
+    if center_logits.shape[0] != labels.numel() or labels.numel() != len(paths):
+        raise ValueError("teacher logits cache sample dimensions are inconsistent")
+    if not torch.isfinite(center_logits).all() or not torch.isfinite(flip_logits).all():
+        raise ValueError("teacher logits cache contains non-finite values")
     base = torch.load(base_trust_path, map_location="cpu", weights_only=False)
     base_paths = [canonical_sample_path(path) for path in base["paths"]]
     if len(paths) != len(set(paths)) or len(base_paths) != len(set(base_paths)):
@@ -140,6 +207,11 @@ def main() -> None:
             "base_trust_sha256": sha256_file(base_trust_path),
             "output": str(destination),
             "output_sha256": sha256_file(destination),
+            "teacher_logits_cache": str(cache_path) if cache_path else None,
+            "teacher_logits_cache_sha256": (
+                sha256_file(cache_path) if cache_path else None
+            ),
+            "teacher_logits_cache_reused": reuse_cache,
         }
     )
     atomic_json_dump(audit, audit_path)
