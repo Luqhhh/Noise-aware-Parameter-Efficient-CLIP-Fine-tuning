@@ -302,6 +302,66 @@ def fuse_global_multilocal_probabilities(
     return fused.clamp_min(torch.finfo(fused.dtype).tiny).log()
 
 
+def fuse_global_multilocal_flip_probabilities(
+    global_logits: torch.Tensor,
+    local_logits: Sequence[torch.Tensor],
+    flipped_global_logits: torch.Tensor,
+    flipped_local_logits: Sequence[torch.Tensor],
+    *,
+    local_weight: float = 0.5,
+    flip_weight: float = 0.5,
+    temperature: float = 1.0,
+    global_temperature: float | None = None,
+    local_temperature: float | None = None,
+) -> torch.Tensor:
+    """Fuse global/flip views with the mean of paired multi-scale local views."""
+    if not local_logits:
+        raise ValueError("At least one local-view tensor is required")
+    if len(local_logits) != len(flipped_local_logits):
+        raise ValueError("Original and flipped local-view counts must match")
+    views = [*local_logits, flipped_global_logits, *flipped_local_logits]
+    if global_logits.ndim != 2 or any(
+        value.shape != global_logits.shape for value in views
+    ):
+        raise ValueError("All view logits must have identical [N,C] shapes")
+    if not 0.0 <= local_weight <= 1.0:
+        raise ValueError("local_weight must be in [0, 1]")
+    if not 0.0 <= flip_weight <= 1.0:
+        raise ValueError("flip_weight must be in [0, 1]")
+    if temperature <= 0.0:
+        raise ValueError("temperature must be positive")
+    if global_temperature is None:
+        global_temperature = temperature
+    if local_temperature is None:
+        local_temperature = temperature
+    if global_temperature <= 0.0:
+        raise ValueError("global_temperature must be positive")
+    if local_temperature <= 0.0:
+        raise ValueError("local_temperature must be positive")
+
+    global_probabilities = (
+        (1.0 - flip_weight)
+        * F.softmax(global_logits.float() / global_temperature, dim=1)
+        + flip_weight
+        * F.softmax(flipped_global_logits.float() / global_temperature, dim=1)
+    )
+    paired_local_probabilities = [
+        (1.0 - flip_weight)
+        * F.softmax(original.float() / local_temperature, dim=1)
+        + flip_weight
+        * F.softmax(flipped.float() / local_temperature, dim=1)
+        for original, flipped in zip(local_logits, flipped_local_logits)
+    ]
+    mean_local_probabilities = torch.stack(
+        paired_local_probabilities, dim=0
+    ).mean(dim=0)
+    fused = (
+        (1.0 - local_weight) * global_probabilities
+        + local_weight * mean_local_probabilities
+    )
+    return fused.clamp_min(torch.finfo(fused.dtype).tiny).log()
+
+
 def parse_int_sequence(value: str | Sequence[int]) -> tuple[int, ...]:
     """Parse a comma-separated CLI sequence while rejecting duplicates."""
     if isinstance(value, str):

@@ -26,6 +26,9 @@ from aegis_clip.localization import (
     forward_with_last_block_attention,
     fuse_global_local_flip_probabilities,
     fuse_global_local_probabilities,
+    fuse_global_multilocal_flip_probabilities,
+    fuse_global_multilocal_probabilities,
+    parse_int_sequence,
 )
 from aegis_clip.multiprototype import blend_multiprototype_logits
 from aegis_clip.part_token_adapter import load_part_token_adapter
@@ -61,10 +64,11 @@ def main() -> None:
     parser.add_argument("--acknowledge-tta-risk", action="store_true")
     parser.add_argument(
         "--local-view",
-        choices=["none", "attention_crop"],
+        choices=["none", "attention_crop", "attention_multiscale"],
         default="none",
     )
     parser.add_argument("--local-crop-size", type=int, default=160)
+    parser.add_argument("--local-crop-sizes", default="144,160,176")
     parser.add_argument("--local-top-k", type=int, default=5)
     parser.add_argument("--local-weight", type=float, default=0.5)
     parser.add_argument("--local-temperature", type=float, default=1.0)
@@ -90,6 +94,11 @@ def main() -> None:
         help="Save the fused logits (before prior alignment) and image names for offline sweeps",
     )
     args = parser.parse_args()
+    local_crop_sizes = (
+        parse_int_sequence(args.local_crop_sizes)
+        if args.local_view == "attention_multiscale"
+        else (int(args.local_crop_size),)
+    )
     if args.tta != "none" and not args.acknowledge_tta_risk:
         raise ValueError(
             "TTA is a competition gray area; pass --acknowledge-tta-risk explicitly"
@@ -121,8 +130,8 @@ def main() -> None:
             "tta-view-weight is only defined for stacked local-view TTA"
         )
     if args.local_view != "none":
-        if not 1 <= args.local_crop_size <= 224:
-            raise ValueError("local-crop-size must be in [1, 224]")
+        if any(not 1 <= crop_size <= 224 for crop_size in local_crop_sizes):
+            raise ValueError("All local crop sizes must be in [1, 224]")
         if not 1 <= args.local_top_k <= 49:
             raise ValueError("local-top-k must be in [1, 49]")
         if not 0.0 <= args.local_weight <= 1.0:
@@ -228,17 +237,19 @@ def main() -> None:
     for batch in tqdm(loader, desc="Aegis inference"):
         images = batch["images"].to(device, non_blocking=True)
         with torch.autocast(device_type=device.type, enabled=use_amp):
-            if args.local_view == "attention_crop":
+            if args.local_view in {"attention_crop", "attention_multiscale"}:
                 global_logits, attention = forward_with_last_block_attention(
                     model, images
                 )
-                local_images, _ = extract_attention_crops(
-                    images,
-                    attention,
-                    crop_size=args.local_crop_size,
-                    top_k=args.local_top_k,
-                )
-                local_logits = model(images=local_images)
+                local_logits_views = []
+                for crop_size in local_crop_sizes:
+                    local_images, _ = extract_attention_crops(
+                        images,
+                        attention,
+                        crop_size=crop_size,
+                        top_k=args.local_top_k,
+                    )
+                    local_logits_views.append(model(images=local_images))
                 if args.tta == "horizontal_flip":
                     flipped_images = torch.flip(images, dims=(3,))
                     (
@@ -248,31 +259,56 @@ def main() -> None:
                         model,
                         flipped_images,
                     )
-                    flipped_local_images, _ = extract_attention_crops(
-                        flipped_images,
-                        flipped_attention,
-                        crop_size=args.local_crop_size,
-                        top_k=args.local_top_k,
-                    )
-                    flipped_local_logits = model(images=flipped_local_images)
-                    logits = fuse_global_local_flip_probabilities(
-                        global_logits,
-                        local_logits,
-                        flipped_global_logits,
-                        flipped_local_logits,
-                        local_weight=args.local_weight,
-                        flip_weight=args.tta_view_weight,
-                        temperature=args.local_temperature,
-                        global_temperature=args.tta_temperature,
-                        local_temperature=args.local_temperature,
-                    )
+                    flipped_local_logits_views = []
+                    for crop_size in local_crop_sizes:
+                        flipped_local_images, _ = extract_attention_crops(
+                            flipped_images,
+                            flipped_attention,
+                            crop_size=crop_size,
+                            top_k=args.local_top_k,
+                        )
+                        flipped_local_logits_views.append(
+                            model(images=flipped_local_images)
+                        )
+                    if args.local_view == "attention_multiscale":
+                        logits = fuse_global_multilocal_flip_probabilities(
+                            global_logits,
+                            local_logits_views,
+                            flipped_global_logits,
+                            flipped_local_logits_views,
+                            local_weight=args.local_weight,
+                            flip_weight=args.tta_view_weight,
+                            temperature=args.local_temperature,
+                            global_temperature=args.tta_temperature,
+                            local_temperature=args.local_temperature,
+                        )
+                    else:
+                        logits = fuse_global_local_flip_probabilities(
+                            global_logits,
+                            local_logits_views[0],
+                            flipped_global_logits,
+                            flipped_local_logits_views[0],
+                            local_weight=args.local_weight,
+                            flip_weight=args.tta_view_weight,
+                            temperature=args.local_temperature,
+                            global_temperature=args.tta_temperature,
+                            local_temperature=args.local_temperature,
+                        )
                 else:
-                    logits = fuse_global_local_probabilities(
-                        global_logits,
-                        local_logits,
-                        local_weight=args.local_weight,
-                        temperature=args.local_temperature,
-                    )
+                    if args.local_view == "attention_multiscale":
+                        logits = fuse_global_multilocal_probabilities(
+                            global_logits,
+                            local_logits_views,
+                            local_weight=args.local_weight,
+                            temperature=args.local_temperature,
+                        )
+                    else:
+                        logits = fuse_global_local_probabilities(
+                            global_logits,
+                            local_logits_views[0],
+                            local_weight=args.local_weight,
+                            temperature=args.local_temperature,
+                        )
             elif args.tta == "attention_local_global":
                 logits = attention_local_global_logits(
                     model,
@@ -355,13 +391,24 @@ def main() -> None:
                 "logits": all_logits.detach().float().cpu(),
                 "names": prediction_names,
                 "inference_mode": (
-                    "attention_crop_flip:topk=%d:crop=%d:local_weight=%g:flip_weight=%g:t=%g"
-                    % (
-                        args.local_top_k,
-                        args.local_crop_size,
-                        args.local_weight,
-                        args.tta_view_weight,
-                        args.local_temperature,
+                    (
+                        "attention_multiscale_flip:topk=%d:crops=%s:local_weight=%g:flip_weight=%g:t=%g"
+                        % (
+                            args.local_top_k,
+                            "-".join(str(value) for value in local_crop_sizes),
+                            args.local_weight,
+                            args.tta_view_weight,
+                            args.local_temperature,
+                        )
+                        if args.local_view == "attention_multiscale"
+                        else "attention_crop_flip:topk=%d:crop=%d:local_weight=%g:flip_weight=%g:t=%g"
+                        % (
+                            args.local_top_k,
+                            args.local_crop_size,
+                            args.local_weight,
+                            args.tta_view_weight,
+                            args.local_temperature,
+                        )
                     )
                     if args.local_view != "none"
                     else args.tta
@@ -382,14 +429,19 @@ def main() -> None:
         for name, index in zip(prediction_names, indices)
     ]
     if args.local_view != "none":
-        inference_mode = (
-            "attention_crop_flip:" if stacked_local_tta else "attention_crop:"
+        view_name = (
+            "attention_multiscale" if args.local_view == "attention_multiscale"
+            else "attention_crop"
         )
-        inference_mode += (
-            f"topk={args.local_top_k}:"
-            f"crop={args.local_crop_size}:"
-            f"local_weight={args.local_weight:g}:"
-        )
+        inference_mode = view_name + ("_flip:" if stacked_local_tta else ":")
+        inference_mode += f"topk={args.local_top_k}:"
+        if args.local_view == "attention_multiscale":
+            inference_mode += "crops=" + "-".join(
+                str(value) for value in local_crop_sizes
+            ) + ":"
+        else:
+            inference_mode += f"crop={args.local_crop_size}:"
+        inference_mode += f"local_weight={args.local_weight:g}:"
         if stacked_local_tta:
             inference_mode += f"flip_weight={args.tta_view_weight:g}:"
         inference_mode += f"t={args.local_temperature:g}"
@@ -455,7 +507,12 @@ def main() -> None:
             "local_view": args.local_view,
             "local_crop_size": (
                 int(args.local_crop_size)
-                if args.local_view != "none"
+                if args.local_view == "attention_crop"
+                else None
+            ),
+            "local_crop_sizes": (
+                list(local_crop_sizes)
+                if args.local_view == "attention_multiscale"
                 else None
             ),
             "local_top_k": (

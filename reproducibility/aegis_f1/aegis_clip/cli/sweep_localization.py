@@ -22,6 +22,7 @@ from aegis_clip.localization import (
     forward_with_last_block_attention,
     fuse_global_local_flip_probabilities,
     fuse_global_local_probabilities,
+    fuse_global_multilocal_flip_probabilities,
     fuse_global_multilocal_probabilities,
     parse_int_sequence,
 )
@@ -426,6 +427,7 @@ def main() -> None:
                 "top_k": top_k,
                 "mean_local": mean_local_metrics,
                 "fusions": [],
+                "stacked_flip_fusions": [],
             }
             for local_weight in local_weights:
                 fused = fuse_global_multilocal_probabilities(
@@ -458,6 +460,39 @@ def main() -> None:
                         ),
                     }
                 )
+            if args.include_horizontal_flip:
+                assert flipped_global_logits is not None
+                flipped_local_views = [
+                    flipped_local_logits_by_key[key] for key in keys
+                ]
+                for local_weight in local_weights:
+                    for flip_weight in flip_weights:
+                        fused = fuse_global_multilocal_flip_probabilities(
+                            global_logits,
+                            local_views,
+                            flipped_global_logits,
+                            flipped_local_views,
+                            local_weight=local_weight,
+                            flip_weight=flip_weight,
+                            temperature=args.temperature,
+                        )
+                        fused_metrics = _metrics(
+                            fused.argmax(dim=1),
+                            noisy=noisy,
+                            proxy=proxy,
+                            clean_weight=clean_weight,
+                            proxy_weight=proxy_weight,
+                            num_classes=num_classes,
+                            clean_core_threshold=clean_core_threshold,
+                        )
+                        multiscale["stacked_flip_fusions"].append(
+                            {
+                                "local_weight": local_weight,
+                                "flip_weight": flip_weight,
+                                "temperature": float(args.temperature),
+                                **fused_metrics,
+                            }
+                        )
             multiscale_candidates.append(multiscale)
 
     payload = {

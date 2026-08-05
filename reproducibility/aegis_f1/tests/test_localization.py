@@ -6,6 +6,7 @@ from aegis_clip.localization import (
     extract_attention_crops,
     fuse_global_local_flip_probabilities,
     fuse_global_local_probabilities,
+    fuse_global_multilocal_flip_probabilities,
     fuse_global_multilocal_probabilities,
     parse_int_sequence,
 )
@@ -95,6 +96,50 @@ def test_global_local_flip_fusion_matches_two_stage_probability_blend() -> None:
     )
     expected = 0.65 * global_probability + 0.35 * local_probability
     assert torch.allclose(fused.exp(), expected)
+
+
+def test_multilocal_flip_fusion_averages_paired_local_probabilities() -> None:
+    global_logits = torch.tensor([[4.0, 0.0]])
+    flipped_global_logits = torch.tensor([[2.0, 0.0]])
+    local_logits = [
+        torch.tensor([[0.0, 3.0]]),
+        torch.tensor([[1.0, 0.0]]),
+    ]
+    flipped_local_logits = [
+        torch.tensor([[0.0, 2.0]]),
+        torch.tensor([[0.0, 1.0]]),
+    ]
+    fused = fuse_global_multilocal_flip_probabilities(
+        global_logits,
+        local_logits,
+        flipped_global_logits,
+        flipped_local_logits,
+        local_weight=0.4,
+        flip_weight=0.25,
+    )
+    global_probability = (
+        0.75 * global_logits.softmax(dim=1)
+        + 0.25 * flipped_global_logits.softmax(dim=1)
+    )
+    mean_local_probability = torch.stack(
+        [
+            0.75 * original.softmax(dim=1)
+            + 0.25 * flipped.softmax(dim=1)
+            for original, flipped in zip(local_logits, flipped_local_logits)
+        ]
+    ).mean(dim=0)
+    expected = 0.6 * global_probability + 0.4 * mean_local_probability
+    assert torch.allclose(fused.exp(), expected)
+
+
+def test_multilocal_flip_fusion_rejects_mismatched_view_counts() -> None:
+    with pytest.raises(ValueError, match="counts must match"):
+        fuse_global_multilocal_flip_probabilities(
+            torch.randn(2, 3),
+            [torch.randn(2, 3)],
+            torch.randn(2, 3),
+            [],
+        )
 
 
 def test_global_local_flip_fusion_reduces_to_m1_when_flip_weight_is_zero() -> None:
