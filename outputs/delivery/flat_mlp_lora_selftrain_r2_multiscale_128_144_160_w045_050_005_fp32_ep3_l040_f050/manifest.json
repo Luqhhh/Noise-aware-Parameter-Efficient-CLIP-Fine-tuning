@@ -1,0 +1,73 @@
+{
+  "balanced_test_prior_acknowledged": true,
+  "checkpoint": "/home/lux1/noise/reproducibility/aegis_f1/outputs/F1_FLAT_MLP_LORA_SELFTRAIN_R2_FP32/seed42/checkpoints/epoch_3.pt",
+  "checkpoint_sha256": "67efab2bf954139b59df074ccf00c0113cbc6ff96163d6e8d66ffbe553b910a4",
+  "corrupt_images": 0,
+  "format_version": 1,
+  "inference_mode": "attention_reweighted_multiscale_flip:crops=128-144-160:weights=0.45-0.5-0.05:balanced_prior=0.85",
+  "prediction_count": 24967,
+  "prediction_csv_sha256": "f29aae12f87ae0a59289f4c775031f6c9270605bdd0bdcba288d0c776368ddd8",
+  "prior_alignment": {
+    "aligned_argmax_count_max": 83,
+    "aligned_argmax_count_min": 11,
+    "bias_max": 2.894789695739746,
+    "bias_min": -2.453320264816284,
+    "damping": 0.5,
+    "final_marginal_l1": 0.05595820024609566,
+    "final_max_marginal_error": 0.0005520997801795602,
+    "fitted_max_marginal_error": 1.0362593457102776e-05,
+    "initial_marginal_l1": 0.34396278858184814,
+    "iterations": 50,
+    "max_iterations": 50,
+    "raw_argmax_count_max": 194,
+    "raw_argmax_count_min": 2,
+    "strength": 0.85,
+    "target_prior": "uniform",
+    "tolerance": 1e-06
+  },
+  "scale_reconstruction": {
+    "maximum_normalization_errors": [
+      2.384185791015625e-07,
+      2.384185791015625e-07,
+      2.980232238769531e-07
+    ],
+    "minimum_reconstructed_probabilities": [
+      7.0836873693191915e-12,
+      3.3222723617304384e-12,
+      2.6583676666219747e-12
+    ],
+    "shape": [
+      24967,
+      500
+    ]
+  },
+  "scale_weights": [
+    0.45,
+    0.5,
+    0.05
+  ],
+  "scales": [
+    128,
+    144,
+    160
+  ],
+  "source_logits": {
+    "pair": {
+      "inference_mode": "attention_multiscale_flip:topk=5:crops=144-160:local_weight=0.4:flip_weight=0.5:t=1.5",
+      "path": "/home/lux1/noise/reproducibility/aegis_f1/outputs/F1_FLAT_MLP_LORA_SELFTRAIN_R2_FP32/seed42/test_multiscale_144_160_fused_logits_ep3_l040_f050_t15.pt",
+      "sha256": "4979f2de828719c9a4e671c0010f4af0f38added1eee49b66c0148ed7e8c7419"
+    },
+    "single": {
+      "inference_mode": "attention_crop_flip:topk=5:crop=160:local_weight=0.4:flip_weight=0.5:t=1.5",
+      "path": "/home/lux1/noise/reproducibility/aegis_f1/outputs/F1_FLAT_MLP_LORA_SELFTRAIN_R2_FP32/seed42/test_crop160_fused_logits_ep3_l040_f050_t15.pt",
+      "sha256": "23585c7517c731ef70c76aa9abfacca5ff5865376372ad53d2f626bf58558595"
+    },
+    "triple": {
+      "inference_mode": "attention_multiscale_flip:topk=5:crops=128-144-160:local_weight=0.4:flip_weight=0.5:t=1.5",
+      "path": "/home/lux1/noise/reproducibility/aegis_f1/outputs/F1_FLAT_MLP_LORA_SELFTRAIN_R2_FP32/seed42/test_multiscale_128_144_160_fused_logits_ep3_l040_f050_t15.pt",
+      "sha256": "9691756c6983b06a0bdf2e62355d989449162c55ba28b79017673f7a622fd7f5"
+    }
+  },
+  "submission_zip_sha256": "6e6243da2d2e93c8e9951234f1441ab19e19798b456f5c8f41cba0f53cb01a16",
+  "tta_risk_acknowledged": true
+}

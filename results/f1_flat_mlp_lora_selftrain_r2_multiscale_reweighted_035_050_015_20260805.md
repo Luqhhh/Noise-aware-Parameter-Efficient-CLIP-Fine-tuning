@@ -46,5 +46,8 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer_reweighted_multiscale_submission
 
 ## Status
 
-Candidate generated and audited; platform score pending. The promoted
-68.598550% package remains recoverable for immediate rollback.
+Platform score: **68.63860295590179%** (17,137 / 24,967 correct). This improves
+on the `0.25/0.50/0.25` platform best by **0.040053 percentage points**, or
+exactly 10 additional correct predictions, and is promoted as the new audited
+best. Shifting weight from crop160 to crop128 while holding crop144 at 0.50 is
+therefore independently platform-positive.
