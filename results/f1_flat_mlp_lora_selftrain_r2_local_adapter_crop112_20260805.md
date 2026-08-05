@@ -87,4 +87,11 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
 - ZIP SHA-256: `9e06af3972cb6ad1468a27c06d87e48584d33ac3cf4e2005384e7a9ac12e01e9`
 - Manifest SHA-256: `26646cf0bcd98a15d9381f37938f0929801aa962b3b68933515d0c65dffdc63d`
 
-The desktop package was replaced and hash-verified. Platform result is pending.
+The desktop package was replaced and hash-verified.
+
+## Platform result
+
+- Accuracy: `68.88693074858814%` (`17199 / 24967`)
+- Improvement over crop128-trained Adapter: `+0.004005286979pp` and `+1` correct
+- Remaining gap to 70%: `278` correct
+- Status: `platform_valid_promoted`; new audited platform best
