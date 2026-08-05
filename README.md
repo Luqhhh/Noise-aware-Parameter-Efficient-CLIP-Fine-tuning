@@ -2,7 +2,7 @@
 
 面向噪声标签数据的细粒度图像识别（500 类，~103K 训练图）。基于 CLIP ViT-B/32 冻结 backbone + 线性分类头，系统消融 head 类型、数据增强和标签噪声的影响，并实现部分解冻基础设施用于后续视觉特征微调。
 
-> **当前状态（2026-08-03）**：A12_CORR（LoRA 全 12 block + 伪标签软修正）+ M1/Flip + temp1.5 + **balanced-prior 0.85** 平台实测 **67.6853%**，新的审计完整平台最佳（+0.07pp vs A12 67.6173%）。伪标签修正与广度 LoRA 兼容（在 W060 深度 LoRA 上不叠加）。距离 70 分仅 2.31pp。完整结果见 [`results/70p_campaign_20260731.md`](results/70p_campaign_20260731.md) 与 `results/current_platform_summary.csv`。
+> **当前状态（2026-08-05）**：单模型 R2 CLIP ViT-B/32 + crop112 Part-Token residual Adapter，采用 128/144/160 attention-local 多尺度（权重 0.45/0.50/0.05）+ Flip 0.5 + temp1.5 + **balanced-prior 0.85**，平台实测 **68.90295189650338%**（17,203/24,967），为新的审计完整平台最佳；相对上一最优 crop112 local-feature Adapter 增加 4 个正确样本。距离 70% 还差 274 个正确样本（1.0970pp）。完整结果见 [`results/f1_flat_mlp_lora_selftrain_r2_part_token_adapter_crop112_20260805.md`](results/f1_flat_mlp_lora_selftrain_r2_part_token_adapter_crop112_20260805.md) 与 [`results/submission_registry.csv`](results/submission_registry.csv)。
 
 ## 已完成工作
 
@@ -59,15 +59,21 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - `test_best_checkpoint_post_eval.py`（4 tests）：best.pt 重载、strict load 校验
 - `test_metric_consistency.py`（7 tests）：micro-macro gap 一致性、bottom-10% 计算
 - `test_submission_manifest.py`（18 tests）：SHA-256 哈希、ZIP vs CSV hash 区分、标签格式、预测计数、重复登记拒绝、manifest schema
-- Aegis 独立套件：配置合规、LoRA/AdaptFormer/visual prompt、OOF 重建、局部推理、M1/M3、多类噪声诊断、Q1 trajectory、T0/T1 可信梯度子空间与 U0 数字 Prompt 审计；最新隔离整合回归 `201 passed`
+- Aegis 独立套件：配置合规、LoRA/AdaptFormer/visual prompt、OOF 重建、局部推理、M1/M3、Part-Token Adapter、多类噪声诊断、Q1 trajectory、T0/T1 可信梯度子空间与 U0 数字 Prompt 审计；最新隔离整合回归 `277 passed`
 
-### 6. 平台结果总览（updated 2026-07-31）
+### 6. 平台结果总览（updated 2026-08-05）
 
 **跨推理协议的已知平台锚点：**
 
 | 实验 | 平台 | 证据状态 | 说明 |
 |------|------:|----------|------|
-| **A12_CORR + M1/Flip + temp1.5 + balanced-prior 0.85** | **67.6853%** | 已审计（新平台最佳） | LoRA 全 12 block + 伪标签修正 + M1/Flip 四视图 + temp1.5 + prior 0.85 |
+| **R2 + crop112 Part-Token Adapter + weighted multiscale/Flip + balanced-prior 0.85** | **68.9030%** | **已审计（当前平台最佳）** | 单一 R2 checkpoint + 一个 34,336 参数局部残差 Adapter；同一 local forward 的 CLS/patch token；128/144/160 权重 0.45/0.50/0.05 |
+| R2 + crop112 local-feature Adapter + weighted multiscale/Flip + balanced-prior 0.85 | 68.8869% | 已审计 | 上一平台最佳；比 crop128-trained Adapter 多 1 个正确样本 |
+| R2 + crop128 local-feature Adapter + weighted multiscale/Flip + balanced-prior 0.85 | 68.8829% | 已审计 | 单 checkpoint + local-only Adapter |
+| R2 + crop144 local-feature Adapter + weighted multiscale/Flip + balanced-prior 0.85 | 68.8589% | 已审计 | 单 checkpoint + local-only Adapter |
+| R2 + crop160 local-feature Adapter + weighted multiscale/Flip + balanced-prior 0.85 | 68.8228% | 已审计 | 首个 local-feature Adapter 平台提升 |
+| R2 + weighted 128/144/160 multiscale/Flip + balanced-prior 0.85 | 68.6787% | 已审计 | 无 Adapter 的 R2 多尺度推理锚点 |
+| A12_CORR + M1/Flip + temp1.5 + balanced-prior 0.85 | 67.6853% | 已审计（历史最佳） | LoRA 全 12 block + 伪标签修正 + M1/Flip 四视图 + temp1.5 + prior 0.85 |
 | A12 + M1/Flip + temp1.5 + balanced-prior 0.85 | 67.6173% | 已审计 | LoRA 全 12 block（广度）+ M1/Flip 四视图 + temp1.5 + prior 0.85 |
 | W060 + M1/Flip + temp1.5 + balanced-prior 0.85 | 67.5812% | 已审计 | 温度峰值 1.5 + prior 峰值 0.85 |
 | W060 + M1/Flip + balanced-prior 0.85 | 67.3569% | 已审计 | prior 0.85 峰值（temp1.0） |
@@ -83,7 +89,7 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 
 M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归因。AEGIS F1 + M1、A2 + M1 和 A2 + M3 三条历史锚点来自 2026-07-22 团队同步文档；缺失字段已在提交登记表中显式留空。F1 REBUILD R1 + M1 与 M1 + Flip 均有本仓库完整审计哈希和真实平台回填。
 
-**Top TTA 分数：**
+**历史 Top TTA 分数（2026-07-22 截面）：**
 
 | 实验 | 平台 TTA | vs ref (D3) | 推理策略 |
 |------|---------|-------------|----------|
@@ -141,7 +147,7 @@ M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归�
 
 > A2 多 seed 稳定性确认：本地 paired delta 仅 7 张图差异（p=0.457），但平台 TTA 波动达 0.90pp。A2 STRICT LoRA 双 seed Bare 仅差 0.01pp（60.65% vs 60.64%），确认 LoRA 增益高度稳定。所有后续实验必须跑双 seed 验证。
 
-**已审计基线定义：**
+**历史已审计基线定义（2026-07-22 截面）：**
 - **平台 Bare 最佳**：A2 STRICT = **60.65%**（A2 parent + visual LoRA rank-8, clean filter, distill）
 - **平台多视图推理最佳**：F1 + M1 = **63.3276%**（F1 visual LoRA + attention-local/global probability fusion）
 - **平台普通 Flip TTA 最佳**：A2 seed=42 = **61.2128%**（frozen CLIP + GCE q=0.5 + MixUp + kNN consensus drop）
@@ -193,9 +199,9 @@ M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归�
 
 本仓库内不再继续普通 LoRA、routing 或 trust 参数搜索。下一步按以下顺序：
 
-1. ✅ 70+ 平台战役推进中（详见 [`results/70p_campaign_20260731.md`](results/70p_campaign_20260731.md)）：balanced-prior 校准已把平台从 63.7802%（M1/Flip）推到 **67.2007%**（W060 + prior 1.0），距离 70 分仅 2.80pp；更多数据训练（trust 阈值 0.70→0.50）单调有效；
-2. 平台名额优先用于已经完成训练和审计的 **F2 + M1 → O1 + M1 → N3 + M1**（完整独立实验总账见 [`docs/aegis_independent_experiments_2026-07-22.md`](docs/aegis_independent_experiments_2026-07-22.md)）；O3-R1、Q1A、R1 与 T0/T1 尚未运行，T0/T1 需明确授权后才可启动；
-3. 若继续研究，必须建立新的机制协议；当前 Phase 4 决策树和 A2 STRICT 推理权重搜索均已走完，不能把未过 gate 的候选重新包装为下一轮调参。
+1. ✅ 70+ 平台战役推进中：当前单模型最佳为 **68.90295189650338%**（17,203/24,967），距离 70% 还差 **274** 个正确样本；
+2. 平台实测是候选推广的唯一标准，本地验证仅用于安全审计和复现，不设置本地晋级门槛；
+3. 当前最佳提交、检查点谱系、精确推理参数和哈希见 [`results/f1_flat_mlp_lora_selftrain_r2_part_token_adapter_crop112_20260805.md`](results/f1_flat_mlp_lora_selftrain_r2_part_token_adapter_crop112_20260805.md)；后续继续限制为单模型 CLIP ViT-B/32，不使用模型集成或测试时训练。
 
 ## 项目结构
 
@@ -207,7 +213,7 @@ M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归�
 ├── configs/             # 每个实验一个 YAML
 ├── scripts/             # 数据准备、超参搜索、去重仲裁、提交验证
 ├── tests/               # 团队根测试套件（405 项：402 passed / 1 skipped / 2 failed，2026-07-30）
-├── reproducibility/     # 隔离的 Aegis 独立实验线（含 F1 rebuild + M1/Flip，201 项测试）
+├── reproducibility/     # 隔离的 Aegis 独立实验线（含 R2、局部/Part-Token Adapter，277 项测试）
 
 ├── outputs/             # 实验结果（tracked in git，*.pt 忽略）
 └── docs/superpowers/    # 设计文档与实施计划
