@@ -31,6 +31,8 @@ def cache_validation_logits(
     view_mode: str = "center",
     force_online_images: bool = False,
     input_resize_mode: str = "clip_center_crop",
+    crop_size: int = 160,
+    top_patches: int = 5,
 ) -> Path:
     checkpoint_path = Path(checkpoint_path).resolve()
     destination = Path(output_path).resolve()
@@ -45,6 +47,10 @@ def cache_validation_logits(
             "view_mode must be center, attention_local_global, "
             "complementary_flip_local_global, or discriminative_multi_region"
         )
+    if not 1 <= int(crop_size) <= 224:
+        raise ValueError("crop_size must be in [1, 224]")
+    if not 1 <= int(top_patches) <= 49:
+        raise ValueError("top_patches must be in [1, 49]")
     model, preprocess, checkpoint = build_from_checkpoint(checkpoint_path, device)
     config = checkpoint["config"]
     preprocess = select_inference_preprocess(
@@ -126,13 +132,19 @@ def cache_validation_logits(
                     raise ValueError("Local-region inference requires online images")
                 if view_mode == "attention_local_global":
                     result = attention_local_global_logits(
-                        model, inputs, crop_size=160, top_patches=5
+                        model,
+                        inputs,
+                        crop_size=int(crop_size),
+                        top_patches=int(top_patches),
                     )
                 elif view_mode == "discriminative_multi_region":
                     result = discriminative_multi_region_logits(model, inputs)
                 else:
                     result = complementary_flip_local_global_logits(
-                        model, inputs, crop_size=160, top_patches=5
+                        model,
+                        inputs,
+                        crop_size=int(crop_size),
+                        top_patches=int(top_patches),
                     )
                 logits = result["logits"]
                 global_logits_parts.append(result["global_logits"].cpu())
@@ -174,6 +186,8 @@ def cache_validation_logits(
         "view_mode": view_mode,
         "force_online_images": bool(force_online_images),
         "input_resize_mode": input_resize_mode,
+        "crop_size": int(crop_size),
+        "top_patches": int(top_patches),
         "paths": paths,
         **{name: torch.cat(parts) for name, parts in values.items()},
     }
@@ -220,6 +234,8 @@ def main() -> None:
         default="center",
     )
     parser.add_argument("--force-online-images", action="store_true")
+    parser.add_argument("--crop-size", type=int, default=160)
+    parser.add_argument("--top-patches", type=int, default=5)
     parser.add_argument(
         "--input-resize-mode",
         choices=["clip_center_crop", "clip_letterbox"],
@@ -234,6 +250,8 @@ def main() -> None:
         view_mode=args.view_mode,
         force_online_images=args.force_online_images,
         input_resize_mode=args.input_resize_mode,
+        crop_size=args.crop_size,
+        top_patches=args.top_patches,
     )
     print(path)
 
