@@ -46,6 +46,6 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
 
 ## Status
 
-Candidate generated and audited; platform score pending. This is suitable for
-submission, but it is not promoted over the 144/160 platform best until the
-platform result is known.
+Platform score: **68.5464813553891%** (17,114 / 24,967 correct). This improves
+on the 144/160 platform best by **0.084111 percentage points**, or exactly 21
+additional correct predictions, and is promoted as the new audited best.
