@@ -1,0 +1,33 @@
+{
+  "balanced_test_prior_acknowledged": true,
+  "checkpoint": "/home/lux1/noise/reproducibility/aegis_f1/outputs/F1_FLAT_MLP_LORA_SELFTRAIN_R2_FP32/seed42/checkpoints/epoch_3.pt",
+  "checkpoint_sha256": "67efab2bf954139b59df074ccf00c0113cbc6ff96163d6e8d66ffbe553b910a4",
+  "corrupt_images": 0,
+  "format_version": 1,
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=144-160-176:local_weight=0.4:flip_weight=0.5:t=1.5:balanced_prior=0.9",
+  "prediction_count": 24967,
+  "prediction_csv_sha256": "98faa9559160acf48ee8cc80a6cb5d056080836e4b00f5bae45d872180985c5b",
+  "prior_alignment": {
+    "aligned_argmax_count_max": 83,
+    "aligned_argmax_count_min": 14,
+    "bias_max": 2.9177052974700928,
+    "bias_min": -2.4541454315185547,
+    "damping": 0.5,
+    "final_marginal_l1": 0.036699190735816956,
+    "final_max_marginal_error": 0.0003808477194979787,
+    "fitted_max_marginal_error": 1.299823634326458e-05,
+    "initial_marginal_l1": 0.3342309296131134,
+    "iterations": 50,
+    "max_iterations": 50,
+    "raw_argmax_count_max": 190,
+    "raw_argmax_count_min": 2,
+    "strength": 0.9,
+    "target_prior": "uniform",
+    "tolerance": 1e-06
+  },
+  "source_inference_mode": "attention_multiscale_flip:topk=5:crops=144-160-176:local_weight=0.4:flip_weight=0.5:t=1.5",
+  "source_logits_dump": "/home/lux1/noise/reproducibility/aegis_f1/outputs/F1_FLAT_MLP_LORA_SELFTRAIN_R2_FP32/seed42/test_multiscale_fused_logits_ep3_l040_f050_t15.pt",
+  "source_logits_sha256": "9bb1e6542781e2a0def12eb1c080bd475bac2267ac2ba02010fa391bd452b8c5",
+  "submission_zip_sha256": "161073e8939bb6bd1cfce4aafbb138f57a3d5b50ec681cf571a95f7f2964da40",
+  "tta_risk_acknowledged": true
+}
