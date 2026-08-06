@@ -1,0 +1,15 @@
+{
+  "experiment": "F1_FLAT_FULL_FT_R3MS + dual adapters, prior strength 0.89",
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:weights=0.2-0.3-0.4-0.1:local_weight=0.4:flip_weight=0.5:t=1.5:adapter=dual_o3_pta:balanced_prior=0.89",
+  "platform_accuracy": 0.7034485520887571,
+  "correct": 17563,
+  "total": 24967,
+  "delta_pp": 0.0881,
+  "delta_correct": 22,
+  "vs_best": "NEW PLATFORM BEST 70.344855% (+22 correct vs dual baseline pa0.85 70.256739%)",
+  "gap_to_75": "1163 correct (4.658pp)",
+  "checkpoint_sha256": "f72b0104257f49d2667fe335553a861dd1dea947753feebdc7301b8890b48765",
+  "submission_zip_sha256": "2da854ec7b66151c0afe9f417867a74c0aa3904eac1b14df7b625c0450cb5ae0",
+  "date": "2026-08-06",
+  "status": "platform_valid_promoted NEW BEST"
+}
