@@ -7,13 +7,18 @@
 ## 2026-08-06 新增平台记录
 | 包 | 平台分数 | 结论 |
 |---|---|---|
-| **R3 双 Adapter（prior 0.85，桌面主包）** | **68.963031%** | 与 BN64 完全打平（17,218/24,967），未超过 BN64+crop112；not promoted |
+| R3 双 Adapter（prior 0.85） | 68.963031% | 与 BN64 完全打平（17,218/24,967）；not promoted |
+| R3 双 Adapter（prior 0.86） | 68.983058% | 17,223/24,967，+5 correct vs 0.85；仍低于最佳；not promoted |
+| R3 双 Adapter（prior 0.84） | 68.955021% | 17,216/24,967，-7 correct vs 0.85；先验最优在 0.86 以上；not promoted |
+| R3 双 Adapter（prior 0.87） | 69.003084% | 17,228/24,967，+5 correct vs 0.86；单调上升；not promoted |
+| R3 双 Adapter（prior 0.88） | 69.043137% | 17,238/24,967，+10 correct vs 0.87；与当前平台最佳持平；tied_best |
 
-## 桌面当前候选（2026-08-06）
-- 桌面 `submission.zip` = `r3_dual_adapter_prior_0.86`（ZIP sha256 `d3103479...`）
-- 同族 prior 扫描 0.82/0.83/0.84/0.87/0.88/0.9 在
+## 桌面当前候选（2026-08-06 更新）
+- 桌面 `submission.zip` = `r3_dual_adapter_prior_0.90`（ZIP sha256 `bdde697d...`）
+- 同族 prior 扫描 0.82–1.0 在
   `桌面/r3_dual_prior_sweep/`，按 README 顺序回传
-- 全微调父模型 `F1_FLAT_FULL_FT_R3MS` 训练进行中，完成后接 TTA 重调
+- 全微调父模型 `F1_FLAT_FULL_FT_R3MS` 训练完成（epoch3），24 个 TTA 候选在
+  `桌面/fullft_r3ms_sweep/`，待 R3 双 Adapter prior 曲线测完再上
 
 ## 平台验证记录
 | 包 | 平台分数 | 提升 |

@@ -111,6 +111,14 @@ def main() -> None:
         metavar="PATH",
         help="Save the fused logits (before prior alignment) and image names for offline sweeps",
     )
+    parser.add_argument(
+        "--dump-branch-logits",
+        metavar="PATH",
+        help=(
+            "Save per-branch logits (global/local per scale, original/flipped) "
+            "for offline TTA weight sweeps; requires attention_multiscale"
+        ),
+    )
     args = parser.parse_args()
     local_crop_sizes = (
         parse_int_sequence(args.local_crop_sizes)
@@ -140,6 +148,8 @@ def main() -> None:
             "Local-view inference changes the inference protocol; pass "
             "--acknowledge-local-view-risk explicitly"
         )
+    if args.dump_branch_logits and args.local_view != "attention_multiscale":
+        raise ValueError("--dump-branch-logits requires attention_multiscale")
     if not 0.0 <= args.tta_view_weight <= 1.0:
         raise ValueError("tta-view-weight must be in [0, 1]")
     stacked_local_tta = args.local_view != "none" and args.tta != "none"
@@ -279,6 +289,10 @@ def main() -> None:
         )
     use_amp = bool(config["train"].get("amp", True)) and device.type == "cuda"
     logit_batches: list[torch.Tensor] = []
+    global_logit_batches: list[torch.Tensor] = []
+    flipped_global_logit_batches: list[torch.Tensor] = []
+    local_logit_batches: list[list[torch.Tensor]] = []
+    flipped_local_logit_batches: list[list[torch.Tensor]] = []
     prediction_names: list[str] = []
     corrupt_count = 0
     for batch in tqdm(loader, desc="Aegis inference"):
@@ -320,6 +334,16 @@ def main() -> None:
                     else:
                         local_logits = model(images=local_images)
                     local_logits_views.append(local_logits)
+                if args.dump_branch_logits:
+                    global_logit_batches.append(
+                        global_logits.detach().float().cpu()
+                    )
+                    local_logit_batches.append(
+                        [
+                            value.detach().float().cpu()
+                            for value in local_logits_views
+                        ]
+                    )
                 if args.tta == "horizontal_flip":
                     flipped_images = torch.flip(images, dims=(3,))
                     (
@@ -378,6 +402,16 @@ def main() -> None:
                                 images=flipped_local_images
                             )
                         flipped_local_logits_views.append(flipped_local_logits)
+                    if args.dump_branch_logits:
+                        flipped_global_logit_batches.append(
+                            flipped_global_logits.detach().float().cpu()
+                        )
+                        flipped_local_logit_batches.append(
+                            [
+                                value.detach().float().cpu()
+                                for value in flipped_local_logits_views
+                            ]
+                        )
                     if args.local_view == "attention_multiscale":
                         logits = fuse_global_multilocal_flip_probabilities(
                             global_logits,
@@ -539,6 +573,67 @@ def main() -> None:
             },
             args.dump_logits,
         )
+    if args.dump_branch_logits:
+        if args.local_view != "attention_multiscale":
+            raise RuntimeError("Branch dump requires attention_multiscale")
+        if not local_logit_batches:
+            raise RuntimeError("Branch dump produced no local-view batches")
+        per_scale_original = [
+            torch.cat([batch[scale_index] for batch in local_logit_batches], dim=0)
+            for scale_index in range(len(local_crop_sizes))
+        ]
+        branch_payload: dict[str, Any] = {
+            "names": prediction_names,
+            "global_logits": torch.cat(global_logit_batches, dim=0),
+            "local_scale_logits": per_scale_original,
+            "inference_mode": (
+                "attention_multiscale_flip"
+                if stacked_local_tta
+                else "attention_multiscale"
+            )
+            + ":topk=%d:crops=%s"
+            % (
+                args.local_top_k,
+                "-".join(str(value) for value in local_crop_sizes),
+            ),
+            "protocol": {
+                "local_weight": float(args.local_weight),
+                "flip_weight": float(args.tta_view_weight),
+                "local_temperature": float(args.local_temperature),
+                "global_temperature": float(args.tta_temperature),
+                "local_scale_weights": (
+                    list(local_scale_weights)
+                    if local_scale_weights is not None
+                    else None
+                ),
+                "top_k": int(args.local_top_k),
+                "crop_sizes": list(local_crop_sizes),
+                "adapter": (
+                    "dual_o3_pta"
+                    if args.adapt_local_features
+                    and args.adapt_part_token_features
+                    else "o3"
+                    if args.adapt_local_features
+                    else "part_token"
+                    if args.adapt_part_token_features
+                    else "none"
+                ),
+            },
+        }
+        if stacked_local_tta:
+            if not flipped_local_logit_batches:
+                raise RuntimeError("Branch dump missing flipped local views")
+            branch_payload["flipped_global_logits"] = torch.cat(
+                flipped_global_logit_batches, dim=0
+            )
+            branch_payload["flipped_local_scale_logits"] = [
+                torch.cat(
+                    [batch[scale_index] for batch in flipped_local_logit_batches],
+                    dim=0,
+                )
+                for scale_index in range(len(local_crop_sizes))
+            ]
+        _atomic_torch_save(branch_payload, args.dump_branch_logits)
     prior_alignment = None
     if args.prior_alignment_strength > 0.0:
         all_logits, prior_alignment = align_logits_to_prior(
