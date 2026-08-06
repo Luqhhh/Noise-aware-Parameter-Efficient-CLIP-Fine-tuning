@@ -1,0 +1,15 @@
+{
+  "experiment": "F1_FLAT_FULL_FT_R3MS + dual adapters (O3 BN32 + PTA BN64)",
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:weights=0.2-0.3-0.4-0.1:local_weight=0.4:flip_weight=0.5:t=1.5:adapter=dual_o3_pta:balanced_prior=0.85",
+  "platform_accuracy": 0.7025673889534185,
+  "correct": 17541,
+  "total": 24967,
+  "delta_pp": 0.6809,
+  "delta_correct": 170,
+  "vs_best": "NEW PLATFORM BEST 70.256739% (+170 correct vs full-ft parent baseline 69.575840%)",
+  "gap_to_75": "1185 correct (4.746pp)",
+  "checkpoint_sha256": "f72b0104257f49d2667fe335553a861dd1dea947753feebdc7301b8890b48765",
+  "submission_zip_sha256": "d99f2b64a247b9ebc3615b1a43ed0d302a68ba172327213fdbb3beabf5e2da33",
+  "date": "2026-08-06",
+  "status": "platform_valid_promoted NEW BEST"
+}
