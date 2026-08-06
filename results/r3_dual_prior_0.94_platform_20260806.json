@@ -1,0 +1,13 @@
+{
+  "experiment": "R3_DUAL_ADAPTER prior strength 0.94",
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:weights=0.2-0.3-0.4-0.1:local_weight=0.4:flip_weight=0.5:t=1.5:adapter=dual_o3_pta:balanced_prior=0.94",
+  "platform_accuracy": 0.6905915808867705,
+  "correct": 17242,
+  "total": 24967,
+  "delta_pp": -0.0160,
+  "delta_correct": -4,
+  "vs_prior_0.91": "-0.0160pp and -4 correct (69.075179% -> 69.059158%)",
+  "vs_best": "69.075179% (R3 dual prior 0.91)",
+  "date": "2026-08-06",
+  "status": "platform_valid_not_promoted; R3 dual prior dimension closed by user"
+}

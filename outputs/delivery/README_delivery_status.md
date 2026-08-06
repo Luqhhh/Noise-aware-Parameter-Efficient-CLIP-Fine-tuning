@@ -15,13 +15,15 @@ prior 0.91！**（0.90 69.067169% → 0.91 69.075179%，+0.0080pp，+2 正确样
 | **R3 双 Adapter（prior 0.90）** | **69.067169%** | **17,244/24,967，新平台最佳；+6 correct vs 0.88** |
 | **R3 双 Adapter（prior 0.91）** | **69.075179%** | **17,246/24,967，新平台最佳；+2 correct vs 0.90** |
 | R3 双 Adapter（prior 0.92） | 69.047142% | 17,239/24,967，-5 correct vs 0.90；峰值在 0.91 附近 |
+| R3 双 Adapter（prior 0.94） | 69.059158% | 17,242/24,967，-4 correct vs 0.91；**用户指示停止本维度搜索** |
 
 ## 桌面当前候选（2026-08-06 更新）
-- 桌面 `submission.zip` = `r3_dual_adapter_prior_0.94`（ZIP sha256 `c1b7ac95...`）
-- 同族 prior 扫描 0.82–1.0 在
-  `桌面/r3_dual_prior_sweep/`，按 README 顺序回传
-- 全微调父模型 `F1_FLAT_FULL_FT_R3MS` 训练完成（epoch3），24 个 TTA 候选在
-  `桌面/fullft_r3ms_sweep/`，待 R3 双 Adapter prior 曲线测完再上
+- 桌面 `submission.zip` = **全微调父模型基线**
+  `fullft_r3ms_112_128_144_160_w020_030_040_010_l040_f050_t15_pa085`
+  （ZIP sha256 `a07135dd...`）
+- 24 个 TTA 候选在 `桌面/fullft_r3ms_sweep/`，25 个双 Adapter 候选在
+  `桌面/fullft_dual_sweep/`
+- R3 双 Adapter prior 维度已停止（用户指示）；该家族最佳 = prior 0.91
 
 ## 平台验证记录
 | 包 | 平台分数 | 提升 |
