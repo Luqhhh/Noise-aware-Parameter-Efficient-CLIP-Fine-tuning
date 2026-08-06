@@ -23,10 +23,11 @@
 | FULLFT_DUAL pa0.91 | 70.308808% | 17,554/24,967，-9 correct vs pa0.89；峰值 ~0.89-0.90 |
 | **FULLFT_DUAL pa0.90** | **70.352866%** | **17,565/24,967，新平台最佳；+2 correct vs pa0.89** |
 | FULLFT_DUAL pa0.92 | 70.340850% | 17,562/24,967，-3 correct vs pa0.90；峰值在 0.90 |
+| FULLFT_DUAL pa0.93 | 70.328834% | 17,559/24,967，-6 correct vs pa0.90；高侧衰减确认 |
 
 ## 桌面当前候选（2026-08-06 更新）
-- 桌面 `submission.zip` = **全微调父模型 + 双 Adapter prior 0.93**
-  `fullft_dual_pa0.93`（ZIP sha256 `81942f36...`）
+- 桌面 `submission.zip` = **全微调父模型 + 双 Adapter prior 0.94**
+  `fullft_dual_pa0.94`（ZIP sha256 `8b4ff0d6...`）
 - **工作流（用户指示）：桌面只保留 `submission.zip` 一个提交包**；其余候选
   只放仓库 `outputs/delivery/`（此前桌面临时文件夹已移入
   `outputs/delivery/_desktop_removed_20260806/`）
