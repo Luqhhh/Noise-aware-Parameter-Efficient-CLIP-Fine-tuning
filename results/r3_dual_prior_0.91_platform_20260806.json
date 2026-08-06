@@ -1,0 +1,13 @@
+{
+  "experiment": "R3_DUAL_ADAPTER prior strength 0.91",
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:weights=0.2-0.3-0.4-0.1:local_weight=0.4:flip_weight=0.5:t=1.5:adapter=dual_o3_pta:balanced_prior=0.91",
+  "platform_accuracy": 0.690751792365923,
+  "correct": 17246,
+  "total": 24967,
+  "delta_pp": 0.0080,
+  "delta_correct": 2,
+  "vs_prior_0.90": "+0.0080pp and +2 correct (69.067169% -> 69.075179%)",
+  "vs_best": "NEW PLATFORM BEST 69.075179% (+2 correct vs previous best 0.90)",
+  "date": "2026-08-06",
+  "status": "platform_valid_promoted NEW BEST"
+}
