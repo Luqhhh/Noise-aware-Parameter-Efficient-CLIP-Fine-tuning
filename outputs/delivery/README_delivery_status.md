@@ -20,10 +20,11 @@
 | **FULLFT_R3MS 基线** | **69.575840%** | **17,371/24,967，新平台最佳；+125 correct vs R3 dual 0.91** |
 | **FULLFT_DUAL 基线** | **70.256739%** | **17,541/24,967，新平台最佳；+170 correct vs FULLFT_R3MS** |
 | **FULLFT_DUAL pa0.89** | **70.344855%** | **17,563/24,967，新平台最佳；+22 correct vs 双 Adapter 基线** |
+| FULLFT_DUAL pa0.91 | 70.308808% | 17,554/24,967，-9 correct vs pa0.89；峰值 ~0.89-0.90 |
 
 ## 桌面当前候选（2026-08-06 更新）
-- 桌面 `submission.zip` = **全微调父模型 + 双 Adapter prior 0.91**
-  `fullft_dual_pa0.91`（ZIP sha256 `b8285668...`）
+- 桌面 `submission.zip` = **全微调父模型 + 双 Adapter prior 0.90**
+  `fullft_dual_pa0.9`（ZIP sha256 `3d684c07...`）
 - 24 个 TTA 候选在 `桌面/fullft_r3ms_sweep/`，25 个双 Adapter 候选在
   `桌面/fullft_dual_sweep/`
 - R3 双 Adapter prior 维度已停止（用户指示）；该家族最佳 = prior 0.91
