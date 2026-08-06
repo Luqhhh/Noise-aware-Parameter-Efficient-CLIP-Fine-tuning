@@ -1,0 +1,15 @@
+{
+  "experiment": "F1_FLAT_FULL_FT_R3MS (full visual-tower finetune, epoch 3)",
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:weights=0.2-0.3-0.4-0.1:local_weight=0.4:flip_weight=0.5:t=1.5:balanced_prior=0.85",
+  "platform_accuracy": 0.6957584010894381,
+  "correct": 17371,
+  "total": 24967,
+  "delta_pp": 0.5007,
+  "delta_correct": 125,
+  "vs_best": "NEW PLATFORM BEST 69.575840% (+125 correct vs R3 dual prior 0.91 69.075179%)",
+  "gap_to_75": "106 correct (0.4246pp)",
+  "checkpoint_sha256": "94a07797006049cdf464c46101cab922c42bc5e6f8cbcd7c93738e0608e8afb9",
+  "submission_zip_sha256": "a07135ddba22f73254574b2b8f8260323a1fe6f50602c387ee8762301acb6068",
+  "date": "2026-08-06",
+  "status": "platform_valid_promoted NEW BEST"
+}
