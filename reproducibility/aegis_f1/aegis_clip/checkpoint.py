@@ -99,6 +99,16 @@ def load_initial_weights(
         "visual_lora_mlp_adapter",
     }:
         _remap_base_weights_for_parametrized_model(model, state)
+    elif getattr(model, "peft_mode", None) == "full_finetune" and any(
+        ".parametrizations." in name for name in state
+    ):
+        # A LoRA parent checkpoint stores its effective weights as
+        # ``parametrizations.<name>.<index>.*`` tensors.  The full-finetune
+        # target owns plain weights, so materialise the LoRA updates into the
+        # effective base weights before loading.
+        state = _merge_parametrized_state_for_plain_model(
+            state, checkpoint.get("effective_model_spec", {})
+        )
     incompatible = model.load_state_dict(state, strict=False)
     allowed_missing: set[str] = set()
     if getattr(model, "peft_mode", None) == "feature_adapter":
@@ -159,6 +169,103 @@ def _remap_base_weights_for_parametrized_model(
         source_name = f"{prefix}.{parameter_name}"
         if target_name not in state and source_name in state:
             state[target_name] = state.pop(source_name)
+
+
+def _merge_parametrized_state_for_plain_model(
+    state: dict[str, torch.Tensor],
+    effective_spec: dict[str, Any],
+) -> dict[str, torch.Tensor]:
+    """Collapse LoRA parametrizations into effective plain weight tensors.
+
+    A checkpoint saved from a LoRA model stores ``.original`` base weights plus
+    per-parametrization ``lora_A``/``lora_B`` (additive) or ``q_A``/``q_B``/
+    ``v_A``/``v_B`` (QV attention) updates.  This returns a state dict whose
+    base weight names hold ``original + scaling * update`` and which drops every
+    parametrization tensor, so a plain-weight (``full_finetune``) model can be
+    initialised from the same parent exactly.
+    """
+
+    state = dict(state)
+    marker = ".parametrizations."
+    suffix = ".original"
+
+    attention_scaling = 1.0
+    mlp_scaling = 1.0
+    if effective_spec:
+        try:
+            attention_scaling = float(
+                effective_spec["lora_alpha"]
+            ) / float(effective_spec["lora_rank"])
+            mlp_scaling = float(
+                effective_spec["mlp_lora_alpha"]
+            ) / float(effective_spec["mlp_lora_rank"])
+        except (KeyError, TypeError, ZeroDivisionError, ValueError):
+            attention_scaling = 1.0
+            mlp_scaling = 1.0
+
+    original_names = [
+        name
+        for name in state
+        if marker in name and name.endswith(suffix)
+    ]
+    merged: dict[str, torch.Tensor] = {}
+    for original_name in original_names:
+        root = original_name[: -len(suffix)]
+        prefix, parameter_name = root.split(marker, maxsplit=1)
+        base_name = f"{prefix}.{parameter_name}"
+        keys = {
+            key: state[key]
+            for key in state
+            if key.startswith(root + ".") and key != original_name
+        }
+        leaf = lambda part: next(
+            (value for key, value in keys.items() if key.endswith("." + part)),
+            None,
+        )
+
+        if leaf("lora_A") is not None and leaf("lora_B") is not None:
+            scaling = (
+                mlp_scaling if ".mlp." in root else attention_scaling
+            )
+            update = leaf("lora_B") @ leaf("lora_A")
+            merged[base_name] = (
+                state[original_name] + scaling * update
+            )
+        elif (
+            leaf("q_A") is not None
+            and leaf("q_B") is not None
+            and leaf("v_A") is not None
+            and leaf("v_B") is not None
+        ):
+            q_update = leaf("q_B") @ leaf("q_A")
+            v_update = leaf("v_B") @ leaf("v_A")
+            update = torch.cat(
+                [
+                    q_update,
+                    torch.zeros_like(q_update),
+                    v_update,
+                ],
+                dim=0,
+            )
+            merged[base_name] = (
+                state[original_name]
+                + attention_scaling * update
+            )
+        else:
+            # Unknown parametrisation shape: keep the base weight untouched so
+            # the strict load can report the mismatch instead of silently
+            # dropping it.
+            merged[base_name] = state[original_name]
+
+    # Remove every parametrisation leaf (originals and update tensors) and
+    # install the merged plain weights.
+    state = {
+        name: value
+        for name, value in state.items()
+        if marker not in name
+    }
+    state.update(merged)
+    return state
 
 
 def resume_checkpoint(

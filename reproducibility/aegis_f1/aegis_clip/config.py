@@ -55,6 +55,7 @@ PEFT_MODES = {
     "visual_lora_mlp_adapter",
     "visual_mlp_adapter",
     "visual_prompt",
+    "full_finetune",
 }
 CLASSIFIER_MODES = {"linear", "anchored_residual"}
 LOSS_NAMES = {"cross_entropy", "double_softmax_cross_entropy", "gce"}
@@ -376,6 +377,7 @@ def validate_config(config: dict[str, Any]) -> None:
         "visual_lora_mlp_adapter",
         "visual_mlp_adapter",
         "visual_prompt",
+        "full_finetune",
     }:
         if bool(model.get("use_cached_training", False)):
             raise ConfigError(

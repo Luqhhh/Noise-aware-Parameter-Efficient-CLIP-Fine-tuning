@@ -1,0 +1,11 @@
+{
+  "experiment": "BN64 5scale (112/128/144/160/176 w 0.18/0.27/0.36/0.09/0.10)",
+  "platform_accuracy": 0.689149677574398,
+  "correct": 17206,
+  "total": 24967,
+  "delta_pp": -0.1282,
+  "delta_correct": -32,
+  "vs_best": "69.043137% (BN64+crop112 4scale)",
+  "date": "2026-08-05",
+  "status": "platform_valid_not_promoted"
+}

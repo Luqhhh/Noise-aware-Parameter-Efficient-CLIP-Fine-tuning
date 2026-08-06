@@ -1,0 +1,10 @@
+{
+  "experiment": "F1_FLAT_MLP_LORA_SELFTRAIN_R2_PART_TOKEN_ADAPTER_CROP112_FP32_RES05 (RS050)",
+  "platform_accuracy": 0.6899907878399488,
+  "correct": 17227,
+  "total": 24967,
+  "delta_pp": -0.0441,
+  "vs_best": "69.043137% (BN64+crop112)",
+  "date": "2026-08-05",
+  "status": "platform_valid_not_promoted"
+}

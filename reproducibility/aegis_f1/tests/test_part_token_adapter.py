@@ -132,10 +132,19 @@ def test_load_part_token_adapter_round_trip() -> None:
     assert not restored.training
 
 
-def test_inference_rejects_both_local_adapter_types(
+def test_inference_allows_both_local_adapter_types(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path,
 ) -> None:
+    """Both local adapters may be enabled together for dual-residual inference.
+
+    The mutual-exclusion guard was removed so a single local view can carry
+    both the local-feature (O3) and part-token residuals additively. The dual
+    path is validated by the local-inference unit tests; here we only confirm
+    the CLI no longer rejects the combination up front (the checkpoint is
+    intentionally absent, so loading fails with a file error, not a
+    mutual-exclusion ValueError).
+    """
     monkeypatch.setattr(
         sys,
         "argv",
@@ -153,7 +162,7 @@ def test_inference_rejects_both_local_adapter_types(
         ],
     )
 
-    with pytest.raises(ValueError, match="mutually exclusive"):
+    with pytest.raises(FileNotFoundError):
         infer_main()
 
 

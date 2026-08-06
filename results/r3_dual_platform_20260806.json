@@ -1,0 +1,12 @@
+{
+  "experiment": "R3_DUAL_ADAPTER (R3 parent + O3 local-feature adapter BN32 + Part-Token adapter BN64)",
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:weights=0.2-0.3-0.4-0.1:local_weight=0.4:flip_weight=0.5:t=1.5:adapter=dual_o3_pta:balanced_prior=0.85",
+  "platform_accuracy": 0.6896303120118557,
+  "correct": 17218,
+  "total": 24967,
+  "delta_pp": 0.0,
+  "vs_best": "69.043137% (BN64+crop112 4scale)",
+  "vs_bn64": "ties BN64 68.963031% (17218 correct)",
+  "date": "2026-08-06",
+  "status": "platform_valid_not_promoted"
+}

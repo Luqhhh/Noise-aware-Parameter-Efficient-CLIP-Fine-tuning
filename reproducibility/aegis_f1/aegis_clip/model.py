@@ -479,6 +479,7 @@ class AegisCLIP(nn.Module):
             "visual_lora_mlp_adapter",
             "visual_mlp_adapter",
             "visual_prompt",
+            "full_finetune",
         }:
             raise ValueError(f"Unsupported PEFT mode: {peft_mode}")
         self.visual = visual
@@ -650,6 +651,19 @@ class AegisCLIP(nn.Module):
         elif self.peft_mode == "visual_prompt":
             for parameter in self.visual.visual_prompt.parameters():
                 parameter.requires_grad_(True)
+        elif self.peft_mode == "full_finetune":
+            # Unfreeze the whole visual tower except conv1 and the positional
+            # embedding. Freezing conv1/patch-projection and position encodings
+            # saves VRAM and keeps the attention geometry stable (the last-block
+            # attention map is what attention-local TTA crops on). CLIP's conv1
+            # has no bias, so guard each attribute before freezing.
+            for parameter in self.visual.parameters():
+                parameter.requires_grad_(True)
+            self.visual.conv1.weight.requires_grad_(False)
+            conv1_bias = getattr(self.visual.conv1, "bias", None)
+            if conv1_bias is not None:
+                conv1_bias.requires_grad_(False)
+            self.visual.positional_embedding.requires_grad_(False)
 
     @property
     def visual_requires_grad(self) -> bool:

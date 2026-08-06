@@ -16,6 +16,7 @@ from aegis_clip.data import TestImageDataset, load_class_mapping
 from aegis_clip.image_preprocess import select_inference_preprocess
 from aegis_clip.local_feature_adapter import load_local_feature_adapter
 from aegis_clip.local_inference import (
+    adapted_dual_local_view_logits,
     adapted_local_view_logits,
     adapted_part_token_local_view_logits,
     attention_local_adapter_global_logits,
@@ -173,10 +174,11 @@ def main() -> None:
             "--adapt-part-token-features requires an attention local view"
         )
     if args.adapt_local_features and args.adapt_part_token_features:
-        raise ValueError(
-            "--adapt-local-features and --adapt-part-token-features are "
-            "mutually exclusive"
-        )
+        # Both adapters may be applied simultaneously on the same local view.
+        # The two residuals are combined additively in feature space by
+        # adapted_dual_local_view_logits; a zero-output adapter pair is
+        # bit-exact to the native local branch.
+        pass
     if args.tta in {
         "attention_local_global",
         "attention_local_adapter_global",
@@ -294,7 +296,16 @@ def main() -> None:
                         crop_size=crop_size,
                         top_k=args.local_top_k,
                     )
-                    if args.adapt_local_features:
+                    if args.adapt_local_features and args.adapt_part_token_features:
+                        local_logits = adapted_dual_local_view_logits(
+                            model,
+                            local_feature_adapter,
+                            part_token_adapter,
+                            local_images,
+                            part_top_patches=int(part_pool_spec["top_patches"]),
+                            part_temperature=float(part_pool_spec["temperature"]),
+                        )
+                    elif args.adapt_local_features:
                         local_logits = adapted_local_view_logits(
                             model, local_feature_adapter, local_images
                         )
@@ -326,7 +337,23 @@ def main() -> None:
                             crop_size=crop_size,
                             top_k=args.local_top_k,
                         )
-                        if args.adapt_local_features:
+                        if (
+                            args.adapt_local_features
+                            and args.adapt_part_token_features
+                        ):
+                            flipped_local_logits = adapted_dual_local_view_logits(
+                                model,
+                                local_feature_adapter,
+                                part_token_adapter,
+                                flipped_local_images,
+                                part_top_patches=int(
+                                    part_pool_spec["top_patches"]
+                                ),
+                                part_temperature=float(
+                                    part_pool_spec["temperature"]
+                                ),
+                            )
+                        elif args.adapt_local_features:
                             flipped_local_logits = adapted_local_view_logits(
                                 model,
                                 local_feature_adapter,
@@ -496,9 +523,13 @@ def main() -> None:
                         if local_scale_weights is not None
                         else ""
                     )
-                    + (":adapter=o3" if args.adapt_local_features else "")
                     + (
-                        ":adapter=part_token"
+                        ":adapter=dual_o3_pta"
+                        if args.adapt_local_features
+                        and args.adapt_part_token_features
+                        else ":adapter=o3"
+                        if args.adapt_local_features
+                        else ":adapter=part_token"
                         if args.adapt_part_token_features
                         else ""
                     )
@@ -541,7 +572,9 @@ def main() -> None:
         if stacked_local_tta:
             inference_mode += f"flip_weight={args.tta_view_weight:g}:"
         inference_mode += f"t={args.local_temperature:g}"
-        if args.adapt_local_features:
+        if args.adapt_local_features and args.adapt_part_token_features:
+            inference_mode += ":adapter=dual_o3_pta"
+        elif args.adapt_local_features:
             inference_mode += ":adapter=o3"
         elif args.adapt_part_token_features:
             inference_mode += ":adapter=part_token"

@@ -302,6 +302,43 @@ def adapted_part_token_local_view_logits(
     )
 
 
+def adapted_dual_local_view_logits(
+    model: AegisCLIP,
+    local_feature_adapter: BottleneckLocalFeatureAdapter,
+    part_token_adapter: PartTokenResidualAdapter,
+    local_images: torch.Tensor,
+    *,
+    part_top_patches: int = 8,
+    part_temperature: float = 0.07,
+) -> torch.Tensor:
+    """Adapt one local view with both the local-feature (O3) and part-token
+    residual adapters applied simultaneously.
+
+    The two residuals are combined additively in feature space around the
+    native base features: ``adapted = O3(base) + PTA(base, part) - base``.
+    With both adapters at zero output this is bit-exact to the native local
+    branch (both residuals vanish), preserving the global path unchanged.
+    """
+    base_logits, local_features, patch_features = (
+        native_visual_forward_with_patch_features(model, local_images)
+    )
+    part_features = pool_cls_aligned_patch_features(
+        local_features,
+        patch_features,
+        top_patches=part_top_patches,
+        temperature=part_temperature,
+    )
+    o3_features = local_feature_adapter(local_features)
+    pta_features = part_token_adapter(local_features, part_features)
+    adapted_features = o3_features + pta_features - local_features
+    return anchored_classifier_residual_logits(
+        base_logits,
+        local_features,
+        adapted_features,
+        model.classifier.weight,
+    )
+
+
 def attention_part_token_adapter_global_logits(
     model: AegisCLIP,
     adapter: PartTokenResidualAdapter,

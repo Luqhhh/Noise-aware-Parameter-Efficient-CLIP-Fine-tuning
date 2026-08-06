@@ -1,0 +1,11 @@
+{
+  "experiment": "F1_FLAT_MLP_LORA_SELFTRAIN_R2_PART_TOKEN_ADAPTER_CROP112_FP32_BN64 + crop112 4scale",
+  "platform_accuracy": 0.6904313694076181,
+  "correct": 17238,
+  "total": 24967,
+  "improvement_pp": 0.0801,
+  "improvement_correct": 20,
+  "vs_previous_best": "68.963031% (BN64)",
+  "date": "2026-08-05",
+  "status": "platform_valid_promoted NEW BEST"
+}

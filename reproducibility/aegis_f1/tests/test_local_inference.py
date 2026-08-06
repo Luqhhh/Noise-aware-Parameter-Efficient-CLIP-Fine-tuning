@@ -1,7 +1,9 @@
 import torch
 from torch import nn
 
+from aegis_clip.local_feature_adapter import BottleneckLocalFeatureAdapter
 from aegis_clip.local_inference import (
+    adapted_dual_local_view_logits,
     adapted_part_token_local_view_logits,
     attention_guided_crop,
     complementary_flip_local_fusion,
@@ -165,6 +167,50 @@ def test_zero_part_token_adapter_preserves_local_view_logits() -> None:
         actual = adapted_part_token_local_view_logits(
             model,
             adapter,
+            images,
+            part_top_patches=2,
+        )
+
+    assert torch.equal(actual, expected.float())
+
+
+def test_zero_dual_adapter_preserves_local_view_logits() -> None:
+    """Two zero-output adapters together must be bit-exact to the native view.
+
+    The dual residual combines O3(local) + PTA(local, part) - local in feature
+    space; with both adapters at zero output both residuals vanish, so the
+    composed adapted features equal the base features and the anchored logits
+    must match the native local branch exactly.
+    """
+    model = AegisCLIP(
+        _TinyGridVisual(),
+        num_classes=3,
+        feature_dim=4,
+        peft_mode="frozen",
+    )
+    model.eval()
+    local_feature_adapter = BottleneckLocalFeatureAdapter(
+        feature_dim=4,
+        bottleneck_dim=2,
+        residual_scale=0.25,
+        dropout=0.1,
+    )
+    part_token_adapter = PartTokenResidualAdapter(
+        feature_dim=4,
+        bottleneck_dim=2,
+        residual_scale=0.25,
+        dropout=0.1,
+    )
+    local_feature_adapter.eval()
+    part_token_adapter.eval()
+    images = torch.randn(3, 3, 2, 2)
+
+    with torch.no_grad():
+        expected = model(images=images)
+        actual = adapted_dual_local_view_logits(
+            model,
+            local_feature_adapter,
+            part_token_adapter,
             images,
             part_top_patches=2,
         )

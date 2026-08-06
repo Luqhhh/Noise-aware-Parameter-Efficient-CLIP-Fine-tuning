@@ -1785,6 +1785,7 @@ def _validate_effective_spec(spec: dict[str, Any], peft_mode: str) -> None:
         "visual_lora_mlp_adapter",
         "visual_mlp_adapter",
         "visual_prompt",
+        "full_finetune",
     } and not spec[
         "visual_requires_grad"
     ]:

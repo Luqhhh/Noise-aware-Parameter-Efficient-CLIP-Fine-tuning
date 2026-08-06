@@ -1,0 +1,12 @@
+{
+  "experiment": "LW050 (local_loss=0.5, BN32 bottleneck)",
+  "platform_accuracy": 0.689149677574398,
+  "correct": 17206,
+  "total": 24967,
+  "delta_pp": -0.1282,
+  "delta_correct": -32,
+  "vs_best": "69.043137% (BN64+crop112)",
+  "note": "\u5206\u6570\u4e0e BN64 5\u5c3a\u5ea6\u5b8c\u5168\u4e00\u81f4(68.914968%)\uff0c\u5df2\u7531\u7528\u6237\u4e24\u6b21\u56de\u4f20\u786e\u8ba4",
+  "date": "2026-08-05",
+  "status": "platform_valid_not_promoted"
+}

@@ -1,0 +1,11 @@
+{
+  "experiment": "F1_FLAT_MLP_LORA_SELFTRAIN_R2_PART_TOKEN_ADAPTER_CROP112_FP32_BN64",
+  "platform_accuracy": 0.6896303120118557,
+  "correct": 17218,
+  "total": 24967,
+  "improvement_pp": 0.0601,
+  "improvement_correct": 15,
+  "vs_previous_best": "68.902952%",
+  "date": "2026-08-05",
+  "status": "platform_valid_promoted NEW BEST"
+}

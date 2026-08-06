@@ -1,6 +1,7 @@
 import torch
 
 from aegis_clip.checkpoint import (
+    _merge_parametrized_state_for_plain_model,
     load_initial_weights,
     resume_checkpoint,
     save_checkpoint,
@@ -16,6 +17,49 @@ class TinyModel(torch.nn.Module):
 
     def effective_spec(self) -> dict:
         return {"backbone": "ViT-B/32", "num_classes": 1}
+
+
+def test_merge_parametrized_state_matches_effective_lora_weights() -> None:
+    spec = {
+        "lora_rank": 4,
+        "lora_alpha": 8.0,
+        "mlp_lora_rank": 2,
+        "mlp_lora_alpha": 4.0,
+    }
+    original_attn = torch.randn(12, 4)
+    q_a = torch.randn(4, 4)
+    q_b = torch.randn(4, 4)
+    v_a = torch.randn(4, 4)
+    v_b = torch.randn(4, 4)
+    original_mlp = torch.randn(6, 8)
+    mlp_a = torch.randn(2, 8)
+    mlp_b = torch.randn(6, 2)
+
+    state = {
+        "visual.attn.parametrizations.in_proj_weight.original": original_attn,
+        "visual.attn.parametrizations.in_proj_weight.0.q_A": q_a,
+        "visual.attn.parametrizations.in_proj_weight.0.q_B": q_b,
+        "visual.attn.parametrizations.in_proj_weight.0.v_A": v_a,
+        "visual.attn.parametrizations.in_proj_weight.0.v_B": v_b,
+        "visual.mlp.c_fc.parametrizations.weight.original": original_mlp,
+        "visual.mlp.c_fc.parametrizations.weight.0.lora_A": mlp_a,
+        "visual.mlp.c_fc.parametrizations.weight.0.lora_B": mlp_b,
+        "visual.positional_embedding": torch.randn(4, 4),
+    }
+
+    merged = _merge_parametrized_state_for_plain_model(state, spec)
+
+    expected_attn = original_attn + 2.0 * torch.cat(
+        [q_b @ q_a, torch.zeros_like(q_b @ q_a), v_b @ v_a], dim=0
+    )
+    expected_mlp = original_mlp + 2.0 * (mlp_b @ mlp_a)
+    assert torch.allclose(merged["visual.attn.in_proj_weight"], expected_attn)
+    assert torch.allclose(merged["visual.mlp.c_fc.weight"], expected_mlp)
+    assert torch.equal(
+        merged["visual.positional_embedding"],
+        state["visual.positional_embedding"],
+    )
+    assert not any(".parametrizations." in name for name in merged)
 
 
 def test_checkpoint_restores_cpu_generator_state(tmp_path) -> None:
