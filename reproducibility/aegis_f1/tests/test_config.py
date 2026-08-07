@@ -68,6 +68,25 @@ def test_visual_lora_requires_a_real_low_rank_target() -> None:
         validate_config(config)
 
 
+def test_visual_lora_accepts_independent_value_and_output_targets() -> None:
+    config = deepcopy(load_config(ROOT / "configs" / "a0_fulldata_anchor.yaml"))
+    config["model"].update(
+        {
+            "peft_mode": "visual_lora",
+            "use_cached_training": False,
+            "lora_last_n_blocks": 8,
+            "lora_rank": 6,
+            "lora_alpha": 6.0,
+            "lora_adapt_qv": True,
+            "lora_adapt_q": False,
+            "lora_adapt_v": True,
+            "lora_adapt_out": True,
+        }
+    )
+    config["train"]["backbone_lr"] = 2.0e-5
+    validate_config(config)
+
+
 def test_visual_mlp_adapter_requires_valid_structure() -> None:
     config = deepcopy(load_config(ROOT / "configs" / "a0_fulldata_anchor.yaml"))
     config["model"].update(

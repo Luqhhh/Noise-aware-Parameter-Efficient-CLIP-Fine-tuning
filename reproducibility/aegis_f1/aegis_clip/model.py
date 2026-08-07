@@ -66,7 +66,7 @@ class AdditiveLowRankParametrization(nn.Module):
 
 
 class QVLowRankParametrization(nn.Module):
-    """LoRA updates for Q and V slices of MultiheadAttention.in_proj_weight.
+    """Selective LoRA updates for Q and/or V slices of MHA ``in_proj_weight``.
 
     PyTorch's ``MultiheadAttention`` consumes ``in_proj_weight`` directly, so
     replacing ``out_proj`` with a wrapper does not reliably execute a LoRA
@@ -74,21 +74,41 @@ class QVLowRankParametrization(nn.Module):
     forward path while making the effective Q/V weights trainable.
     """
 
-    def __init__(self, embed_dim: int, rank: int, alpha: float) -> None:
+    def __init__(
+        self,
+        embed_dim: int,
+        rank: int,
+        alpha: float,
+        *,
+        adapt_q: bool = True,
+        adapt_v: bool = True,
+    ) -> None:
         super().__init__()
         if rank <= 0:
             raise ValueError("LoRA rank must be positive")
         if alpha <= 0.0:
             raise ValueError("LoRA alpha must be positive")
+        if not adapt_q and not adapt_v:
+            raise ValueError("At least one of Q or V must be adapted")
         self.embed_dim = int(embed_dim)
         self.rank = int(rank)
         self.scaling = float(alpha) / float(rank)
-        self.q_A = nn.Parameter(torch.empty(rank, embed_dim))
-        self.q_B = nn.Parameter(torch.zeros(embed_dim, rank))
-        self.v_A = nn.Parameter(torch.empty(rank, embed_dim))
-        self.v_B = nn.Parameter(torch.zeros(embed_dim, rank))
-        nn.init.kaiming_uniform_(self.q_A, a=math.sqrt(5))
-        nn.init.kaiming_uniform_(self.v_A, a=math.sqrt(5))
+        self.adapt_q = bool(adapt_q)
+        self.adapt_v = bool(adapt_v)
+        if self.adapt_q:
+            self.q_A = nn.Parameter(torch.empty(rank, embed_dim))
+            self.q_B = nn.Parameter(torch.zeros(embed_dim, rank))
+            nn.init.kaiming_uniform_(self.q_A, a=math.sqrt(5))
+        else:
+            self.register_parameter("q_A", None)
+            self.register_parameter("q_B", None)
+        if self.adapt_v:
+            self.v_A = nn.Parameter(torch.empty(rank, embed_dim))
+            self.v_B = nn.Parameter(torch.zeros(embed_dim, rank))
+            nn.init.kaiming_uniform_(self.v_A, a=math.sqrt(5))
+        else:
+            self.register_parameter("v_A", None)
+            self.register_parameter("v_B", None)
 
     def forward(self, weight: torch.Tensor) -> torch.Tensor:
         expected = (3 * self.embed_dim, self.embed_dim)
@@ -96,10 +116,15 @@ class QVLowRankParametrization(nn.Module):
             raise ValueError(
                 f"Expected combined QKV weight {expected}, got {tuple(weight.shape)}"
             )
-        q_update = self.q_B @ self.q_A
-        v_update = self.v_B @ self.v_A
+        zero = torch.zeros(
+            (self.embed_dim, self.embed_dim),
+            device=weight.device,
+            dtype=weight.dtype,
+        )
+        q_update = self.q_B @ self.q_A if self.adapt_q else zero
+        v_update = self.v_B @ self.v_A if self.adapt_v else zero
         update = torch.cat(
-            [q_update, torch.zeros_like(q_update), v_update], dim=0
+            [q_update, zero, v_update], dim=0
         ).to(dtype=weight.dtype)
         return weight + self.scaling * update
 
@@ -110,12 +135,13 @@ def install_visual_attention_lora(
     last_n_blocks: int,
     rank: int,
     alpha: float,
-    adapt_qv: bool,
+    adapt_q: bool,
+    adapt_v: bool,
     adapt_out: bool,
 ) -> list[int]:
     """Install identity-at-initialisation LoRA on the last CLIP ViT blocks."""
-    if not adapt_qv and not adapt_out:
-        raise ValueError("Visual LoRA must adapt Q/V, output projection, or both")
+    if not adapt_q and not adapt_v and not adapt_out:
+        raise ValueError("Visual LoRA must adapt Q, V, output projection, or a combination")
     try:
         blocks = visual.transformer.resblocks
     except AttributeError as exc:
@@ -129,10 +155,16 @@ def install_visual_attention_lora(
     for index in selected:
         attention = blocks[index].attn
         embed_dim = int(attention.embed_dim)
-        if adapt_qv:
+        if adapt_q or adapt_v:
             if attention.in_proj_weight is None:
                 raise ValueError("Visual LoRA requires a combined MHA in_proj_weight")
-            qv_lora = QVLowRankParametrization(embed_dim, rank, alpha).to(
+            qv_lora = QVLowRankParametrization(
+                embed_dim,
+                rank,
+                alpha,
+                adapt_q=adapt_q,
+                adapt_v=adapt_v,
+            ).to(
                 device=attention.in_proj_weight.device,
                 dtype=attention.in_proj_weight.dtype,
             )
@@ -416,6 +448,8 @@ class AegisCLIP(nn.Module):
         lora_rank: int = 8,
         lora_alpha: float = 8.0,
         lora_adapt_qv: bool = True,
+        lora_adapt_q: bool | None = None,
+        lora_adapt_v: bool | None = None,
         lora_adapt_out: bool = True,
         visual_adapter_last_n_blocks: int = 6,
         visual_adapter_bottleneck: int = 64,
@@ -456,7 +490,13 @@ class AegisCLIP(nn.Module):
         self.lora_last_n_blocks = int(lora_last_n_blocks)
         self.lora_rank = int(lora_rank)
         self.lora_alpha = float(lora_alpha)
-        self.lora_adapt_qv = bool(lora_adapt_qv)
+        self.lora_adapt_q = (
+            bool(lora_adapt_qv) if lora_adapt_q is None else bool(lora_adapt_q)
+        )
+        self.lora_adapt_v = (
+            bool(lora_adapt_qv) if lora_adapt_v is None else bool(lora_adapt_v)
+        )
+        self.lora_adapt_qv = self.lora_adapt_q and self.lora_adapt_v
         self.lora_adapt_out = bool(lora_adapt_out)
         self.lora_block_indices: list[int] = []
         self.visual_adapter_last_n_blocks = int(visual_adapter_last_n_blocks)
@@ -510,7 +550,8 @@ class AegisCLIP(nn.Module):
                 last_n_blocks=self.lora_last_n_blocks,
                 rank=self.lora_rank,
                 alpha=self.lora_alpha,
-                adapt_qv=self.lora_adapt_qv,
+                adapt_q=self.lora_adapt_q,
+                adapt_v=self.lora_adapt_v,
                 adapt_out=self.lora_adapt_out,
             )
         if self.peft_mode == "visual_lora_last_mlp":
@@ -882,6 +923,12 @@ class AegisCLIP(nn.Module):
                 }
                 else None
             ),
+            "lora_adapt_q": (
+                self.lora_adapt_q if self.peft_mode == "visual_lora" else None
+            ),
+            "lora_adapt_v": (
+                self.lora_adapt_v if self.peft_mode == "visual_lora" else None
+            ),
             "lora_adapt_out": (
                 self.lora_adapt_out
                 if self.peft_mode
@@ -1027,6 +1074,16 @@ def build_model(
         lora_rank=int(model_config.get("lora_rank", 8)),
         lora_alpha=float(model_config.get("lora_alpha", 8.0)),
         lora_adapt_qv=bool(model_config.get("lora_adapt_qv", True)),
+        lora_adapt_q=(
+            bool(model_config["lora_adapt_q"])
+            if "lora_adapt_q" in model_config
+            else None
+        ),
+        lora_adapt_v=(
+            bool(model_config["lora_adapt_v"])
+            if "lora_adapt_v" in model_config
+            else None
+        ),
         lora_adapt_out=bool(model_config.get("lora_adapt_out", True)),
         visual_adapter_last_n_blocks=int(
             model_config.get("visual_adapter_last_n_blocks", 6)

@@ -289,6 +289,41 @@ def test_visual_lora_is_identity_then_updates_native_attention() -> None:
     )
 
 
+def test_visual_lora_can_adapt_value_and_output_without_query() -> None:
+    visual = TinyAttentionVisual()
+    reference = deepcopy(visual)
+    model = AegisCLIP(
+        visual,
+        num_classes=3,
+        feature_dim=4,
+        peft_mode="visual_lora",
+        lora_last_n_blocks=1,
+        lora_rank=2,
+        lora_alpha=2.0,
+        lora_adapt_q=False,
+        lora_adapt_v=True,
+        lora_adapt_out=True,
+    )
+    images = torch.randn(5, 3, 4, 4)
+    with torch.no_grad():
+        expected = torch.nn.functional.normalize(reference(images), dim=1)
+        actual = model.encode_image(images)
+    assert torch.allclose(actual, expected, atol=1.0e-6)
+
+    model(images=images).sum().backward()
+    trainable = {
+        name for name, parameter in model.named_parameters() if parameter.requires_grad
+    }
+    assert not any(name.endswith(("q_A", "q_B")) for name in trainable)
+    assert any(name.endswith("v_B") for name in trainable)
+    assert any("parametrizations.weight.0.lora_B" in name for name in trainable)
+    assert any(
+        parameter.grad is not None and torch.count_nonzero(parameter.grad) > 0
+        for name, parameter in model.named_parameters()
+        if name.endswith(("v_B", "lora_B"))
+    )
+
+
 def test_visual_lora_initialises_from_frozen_checkpoint(tmp_path) -> None:
     visual = TinyAttentionVisual()
     frozen = AegisCLIP(deepcopy(visual), num_classes=3, feature_dim=4)
