@@ -77,6 +77,7 @@ YAML files loaded by `common/utils.py:load_config()`. Key sections:
 ## Team Coordination Memory
 
 - Before starting every new experiment segment, verify the current branch, working-tree state, and whether `origin/main` is current; use `git pull --rebase --autostash origin main` when updating a mixed worktree, and never run a second `git stash pop` after automatic stashing.
+- Before starting every new experiment segment, inspect all available local and remote branch refs plus recent main history for overlapping experiment names, algorithms, configs, result reports, or in-flight work; if a similar direction exists, compare/coordinate/close it before implementing duplicate work.
 - After each experiment segment finishes, report the experiment identifier, exact command/config, result metrics, changed files, commit SHA, and whether the result is suitable for pushing or pulling. Pause at that checkpoint so teammates can avoid duplicate work, reuse findings, or perform elimination comparisons.
 - Keep experiment reports reproducible and distinguish implementation changes from measured results; do not claim a segment is complete until verification output is available.
 - Before pausing after any experiment segment, carry it through to a submission-ready artifact: generate the required prediction CSV/ZIP, run submission validation, and record its path and validation result. A code-only or unit-test-only segment must continue rather than pause.
