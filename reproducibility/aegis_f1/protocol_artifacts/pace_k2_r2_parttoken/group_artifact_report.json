@@ -1,0 +1,18 @@
+{
+  "cross_split_overlap": 0,
+  "duplicate_extras": 1238,
+  "first_sha256": "41e2668e0fa5e10291051c14a9c75fc96096a69ae7d36d84d0e774270a99bb87",
+  "format_version": 1,
+  "frozen_group_sha256": "41e2668e0fa5e10291051c14a9c75fc96096a69ae7d36d84d0e774270a99bb87",
+  "git_check_ignore_exit_code": 1,
+  "group_artifact_state": "frozen",
+  "independent_builds_match": true,
+  "map_sha256": "41e2668e0fa5e10291051c14a9c75fc96096a69ae7d36d84d0e774270a99bb87",
+  "prepare_stage_called": false,
+  "protocol_id": "pace_k2_r2_parttoken_v1",
+  "second_sha256": "41e2668e0fa5e10291051c14a9c75fc96096a69ae7d36d84d0e774270a99bb87",
+  "total_rows": 103218,
+  "train_csv_sha256": "a726b8a3ca8bc5857136106aca80f01d557104d3661ef92ccedfb2c0ea087875",
+  "unique_groups": 101980,
+  "val_csv_sha256": "54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e"
+}

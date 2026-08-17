@@ -2,8 +2,10 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
+import yaml
 
 from aegis_clip.config import ConfigError, load_config, validate_config
+from aegis_clip.pace_protocol import load_pace_protocol
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,6 +15,10 @@ def test_all_shipped_configs_are_valid() -> None:
     configs = sorted((ROOT / "configs").glob("*.yaml"))
     assert len(configs) >= 5
     for path in configs:
+        payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+        if isinstance(payload, dict) and "protocol_id" in payload:
+            assert load_pace_protocol(path).protocol_id == "pace_k2_r2_parttoken_v1"
+            continue
         config = load_config(path)
         assert config["model"]["backbone"] == "ViT-B/32"
         assert Path(config["output"]["root"]).is_absolute()

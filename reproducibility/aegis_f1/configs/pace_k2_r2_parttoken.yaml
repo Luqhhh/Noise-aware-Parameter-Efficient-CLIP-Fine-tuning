@@ -1,0 +1,129 @@
+protocol_id: pace_k2_r2_parttoken_v1
+spec:
+  path: ../../../docs/superpowers/specs/2026-08-12-pace-k2-design.md
+  sha256: 668eca56452b3e2dc55ae1e8a9fceea626765f518b65688a8454d697e8f64fc9
+  commit: 84f4705
+assets:
+  train_csv: ../../../outputs/data/master_splits/seed42/train.csv
+  train_csv_sha256: a726b8a3ca8bc5857136106aca80f01d557104d3661ef92ccedfb2c0ea087875
+  val_csv: ../../../outputs/data/master_splits/seed42/val.csv
+  val_csv_sha256: 54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e
+  class_to_idx: ../../../outputs/data/master_splits/seed42/class_to_idx.json
+  class_to_idx_sha256: 0141916c3eab0b8e9471671e398acbdcbbd497fea5fbe81ec9c5bb9331ce6d65
+  idx_to_class: ../../../outputs/data/master_splits/seed42/idx_to_class.json
+  idx_to_class_sha256: 8a7e030b5126124035177bd81e71c415dfb87f9b1ae6fba228b31c2cb7527913
+  split_manifest: ../../../outputs/data/master_splits/seed42/split_manifest.json
+  split_manifest_sha256: d8cf3e129ed2c73ff72cbda120deee5285c5bb8e6f10f579c3d0d1c556d3587c
+  train_root: ../../../train
+parent_assets:
+  checkpoint: /home/lux1/noise/reproducibility/aegis_f1/outputs/F1_FLAT_MLP_LORA_SELFTRAIN_R2_PART_TOKEN_ADAPTER_CROP112_FP32/seed42/best.pt
+  checkpoint_sha256: 26916fd3ec96311dcab7a637f416ad3455cf7c78087844d408a38958f168962a
+  trust_bundle: /home/lux1/noise/reproducibility/aegis_f1/artifacts/trust/selftrain_r1_teacher_v2_relaxed.pt
+  trust_bundle_sha256: ff8688a818219d3737715cd7dc9d11d014e7a5e973fa68f966c0ce370a88a246
+  submission_dir: /home/lux1/noise/outputs/delivery/flat_mlp_lora_selftrain_r2_part_token_adapter_crop112_multiscale_128_144_160_w045_050_005_fp32_l040_f050
+  prediction_csv_sha256: c6ed3e6a7f63c49a9b821f0e09222a153d926702de6f4c42505781aa7ae89fdd
+  submission_zip_sha256: 6333375eea0f0b7575b833de16daf89c897df521c9eaa3f64a71e546c5ec4dc6
+  submission_manifest_sha256: 0ddff9c4e03b0bfefe3c8671d388679a4a33dbbcc547b9f88d1b440fdca1c06e
+group_artifact:
+  state: frozen
+  sha256: 41e2668e0fa5e10291051c14a9c75fc96096a69ae7d36d84d0e774270a99bb87
+  output_path: ../protocol_artifacts/pace_k2_r2_parttoken/content_groups.json
+  report_path: ../protocol_artifacts/pace_k2_r2_parttoken/group_artifact_report.json
+  expected_total_rows: 103218
+  expected_unique_groups: 101980
+  expected_duplicate_extras: 1238
+parent:
+  peft_mode: visual_lora_mlp_lora
+  classifier_mode: linear
+  feature_adapter: Identity
+  batch_size: 128
+  amp: false
+  crop_sizes:
+  - 128
+  - 144
+  - 160
+  local_scale_weights:
+  - 0.45
+  - 0.5
+  - 0.05
+  flip_weight: 0.5
+  local_weight: 0.4
+  global_temperature: 1.5
+  local_temperature: 1.5
+  local_top_k: 5
+  part_top_patches: 8
+  part_temperature: 0.07
+  prior:
+    target: uniform
+    strength: 0.85
+    max_iterations: 50
+    tolerance: 1.0e-06
+    damping: 0.5
+evidence:
+  view_order:
+  - original_128
+  - original_144
+  - original_160
+  - flipped_128
+  - flipped_144
+  - flipped_160
+  tail_size: 7
+  weight_norm_epsilon: 1.0e-12
+  minimum_positive_views: 4
+  require_orientation_positive: true
+  require_leave_one_scale_positive: true
+  linear_gate_atol: 1.0e-05
+  linear_gate_rtol: 1.0e-05
+  antisymmetry_atol: 1.0e-06
+  antisymmetry_rtol: 1.0e-06
+crossfit:
+  seed: 42
+  outer_folds: 5
+  inner_folds: 3
+  sklearn_version: 1.9.0
+  numpy_version: 2.5.1
+  sort_key: canonical_path
+beta_solver:
+  dtype: float64
+  initial_upper: 1.0
+  maximum_upper: 1048576.0
+  maximum_iterations: 100
+  interval_tolerance: 1.0e-12
+  allow_zero: true
+  intercept: false
+  margin_coefficient: 1.0
+threshold:
+  modes:
+  - all_switch
+  - finite
+  - no_switch
+  strict_comparator: '>'
+  minimum_accuracy_changing_precision: 0.6
+  minimum_wilson_lower: 0.5
+  wilson_z: 1.959963984540054
+  no_switch_reasons:
+  - no_eligible
+  - no_qualified_candidate
+  - inner_fit_failed
+  - full_refit_failed
+  - finite_mapping_failed
+  - final_oof_no_switch
+promotion:
+  minimum_raw_micro_delta_pp: 0.2
+  minimum_clean_core_micro_delta_pp: 0.2
+  minimum_net_correct_fraction: 0.002
+  minimum_nonnegative_outer_folds: 4
+  minimum_worst_fold_delta_pp: -0.1
+  minimum_macro_delta_pp: -0.05
+  bootstrap_draws: 10000
+  bootstrap_seed: 42
+  bootstrap_rng: PCG64
+  bootstrap_quantile_method: linear
+execution:
+  device: cuda
+  amp: false
+  batch_size: 128
+  expected_validation_samples: 10316
+  expected_test_samples: 24967
+outputs:
+  root: ../outputs/pace_k2/r2_parttoken_crop112
