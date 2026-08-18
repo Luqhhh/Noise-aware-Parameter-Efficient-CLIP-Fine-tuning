@@ -1,0 +1,95 @@
+{
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:local_weight=0.4:flip_weight=0.5:t=1.5:weights=0.2-0.3-0.4-0.1:adapter=part_token",
+  "results": {
+    "strength_0": {
+      "changed_vs_strength_0": 0,
+      "class_count": 500,
+      "count_max": 167,
+      "count_mean": 49.934,
+      "count_min": 1,
+      "iterations": 50,
+      "marginal_l1": 0.3085969388484955,
+      "prediction_count": 24967
+    },
+    "strength_0.8": {
+      "changed_vs_strength_0": 3879,
+      "class_count": 500,
+      "count_max": 83,
+      "count_mean": 49.934,
+      "count_min": 13,
+      "iterations": 50,
+      "marginal_l1": 0.06679501384496689,
+      "prediction_count": 24967
+    },
+    "strength_0.82": {
+      "changed_vs_strength_0": 3972,
+      "class_count": 500,
+      "count_max": 83,
+      "count_mean": 49.934,
+      "count_min": 13,
+      "iterations": 50,
+      "marginal_l1": 0.06026431545615196,
+      "prediction_count": 24967
+    },
+    "strength_0.84": {
+      "changed_vs_strength_0": 4093,
+      "class_count": 500,
+      "count_max": 83,
+      "count_mean": 49.934,
+      "count_min": 13,
+      "iterations": 50,
+      "marginal_l1": 0.053703997284173965,
+      "prediction_count": 24967
+    },
+    "strength_0.85": {
+      "changed_vs_strength_0": 4132,
+      "class_count": 500,
+      "count_max": 83,
+      "count_mean": 49.934,
+      "count_min": 13,
+      "iterations": 50,
+      "marginal_l1": 0.050412844866514206,
+      "prediction_count": 24967
+    },
+    "strength_0.86": {
+      "changed_vs_strength_0": 4190,
+      "class_count": 500,
+      "count_max": 82,
+      "count_mean": 49.934,
+      "count_min": 14,
+      "iterations": 50,
+      "marginal_l1": 0.04711535945534706,
+      "prediction_count": 24967
+    },
+    "strength_0.88": {
+      "changed_vs_strength_0": 4275,
+      "class_count": 500,
+      "count_max": 82,
+      "count_mean": 49.934,
+      "count_min": 14,
+      "iterations": 50,
+      "marginal_l1": 0.04050035774707794,
+      "prediction_count": 24967
+    },
+    "strength_0.9": {
+      "changed_vs_strength_0": 4367,
+      "class_count": 500,
+      "count_max": 82,
+      "count_mean": 49.934,
+      "count_min": 15,
+      "iterations": 50,
+      "marginal_l1": 0.033857595175504684,
+      "prediction_count": 24967
+    }
+  },
+  "strengths": [
+    0.0,
+    0.8,
+    0.82,
+    0.84,
+    0.85,
+    0.86,
+    0.88,
+    0.9
+  ]
+}

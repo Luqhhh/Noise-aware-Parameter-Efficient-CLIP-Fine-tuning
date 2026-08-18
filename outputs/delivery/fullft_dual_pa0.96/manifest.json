@@ -1,0 +1,17 @@
+{
+  "acknowledge_balanced_test_prior": true,
+  "checkpoint": "/home/lux1/noise/reproducibility/aegis_f1/outputs/F1_FLAT_FULL_FT_R3MS/seed42/dual_adapters/best.pt",
+  "checkpoint_sha256": "f72b0104257f49d2667fe335553a861dd1dea947753feebdc7301b8890b48765",
+  "corrupt_images": 0,
+  "format_version": 1,
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:local_weight=0.4:flip_weight=0.5:t=1.5:weights=0.2-0.3-0.4-0.1:adapter=dual_o3_pta:balanced_prior=0.96",
+  "prediction_count": 24967,
+  "prediction_csv_sha256": "98e9d8df4f5af02d2174ecd29a8586a7a858bf2587f30f7f1f8dfa9a5c710a01",
+  "prior_alignment": {
+    "iterations": 50,
+    "marginal_l1": 0.013225691393017769,
+    "strength": 0.96
+  },
+  "submission_zip_sha256": "03e1e8f7e0c4565661a39494b15a1bf4e83ffb21cb7e71285d46c277b3cd4287",
+  "tta_risk_acknowledged": true
+}

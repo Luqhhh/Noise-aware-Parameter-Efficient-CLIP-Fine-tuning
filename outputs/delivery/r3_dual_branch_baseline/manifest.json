@@ -1,0 +1,113 @@
+{
+  "attention_local_global": null,
+  "balanced_test_prior_acknowledged": true,
+  "checkpoint": "/home/lux1/noise/reproducibility/aegis_f1/outputs/R3_DUAL_ADAPTER/seed42/best.pt",
+  "checkpoint_sha256": "38fb4dc713e07f08c92dfd058545e117509afffa0def6c376553f416ec1aa01f",
+  "complementary_flip_local_global": null,
+  "corrupt_images": 0,
+  "format_version": 1,
+  "inference_batch_size": 128,
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:weights=0.2-0.3-0.4-0.1:local_weight=0.4:flip_weight=0.5:t=1.5:adapter=dual_o3_pta:balanced_prior=0.85",
+  "input_resize_mode": "clip_center_crop",
+  "input_resolution": 224,
+  "local_crop_size": null,
+  "local_crop_sizes": [
+    112,
+    128,
+    144,
+    160
+  ],
+  "local_feature_adapter": {
+    "bottleneck_dim": 32,
+    "dropout": 0.1,
+    "feature_dim": 512,
+    "fusion": "1:1_global_weighted_adapted_local_probability_mean",
+    "gate": {
+      "clean_core_micro_delta_pp": 0.8184432983398438,
+      "epoch_zero_m1_bit_exact": true,
+      "global_path_bit_exact": true,
+      "local_feature_drift": 0.0026986647040495443,
+      "passed": true,
+      "raw_micro_delta_pp": 0.7173299789428711,
+      "trusted_macro_delta_pp": 0.6360650062561035
+    },
+    "global_path": "native_parent_checkpoint_unchanged",
+    "num_scales": 1,
+    "residual_scale": 0.25,
+    "scale_weights": [
+      1.0
+    ],
+    "shared_classifier": true,
+    "view_condition": "attention_local_only"
+  },
+  "local_scale_weights": [
+    0.2,
+    0.3,
+    0.4,
+    0.1
+  ],
+  "local_temperature": 1.5,
+  "local_top_k": 5,
+  "local_view": "attention_multiscale",
+  "local_view_risk_acknowledged": true,
+  "local_weight": 0.4,
+  "multiprototype": null,
+  "part_token_adapter": {
+    "bottleneck_dim": 64,
+    "dropout": 0.1,
+    "epoch_zero_baseline": "F1+M1",
+    "feature_dim": 512,
+    "fusion": "1:1_global_part_adapted_local_probability_mean",
+    "gate": {
+      "clean_core_corrected": 123,
+      "clean_core_corrected_to_harmed_ratio": 1.8507462686567164,
+      "clean_core_harmed": 66,
+      "clean_core_micro_delta_pp": 0.7775247097015381,
+      "clean_core_net_corrections": 57,
+      "epoch_zero_m1_reproduced": true,
+      "global_path_bit_exact": true,
+      "local_feature_drift": 0.004467725938676447,
+      "passed": true,
+      "raw_micro_delta_pp": 0.7367193698883057,
+      "reference_audit_passed": true,
+      "trusted_macro_delta_pp": 0.5611002445220947
+    },
+    "global_path": "native_parent_checkpoint_unchanged",
+    "part_pool_spec": {
+      "feature_source": "final_local_patch_tokens_after_ln_post_and_visual_proj",
+      "method": "cls_cosine_topk_v1",
+      "query": "same_view_normalized_local_cls",
+      "temperature": 0.07,
+      "top_patches": 8
+    },
+    "residual_scale": 0.25,
+    "shared_classifier": true,
+    "view_condition": "attention_local_only"
+  },
+  "prediction_count": 24967,
+  "prediction_csv_sha256": "d7145fff12db24d995ea2e729ff2b238d41b6dcc880af0e3bbcb269e2ad75cfd",
+  "prediction_head": "linear",
+  "prior_alignment": {
+    "aligned_argmax_count_max": 83,
+    "aligned_argmax_count_min": 13,
+    "bias_max": 2.865952491760254,
+    "bias_min": -2.2123749256134033,
+    "damping": 0.5,
+    "final_marginal_l1": 0.046767041087150574,
+    "final_max_marginal_error": 0.0005105885211378336,
+    "fitted_max_marginal_error": 1.188693568110466e-05,
+    "initial_marginal_l1": 0.29065218567848206,
+    "iterations": 50,
+    "max_iterations": 50,
+    "raw_argmax_count_max": 170,
+    "raw_argmax_count_min": 2,
+    "strength": 0.85,
+    "target_prior": "uniform",
+    "tolerance": 1e-06
+  },
+  "submission_zip_sha256": "7d215680d13a11242758d6b897df31d7ce6234881e7fc4a566bcb4757572e7a7",
+  "tta_fusion": "weighted_mean_probabilities",
+  "tta_risk_acknowledged": true,
+  "tta_temperature": 1.5,
+  "tta_view_weight": 0.5
+}

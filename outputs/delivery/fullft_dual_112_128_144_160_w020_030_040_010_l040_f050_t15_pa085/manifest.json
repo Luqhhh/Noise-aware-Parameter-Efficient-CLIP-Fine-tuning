@@ -1,0 +1,113 @@
+{
+  "attention_local_global": null,
+  "balanced_test_prior_acknowledged": true,
+  "checkpoint": "/home/lux1/noise/reproducibility/aegis_f1/outputs/F1_FLAT_FULL_FT_R3MS/seed42/dual_adapters/best.pt",
+  "checkpoint_sha256": "f72b0104257f49d2667fe335553a861dd1dea947753feebdc7301b8890b48765",
+  "complementary_flip_local_global": null,
+  "corrupt_images": 0,
+  "format_version": 1,
+  "inference_batch_size": 128,
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:weights=0.2-0.3-0.4-0.1:local_weight=0.4:flip_weight=0.5:t=1.5:adapter=dual_o3_pta:balanced_prior=0.85",
+  "input_resize_mode": "clip_center_crop",
+  "input_resolution": 224,
+  "local_crop_size": null,
+  "local_crop_sizes": [
+    112,
+    128,
+    144,
+    160
+  ],
+  "local_feature_adapter": {
+    "bottleneck_dim": 32,
+    "dropout": 0.1,
+    "feature_dim": 512,
+    "fusion": "1:1_global_weighted_adapted_local_probability_mean",
+    "gate": {
+      "clean_core_micro_delta_pp": 0.7093191146850586,
+      "epoch_zero_m1_bit_exact": true,
+      "global_path_bit_exact": true,
+      "local_feature_drift": 0.004168727870318445,
+      "passed": true,
+      "raw_micro_delta_pp": 0.853043794631958,
+      "trusted_macro_delta_pp": 0.8382678031921387
+    },
+    "global_path": "native_parent_checkpoint_unchanged",
+    "num_scales": 1,
+    "residual_scale": 0.25,
+    "scale_weights": [
+      1.0
+    ],
+    "shared_classifier": true,
+    "view_condition": "attention_local_only"
+  },
+  "local_scale_weights": [
+    0.2,
+    0.3,
+    0.4,
+    0.1
+  ],
+  "local_temperature": 1.5,
+  "local_top_k": 5,
+  "local_view": "attention_multiscale",
+  "local_view_risk_acknowledged": true,
+  "local_weight": 0.4,
+  "multiprototype": null,
+  "part_token_adapter": {
+    "bottleneck_dim": 64,
+    "dropout": 0.1,
+    "epoch_zero_baseline": "F1+M1",
+    "feature_dim": 512,
+    "fusion": "1:1_global_part_adapted_local_probability_mean",
+    "gate": {
+      "clean_core_corrected": 77,
+      "clean_core_corrected_to_harmed_ratio": 3.0,
+      "clean_core_harmed": 25,
+      "clean_core_micro_delta_pp": 0.7093191146850586,
+      "clean_core_net_corrections": 52,
+      "epoch_zero_m1_reproduced": true,
+      "global_path_bit_exact": true,
+      "local_feature_drift": 0.0047519775544455365,
+      "passed": true,
+      "raw_micro_delta_pp": 0.7948815822601318,
+      "reference_audit_passed": true,
+      "trusted_macro_delta_pp": 0.735241174697876
+    },
+    "global_path": "native_parent_checkpoint_unchanged",
+    "part_pool_spec": {
+      "feature_source": "final_local_patch_tokens_after_ln_post_and_visual_proj",
+      "method": "cls_cosine_topk_v1",
+      "query": "same_view_normalized_local_cls",
+      "temperature": 0.07,
+      "top_patches": 8
+    },
+    "residual_scale": 0.25,
+    "shared_classifier": true,
+    "view_condition": "attention_local_only"
+  },
+  "prediction_count": 24967,
+  "prediction_csv_sha256": "c3fe3d84ef44e662a7ea1984fa54ca3fb48ad9257212ccf6400a5d3901f5db77",
+  "prediction_head": "linear",
+  "prior_alignment": {
+    "aligned_argmax_count_max": 96,
+    "aligned_argmax_count_min": 18,
+    "bias_max": 2.7591450214385986,
+    "bias_min": -2.122248649597168,
+    "damping": 0.5,
+    "final_marginal_l1": 0.04803413897752762,
+    "final_max_marginal_error": 0.0005565687315538526,
+    "fitted_max_marginal_error": 1.2588920071721077e-05,
+    "initial_marginal_l1": 0.2985188364982605,
+    "iterations": 50,
+    "max_iterations": 50,
+    "raw_argmax_count_max": 153,
+    "raw_argmax_count_min": 1,
+    "strength": 0.85,
+    "target_prior": "uniform",
+    "tolerance": 1e-06
+  },
+  "submission_zip_sha256": "d99f2b64a247b9ebc3615b1a43ed0d302a68ba172327213fdbb3beabf5e2da33",
+  "tta_fusion": "weighted_mean_probabilities",
+  "tta_risk_acknowledged": true,
+  "tta_temperature": 1.5,
+  "tta_view_weight": 0.5
+}

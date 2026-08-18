@@ -1,0 +1,29 @@
+{
+  "checkpoint": "/home/lux1/noise/reproducibility/aegis_f1/outputs/F1_FLAT_FULL_FT_R3MS/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "94a07797006049cdf464c46101cab922c42bc5e6f8cbcd7c93738e0608e8afb9",
+  "corrupt_images": 0,
+  "format_version": 1,
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:offline_sweep=scales_w015_030_040_015_l040_f050_t150_pa085",
+  "offline_candidate": {
+    "flip_weight": 0.5,
+    "id": "scales_w015_030_040_015_l040_f050_t150_pa085",
+    "local_weight": 0.4,
+    "prior": 0.85,
+    "scale_weights": [
+      0.15,
+      0.3,
+      0.4,
+      0.15
+    ],
+    "temp": 1.5
+  },
+  "prediction_count": 24967,
+  "prediction_csv_sha256": "f043e2b49fb52b096a47ff620b57667662eefc19c31f0cb629e21f985fe17ea5",
+  "prior_alignment": {
+    "marginal_l1": 0.0606069415807724,
+    "strength": 0.85,
+    "target_prior": "uniform"
+  },
+  "submission_zip_sha256": "194bba15b0ebe833272382ad64f939c31ba6f8099b0bed31b63e499c9e531507",
+  "tta_risk_acknowledged": true
+}

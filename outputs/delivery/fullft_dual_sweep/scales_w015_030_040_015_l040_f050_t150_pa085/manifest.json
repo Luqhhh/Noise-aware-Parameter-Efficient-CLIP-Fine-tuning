@@ -1,0 +1,29 @@
+{
+  "checkpoint": "/home/lux1/noise/reproducibility/aegis_f1/outputs/F1_FLAT_FULL_FT_R3MS/seed42/dual_adapters/best.pt",
+  "checkpoint_sha256": "f72b0104257f49d2667fe335553a861dd1dea947753feebdc7301b8890b48765",
+  "corrupt_images": 0,
+  "format_version": 1,
+  "inference_mode": "attention_multiscale_flip:topk=5:crops=112-128-144-160:offline_sweep=scales_w015_030_040_015_l040_f050_t150_pa085",
+  "offline_candidate": {
+    "flip_weight": 0.5,
+    "id": "scales_w015_030_040_015_l040_f050_t150_pa085",
+    "local_weight": 0.4,
+    "prior": 0.85,
+    "scale_weights": [
+      0.15,
+      0.3,
+      0.4,
+      0.15
+    ],
+    "temp": 1.5
+  },
+  "prediction_count": 24967,
+  "prediction_csv_sha256": "238083949d6472a8b0637098fffd945ac928a9aa8ef278058b85ebc81ce37f98",
+  "prior_alignment": {
+    "marginal_l1": 0.04807239770889282,
+    "strength": 0.85,
+    "target_prior": "uniform"
+  },
+  "submission_zip_sha256": "9b8a4eb0ede25089bf16cfdc7fc6ea23e424bfec05af52b868adc06b5fa831ee",
+  "tta_risk_acknowledged": true
+}
