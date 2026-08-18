@@ -1,7 +1,7 @@
 # 文档索引与状态约定
 
-**核对时间**：2026-07-30
-**最新本仓库实验时间**：2026-07-30
+**核对时间**：2026-08-18
+**最新本仓库实验时间**：2026-08-06
 
 ## 当前权威文档
 
@@ -14,6 +14,9 @@
 | `../progress.md` | 按时间追加的执行记录；顶部是最新状态 |
 | `../findings.md` | 按时间追加的研究结论；顶部是最新结论 |
 | `phase4_results.md` | Phase 4 P0–P4 最终报告 |
+| `../outputs/delivery/README_delivery_status.md` | 08-06 提交包交付状态、当前平台最佳与桌面候选 |
+| `../results/fullft_dual_adapters_20260806.md` | 全微调 + 双 Adapter 平台结果与 prior 曲线 |
+| `../results/fullft_r3ms_20260806.md` | 全微调父模型平台结果 |
 | `team_assignments_and_experiment_configs_2026-07-22.md` | 独立研发仓库候选和平台回填状态 |
 | `../outputs/README.md` | 输出目录和平台结果索引 |
 | `../results/submission_registry.csv` | 已上传或已报告的平台提交登记 |
@@ -32,6 +35,7 @@
 
 ## 结果口径
 
+- 当前平台最佳为 2026-08-06 的 FULLFT_DUAL prior 0.90 = **70.352866%**（17,565/24,967），状态 `audited`，见 `../outputs/delivery/README_delivery_status.md`；其后的 pa0.91–0.93 均回落，prior 峰值确认在 0.90。
 - Bare、Flip TTA、M1/M3 是不同推理协议，必须分栏比较。
 - 2026-07-30 的 A2 STRICT + M1 weight 0.35 平台为 62.6870%，状态 `platform_valid_not_promoted`；双 seed 本地证据、提交哈希和平台复盘见 `../results/m1_localization_optimization_20260730.md`。
 - A2 STRICT 局部特征 Adapter 最佳 clean-core 增益 +0.1821pp，低于 +0.20pp gate；未生成测试提交，结果见 `../results/local_adapter_a2_strict_20260730.md`。

@@ -6,6 +6,34 @@
 
 # 执行进度
 
+## 2026-08-06 FULLFT_DUAL prior 0.90：平台 70.352866%，新平台最佳
+
+- 全微调 R3MS 父模型 + 双 Adapter（O3 BN32 + PTA BN64）+ 4 尺度 attention/flip
+  + balanced-prior 0.90，平台 **70.352866%**（17,565/24,967），新的审计完整
+  平台最佳；相对 pa0.89 +0.0080pp（+2 correct）。
+- prior 曲线 pa0.89→0.93 峰值确认在 0.90：0.89 70.344855% / 0.91 70.308808% /
+  0.92 70.340850% / 0.93 70.328834%。
+- 距离 75 分还差 1,161 正确（4.650pp）。已登记到
+  `results/current_platform_summary.csv` 与 `results/submission_registry.csv`。
+- 详见 `results/fullft_dual_adapters_20260806.md` 与
+  `outputs/delivery/README_delivery_status.md`。
+
+## 2026-08-06 FULLFT_DUAL 基线 70.256739% / FULLFT_R3MS 69.575840%，连续新平台最佳
+
+- 全微调 R3MS 父模型（epoch 3）平台 **69.575840%**（17,371/24,967），相对
+  R3 双 Adapter prior 0.91 +0.5007pp（+125 correct）；LoRA 自训练父模型 →
+  全微调父模型的迁移是迄今最大的单一平台杠杆。
+- 双 Adapter 基线 **70.256739%**（17,541/24,967），+0.6809pp（+170 correct），
+  首个突破 70%。
+- 详见 `results/fullft_r3ms_20260806.md`。
+
+## 2026-08-05 R3 双 Adapter 家族：prior 0.91 平台 69.075179%，新平台最佳
+
+- BN64 系（BN64+crop112 组合 69.043137% = 17,238/24,967）→ R3 双 Adapter
+  prior 0.90 69.067169% → prior 0.91 **69.075179%**（17,246/24,967）连续刷新；
+  prior 0.92/0.94 回落，**用户指示停止 R3 双 Adapter prior 维度搜索**。
+- 桌面切换到全微调基线方向。详见 `outputs/delivery/README_delivery_status.md`。
+
 ## 2026-08-03 FLAT（平 LR 子模型）：平台 67.7014%，新平台最佳
 
 - T2 = A12_CORR 配方 + schedule_epochs 16（平 LR）+ 噪声盲 E2 基座，平台

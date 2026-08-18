@@ -61,13 +61,22 @@ A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJi
 - `test_submission_manifest.py`（18 tests）：SHA-256 哈希、ZIP vs CSV hash 区分、标签格式、预测计数、重复登记拒绝、manifest schema
 - Aegis 独立套件：配置合规、LoRA/AdaptFormer/visual prompt、OOF 重建、局部推理、M1/M3、Part-Token Adapter、多类噪声诊断、Q1 trajectory、T0/T1 可信梯度子空间与 U0 数字 Prompt 审计；最新隔离整合回归 `277 passed`
 
-### 6. 平台结果总览（updated 2026-08-05）
+### 6. 平台结果总览（updated 2026-08-06）
 
 **跨推理协议的已知平台锚点：**
 
 | 实验 | 平台 | 证据状态 | 说明 |
 |------|------:|----------|------|
-| **R2 + crop112 Part-Token Adapter + weighted multiscale/Flip + balanced-prior 0.85** | **68.9030%** | **已审计（当前平台最佳）** | 单一 R2 checkpoint + 一个 34,336 参数局部残差 Adapter；同一 local forward 的 CLS/patch token；128/144/160 权重 0.45/0.50/0.05 |
+| **全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.90** | **70.352866%** | **已审计（当前平台最佳）** | 全微调 epoch-3 父模型 + O3/PTA 双 Adapter；4 尺度 attention + flip + prior 0.90；prior 峰值确认（0.89→0.91→0.92→0.93 曲线见 results/fullft_dual_adapters_20260806.md） |
+| 全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.89 | 70.344855% | 已审计 | 上一平台最佳；峰值左侧 |
+| 全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.92 | 70.340850% | 已审计 | −3 correct vs prior 0.90 |
+| 全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.93 | 70.328834% | 已审计 | 高侧衰减确认 |
+| 全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.91 | 70.308808% | 已审计 | −9 correct vs prior 0.89 |
+| 全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.85 | 70.256739% | 已审计 | 双 Adapter 基线；首个突破 70% |
+| 全微调 R3MS 父模型 + balanced-prior 0.85 | 69.575840% | 已审计 | 全微调父模型基线；+125 correct vs R3 dual 0.91 |
+| R3 + 双 Adapter + balanced-prior 0.91 | 69.075179% | 已审计 | R3 双 Adapter 家族峰值（用户指示停止该维度） |
+| R3 + 双 Adapter + BN64/crop112 + prior 0.88 | 69.043137% | 已审计 | BN64+crop112 组合，上一家族最佳 |
+| **R2 + crop112 Part-Token Adapter + weighted multiscale/Flip + balanced-prior 0.85** | **68.9030%** | 已审计（R2 系最佳） | 单一 R2 checkpoint + 一个 34,336 参数局部残差 Adapter；同一 local forward 的 CLS/patch token；128/144/160 权重 0.45/0.50/0.05 |
 | R2 + crop112 local-feature Adapter + weighted multiscale/Flip + balanced-prior 0.85 | 68.8869% | 已审计 | 上一平台最佳；比 crop128-trained Adapter 多 1 个正确样本 |
 | R2 + crop128 local-feature Adapter + weighted multiscale/Flip + balanced-prior 0.85 | 68.8829% | 已审计 | 单 checkpoint + local-only Adapter |
 | R2 + crop144 local-feature Adapter + weighted multiscale/Flip + balanced-prior 0.85 | 68.8589% | 已审计 | 单 checkpoint + local-only Adapter |

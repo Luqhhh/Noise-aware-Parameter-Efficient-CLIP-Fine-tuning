@@ -2,7 +2,7 @@
 
 每个子目录对应一个实验，包含 checkpoint、训练日志、评估结果和提交文件。
 
-> **状态核对：2026-07-31；最新实验：2026-07-31。** 当前权威实验结论见根目录 `README.md`、`CURRENT_STAGE_ACCEPTANCE.md`、`results/f1_rebuild_20260730.md` 和 `results/m1_flip_optimization_20260730.md`。本文件中的早期“最佳”均按当时阶段理解。
+> **状态核对：2026-08-18；最新实验：2026-08-06。** 当前平台最佳为 **70.352866%**（全微调 R3MS 父模型 + 双 Adapter prior 0.90，17,565/24,967）。当前权威结论见根目录 `README.md`、`CURRENT_STAGE_ACCEPTANCE.md`、`outputs/delivery/README_delivery_status.md` 和 `results/fullft_dual_adapters_20260806.md`。本文件中的早期“最佳”均按当时阶段理解。
 
 ## 基线
 

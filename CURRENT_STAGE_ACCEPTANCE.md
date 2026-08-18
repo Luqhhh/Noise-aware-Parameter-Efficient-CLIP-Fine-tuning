@@ -1,14 +1,32 @@
-# CURRENT STAGE ACCEPTANCE — 2026-08-02
+# CURRENT STAGE ACCEPTANCE — 2026-08-06
 
 ## Scope
 
 本验收状态覆盖主仓库截至 `7c8b966` 的历史代码、截至 2026-07-22 的训练产物，以及 2026-07-30 新增的 M1 attention-local 推理优化、局部特征 Adapter 实验、同 split E2→F1 严格重建、M1 + Flip 四视图融合、2026-07-31 的 balanced-prior 推理校准，和 2026-08-02 的 A12（LoRA 全 12 block，广度）、2026-08-03 的 A12_CORR（A12 + 伪标签修正）训练。A2 STRICT Adapter 未通过 gate；F1 重建通过 gate，M1 平台为 62.9791%；M1 + Flip + balanced-prior 0.25 平台实测 65.5786%，其上的 prior 1.0（W060 checkpoint）平台 67.2007%；温度峰值 1.5 × prior 0.85（W060）平台 67.5812%；A12（LoRA 广度）+ M1/Flip + temp1.5 + prior 0.85 平台 67.6173%；A12_CORR（A12 + 伪标签修正）+ M1/Flip + temp1.5 + prior 0.85 平台 **67.6853%**，新的审计完整平台最佳。
+
+2026-08-06 的全微调 + 双 Adapter 波次（当前平台最佳 **70.352866%**）见下文「2026-08-06 全微调 + 双 Adapter 验收」一节。
 
 原 `docs/phase4_plan.md` 已确认有意删除，并由以下最终产物取代：
 
 - `docs/phase4_results.md`
 - `results/phase4_experiments.csv`
 - `results/current_platform_summary.csv`
+
+## 2026-08-06 全微调 + 双 Adapter 验收
+
+| 包 | 平台 | 结论 |
+|---|---|---:|
+| FULLFT_R3MS + balanced-prior 0.85 | 69.575840% | 全微调父模型基线；+0.5007pp（+125 correct）vs R3 dual 0.91；promoted |
+| FULLFT_DUAL + prior 0.85 | 70.256739% | 双 Adapter 基线；首个突破 70%；+0.6809pp（+170 correct）；promoted |
+| FULLFT_DUAL + prior 0.89 | 70.344855% | +0.0881pp（+22 correct）；promoted |
+| **FULLFT_DUAL + prior 0.90** | **70.352866%** | **当前平台最佳（17,565/24,967）；+0.0080pp（+2 correct）；峰值确认** |
+| FULLFT_DUAL + prior 0.91 | 70.308808% | −9 correct vs 0.89；not promoted |
+| FULLFT_DUAL + prior 0.92 | 70.340850% | −3 correct vs 0.90；not promoted |
+| FULLFT_DUAL + prior 0.93 | 70.328834% | 高侧衰减确认；not promoted |
+
+桌面当前候选 = FULLFT_DUAL pa0.94（ZIP sha256 `8b4ff0d6...`），尚无平台分数。
+权威交付状态与哈希见 `outputs/delivery/README_delivery_status.md`；机器可读摘要见
+`results/current_platform_summary.csv` 与 `results/submission_registry.csv`。
 
 ## Current Platform Anchors
 
@@ -159,3 +177,4 @@ Phase 4 没有平台候选，不补多 seed，不继续 threshold/rank/lr 网格
 - [x] E2→F1 重建与 M1 新候选完成审计
 - [x] F1 重建 M1 平台 62.9791% 已按审计哈希回填
 - [x] F1 重建 M1 + Flip 候选平台 63.7802% 已回填，新的平台最佳
+- [x] 08-06 全微调家族回填 `submission_registry.csv`（2026-08-18）
