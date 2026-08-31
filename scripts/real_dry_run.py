@@ -178,7 +178,7 @@ def dry_run(config_path, output_log, n_batches=10):
         m = pd.read_csv(REPO / manifest_path)
         has_role = "training_role" in m.columns
         rates = []
-        for c in range(500):
+        for c in range(num_classes):
             cls = m[m.original_label == c]
             if len(cls) > 0:
                 if has_role:
@@ -191,7 +191,7 @@ def dry_run(config_path, output_log, n_batches=10):
         m = pd.read_csv(REPO / manifest_path)
         if "training_role" in m.columns:
             src_rates = []
-            for c in range(500):
+            for c in range(num_classes):
                 cls = m[m.original_label == c]
                 if len(cls) > 0:
                     src_rates.append((cls.training_role == "pseudo").mean())

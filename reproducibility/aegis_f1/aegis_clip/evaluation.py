@@ -18,6 +18,7 @@ def evaluate(
     device: torch.device,
     num_classes: int,
     use_amp: bool,
+    class_counts: torch.Tensor | None = None,
     drift_budget: float = 0.01,
     drift_penalty: float = 0.5,
     selector_metric: str = "proxy_macro",
@@ -177,8 +178,91 @@ def evaluate(
     selector = float(metrics[selector_metric]) - drift_penalty * max(
         0.0, mean_drift - drift_budget
     )
+    if class_counts is not None:
+        metrics.update(
+            longtail_segment_metrics(
+                prediction,
+                noisy,
+                class_counts,
+                weight=clean_core_weight,
+            )
+        )
     metrics["selector_metric"] = selector_metric
     metrics["selector"] = selector
+    return metrics
+
+
+def longtail_segment_metrics(
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+    class_counts: torch.Tensor,
+    *,
+    weight: torch.Tensor | None = None,
+    boundaries: str = "equal_thirds",
+) -> dict[str, float | int]:
+    """Split classes into head/medium/tail by training frequency.
+
+    ``equal_thirds`` sorts classes by training count and divides them into
+    three groups of equal class count.  It is parameter-free across stages
+    (500, 1000, or 1500 classes) and isolates tail-class performance from the
+    head-dominated overall accuracy.
+    """
+    prediction = torch.as_tensor(prediction).long().flatten().cpu()
+    target = torch.as_tensor(target).long().flatten().cpu()
+    counts = torch.as_tensor(class_counts, dtype=torch.float32).flatten().cpu()
+    if prediction.numel() != target.numel():
+        raise ValueError("prediction and target must have equal length")
+    if counts.numel() == 0 or (counts <= 0).any():
+        raise ValueError("class_counts must be non-empty and strictly positive")
+    if int(target.min()) < 0 or int(target.max()) >= counts.numel():
+        raise ValueError("target labels are out of class range")
+    if boundaries != "equal_thirds":
+        raise ValueError("boundaries must be 'equal_thirds'")
+    if weight is not None:
+        weight = torch.as_tensor(weight).float().flatten().cpu()
+        if weight.numel() != prediction.numel():
+            raise ValueError("weight must align with predictions")
+    else:
+        weight = torch.ones_like(prediction, dtype=torch.float32)
+
+    order = torch.argsort(counts, descending=True, stable=True)
+    total_classes = counts.numel()
+    head_size = total_classes // 3
+    medium_size = total_classes // 3
+    tail_size = total_classes - head_size - medium_size
+    if tail_size <= 0:
+        raise ValueError("at least three classes are required for segment metrics")
+    segments = {
+        "head": order[:head_size],
+        "medium": order[head_size : head_size + medium_size],
+        "tail": order[head_size + medium_size :],
+    }
+
+    metrics: dict[str, float | int] = {}
+    correct = (prediction == target).float()
+    for name, classes in segments.items():
+        mask = torch.isin(target, classes)
+        segment_weight = weight[mask].clamp_min(0.0)
+        denominator = segment_weight.sum().clamp_min(1.0e-12)
+        metrics[f"{name}_micro"] = float(
+            (correct[mask] * segment_weight).sum() / denominator
+        )
+        per_class: list[float] = []
+        for class_index in classes.tolist():
+            class_mask = mask & (target == class_index)
+            class_weight = weight[class_mask].clamp_min(0.0)
+            if class_weight.sum() <= 0.0:
+                continue
+            per_class.append(
+                float(
+                    (correct[class_mask] * class_weight).sum()
+                    / class_weight.sum()
+                )
+            )
+        metrics[f"{name}_macro"] = (
+            float(torch.tensor(per_class).mean()) if per_class else 0.0
+        )
+        metrics[f"{name}_classes"] = int(classes.numel())
     return metrics
 
 

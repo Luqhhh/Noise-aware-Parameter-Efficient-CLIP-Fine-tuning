@@ -5,7 +5,7 @@ import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 
-from aegis_clip.evaluation import evaluate
+from aegis_clip.evaluation import evaluate, longtail_segment_metrics
 
 
 class CountingImageModel(torch.nn.Module):
@@ -60,6 +60,28 @@ def test_horizontal_flip_tta_runs_two_image_forwards() -> None:
     assert model.calls == 2
     assert metrics["inference_mode"] == "horizontal_flip"
     assert metrics["tta_fusion"] == "mean_logits"
+
+
+def test_longtail_segment_metrics_split_classes_by_frequency() -> None:
+    # 6 classes: [0,1] head, [2,3] medium, [4,5] tail by training count.
+    counts = torch.tensor([100.0, 90.0, 50.0, 40.0, 5.0, 2.0])
+    prediction = torch.tensor([0, 2, 4, 5, 1])
+    target = torch.tensor([0, 3, 4, 5, 0])
+    metrics = longtail_segment_metrics(prediction, target, counts)
+    assert metrics["head_classes"] == 2
+    assert metrics["medium_classes"] == 2
+    assert metrics["tail_classes"] == 2
+    # Samples: 0 (head, correct), 2 (medium, wrong), 4 (tail, correct),
+    # 5 (tail, correct), 1 (head, wrong) → head 1/2, tail 2/2.
+    assert metrics["head_micro"] == 0.5
+    assert metrics["tail_micro"] == 1.0
+
+
+def test_longtail_segment_metrics_rejects_bad_counts() -> None:
+    with pytest.raises(ValueError, match="strictly positive"):
+        longtail_segment_metrics(
+            torch.tensor([0]), torch.tensor([0]), torch.tensor([2.0, 0.0, 1.0])
+        )
 
 
 def test_horizontal_flip_tta_rejects_cached_features() -> None:

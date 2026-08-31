@@ -49,6 +49,11 @@ from aegis_clip.local_inference import (
     attention_guided_crop,
     logits_with_last_block_attention,
 )
+from aegis_clip.longtail import (
+    build_sampler,
+    per_sample_weights,
+    resolve_longtail_config,
+)
 from aegis_clip.model import AegisCLIP, build_model
 from aegis_clip.runtime import (
     atomic_json_dump,
@@ -73,6 +78,7 @@ def _promotion_decision(
     best: dict[str, Any],
     best_epoch: int,
     promotion_config: dict[str, Any],
+    num_classes: int,
 ) -> dict[str, Any]:
     """Determine whether the LoRA-trained model exceeds the epoch-0 parent."""
     selector_gain = float(best["selector"]) - float(epoch0["selector"])
@@ -89,7 +95,7 @@ def _promotion_decision(
             promotion_config.get("maximum_mean_feature_drift", 0.01)
         ),
         "class_coverage": int(best["predicted_class_count"]) == int(
-            promotion_config.get("required_predicted_class_count", 500)
+            promotion_config.get("required_predicted_class_count", num_classes)
         ),
     }
     return {
@@ -228,6 +234,23 @@ def train(
     if (class_counts == 0).any():
         missing = torch.nonzero(class_counts == 0).flatten().tolist()
         raise ValueError(f"Training split is missing classes: {missing[:10]}")
+    longtail_config = resolve_longtail_config(config)
+    generator = torch.Generator()
+    generator.manual_seed(seed)
+    train_sampler = build_sampler(
+        train_dataset.labels,
+        class_counts,
+        longtail_config["sampler_mode"],
+        num_classes,
+        generator=generator,
+    )
+    loss_reweight = per_sample_weights(
+        train_dataset.labels,
+        class_counts,
+        longtail_config["loss_reweighting"],
+        effective_number_beta=longtail_config["effective_number_beta"],
+        normalize=True,
+    ).to(device)
     train_clean_scores = None
     if trust_bundle is not None:
         train_clean_scores = torch.stack(
@@ -246,9 +269,7 @@ def train(
             train_clean_scores,
             float(dual_gce_config.get("suspicious_fraction", 0.2)),
         ).to(device)
-    prior_tau = float(config["loss"].get("class_prior_adjustment_tau", 0.0))
-    generator = torch.Generator()
-    generator.manual_seed(seed)
+    prior_tau = float(longtail_config["balanced_softmax_tau"])
     workers = int(train_config.get("num_workers", 4))
     timeout = int(train_config.get("loader_timeout", 120 if workers else 0))
     loader_options = {
@@ -265,8 +286,9 @@ def train(
     train_loader = DataLoader(
         train_dataset,
         batch_size=int(train_config["batch_size"]),
-        shuffle=True,
-        generator=generator,
+        shuffle=train_sampler is None,
+        sampler=train_sampler,
+        generator=generator if train_sampler is None else None,
         drop_last=False,
         **loader_options,
     )
@@ -421,6 +443,7 @@ def train(
             val_loader,
             device=device,
             num_classes=num_classes,
+            class_counts=class_counts,
             use_amp=use_amp,
             drift_budget=float(evaluation_config.get("drift_budget", 0.01)),
             drift_penalty=float(evaluation_config.get("drift_penalty", 0.5)),
@@ -487,6 +510,7 @@ def train(
             val_loader,
             device=device,
             num_classes=num_classes,
+            class_counts=class_counts,
             use_amp=use_amp,
             drift_budget=float(evaluation_config.get("drift_budget", 0.01)),
             drift_penalty=float(evaluation_config.get("drift_penalty", 0.5)),
@@ -646,6 +670,7 @@ def train(
                     )
             else:
                 weights = torch.ones_like(clean)
+            weights = weights * loss_reweight[batch_indices]
             conflict_config = config["trust"].get("consensus_conflict", {})
             conflict_mode = str(conflict_config.get("mode", "keep"))
             if conflict_mode not in {"keep", "drop"}:
@@ -1327,6 +1352,7 @@ def train(
             val_loader,
             device=device,
             num_classes=num_classes,
+            class_counts=class_counts,
             use_amp=use_amp,
             drift_budget=float(evaluation_config.get("drift_budget", 0.01)),
             drift_penalty=float(evaluation_config.get("drift_penalty", 0.5)),
@@ -1432,6 +1458,7 @@ def train(
         val_loader,
         device=device,
         num_classes=num_classes,
+        class_counts=class_counts,
         use_amp=use_amp,
         drift_budget=float(evaluation_config.get("drift_budget", 0.01)),
         drift_penalty=float(evaluation_config.get("drift_penalty", 0.5)),
@@ -1455,6 +1482,7 @@ def train(
             final_metrics,
             best_epoch,
             config.get("promotion", {}),
+            num_classes,
         )
         atomic_json_dump(promotion, checkpoint_dir / "promotion.json")
         logger.info(

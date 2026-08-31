@@ -26,6 +26,10 @@ from tqdm import tqdm
 
 from common.class_mapping import load_or_generate_mapping
 from common.dataset import TrainImageDataset
+from common.logit_adjustment import (
+    compute_class_counts,
+    head_medium_tail_metrics,
+)
 from common.utils import load_config, set_seed, setup_logging
 from experiments.baseline.model import build_model
 
@@ -70,6 +74,7 @@ def evaluate_tta(
     loader: DataLoader,
     device: torch.device,
     use_amp: bool = False,
+    class_counts: torch.Tensor | None = None,
 ) -> dict:
     """Evaluate model with 2-view horizontal-flip TTA on the given dataloader.
 
@@ -179,7 +184,7 @@ def evaluate_tta(
     # Per-class delta
     per_class_delta = (per_class_tta_acc - per_class_acc).cpu().tolist()
 
-    return {
+    results = {
         "baseline_micro": micro_acc,
         "baseline_macro": macro_acc,
         "baseline_median": median_per_class,
@@ -197,6 +202,14 @@ def evaluate_tta(
         "correct_samples_tta": correct_tta,
         "num_classes": num_classes,
     }
+    if class_counts is not None:
+        baseline_segments = head_medium_tail_metrics(per_class_acc, class_counts)
+        tta_segments = head_medium_tail_metrics(per_class_tta_acc, class_counts)
+        for key, value in baseline_segments.items():
+            results[f"baseline_{key}"] = value
+        for key, value in tta_segments.items():
+            results[f"tta_{key}"] = value
+    return results
 
 
 def main():
@@ -277,9 +290,23 @@ def main():
         f"Validation set: {len(val_dataset)} samples, {len(val_loader)} batches"
     )
 
+    train_csv = split_dir / "train.csv"
+    if train_csv.exists():
+        class_counts = compute_class_counts(
+            str(train_csv), config["model"]["num_classes"]
+        )
+        logger.info(
+            f"Training class counts: min={class_counts.min().item():.0f} "
+            f"max={class_counts.max().item():.0f}"
+        )
+    else:
+        class_counts = None
+
     # Evaluate with TTA
     use_amp = config["train"].get("amp", False)
-    results = evaluate_tta(model, val_loader, device, use_amp=use_amp)
+    results = evaluate_tta(
+        model, val_loader, device, use_amp=use_amp, class_counts=class_counts
+    )
 
     # Log results
     logger.info("=" * 50)
@@ -311,6 +338,13 @@ def main():
     logger.info(
         f"  TTA Bottom-10%%:               {results['tta_bottom10']:.4f} ({results['tta_bottom10'] * 100:.2f}%)"
     )
+    if "baseline_tail_macro_accuracy" in results:
+        logger.info(
+            f"  Baseline Tail Macro:           {results['baseline_tail_macro_accuracy']:.4f} ({results['baseline_tail_macro_accuracy'] * 100:.2f}%)"
+        )
+        logger.info(
+            f"  TTA Tail Macro:                {results['tta_tail_macro_accuracy']:.4f} ({results['tta_tail_macro_accuracy'] * 100:.2f}%)"
+        )
     logger.info(
         f"  Prediction Change Rate:       {results['prediction_change_rate']:.4f} ({results['prediction_change_rate'] * 100:.2f}%)"
     )
@@ -336,6 +370,16 @@ def main():
         "config": str(Path(args.config).resolve()),
         "tta_strategy": args.tta,
     }
+    for key in (
+        "baseline_head_macro_accuracy",
+        "baseline_medium_macro_accuracy",
+        "baseline_tail_macro_accuracy",
+        "tta_head_macro_accuracy",
+        "tta_medium_macro_accuracy",
+        "tta_tail_macro_accuracy",
+    ):
+        if key in results:
+            summary[key] = float(results[key])
 
     results_json_path = output_dir / "results.json"
     with open(results_json_path, "w") as f:

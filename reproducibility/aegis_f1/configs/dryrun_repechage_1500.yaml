@@ -1,0 +1,86 @@
+# Disposable 1500-class long-tail dry-run config.
+# Generate the data first:
+#   python3 ../../scripts/build_synthetic_stage.py \
+#     --output-dir /tmp/dryrun_repechage2 --num-classes 1500 \
+#     --train-min-per-class 12 --train-max-per-class 80 \
+#     --train-alpha 0.6 --test-per-class 2 --seed 42
+# This config is an example only; real stage configs must point at the
+# official current-stage data and are never checked in with /tmp paths.
+project:
+  experiment_id: DRYRUN_REPECHAGE_1500_LONGTAIL
+  seed: 42
+  stage: repechage
+
+data:
+  train_csv: /tmp/dryrun_repechage2/aegis/repechage/seed42/train.csv
+  val_csv: /tmp/dryrun_repechage2/aegis/repechage/seed42/val.csv
+  class_mapping: /tmp/dryrun_repechage2/aegis/repechage/seed42/class_to_idx.json
+  train_root: /tmp/dryrun_repechage2/train
+  test_root: /tmp/dryrun_repechage2/test
+  train_augmentation: clip_center_crop
+  external_data: false
+  test_usage: inference_only
+  expected_official_train_samples: 18274
+  expected_test_samples: 3000
+
+features:
+  tensor_path: /tmp/dryrun_repechage2/aegis/features/features.pt
+  paths_path: /tmp/dryrun_repechage2/aegis/features/image_paths.json
+  manifest_path: /tmp/dryrun_repechage2/aegis/features/manifest.json
+
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  num_classes: 1500
+  feature_dim: 512
+  peft_mode: frozen
+  use_cached_training: true
+
+trust:
+  enabled: false
+
+longtail:
+  sampler_mode: class_balanced
+  loss_reweighting: inverse_frequency
+  balanced_softmax_tau: 0.5
+
+loss:
+  name: gce
+  gce_q: 0.5
+  epsilon: 1.0e-7
+  ce_warmup_epochs: 0
+  class_prior_adjustment_tau: 0.5
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  feature_distillation_weight: 0.0
+
+train:
+  device: cuda
+  deterministic: true
+  amp: false
+  epochs: 1
+  batch_size: 256
+  num_workers: 4
+  loader_timeout: 0
+  pin_memory: true
+  head_lr: 0.005
+  head_weight_decay: 0.0001
+  backbone_lr: 0.0
+  backbone_weight_decay: 0.0
+  lr_warmup_epochs: 1
+  max_grad_norm: 1.0
+  early_stop_patience: 0
+
+evaluation:
+  batch_size: 512
+  inference_batch_size: 512
+  selector_metric: clean_core_micro
+  selection_policy: best_selector
+  clean_core_threshold: 0.70
+  measure_flip_consistency: false
+  record_initial: false
+  drift_budget: 0.01
+  drift_penalty: 1.0
+
+output:
+  root: /tmp/dryrun_repechage2/aegis/outputs

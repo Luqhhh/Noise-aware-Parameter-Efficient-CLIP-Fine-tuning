@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from common.logit_adjustment import (
     _compute_metrics_from_logits,
     adjust_logits,
+    compute_class_counts,
     compute_class_priors,
 )
 
@@ -122,6 +123,7 @@ def main() -> None:
     # Compute class priors
     print(f"Computing class priors from {args.train_csv}")
     priors = compute_class_priors(args.train_csv, num_classes=num_classes)
+    class_counts = compute_class_counts(args.train_csv, num_classes=num_classes)
     priors_list = priors.tolist()
     print(f"  Priors computed (min={priors.min().item():.6e}, "
           f"max={priors.max().item():.6f})")
@@ -131,7 +133,9 @@ def main() -> None:
     sweep = {}
     for tau in args.taus:
         adjusted = adjust_logits(val_logits, priors, tau)
-        metrics = _compute_metrics_from_logits(adjusted, val_labels)
+        metrics = _compute_metrics_from_logits(
+            adjusted, val_labels, class_counts=class_counts
+        )
         sweep[tau] = metrics
         print(
             f"  tau={tau:6.3f}  micro={metrics['micro_accuracy']:.4f}  "
@@ -163,6 +167,9 @@ def main() -> None:
             "macro_accuracy": sweep[tau]["macro_accuracy"],
             "median_per_class_accuracy": sweep[tau]["median_per_class_accuracy"],
             "bottom_10_percent_accuracy": sweep[tau]["bottom_10_percent_accuracy"],
+            "head_macro_accuracy": sweep[tau]["head_macro_accuracy"],
+            "medium_macro_accuracy": sweep[tau]["medium_macro_accuracy"],
+            "tail_macro_accuracy": sweep[tau]["tail_macro_accuracy"],
             "micro_macro_gap": sweep[tau]["micro_macro_gap"],
         })
 

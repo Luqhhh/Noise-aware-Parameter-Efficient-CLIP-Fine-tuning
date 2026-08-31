@@ -86,6 +86,16 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--val-ratio", type=float, default=0.1)
     parser.add_argument(
+        "--expected-num-classes",
+        type=int,
+        default=None,
+        help=(
+            "Optional hard guard for the number of class directories. "
+            "When omitted, the actual directory count is used so the split "
+            "builder stays stage-agnostic."
+        ),
+    )
+    parser.add_argument(
         "--no-sha256-dedup",
         action="store_true",
         help="Disable SHA-256 group-aware splitting (strict-v1 mode).",
@@ -224,8 +234,16 @@ def main():
     # ------------------------------------------------------------------
     # Generate class mapping (lexicographic sort of class directories)
     # ------------------------------------------------------------------
+    observed_num_classes = len(
+        [path for path in train_dir.iterdir() if path.is_dir()]
+    )
+    if args.expected_num_classes is not None and observed_num_classes != args.expected_num_classes:
+        raise ValueError(
+            f"Found {observed_num_classes} class directories, expected "
+            f"{args.expected_num_classes}"
+        )
     class_to_idx, idx_to_class = generate_canonical_mapping(
-        train_dir=train_dir, expected_num_classes=500,
+        train_dir=train_dir, expected_num_classes=observed_num_classes,
     )
 
     # Recompute labels (in case any filtered images affected mapping)

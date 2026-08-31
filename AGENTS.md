@@ -41,7 +41,7 @@ python3 -m experiments.baseline.infer --config configs/baseline.yaml --ckpt outp
 python3 -m common.submission --raw outputs/baseline/submissions/pred_raw.csv --out_dir outputs/baseline/submissions
 
 # Validate submission before uploading
-python3 scripts/check_submission.py --test_dir /path/to/test --csv outputs/baseline/submissions/pred_results.csv --zip outputs/baseline/submissions/submission.zip
+python3 scripts/check_submission.py --test_dir /path/to/test --num-classes 500 --csv outputs/baseline/submissions/pred_results.csv --zip outputs/baseline/submissions/submission.zip
 ```
 
 ## Adding a New Experiment

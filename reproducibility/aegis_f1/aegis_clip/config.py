@@ -22,6 +22,7 @@ TOP_LEVEL_KEYS = {
     "trust",
     "elr",
     "loss",
+    "longtail",
     "train",
     "evaluation",
     "output",

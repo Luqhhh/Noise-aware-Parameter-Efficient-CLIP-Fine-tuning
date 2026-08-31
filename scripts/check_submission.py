@@ -17,17 +17,22 @@ Checks:
     5. No duplicate image names
     6. No missing image names (all test images are covered)
     7. All labels are 4-digit strings
-    8. All labels are in range 0000-0499
+    8. All labels are in range [0000, {num_classes-1:04d}]
     9. ZIP file contains only pred_results.csv (no directory hierarchy)
 
 Usage:
     python scripts/check_submission.py \
         --test_dir /path/to/test \
+        --num-classes 500 \
         --csv outputs/submissions/pred_results.csv \
         --zip outputs/submissions/submission.zip
+
+``--num-classes`` (or ``--class-mapping`` pointing at a class_to_idx.json)
+must be provided explicitly so the label-range check stays stage-agnostic.
 """
 
 import argparse
+import json
 import logging
 import re
 import sys
@@ -49,6 +54,18 @@ def parse_args() -> argparse.Namespace:
         type=str,
         required=True,
         help="Path to the test set directory.",
+    )
+    parser.add_argument(
+        "--num-classes",
+        type=int,
+        default=None,
+        help="Expected number of classes for the label-range check.",
+    )
+    parser.add_argument(
+        "--class-mapping",
+        type=str,
+        default=None,
+        help="Path to class_to_idx.json; num_classes is derived from it.",
     )
     parser.add_argument(
         "--csv",
@@ -74,7 +91,11 @@ def get_test_image_names(test_dir: Path) -> Set[str]:
     }
 
 
-def check_csv(csv_path: Path, test_names: Set[str]) -> Tuple[bool, List[str]]:
+def check_csv(
+    csv_path: Path,
+    test_names: Set[str],
+    num_classes: int | None = None,
+) -> Tuple[bool, List[str]]:
     """Validate the pred_results.csv file.
 
     Returns:
@@ -158,18 +179,24 @@ def check_csv(csv_path: Path, test_names: Set[str]) -> Tuple[bool, List[str]]:
         errors.append("✅ All labels are 4-digit strings")
 
     # Check 8: Label range
-    out_of_range = [
-        l
-        for l in labels_in_csv
-        if re.match(r"^\d{4}$", l) and (int(l) < 0 or int(l) > 499)
-    ]
+    if num_classes is None:
+        errors.append("❌ num_classes is required for the label-range check")
+        out_of_range = []
+    else:
+        out_of_range = [
+            l
+            for l in labels_in_csv
+            if re.match(r"^\d{4}$", l)
+            and (int(l) < 0 or int(l) >= num_classes)
+        ]
     if out_of_range:
         errors.append(
-            f"❌ {len(out_of_range)} label(s) out of range [0000, 0499]: "
+            f"❌ {len(out_of_range)} label(s) out of range "
+            f"[0000, {num_classes - 1:04d}]: "
             f"{out_of_range[:5]}..."
         )
-    else:
-        errors.append("✅ All labels in range [0000, 0499]")
+    elif num_classes is not None:
+        errors.append(f"✅ All labels in range [0000, {num_classes - 1:04d}]")
 
     # Summary
     all_ok = all(not e.startswith("❌") for e in errors)  # Include file name check
@@ -219,6 +246,19 @@ def main():
     test_dir = Path(args.test_dir)
     csv_path = Path(args.csv)
     zip_path = Path(args.zip) if args.zip else None
+    num_classes = args.num_classes
+    if args.class_mapping:
+        mapping = json.loads(Path(args.class_mapping).read_text(encoding="utf-8"))
+        num_classes = len(mapping)
+    if num_classes is None:
+        logger.error(
+            "Label-range check needs --num-classes or --class-mapping; "
+            "refusing to assume the preliminary stage's 500 classes"
+        )
+        sys.exit(2)
+    if num_classes <= 0:
+        logger.error(f"Invalid num_classes: {num_classes}")
+        sys.exit(2)
 
     # Validate paths
     if not test_dir.exists():
@@ -238,7 +278,7 @@ def main():
     logger.info("\n" + "=" * 60)
     logger.info("Checking pred_results.csv...")
     logger.info("=" * 60)
-    csv_ok, csv_errors = check_csv(csv_path, test_names)
+    csv_ok, csv_errors = check_csv(csv_path, test_names, num_classes=num_classes)
     for error in csv_errors:
         logger.info(f"  {error}")
     if not csv_ok:

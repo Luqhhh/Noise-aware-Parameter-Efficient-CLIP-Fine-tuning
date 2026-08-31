@@ -20,7 +20,7 @@ import torch.nn.functional as F
 
 def compute_class_priors(
     train_csv_path: str,
-    num_classes: int = 500,
+    num_classes: int,
     epsilon: float = 1e-12,
 ) -> torch.Tensor:
     """Compute empirical class priors from a training split CSV.
@@ -28,12 +28,25 @@ def compute_class_priors(
     Args:
         train_csv_path: Path to train.csv with columns
             [image_path, label, class_name].
-        num_classes: Total number of classes.
+        num_classes: Total number of classes (required; never defaulted).
         epsilon: Small constant added to every count (smoothing).
 
     Returns:
         Tensor of shape (num_classes,) with π_c summing to 1.
     """
+    import csv
+
+    counts = compute_class_counts(train_csv_path, num_classes)
+    counts = counts + epsilon
+    priors = counts / counts.sum()
+    return priors
+
+
+def compute_class_counts(
+    train_csv_path: str,
+    num_classes: int,
+) -> torch.Tensor:
+    """Compute unsmoothed per-class training counts from a split CSV."""
     import csv
 
     counts = torch.zeros(num_classes, dtype=torch.float32)
@@ -45,11 +58,12 @@ def compute_class_priors(
         label_col = 1  # second column is the label index
         for row in reader:
             label = int(row[label_col])
+            if label < 0 or label >= num_classes:
+                raise ValueError(
+                    f"Label {label} in {train_csv_path} is outside [0, {num_classes})"
+                )
             counts[label] += 1
-
-    counts = counts + epsilon
-    priors = counts / counts.sum()
-    return priors
+    return counts
 
 
 def adjust_logits(
@@ -80,6 +94,7 @@ def sweep_logit_adjustment(
     val_labels: torch.Tensor,
     priors: torch.Tensor,
     taus: Sequence[float],
+    class_counts: Optional[torch.Tensor] = None,
 ) -> Dict[float, Dict[str, float]]:
     """Evaluate adjusted logits across a grid of tau values.
 
@@ -95,7 +110,9 @@ def sweep_logit_adjustment(
     results = {}
     for tau in taus:
         adjusted = adjust_logits(val_logits, priors, tau)
-        metrics = _compute_metrics_from_logits(adjusted, val_labels)
+        metrics = _compute_metrics_from_logits(
+            adjusted, val_labels, class_counts=class_counts
+        )
         results[tau] = metrics
     return results
 
@@ -103,6 +120,7 @@ def sweep_logit_adjustment(
 def _compute_metrics_from_logits(
     logits: torch.Tensor,
     labels: torch.Tensor,
+    class_counts: Optional[torch.Tensor] = None,
 ) -> Dict[str, float]:
     """Compute micro, macro, median, bottom-10% accuracy from logits.
 
@@ -138,7 +156,7 @@ def _compute_metrics_from_logits(
     k = max(1, num_classes // 10)
     bottom10 = per_class_acc.topk(k, largest=False).values.mean().item()
 
-    return {
+    metrics = {
         "micro_accuracy": micro,
         "macro_accuracy": macro,
         "median_per_class_accuracy": median,
@@ -147,3 +165,37 @@ def _compute_metrics_from_logits(
         "total_samples": total,
         "correct_samples": int(correct),
     }
+    if class_counts is not None:
+        metrics.update(head_medium_tail_metrics(per_class_acc, class_counts))
+    return metrics
+
+
+def head_medium_tail_metrics(
+    per_class_acc: torch.Tensor,
+    class_counts: torch.Tensor,
+) -> Dict[str, float | int]:
+    """Mean per-class accuracy for head/medium/tail frequency segments.
+
+    Classes are sorted by training frequency and split into three groups of
+    equal class count, so the segmentation is parameter-free for 500, 1000,
+    and 1500-class stages.
+    """
+    acc = torch.as_tensor(per_class_acc, dtype=torch.float32).flatten().cpu()
+    counts = torch.as_tensor(class_counts, dtype=torch.float32).flatten().cpu()
+    if acc.numel() != counts.numel() or counts.numel() < 3:
+        raise ValueError("per_class_acc and class_counts must align with >=3 classes")
+    if (counts <= 0).any():
+        raise ValueError("class_counts must be strictly positive")
+    order = torch.argsort(counts, descending=True, stable=True)
+    head_size = counts.numel() // 3
+    medium_size = counts.numel() // 3
+    segments = {
+        "head": order[:head_size],
+        "medium": order[head_size : head_size + medium_size],
+        "tail": order[head_size + medium_size :],
+    }
+    metrics: Dict[str, float | int] = {}
+    for name, indices in segments.items():
+        metrics[f"{name}_macro_accuracy"] = float(acc[indices].mean())
+        metrics[f"{name}_class_count"] = int(indices.numel())
+    return metrics

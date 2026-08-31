@@ -36,7 +36,7 @@ from aegis_clip.localization import (
 )
 from aegis_clip.multiprototype import blend_multiprototype_logits
 from aegis_clip.part_token_adapter import load_part_token_adapter
-from aegis_clip.prior_alignment import align_logits_to_prior
+from aegis_clip.prior_alignment import align_logits_to_prior, apply_prior_bias
 from aegis_clip.runtime import seed_worker, set_seed
 from aegis_clip.submission import create_submission
 from aegis_clip.tta import TTA_FUSION_MODES, fuse_paired_logits
@@ -93,6 +93,14 @@ def main() -> None:
     parser.add_argument("--acknowledge-local-view-risk", action="store_true")
     parser.add_argument("--prior-alignment-strength", type=float, default=0.0)
     parser.add_argument("--prior-alignment-iterations", type=int, default=50)
+    parser.add_argument(
+        "--prior-config",
+        metavar="PATH",
+        help=(
+            "JSON produced by sweep_prior_strength.py containing a "
+            "validation-fitted frozen class bias and selected strength"
+        ),
+    )
     parser.add_argument("--acknowledge-balanced-test-prior", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--device", default="cuda")
@@ -203,11 +211,15 @@ def main() -> None:
         )
     if args.prior_alignment_strength > 0.0 and not args.acknowledge_balanced_test_prior:
         raise ValueError(
-            "Balanced-prior calibration uses the declared test-set distribution; "
+            "Balanced-prior calibration uses the declared balanced test prior; "
             "pass --acknowledge-balanced-test-prior explicitly"
         )
     if not 0.0 <= args.prior_alignment_strength <= 1.0:
         raise ValueError("--prior-alignment-strength must be in [0, 1]")
+    if args.prior_config and args.prior_alignment_strength > 0.0:
+        raise ValueError(
+            "--prior-config and --prior-alignment-strength are mutually exclusive"
+        )
     device = torch.device(
         args.device if args.device != "cuda" or torch.cuda.is_available() else "cpu"
     )
@@ -223,6 +235,31 @@ def main() -> None:
     )
     set_seed(int(config["project"].get("seed", 42)), deterministic=True)
     _, idx_to_class = load_class_mapping(config["data"]["class_mapping"])
+    num_classes = len(idx_to_class)
+    prior_config = None
+    if args.prior_config:
+        prior_path = Path(args.prior_config)
+        if not prior_path.exists():
+            raise FileNotFoundError(f"Prior config not found: {prior_path}")
+        prior_config = json.loads(prior_path.read_text(encoding="utf-8"))
+        if prior_config.get("format_version") != 1:
+            raise ValueError("prior_config format_version must be 1")
+        if prior_config.get("test_data_used", True):
+            raise ValueError(
+                "prior_config must declare test_data_used=false "
+                "(fitted on current-stage validation only)"
+            )
+        if int(prior_config.get("num_classes", -1)) != num_classes:
+            raise ValueError(
+                f"prior_config has {prior_config.get('num_classes')} classes, "
+                f"expected {num_classes}"
+            )
+        frozen_bias = torch.tensor(prior_config["bias"], dtype=torch.float32)
+        if frozen_bias.numel() != num_classes:
+            raise ValueError("prior_config bias length differs from class mapping")
+        frozen_strength = float(prior_config["strength"])
+        if not 0.0 <= frozen_strength <= 1.0:
+            raise ValueError("prior_config strength must be in [0, 1]")
     dataset = TestImageDataset(config["data"]["test_root"], preprocess)
     expected_test_samples = int(config["data"]["expected_test_samples"])
     if len(dataset) != expected_test_samples:
@@ -635,7 +672,17 @@ def main() -> None:
             ]
         _atomic_torch_save(branch_payload, args.dump_branch_logits)
     prior_alignment = None
-    if args.prior_alignment_strength > 0.0:
+    if prior_config is not None:
+        all_logits = apply_prior_bias(
+            all_logits, frozen_bias, strength=frozen_strength
+        )
+        prior_alignment = {
+            "method": "frozen_validation_fitted_bias",
+            "strength": frozen_strength,
+            "num_classes": num_classes,
+            "test_data_used": False,
+        }
+    elif args.prior_alignment_strength > 0.0:
         all_logits, prior_alignment = align_logits_to_prior(
             all_logits,
             strength=float(args.prior_alignment_strength),
@@ -696,7 +743,9 @@ def main() -> None:
             if args.tta == "none" or args.tta_fusion == "mean_logits"
             else f"{args.tta}:{args.tta_fusion}:t={args.tta_temperature:g}"
         )
-    if args.prior_alignment_strength > 0.0:
+    if prior_config is not None:
+        inference_mode += f":frozen_balanced_prior={frozen_strength:g}"
+    elif args.prior_alignment_strength > 0.0:
         inference_mode += f":balanced_prior={args.prior_alignment_strength:g}"
     if args.input_resize_mode != "clip_center_crop":
         inference_mode += f":resize={args.input_resize_mode}"

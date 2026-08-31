@@ -164,12 +164,14 @@ class FeatureCacheBuilder:
         self.train_dir = Path(data_cfg["train_dir"])
         self.stage = data_cfg.get("stage", "preliminary")
         self.cache_dir = Path(f"cache/{self.stage}/clip_vit_b32_openai")
-        self.expected_num_classes = data_cfg.get(
-            "expected_num_classes",
-            config.get("model", {}).get("num_classes", 500),
-        )
-        if "expected_num_classes" not in data_cfg and "num_classes" not in config.get("model", {}):
-            logger.warning("expected_num_classes not configured, defaulting to 500")
+        self.expected_num_classes = data_cfg.get("expected_num_classes")
+        if self.expected_num_classes is None:
+            self.expected_num_classes = config.get("model", {}).get("num_classes")
+        if self.expected_num_classes is None:
+            raise ValueError(
+                "Feature cache requires data.expected_num_classes or "
+                "model.num_classes; refusing to assume a stage-specific default"
+            )
 
     def build(self):
         """Run the full cache build pipeline."""

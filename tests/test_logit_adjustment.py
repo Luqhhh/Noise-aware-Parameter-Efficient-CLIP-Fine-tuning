@@ -4,11 +4,14 @@ import csv
 import tempfile
 from pathlib import Path
 
+import pytest
 import torch
 
 from common.logit_adjustment import (
     adjust_logits,
+    compute_class_counts,
     compute_class_priors,
+    head_medium_tail_metrics,
     sweep_logit_adjustment,
 )
 
@@ -216,3 +219,54 @@ def test_epsilon_added_to_priors():
         ), "Unseen classes should all have the same epsilon-smoothed prior"
     finally:
         Path(tmp).unlink(missing_ok=True)
+
+
+def test_compute_class_counts_is_stage_agnostic():
+    """Counts are derived from the CSV without any 500-class assumption."""
+    num_classes = 7
+    counts = {0: 4, 1: 1, 6: 3}
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".csv", delete=False, newline=""
+    ) as f:
+        writer = csv.writer(f)
+        writer.writerow(["image_path", "label", "class_name"])
+        for label, cnt in counts.items():
+            for i in range(cnt):
+                writer.writerow([f"img_{label}_{i}.jpg", str(label), f"c{label}"])
+        tmp = f.name
+    try:
+        result = compute_class_counts(tmp, num_classes=num_classes)
+        assert result.numel() == num_classes
+        assert result[0].item() == 4
+        assert result[1].item() == 1
+        assert result[6].item() == 3
+        assert result.sum().item() == 8
+    finally:
+        Path(tmp).unlink(missing_ok=True)
+
+
+def test_head_medium_tail_segments_by_frequency():
+    counts = torch.tensor([50.0, 40.0, 30.0, 20.0, 10.0, 5.0])
+    per_class_acc = torch.tensor([1.0, 0.9, 0.8, 0.7, 0.6, 0.5])
+    metrics = head_medium_tail_metrics(per_class_acc, counts)
+    assert metrics["head_class_count"] == 2
+    assert metrics["medium_class_count"] == 2
+    assert metrics["tail_class_count"] == 2
+    assert metrics["head_macro_accuracy"] == pytest.approx(0.95)
+    assert metrics["medium_macro_accuracy"] == pytest.approx(0.75)
+    assert metrics["tail_macro_accuracy"] == pytest.approx(0.55)
+
+
+def test_sweep_includes_tail_segments():
+    num_classes = 6
+    logits = torch.randn(24, num_classes)
+    labels = torch.randint(0, num_classes, (24,))
+    priors = torch.ones(num_classes) / num_classes
+    counts = torch.arange(num_classes, dtype=torch.float32) + 1
+    results = sweep_logit_adjustment(
+        logits, labels, priors, [0.0], class_counts=counts
+    )
+    metrics = results[0.0]
+    assert "tail_macro_accuracy" in metrics
+    assert "head_macro_accuracy" in metrics
+    assert "medium_macro_accuracy" in metrics
