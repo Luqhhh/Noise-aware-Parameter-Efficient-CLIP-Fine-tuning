@@ -10,8 +10,9 @@
   原型、OOF manifest、拟合好的 prior 强度一律不得跨阶段复用。
 - 禁止使用测试预测分布优化类别先验：balanced-prior 的类别偏置必须只在
   当前阶段验证集上拟合，测试集只做确定性应用。
-- 多尺度 + Flip TTA 仍是规则灰区，正式提交前需组委会答复；仓库继续保持
-  `--acknowledge-*-risk` 显式确认门。
+- 多尺度 + Flip TTA 已获组委会答复为**合规**（2026-08-31，经用户确认；
+  前提：单一 checkpoint + 单一确定性推理流程，不构成多模型集成）。仓库仍
+  保留 `--acknowledge-*-risk` 显式确认门，作为推理 manifest 的审计痕迹。
 
 ## 本次实现
 
@@ -122,4 +123,4 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.stage_pipeline --manifest pipeline.jso
    expected_samples）。
 2. `stage_pipeline` 一键重建 features / OOF / trust；阈值只在 manifest 里调。
 3. 用新验证集重扫 prior 强度，训练期间用三段指标盯 tail。
-4. 先交基线包拿反馈，再决定长尾开关组合与 TTA 合规确认。
+4. 先交基线包拿反馈，再决定长尾开关组合。
