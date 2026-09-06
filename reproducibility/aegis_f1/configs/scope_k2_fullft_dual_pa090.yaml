@@ -1,0 +1,120 @@
+protocol_id: scope_k2_fullft_dual_pa090_v1
+spec:
+  path: ../../../docs/superpowers/plans/2026-08-19-scope-k2-implementation.md
+  sha256: 5886c89a92fa6677c65f4c2f8f4acf1acc387217b7eb5b0e4041f3334450f3e0
+assets:
+  train_csv: ../../../outputs/data/master_splits/seed42/train.csv
+  train_csv_sha256: a726b8a3ca8bc5857136106aca80f01d557104d3661ef92ccedfb2c0ea087875
+  val_csv: ../../../outputs/data/master_splits/seed42/val.csv
+  val_csv_sha256: 54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e
+  class_to_idx: ../../../outputs/data/master_splits/seed42/class_to_idx.json
+  class_to_idx_sha256: 0141916c3eab0b8e9471671e398acbdcbbd497fea5fbe81ec9c5bb9331ce6d65
+  idx_to_class: ../../../outputs/data/master_splits/seed42/idx_to_class.json
+  idx_to_class_sha256: 8a7e030b5126124035177bd81e71c415dfb87f9b1ae6fba228b31c2cb7527913
+  split_manifest: ../../../outputs/data/master_splits/seed42/split_manifest.json
+  split_manifest_sha256: d8cf3e129ed2c73ff72cbda120deee5285c5bb8e6f10f579c3d0d1c556d3587c
+  train_root: ../../../train
+  test_root: ../../../test
+parent_assets:
+  checkpoint: ../artifacts/external/scope_k2/fullft_dual_pa090/best.pt
+  checkpoint_sha256: f72b0104257f49d2667fe335553a861dd1dea947753feebdc7301b8890b48765
+  trust_bundle: ../artifacts/external/scope_k2/fullft_dual_pa090/selftrain_r2_teacher_v3_multiscale.pt
+  trust_bundle_sha256: 6868041cc7b995a3e8e557ae925d1d25160acf23af09202f46911ce92125b30f
+  fallback_csv: ../../../outputs/delivery/fullft_dual_pa0.9/pred_results.csv
+  fallback_csv_sha256: 790fabcfb57ada355bfdb2f732da5ea1e16d3c505cdbf77c558bccfe7112b16d
+  fallback_zip: ../../../outputs/delivery/fullft_dual_pa0.9/submission.zip
+  fallback_zip_sha256: 3d684c07027d905c3edf88e4ce88c3ef9f32a01a6304385600d3d0ced7af5251
+  fallback_manifest: ../../../outputs/delivery/fullft_dual_pa0.9/manifest.json
+  fallback_manifest_sha256: 67f42552e0c39f25f314a716349f4c9984d9980c1eedee9da781cee36da45570
+group_artifact:
+  path: ../protocol_artifacts/pace_k2_r2_parttoken/content_groups.json
+  sha256: 41e2668e0fa5e10291051c14a9c75fc96096a69ae7d36d84d0e774270a99bb87
+  expected_total_rows: 103218
+  expected_unique_groups: 101980
+  expected_duplicate_extras: 1238
+  expected_cross_split_overlap: 0
+parent:
+  peft_mode: full_finetune
+  classifier_mode: linear
+  feature_adapter: Identity
+  crop_sizes: [112, 128, 144, 160]
+  local_scale_weights: [0.2, 0.3, 0.4, 0.1]
+  flip_weight: 0.5
+  local_weight: 0.4
+  global_temperature: 1.5
+  local_temperature: 1.5
+  local_top_k: 5
+  part_top_patches: 8
+  part_temperature: 0.07
+  prior:
+    target: uniform
+    strength: 0.9
+    max_iterations: 50
+    tolerance: 1.0e-6
+    damping: 0.5
+evidence:
+  view_order: [original_128, original_144, original_160, flipped_128, flipped_144, flipped_160]
+  view_weights: [0.1875, 0.25, 0.0625, 0.1875, 0.25, 0.0625]
+  grid_shape: [7, 7]
+  adjacency: four_neighbor_row_major_v1
+  tail_size: 7
+  weight_norm_epsilon: 1.0e-12
+  minimum_positive_views: 4
+  require_orientation_positive: true
+  require_leave_one_scale_positive: true
+  linear_gate_atol: 1.0e-5
+  linear_gate_rtol: 1.0e-5
+  antisymmetry_atol: 1.0e-6
+  antisymmetry_rtol: 0.0
+schemas:
+  parent: scope_parent_cache_v1
+  evidence: scope_evidence_cache_v1
+  validation_only_fields: [label, clean_probability, pseudo_label, correction_alpha]
+  test_forbid_validation_fields: true
+crossfit:
+  seed: 42
+  outer_folds: 5
+  inner_folds: 3
+  inner_seed_offset: 1000
+  sort_key: canonical_path
+  conditional_parent: true
+beta_solver:
+  dtype: float64
+  initial_upper: 1.0
+  maximum_upper: 1048576.0
+  maximum_iterations: 100
+  interval_tolerance: 1.0e-12
+  l2_numerator: 1.0
+  allow_zero: true
+  intercept: false
+threshold:
+  modes: [all_switch, finite, no_switch]
+  strict_comparator: ">"
+  minimum_accuracy_changing_precision: 0.6
+  minimum_wilson_lower: 0.5
+  wilson_z: 1.959963984540054
+  rank_mapping: nearest_integer_fewer_switches_then_higher_cut
+bootstrap:
+  draws: 10000
+  seed: 42
+  rng: PCG64
+  quantile_method: linear
+  confidence: 0.95
+  strata: [outer_fold_id, group_majority_label]
+promotion:
+  minimum_raw_delta_pp: 0.2
+  minimum_clean_core_delta_pp: 0.2
+  minimum_net_correct: 21
+  minimum_nonnegative_outer_folds: 4
+  bootstrap_lower_strictly_positive: true
+  strictly_better_than: [pace, no_topology]
+execution:
+  device: cuda
+  amp: false
+  batch_size: 128
+  expected_validation_samples: 10316
+  expected_test_samples: 24967
+  numpy_version: 2.5.1
+  sklearn_version: 1.9.0
+outputs:
+  root: ../outputs/scope_k2/fullft_dual_pa090

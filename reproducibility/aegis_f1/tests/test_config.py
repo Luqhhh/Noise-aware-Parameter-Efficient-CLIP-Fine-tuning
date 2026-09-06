@@ -6,6 +6,7 @@ import yaml
 
 from aegis_clip.config import ConfigError, load_config, validate_config
 from aegis_clip.pace_protocol import load_pace_protocol
+from aegis_clip.scope_protocol import load_scope_protocol
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,7 +18,13 @@ def test_all_shipped_configs_are_valid() -> None:
     for path in configs:
         payload = yaml.safe_load(path.read_text(encoding="utf-8"))
         if isinstance(payload, dict) and "protocol_id" in payload:
-            assert load_pace_protocol(path).protocol_id == "pace_k2_r2_parttoken_v1"
+            protocol_id = payload["protocol_id"]
+            if protocol_id == "pace_k2_r2_parttoken_v1":
+                assert load_pace_protocol(path).protocol_id == protocol_id
+            elif protocol_id == "scope_k2_fullft_dual_pa090_v1":
+                assert load_scope_protocol(path).protocol_id == protocol_id
+            else:
+                pytest.fail(f"No config-test loader registered for {protocol_id!r}")
             continue
         config = load_config(path)
         assert config["model"]["backbone"] == "ViT-B/32"

@@ -69,6 +69,11 @@ aegis-evaluate-trust-subspace-gate = "aegis_clip.cli.evaluate_trust_subspace_gat
 aegis-audit-numeric-prompts = "aegis_clip.cli.audit_numeric_prompts:main"
 aegis-evaluate-balanced-transport-gate = "aegis_clip.cli.evaluate_balanced_transport_gate:main"
 aegis-evaluate-converged-balanced-transport-gate = "aegis_clip.cli.evaluate_converged_balanced_transport_gate:main"
+aegis-cache-scope-parent = "aegis_clip.cli.cache_scope_parent:main"
+aegis-cache-scope-evidence = "aegis_clip.cli.cache_scope_evidence:main"
+aegis-prepare-scope-folds = "aegis_clip.cli.prepare_scope_folds:main"
+aegis-evaluate-scope-k2 = "aegis_clip.cli.evaluate_scope_k2:main"
+aegis-infer-scope-submission = "aegis_clip.cli.infer_scope_submission:main"
 
 [tool.setuptools.packages.find]
 include = ["aegis_clip*"]

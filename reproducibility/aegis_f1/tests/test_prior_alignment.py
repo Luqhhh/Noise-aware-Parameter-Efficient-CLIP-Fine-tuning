@@ -26,6 +26,20 @@ def test_zero_strength_preserves_logits_exactly() -> None:
     assert torch.equal(aligned, logits)
 
 
+def test_opt_in_returns_exact_shared_applied_bias_without_changing_default_contract() -> None:
+    logits = torch.tensor([[100.0, -20.0, 3.0], [0.5, 2.0, -4.0]], dtype=torch.float32)
+
+    default = align_logits_to_prior(logits, strength=0.9)
+    aligned, report, applied_bias = align_logits_to_prior(
+        logits, strength=0.9, return_applied_bias=True
+    )
+
+    assert len(default) == 2
+    assert applied_bias.shape == (3,)
+    assert torch.equal(aligned, logits + applied_bias)
+    assert report == default[1]
+
+
 def test_explicit_prior_is_normalized() -> None:
     logits = torch.zeros(100, 2)
     aligned, _ = align_logits_to_prior(

@@ -1,0 +1,45 @@
+{
+  "model": {
+    "antisymmetry": {
+      "canonical_bitwise": true,
+      "independent_max_abs_error": 0.0
+    },
+    "checks": {
+      "all_weight_norms_valid": true,
+      "canonical_antisymmetry_bitwise": true,
+      "classifier_base": true,
+      "classifier_dual": true,
+      "edge_count_84": true,
+      "independent_antisymmetry": true,
+      "node_count_49": true
+    },
+    "classifier": {
+      "base_max_abs_error": 0.0,
+      "dual_max_abs_error": 0.0
+    },
+    "passed": true
+  },
+  "replicate": {
+    "checks": {
+      "evidence1_bound_to_parent1_file": true,
+      "evidence2_bound_to_parent2_file": true,
+      "evidence_parent_semantic_equal": true,
+      "evidence_replicate_semantic_equal": true,
+      "parent_semantic_equal": true
+    },
+    "evidence_file_sha256": [
+      "e75c663a333327f45887ada4d96e622b09812f0efc1d9d65adad477543e837fb",
+      "b5e3b1a246dc43aa5200c048477c2161a340981e43a4941230409e6d2e21b25d"
+    ],
+    "evidence_instance_semantic_sha256": [
+      "7ba0e0e3e4017ea2d1dbeed82c6ccd0fef38468df298bf4aaaabd820a3de73c6",
+      "14d3ca4649d25330717025aae1998f617862be020d6659e92c8261671144383a"
+    ],
+    "evidence_replicate_semantic_sha256": "13366bc68d7c34327db24d7e96b6eee5488492ab4294e66f0ae8c88b25563dc5",
+    "parent_file_sha256": [
+      "d02e8542baf6cd5cc6d8d7f1783bf1ac2fc0293ee58b71ef5fb05e5682423040",
+      "c142ae712e985f1157a1a5d211119d503b0e80b8af900c6b32a12c83ae4fbe6b"
+    ],
+    "parent_semantic_sha256": "f95fb1524144cbe0273402cbea98c6bcfc58312633e833118a25d0aa37ca37cf"
+  }
+}

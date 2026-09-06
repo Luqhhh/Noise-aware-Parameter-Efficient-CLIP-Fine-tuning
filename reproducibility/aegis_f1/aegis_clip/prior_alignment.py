@@ -119,7 +119,11 @@ def align_logits_to_prior(
     max_iterations: int = 50,
     tolerance: float = 1.0e-6,
     damping: float = 0.5,
-) -> tuple[torch.Tensor, dict[str, Any]]:
+    return_applied_bias: bool = False,
+) -> (
+    tuple[torch.Tensor, dict[str, Any]]
+    | tuple[torch.Tensor, dict[str, Any], torch.Tensor]
+):
     """Fit and apply a prior bias on one batch (offline sweep convenience).
 
     Kept for backward compatibility with offline val sweeps.  Official test
@@ -136,7 +140,8 @@ def align_logits_to_prior(
         tolerance=tolerance,
         damping=damping,
     )
-    aligned = apply_prior_bias(work, bias, strength=strength)
+    applied_bias = float(strength) * bias
+    aligned = work + applied_bias
     final_marginal = F.softmax(aligned, dim=1).mean(dim=0)
     raw_counts = work.argmax(dim=1).bincount(minlength=work.shape[1]).float()
     aligned_counts = aligned.argmax(dim=1).bincount(minlength=work.shape[1]).float()
@@ -148,4 +153,7 @@ def align_logits_to_prior(
         "aligned_argmax_count_min": int(aligned_counts.min()),
         "aligned_argmax_count_max": int(aligned_counts.max()),
     }
-    return aligned.to(dtype=logits.dtype), report
+    result = aligned.to(dtype=logits.dtype)
+    if return_applied_bias:
+        return result, report, applied_bias.to(dtype=logits.dtype)
+    return result, report

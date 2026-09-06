@@ -1,0 +1,99 @@
+{
+  "conditional_parent": true,
+  "conditional_parent_limitation": "FULLFT_DUAL final parent used validation_overlap_with_training=true",
+  "deployment": null,
+  "deployment_error": null,
+  "fallback": {
+    "csv": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/delivery/fullft_dual_pa0.9/pred_results.csv",
+    "csv_sha256": "790fabcfb57ada355bfdb2f732da5ea1e16d3c505cdbf77c558bccfe7112b16d",
+    "manifest": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/delivery/fullft_dual_pa0.9/manifest.json",
+    "manifest_sha256": "67f42552e0c39f25f314a716349f4c9984d9980c1eedee9da781cee36da45570",
+    "zip": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/delivery/fullft_dual_pa0.9/submission.zip",
+    "zip_sha256": "3d684c07027d905c3edf88e4ce88c3ef9f32a01a6304385600d3d0ced7af5251"
+  },
+  "fold_artifact": {
+    "path": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/reproducibility/aegis_f1/protocol_artifacts/scope_k2_fullft_dual_pa090/nested_folds.pt",
+    "semantic_sha256": "9160b7b0b01bdfae6efffda6ca838aa7771438c63eb7f7e0f2f8626046e3fe7b",
+    "sha256": "7d85c94296df713c2844f0fdb2eba21897d32f01bd5383d49122305d5078d87e"
+  },
+  "gate_evidence": {
+    "audits_passed": true,
+    "bootstrap_lower": 0.0,
+    "clean_parent_correct": 6755,
+    "clean_scope_correct": 6755,
+    "clean_total": 7331,
+    "corrections": 0,
+    "fold_deltas": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "no_topology_clean_correct": 6755,
+    "no_topology_raw_correct": 8257,
+    "pace_clean_correct": 6755,
+    "pace_raw_correct": 8257,
+    "raw_parent_correct": 8257,
+    "raw_scope_correct": 8257,
+    "raw_total": 10316,
+    "regressions": 0
+  },
+  "gates": {
+    "all_audits_passed": true,
+    "bootstrap_lower_strictly_positive": false,
+    "clean_delta_at_least_0_20pp": false,
+    "four_of_five_outer_nonnegative": true,
+    "net_correct_at_least_21": false,
+    "raw_delta_at_least_0_20pp": false,
+    "strictly_better_clean_than_pace_and_no_topology": false,
+    "strictly_better_raw_than_pace_and_no_topology": false
+  },
+  "model_audit": {
+    "antisymmetry": {
+      "canonical_bitwise": true,
+      "independent_max_abs_error": 0.0
+    },
+    "checks": {
+      "all_weight_norms_valid": true,
+      "canonical_antisymmetry_bitwise": true,
+      "classifier_base": true,
+      "classifier_dual": true,
+      "edge_count_84": true,
+      "independent_antisymmetry": true,
+      "node_count_49": true
+    },
+    "classifier": {
+      "base_max_abs_error": 0.0,
+      "dual_max_abs_error": 0.0
+    },
+    "passed": true
+  },
+  "promoted": false,
+  "replicate_audit": {
+    "checks": {
+      "evidence1_bound_to_parent1_file": true,
+      "evidence2_bound_to_parent2_file": true,
+      "evidence_parent_semantic_equal": true,
+      "evidence_replicate_semantic_equal": true,
+      "parent_semantic_equal": true
+    },
+    "evidence_file_sha256": [
+      "e75c663a333327f45887ada4d96e622b09812f0efc1d9d65adad477543e837fb",
+      "b5e3b1a246dc43aa5200c048477c2161a340981e43a4941230409e6d2e21b25d"
+    ],
+    "evidence_instance_semantic_sha256": [
+      "7ba0e0e3e4017ea2d1dbeed82c6ccd0fef38468df298bf4aaaabd820a3de73c6",
+      "14d3ca4649d25330717025aae1998f617862be020d6659e92c8261671144383a"
+    ],
+    "evidence_replicate_semantic_sha256": "13366bc68d7c34327db24d7e96b6eee5488492ab4294e66f0ae8c88b25563dc5",
+    "parent_file_sha256": [
+      "d02e8542baf6cd5cc6d8d7f1783bf1ac2fc0293ee58b71ef5fb05e5682423040",
+      "c142ae712e985f1157a1a5d211119d503b0e80b8af900c6b32a12c83ae4fbe6b"
+    ],
+    "parent_semantic_sha256": "f95fb1524144cbe0273402cbea98c6bcfc58312633e833118a25d0aa37ca37cf"
+  },
+  "schema": "scope_decision_v1"
+  ,"terminal_submission": "parent_fallback"
+  ,"terminal_submission_checker": "passed_root_nine_item_checker"
+}
