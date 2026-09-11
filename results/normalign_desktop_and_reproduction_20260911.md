@@ -50,3 +50,7 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.reproduce_stage --
 R2 仅完成审计优先入口及合成真实节点验证。完整阶段配方/生产者链、R3 开发与最终数据作用域、R4 监督账本、R5 校准绑定、R6 完整正式规模资源账本、R7 技术 PDF/材料包、R8 干净环境正式训练仍未完成。恢复承诺限已完成节点；失败或强制中断节点不能自动覆盖重启，不承诺任意 step 精确恢复。说明见 `reproducibility/release/README_engineering.md`。
 
 本段本地 commit，不自动 push。正式数据、权重、合成产物和本地环境清单不纳入 Git；只共享代码、测试、汇总报告与候选哈希登记。
+
+## 平台回填（2026-09-11）
+
+用户报告该范数对齐、无校准包为 **63.3676%**。按用户给出的精度登记，不推算或声称精确正确样本数；候选不晋级。此前“未知/未上传”描述的是交付时状态。历史最佳使用不同 prior 协议，其差距不能全归因于范数对齐。后续登记 PRELIM_PARENT_NOCAL_CONTROL_R1 补齐同协议原父模型对照，未重开范数参数搜索。

@@ -168,3 +168,117 @@ def run_lineage_audit(
     if errors:
         raise LineageAuditError("Lineage audit failed: " + "; ".join(errors))
     return audit
+
+
+def audit_declared_scope_graph(
+    nodes: list[dict[str, Any]],
+    *,
+    target_id: str,
+    stage: str,
+    dataset_id: str,
+    class_mapping_sha256: str,
+    evaluation_groups: set[str],
+    official_test_groups: set[str],
+    require_independent: bool = True,
+) -> dict[str, Any]:
+    """Audit transitive *declared* group exposure without authorizing execution.
+
+    Content-group IDs must come from the caller's bound manifests. Empty exposure
+    lists mean explicitly none; missing lists mean unknown. Encoding by a frozen
+    model is not fitting, but its ancestors' fitting/selection still propagates.
+    This checks declaration consistency, not the truth of producer provenance.
+    It cannot unlock the formal reproduction runner by itself.
+    """
+    if not stage or not dataset_id or not class_mapping_sha256:
+        raise LineageAuditError('stage, dataset and class mapping binding required')
+    lookup: dict[str, dict[str, Any]] = {}
+    for node in nodes:
+        identity = node.get('artifact_id')
+        if not isinstance(identity, str) or not identity or identity in lookup:
+            raise LineageAuditError('unique nonempty artifact_id required')
+        lookup[identity] = node
+    errors: list[str] = []
+    unknown: list[str] = []
+    visited: set[str] = set()
+    active: set[str] = set()
+    learned: set[str] = set()
+    selected: set[str] = set()
+    encoded: set[str] = set()
+    exposures: list[dict[str, Any]] = []
+
+    def visit(identity: str, path: list[str]) -> None:
+        if identity in active:
+            errors.append(f'cycle: {" -> ".join(path + [identity])}')
+            return
+        if identity in visited:
+            return
+        if identity not in lookup:
+            unknown.append(f'missing ancestor: {identity}')
+            return
+        node = lookup[identity]
+        active.add(identity)
+        chain = path + [identity]
+        for key, expected in [('stage', stage), ('dataset_id', dataset_id),
+                              ('class_mapping_sha256', class_mapping_sha256)]:
+            if node.get(key) != expected:
+                errors.append(f'{identity}: {key} mismatch or missing')
+        if node.get('scope') not in {'development_fit', 'calibration_fit',
+                                      'development_evaluation', 'final_fit',
+                                      'overlap_diagnostic', 'official_test', 'synthetic_dryrun'}:
+            errors.append(f'{identity}: unknown artifact scope')
+        if node.get('scope') == 'synthetic_dryrun':
+            errors.append(f'{identity}: synthetic asset in official scope graph')
+        if node.get('scope') == 'final_fit' and require_independent:
+            errors.append(f'{identity}: final_fit cannot certify development independence')
+        if not node.get('producer_record'):
+            unknown.append(f'{identity}: missing producer record')
+        local: dict[str, set[str]] = {}
+        for key, union in [('learned_from_groups', learned),
+                           ('selected_using_groups', selected),
+                           ('encoded_groups', encoded)]:
+            values = node.get(key)
+            if not isinstance(values, list) or not all(isinstance(x, str) and x for x in values):
+                unknown.append(f'{identity}: {key} unknown or invalid')
+                local[key] = set()
+            else:
+                local[key] = set(values)
+                union.update(values)
+        fit = local['learned_from_groups'] | local['selected_using_groups']
+        test_overlap = fit & official_test_groups
+        evaluation_overlap = fit & evaluation_groups
+        if test_overlap:
+            errors.append(f'{identity}: official test influenced fitting/selection ({len(test_overlap)} groups)')
+        if evaluation_overlap and require_independent:
+            errors.append(f'{identity}: evaluation influenced fitting/selection ({len(evaluation_overlap)} groups)')
+        exposures.append({'artifact_id': identity, 'dependency_path': chain,
+                          'evaluation_learned_groups': len(local['learned_from_groups'] & evaluation_groups),
+                          'evaluation_selected_groups': len(local['selected_using_groups'] & evaluation_groups),
+                          'evaluation_encoded_groups': len(local['encoded_groups'] & evaluation_groups)})
+        parents = node.get('parent_artifact_ids')
+        if not isinstance(parents, list) or not all(isinstance(x, str) and x for x in parents):
+            unknown.append(f'{identity}: parents unknown or invalid')
+        else:
+            for parent in parents:
+                visit(parent, chain)
+        active.remove(identity)
+        visited.add(identity)
+
+    visit(target_id, [])
+    return {
+        'schema_version': 1,
+        'audit_kind': 'declared_transitive_scope_consistency',
+        'target_id': target_id,
+        'status': 'blocked' if errors or unknown else 'checks_passed',
+        'source_authenticity_verified': False,
+        'authorizes_formal_execution': False,
+        'evaluation_role': 'development_evaluation' if require_independent else 'overlap_diagnostic',
+        'independent_under_declared_graph': not errors and not unknown and not ((learned | selected) & evaluation_groups),
+        'visited_artifacts': sorted(visited),
+        'evaluation_group_count': len(evaluation_groups),
+        'evaluation_learned_groups': len(learned & evaluation_groups),
+        'evaluation_selected_groups': len(selected & evaluation_groups),
+        'evaluation_encoded_groups': len(encoded & evaluation_groups),
+        'exposures': exposures,
+        'errors': errors,
+        'unknown': unknown,
+    }

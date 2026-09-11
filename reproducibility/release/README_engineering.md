@@ -28,3 +28,30 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.reproduce_stage --
 实际合成演练已从新输出目录完成公开初始化编码器特征缓存与现有训练 CLI 的 1 epoch 训练，并完成节点复用验证。这仅验证接口与执行链；它不是完整历史最佳谱系、正式模型精度或容器复现。
 
 发布包、环境锁、正式配方、完整作用域/校准绑定、技术 PDF 与 R8 干净环境正式训练仍未完成。预测提交包只能含 pred_results.csv，不能混入这些材料。
+
+
+## 传递作用域审计（仅声明一致性）
+
+新增 `aegis_clip.cli.audit_scope_graph --manifest <scope_manifest.json>`，从
+`reproducibility/aegis_f1` 执行。入口只读输入，stdout 输出报告；阻塞退出码为 2。
+该入口不会启动训练，也不会解除 `reproduce_stage` 对正式配方的限制。
+
+版本 1 manifest 必须包含 `stage`、`dataset_id`、`class_mapping_sha256`、
+`target_id`、`nodes`、`evaluation_role`（`development_evaluation` 或
+`overlap_diagnostic`），以及 `evaluation_groups`、`official_test_groups`。
+后两项使用 `{ "path": "relative-group-set.json", "sha256": "actual file hash" }`；
+文件内容是唯一内容组 ID 的 JSON 数组。相对路径基于 manifest 所在目录。
+
+节点字段：`artifact_id`、`parent_artifact_ids`、`stage`、`dataset_id`、
+`class_mapping_sha256`、`scope`、`producer_record`，以及三个明确区分的字段：
+`learned_from_groups`、`selected_using_groups`、`encoded_groups`。这三个字段可用
+上述文件绑定对象或内联 ID 数组；空数组表示明确没有接触，缺失/null 表示来源未知。
+所有祖先都参与检查；仅编码不构成拟合，但编码器祖先的训练接触会继续传递。
+
+报告统计重叠组数，保留污染节点的依赖路径。父节点缺失、循环、测试拟合、跨阶段、
+类别映射错配、合成产物进入正式链、来源未知均阻塞。`final_fit` 不能用于认证开发独立性。
+显式 `overlap_diagnostic` 可以记录已知验证重叠，仍禁止测试拟合。
+
+**边界：**文件哈希只绑定声明内容；不会证明生产命令、阶段标记或内容组清单的真实性。
+`source_authenticity_verified` 和 `authorizes_formal_execution` 始终为 false。
+这不是完整 R3/R5 来源验证，不能把本入口 checks_passed 当成正式协议批准。

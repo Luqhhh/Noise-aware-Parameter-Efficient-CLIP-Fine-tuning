@@ -48,3 +48,7 @@ PYTHONPATH=. python3 -m aegis_clip.cli.evaluate_classifier_norm   --checkpoint o
 变更文件：`.planning/2026-09-11-preliminary-norm/decision.json`、`.gitignore`、`aegis_clip/classifier_norm.py`、`aegis_clip/cli/evaluate_classifier_norm.py`、`aegis_clip/longtail.py`、对应 AEGIS 测试、`scripts/audit_stage_assets.py`、`tests/test_audit_stage_assets.py`、本报告及阶段状态文档。AEGIS 文件均位于 `reproducibility/aegis_f1/`。
 
 本段只本地 commit，不自动 push；代码、决策及汇总报告可共享，受限数据/环境快照不纳入 Git。按登记负结果停止本变体并保留历史包，等待本段复核；不将它描述为初赛提分成功。
+
+## 后续交付与平台回填
+
+上述未生成候选描述本次诊断结束时的状态。随后用户明确要求生成桌面包，见 `results/normalign_desktop_and_reproduction_20260911.md`。该无校准包的平台成绩由用户回填为 **63.3676%**；候选仍不晋级，不再追加范数变体。
