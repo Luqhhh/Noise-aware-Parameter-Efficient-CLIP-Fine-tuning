@@ -6,6 +6,9 @@ __pycache__/
 # Large binary checkpoints (track all other output files)
 outputs/**/*.pt
 
+# Local audit snapshots can contain environment details and private paths.
+outputs/preliminary_no_sweep/
+
 # Generated feature cache (large binary)
 cache/
 

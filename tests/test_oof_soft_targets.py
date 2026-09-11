@@ -43,7 +43,9 @@ def test_oof_targets_map_stable_image_keys_and_return_probabilities(tmp_path):
 
     assert targets.shape == (2, 2)
     assert torch.allclose(targets.sum(dim=1), torch.ones(2))
-    assert weights.tolist() == [0.8, 0.6]
+    torch.testing.assert_close(
+        weights, torch.tensor([0.8, 0.6], dtype=torch.float32), rtol=0, atol=0
+    )
     assert targets[0, 0] > targets[0, 1]
     assert targets[1, 1] > targets[1, 0]
 

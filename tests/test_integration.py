@@ -247,6 +247,7 @@ print("Class mapping generated:", json.dumps(class_to_idx))
             sys.executable,
             str(REPO_ROOT / "scripts" / "check_submission.py"),
             "--test_dir", str(test_dir),
+            "--class-mapping", str(split_dir / "class_to_idx.json"),
             "--csv", str(results_csv),
             "--zip", str(zip_path),
         ],
