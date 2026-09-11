@@ -52,3 +52,5 @@ PYTHONPATH=. python3 -m aegis_clip.cli.evaluate_classifier_norm   --checkpoint o
 ## 后续交付与平台回填
 
 上述未生成候选描述本次诊断结束时的状态。随后用户明确要求生成桌面包，见 `results/normalign_desktop_and_reproduction_20260911.md`。该无校准包的平台成绩由用户回填为 **63.3676%**；候选仍不晋级，不再追加范数变体。
+
+原父模型同协议无校准对照随后由用户回填 **66.7681%**，高于本范数变体 **3.4005 个百分点**；平台配对结论见 `results/parent_nocal_control_20260911.md`。固定范数变体维持 rejected。

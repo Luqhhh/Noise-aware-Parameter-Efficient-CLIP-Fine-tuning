@@ -15,7 +15,7 @@
 - ZIP SHA-256 `7cd13a8913feb3eb15b5382182917b836cd0cd5905cccd3118cce0abd61a779b`。
 - manifest SHA-256 `ac4cd5d4786e0c73e2b07296f9c59314b21d0a576177aaabe79b9d53354808dc`。
 
-推理退出码 0，耗时 603.31 秒。实际 manifest 除 checkpoint 路径/哈希和预测产物哈希外，与范数包逐字段相同。`prior_alignment=null`。平台分数未知，尚未晋级；无自动上传。
+推理退出码 0，耗时 603.31 秒。实际 manifest 除 checkpoint 路径/哈希和预测产物哈希外，与范数包逐字段相同。`prior_alignment=null`。交付时平台分数未知；后续用户回填 **66.7681%**，尚未晋级；无自动上传。
 
 ## 命令
 
@@ -33,3 +33,12 @@ PYTHONPATH=. python3 -m aegis_clip.cli.infer --checkpoint /home/lux1/noise/repro
 本轮根测试 **414 passed**，AEGIS **410 passed**，退出码均 0。新入口说明见 `reproducibility/release/README_engineering.md`。R2/R3/R5 的完整正式谱系和来源验证仍未完成，不将软件测试通过写成研究成立。
 
 改动集中于 lineage.py、audit_scope_graph CLI 和测试、决策记录、提交/平台登记表、实验与工程状态文档。本段只本地提交代码和汇总；可供代码同步，不自动 push，不传播模型或样本级数据。
+
+## 平台同协议比较回填
+
+| 固定协议：四尺度 + Flip，无校准 | 用户报告平台准确率 |
+|---|---:|
+| 原父模型共享分类头 | 66.7681% |
+| 共享分类头均值范数对齐 | 63.3676% |
+
+范数对齐相对原父模型降低 **3.4005 个百分点**。该固定变体在本次平台对照中表现更差，与既有重叠诊断的负方向一致；保持 rejected，不追加范数扫描。该结论不推广到所有分类器解耦方法。历史 70.352866% 使用不同校准协议，保留分开记录。按用户报告精度登记，不反推精确正确样本数。
