@@ -58,15 +58,23 @@ def audit_recipe(manifest_path: str | Path, repository_root: str | Path) -> dict
     state_path = output_root / 'reproduction_run.json'
     previous = json.loads(state_path.read_text()) if state_path.is_file() else {}
     seen = set(); produced = set(); normalized = []
+    producers = {}; ancestors = {}
     for node in nodes:
         identifier = node.get('node_id')
         if not isinstance(identifier,str) or not identifier or any(c not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-' for c in identifier) or identifier in seen:
             raise ValueError('unique simple node_id required')
         if not set(node.get('depends_on',[])) <= seen: errors.append(f'{identifier}: dependencies must precede node')
+        dependencies = set(node.get('depends_on', []))
+        ancestors[identifier] = dependencies | set().union(*(ancestors.get(x, set()) for x in dependencies))
         seen.add(identifier)
         argv=node.get('argv',[])
         if len(argv)<3 or argv[0] not in {'python','python3','{python}'} or argv[1]!='-m' or argv[2] not in MODULES:
             errors.append(f'{identifier}: only registered existing Python CLIs are supported')
+        if len(argv) >= 3 and node.get('operation') != argv[2]:
+            errors.append(f'{identifier}: operation does not match actual CLI')
+        flags = [x.split('=', 1)[0] for x in argv if isinstance(x, str) and x.startswith('--')]
+        if len(flags) != len(set(flags)):
+            errors.append(f'{identifier}: duplicate CLI option can shadow bound arguments')
         if any(x in argv for x in ['--overwrite','--resume','--init-checkpoint']):
             errors.append(f'{identifier}: overwrite and implicit resume/init overrides forbidden')
         if not all(isinstance(v,str) for v in argv):raise ValueError('argv must contain strings')
@@ -80,6 +88,8 @@ def audit_recipe(manifest_path: str | Path, repository_root: str | Path) -> dict
             if artifact.get('stage') != manifest.get('stage') or artifact.get('scope') != manifest.get('fit_scope'):
                 errors.append(f'{identifier}: input stage/scope mismatch')
             if path in produced:
+                if producers[path] not in ancestors[identifier]:
+                    errors.append(f'{identifier}: producer missing from dependency ancestry')
                 inputs.append({'path':str(path),'producer_output':True})
                 continue
             if not path.is_file():errors.append(f'{identifier}: missing input {path}')
@@ -112,12 +122,27 @@ def audit_recipe(manifest_path: str | Path, repository_root: str | Path) -> dict
                 init=config['train'].get('init_checkpoint')
                 if init:paths.append(init)
                 if config.get('trust',{}).get('enabled'):paths.append(config['trust']['bundle_path'])
+                if config['train'].get('require_lineage_for_init_checkpoint'):
+                    paths += [config['lineage'][k] for k in ('parent_train_csv', 'parent_val_csv')]
                 if any(Path(p).resolve() not in declared for p in paths):errors.append(f'{identifier}: config has undeclared input assets')
                 train_root=Path(config['output']['root']).resolve()/config['project']['experiment_id']/f"seed{config['project'].get('seed',42)}"
                 owned_output_dir = str(train_root)
                 if not train_root.is_relative_to(output_root):errors.append(f'{identifier}: training output outside run root')
                 if not any(p.is_relative_to(train_root/'checkpoints') and p.suffix=='.pt' for p in outputs):
                     errors.append(f'{identifier}: training must declare an actual checkpoint output')
+        if len(argv)>2 and argv[2]=='aegis_clip.cli.cache_features' and not config_path:
+            errors.append(f'{identifier}: feature producer config binding required')
+        if len(argv)>2 and argv[2]=='aegis_clip.cli.infer':
+            declared = {Path(x['path']) for x in inputs}
+            if '--checkpoint' not in argv:
+                errors.append(f'{identifier}: explicit bound checkpoint required')
+            for flag in ('--checkpoint', '--prior-config'):
+                if flag in argv:
+                    index = argv.index(flag) + 1
+                    if index >= len(argv) or _path(argv[index], cwd) not in declared:
+                        errors.append(f'{identifier}: undeclared {flag} input')
+            if any(x.startswith('--prior-alignment-strength') for x in argv):
+                errors.append(f'{identifier}: test-batch prior fitting is not a reproduction default')
         if len(argv)>2 and argv[2] in {'aegis_clip.cli.cache_features','aegis_clip.cli.infer'}:
             if '--output-dir' not in argv:
                 errors.append(f'{identifier}: explicit owned output directory required')
@@ -149,6 +174,7 @@ def audit_recipe(manifest_path: str | Path, repository_root: str | Path) -> dict
                 errors.append(f'{identifier}: completed node output changed')
         elif any(p.exists() for p in outputs) or (owned_output_dir and Path(owned_output_dir).exists()):
             errors.append(f'{identifier}: output conflict with unverified or incomplete run')
+        producers.update({path: identifier for path in outputs})
         produced.update(outputs)
     return {'schema_version':1,'manifest_sha256':sha256_file(source),'output_root':str(output_root),
             'fit_scope':manifest.get('fit_scope'),'budget':budget,'nodes':normalized,'errors':errors,

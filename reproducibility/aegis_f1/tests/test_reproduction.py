@@ -66,3 +66,65 @@ def test_changed_input_cannot_reuse_completed_node(tmp_path):
     path,m=recipe(tmp_path);run_recipe(path,REPO,execute=True)
     (tmp_path/'train.csv').write_text('changed')
     with pytest.raises(ValueError,match='hash mismatch'):run_recipe(path,REPO,execute=True,resume=True)
+
+
+def test_shadowed_cli_arguments_blocked(tmp_path):
+    path, m = recipe(tmp_path)
+    m['nodes'][0]['argv'] += ['--train-csv=' + str(tmp_path/'val.csv')]
+    path.write_text(json.dumps(m))
+    assert any('duplicate CLI option' in e for e in audit_recipe(path, REPO)['errors'])
+
+
+def test_operation_cannot_misrepresent_csv_merge_as_training(tmp_path):
+    path, m = recipe(tmp_path)
+    m['nodes'][0]['operation'] = 'aegis_clip.cli.train'
+    path.write_text(json.dumps(m))
+    assert any('operation does not match' in e for e in audit_recipe(path, REPO)['errors'])
+
+
+def test_produced_input_requires_dependency_ancestry(tmp_path):
+    import copy
+    path, m = recipe(tmp_path)
+    second = copy.deepcopy(m['nodes'][0]); second['node_id'] = 'second'
+    first_output = second['output_artifacts'][0]
+    second['input_artifacts'][0]['path'] = first_output
+    second['argv'][second['argv'].index('--train-csv') + 1] = first_output
+    second['output_artifacts'] = [str(tmp_path/'run/second.csv')]
+    second['argv'][second['argv'].index('--output-csv') + 1] = second['output_artifacts'][0]
+    m['nodes'].append(second); m['protocol']['budget']['max_nodes'] = 2
+    path.write_text(json.dumps(m))
+    assert any('dependency ancestry' in e for e in audit_recipe(path, REPO)['errors'])
+    second['depends_on'] = ['merge']; path.write_text(json.dumps(m))
+    assert audit_recipe(path, REPO)['status'] == 'checks_passed'
+
+
+def test_inference_checkpoint_must_be_bound(tmp_path):
+    path, m = recipe(tmp_path); n = m['nodes'][0]
+    n['operation'] = 'aegis_clip.cli.infer'
+    n['argv'] = ['python3','-m', n['operation'], '--checkpoint', str(tmp_path/'hidden.pt'),
+                 '--output-dir', str(tmp_path/'run/submission')]
+    n['output_artifacts'] = [str(tmp_path/'run/submission/submission.zip')]
+    path.write_text(json.dumps(m))
+    assert any('undeclared --checkpoint' in e for e in audit_recipe(path, REPO)['errors'])
+
+
+def test_parent_lineage_manifests_are_real_training_dependencies(tmp_path, monkeypatch):
+    path, m = recipe(tmp_path); n = m['nodes'][0]
+    parent = tmp_path/'parent.csv'; parent.write_text('parent lineage')
+    cfg = tmp_path/'config.yaml'; cfg.write_text('{}')
+    config = {'project': {'stage':'preliminary','experiment_id':'unit','seed':42},
+              'data': {k:str(tmp_path/'train.csv') for k in ('train_csv','val_csv','class_mapping')},
+              'features': {}, 'train': {'init_checkpoint':str(tmp_path/'train.csv'),
+                                       'require_lineage_for_init_checkpoint':True},
+              'lineage': {'parent_train_csv':str(parent),'parent_val_csv':str(parent)},
+              'output': {'root':str(tmp_path/'run')}}
+    monkeypatch.setattr('aegis_clip.config.load_config', lambda _: config)
+    n.update(operation='aegis_clip.cli.train', config_path=str(cfg), config_sha256=sha256_file(cfg),
+             argv=['python3','-m','aegis_clip.cli.train','--config',str(cfg)],
+             output_artifacts=[str(tmp_path/'run/unit/seed42/checkpoints/best.pt')])
+    path.write_text(json.dumps(m))
+    assert any('undeclared input assets' in e for e in audit_recipe(path, REPO)['errors'])
+    n['input_artifacts'].append({'path':str(parent),'sha256':sha256_file(parent),
+                                'stage':'preliminary','scope':'synthetic_dryrun'})
+    path.write_text(json.dumps(m))
+    assert audit_recipe(path, REPO)['status']=='checks_passed'

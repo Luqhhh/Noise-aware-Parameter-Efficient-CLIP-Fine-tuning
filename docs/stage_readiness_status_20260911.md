@@ -46,3 +46,18 @@ R2 真实节点复现与恢复、R3 间接谱系/开发隔离、R4 类级真实�
 对应原验证清单 10,316 个样本。没有声称排除了所有近重复图。
 官方测试图像只为来源交集审计计算文件哈希，没有学习参数或使用预测统计拟合。
 清单和内容组数组仅本地保存，不进入公开仓库。
+
+
+## R2 依赖执行检查增量
+
+复现节点新增生产者依赖祖先、实际 operation、重复参数、父谱系清单及推理模型输入检查。
+合成 5 类链完成 features → 实际 train → infer → 提交检查，验证完成节点复用。
+完整正式训练链仍未完成。
+
+本次读取 `configs/f1_flat_full_ft.yaml` 的 10 个输入字段，9 个字段对应文件存在，
+但 `features.tensor_path` 指向的 `artifacts/stages/preliminary/features/clip_vit_b32_openai/features.pt`
+缺失（路径相对 AEGIS 根）。重复字段可能指向同一文件，因此不称为 10 个独立资产。
+路径清单和 manifest 存在不能代替张量文件；预期生成入口为 `aegis_clip.cli.cache_features`，
+恢复需另建输出目录并核对实际官方初始化、样本顺序和预处理，不承诺恢复相同序列化哈希。
+初始化父模型和 trust 包存在，但完整生产来源尚未验证。冻结特征参考与教师伪标签输入分开记录。
+私有清单见 `outputs/stage_readiness/20260911_reproduction_dependencies_r1/fullft_input_audit.json`。

@@ -55,3 +55,20 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.reproduce_stage --
 **边界：**文件哈希只绑定声明内容；不会证明生产命令、阶段标记或内容组清单的真实性。
 `source_authenticity_verified` 和 `authorizes_formal_execution` 始终为 false。
 这不是完整 R3/R5 来源验证，不能把本入口 checks_passed 当成正式协议批准。
+
+
+## 复现节点依赖检查补充
+
+节点 `operation` 必须等于实际执行的 Python CLI；同一个命令选项不能重复，
+包括 `--flag value` 与 `--flag=value` 混用。读取先前节点产物必须在 `depends_on`
+的传递祖先中包含其生产者，单凭节点顺序不算声明依赖。
+
+启用初始化谱系检查的训练必须绑定 `lineage.parent_train_csv` 和
+`lineage.parent_val_csv`。特征提取必须绑定配置；推理必须显式绑定 checkpoint，
+使用 prior 时也必须将其声明为输入。复现入口拒绝测试批内 prior 拟合参数。
+这些补充不是 prior 来源真实性证明；R5 仍未完成。
+
+合成链已在 `outputs/stage_readiness/20260911_reproduction_dependencies_r1/`
+执行 features → train → infer，并生成经格式检查的 5 类、5 张预测包。
+这是软件演练包，不能上传官方赛事或进入正式模型谱系。正式执行仍阻塞；
+配置中隐式图像依赖、官方初始化权重绑定和完整生产链等检查仍需继续补齐。
