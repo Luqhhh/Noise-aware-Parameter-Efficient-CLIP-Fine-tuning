@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "stage": "preliminary",
+  "decision_author": "agent_under_explicit_user_delegation",
+  "decision_source": "2026-09-11 user: 继续初赛实验，agent代选",
+  "approved": true,
+  "experiment_id": "PRELIM_NORMALIGN_R1",
+  "bottleneck_judgment": "Hypothesis: class-specific classifier weight magnitude contributes avoidable decision-boundary bias in the frozen representation. Not an established causal diagnosis.",
+  "supporting_existing_evidence": [
+    "historical checkpoint f72b0104...; classifier row norms min 47.3752 median 67.0814 max 78.7152",
+    "all 10316 validation rows overlap parent training; no independent generalization claim"
+  ],
+  "strongest_alternative_explanation": "Weight magnitude encodes useful class reliability; adapters and probabilities depend on these magnitudes.",
+  "falsifying_observation": "no increase in paired raw correct count, or any decrease in clean-core correct count on frozen diagnostic split",
+  "selected_mechanism": "shared_classifier_mean_norm_alignment",
+  "control_definition": "unchanged FULLFT_DUAL weights, same fixed four-scale plus Flip, no calibration",
+  "single_primary_change": "W_c <- mean_j ||W_j||_2 * W_c / ||W_c||_2; keep bias and all other parameters fixed",
+  "data_and_lineage_policy": "existing preliminary parent; original val only overlap_diagnostic; no new independent-validation claim; official test only after diagnostic gate",
+  "fixed_hyperparameters_and_origin": {
+    "norm_exponent": 1,
+    "common_scale": "parent mean L2 norm, preserves average weight scale",
+    "crops": [
+      112,
+      128,
+      144,
+      160
+    ],
+    "scale_weights": [
+      0.2,
+      0.3,
+      0.4,
+      0.1
+    ],
+    "top_k": 5,
+    "local_weight": 0.4,
+    "flip_weight": 0.5,
+    "global_temperature": 1.5,
+    "local_temperature": 1.5,
+    "source": "historical manifest except explicit norm transformation and no-calibration protocol"
+  },
+  "evaluation_protocol": "paired fixed 10316-row diagnostic, same branch outputs; affine re-expression of shared head before probability fusion; direct-head numerical check",
+  "success_criterion": "engineering gate: raw correct increases AND clean-core correct does not decrease; only permits one platform candidate, never proves generalization",
+  "failure_or_stop_criterion": "gate fails, corruption, nonfinite values, nonpositive norms, hash/shape mismatch, direct-head numerical disagreement, resource cap exceeded: archive and stop; no variant",
+  "seed_and_repeat_policy": "seed42; one deterministic pass; no seeds or strength sweep",
+  "training_and_submission_budget": {
+    "gradient_training_runs": 0,
+    "weight_transformations": 1,
+    "diagnostic_passes": 1,
+    "max_official_candidates": 1,
+    "automatic_uploads": 0,
+    "gpu_wall_time_cap_hours": 2,
+    "batch_size": 64,
+    "num_workers": 4
+  },
+  "final_checkpoint_and_calibration_policy": "one inference-only transformed checkpoint if gate passes; both arms no prior, no test fitting; preserve historical pa0.90",
+  "numerical_check": {
+    "rtol": 1e-05,
+    "atol": 1e-05,
+    "source": "existing scope linear gate tolerance; additionally compare argmax"
+  },
+  "method_source": "https://github.com/facebookresearch/classifier-balancing",
+  "scope_of_this_segment": "one preliminary experiment; broader R2-R8 readiness work remains separate; no auto push"
+}

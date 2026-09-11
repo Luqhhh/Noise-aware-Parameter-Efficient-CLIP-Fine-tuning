@@ -8,6 +8,7 @@ outputs/**/*.pt
 
 # Local audit snapshots can contain environment details and private paths.
 outputs/preliminary_no_sweep/
+outputs/stage_readiness/
 
 # Generated feature cache (large binary)
 cache/

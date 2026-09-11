@@ -18,6 +18,7 @@ Available levers:
 
 from __future__ import annotations
 
+import math
 from typing import Any, Sequence
 
 import torch
@@ -61,8 +62,8 @@ def per_class_weights(
 ) -> torch.Tensor:
     """Compute per-class weights for the requested long-tail mode."""
     counts = torch.as_tensor(counts, dtype=torch.float32).flatten()
-    if counts.numel() == 0 or (counts <= 0).any():
-        raise ValueError("class counts must be non-empty and strictly positive")
+    if counts.numel() == 0 or not torch.isfinite(counts).all() or (counts <= 0).any():
+        raise ValueError("class counts must be non-empty, finite and strictly positive")
     if mode not in WEIGHT_MODES:
         raise ValueError(f"Unknown weighting mode: {mode!r}")
     if mode == "none":
@@ -75,7 +76,9 @@ def per_class_weights(
         if not 0.0 < float(effective_number_beta) < 1.0:
             raise ValueError("effective_number_beta must be in (0,1)")
         beta = float(effective_number_beta)
-        weights = (1.0 - beta) / (1.0 - beta.pow(counts))
+        # Same effective-number formula, without subtracting nearly equal
+        # float32 values when beta is close to one.
+        weights = (1.0 - beta) / -torch.expm1(counts * math.log(beta))
     else:
         raise ValueError(f"Unknown weighting mode: {mode!r}")
     if normalize:

@@ -62,3 +62,50 @@ def test_resolve_longtail_config_rejects_unknown_modes() -> None:
         resolve_longtail_config(
             {"longtail": {"loss_reweighting": "bogus"}, "loss": {}}
         )
+
+
+@pytest.mark.parametrize('beta', [0.5, 0.9999, 1.0 - 1e-10])
+def test_effective_number_matches_high_precision_formula(beta):
+    from decimal import Decimal, localcontext
+    from aegis_clip.longtail import per_class_weights
+    counts = torch.tensor([1., 2., 2., 10000.])
+    with localcontext() as context:
+        context.prec = 60
+        b = Decimal.from_float(beta)
+        expected = torch.tensor([float((1-b)/(1-b**int(n))) for n in counts])
+    actual = per_class_weights(counts, 'effective_number', effective_number_beta=beta, normalize=False)
+    assert torch.isfinite(actual).all() and (actual > 0).all()
+    assert actual[1] == actual[2]
+    torch.testing.assert_close(actual, expected)
+    normalized = per_class_weights(counts, 'effective_number', effective_number_beta=beta)
+    torch.testing.assert_close(normalized.mean(), torch.tensor(1.))
+
+
+def test_effective_number_sample_mean_normalization():
+    labels, counts = _labels_and_counts()
+    weights = per_sample_weights(labels, counts, 'effective_number', normalize=True)
+    torch.testing.assert_close(weights.mean(), torch.tensor(1.))
+
+
+@pytest.mark.parametrize('beta', [0., 1., -1., float('nan'), float('inf')])
+def test_effective_number_rejects_invalid_beta(beta):
+    from aegis_clip.longtail import per_class_weights
+    with pytest.raises(ValueError, match='beta'):
+        per_class_weights(torch.ones(2), 'effective_number', effective_number_beta=beta)
+
+
+@pytest.mark.parametrize('counts', [[], [0.], [-1.], [float('nan')], [float('inf')]])
+def test_effective_number_rejects_invalid_counts(counts):
+    from aegis_clip.longtail import per_class_weights
+    with pytest.raises(ValueError, match='counts'):
+        per_class_weights(torch.tensor(counts), 'effective_number')
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='CUDA unavailable')
+def test_effective_number_preserves_cuda_device_and_matches_cpu():
+    from aegis_clip.longtail import per_class_weights
+    counts = torch.tensor([1., 5., 10000.])
+    cpu = per_class_weights(counts, 'effective_number')
+    cuda = per_class_weights(counts.cuda(), 'effective_number')
+    assert cuda.device.type == 'cuda'
+    torch.testing.assert_close(cuda.cpu(), cpu)
