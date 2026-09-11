@@ -29,3 +29,26 @@ def align_branch_logits(logits: torch.Tensor, bias: torch.Tensor, scale: torch.T
     if not all(torch.isfinite(x).all() for x in (logits, bias, scale)) or (scale <= 0).any():
         raise ValueError("logits/bias must be finite and scale finite positive")
     return (logits - bias) * scale + bias
+
+
+def aligned_inference_checkpoint(checkpoint: dict, *, parent_sha256: str, authorization: dict) -> dict:
+    """Create an inference-only artifact, preserving all non-head model tensors."""
+    import copy
+    if authorization.get('action') != 'materialize_classifier_norm_candidate' or not authorization.get('decision_source'):
+        raise ValueError('Explicit candidate materialization authorization required')
+    state = checkpoint['model_state_dict']
+    weight, bias = state['classifier.weight'], state['classifier.bias']
+    if bias.shape != (weight.shape[0],) or not torch.isfinite(bias).all():
+        raise ValueError('Classifier bias must be finite and match weight rows')
+    scale = mean_norm_scale(weight)
+    result = copy.deepcopy(checkpoint)
+    result['model_state_dict']['classifier.weight'] = weight * scale[:, None]
+    for key in ('optimizer_state_dict', 'scheduler_state_dict', 'scaler_state_dict',
+                'rng_state', 'data_generator_state', 'metrics', 'best_selector',
+                'adaptive_cap_state', 'elr_state_dict', 'training_aux_state'):
+        result.pop(key, None)
+    result['classifier_norm_alignment'] = {
+        'parent_sha256': parent_sha256, 'scale': scale,
+        'inference_only': True, 'authorization': copy.deepcopy(authorization),
+    }
+    return result

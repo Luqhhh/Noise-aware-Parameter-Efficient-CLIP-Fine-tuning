@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "source": "https://www.aicomp.cn/tracks/tracks-1/3714.html",
+  "checked_date": "2026-09-11",
+  "authority_decision": "2026-09-11 user: 以官网为准",
+  "stages": {
+    "preliminary": {
+      "num_classes": 500,
+      "train_samples": 103218,
+      "test_samples": 24967
+    },
+    "repechage": {
+      "num_classes": 750,
+      "train_samples": 148695,
+      "test_samples": 37444
+    },
+    "semifinal": {
+      "num_classes": 500,
+      "train_samples": 90197,
+      "test_samples": 24912
+    }
+  }
+}

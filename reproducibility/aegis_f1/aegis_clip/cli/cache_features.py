@@ -135,6 +135,7 @@ def cache_stage_features(
     manifest = {
         "format_version": 1,
         "stage": config["project"]["stage"],
+        "artifact_scope": config["project"].get("artifact_scope", "unverified"),
         "backbone": "ViT-B/32",
         "pretrained": "openai",
         "normalized": True,

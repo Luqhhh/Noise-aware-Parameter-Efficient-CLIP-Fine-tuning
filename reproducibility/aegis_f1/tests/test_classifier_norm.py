@@ -35,3 +35,26 @@ def test_invalid_weights_fail(w):
 
 def test_wrong_mapping_dimension_fails():
     with pytest.raises(ValueError): align_branch_logits(torch.zeros(2, 3), torch.zeros(2), torch.ones(2))
+
+
+def test_materialized_checkpoint_is_inference_only_and_preserves_parent(tmp_path):
+    from aegis_clip.classifier_norm import aligned_inference_checkpoint
+    parent={'model_state_dict':{'classifier.weight':torch.tensor([[3.,4.],[0.,10.]]),
+                               'classifier.bias':torch.tensor([1.,2.]), 'visual.weight':torch.ones(3)},
+            'optimizer_state_dict':{},'metrics':{'stale':True},
+            'local_feature_adapter':{'state_dict':{'w':torch.ones(2)}}}
+    auth={'action':'materialize_classifier_norm_candidate','decision_source':'unit fixture'}
+    candidate=aligned_inference_checkpoint(parent,parent_sha256='a'*64,authorization=auth)
+    path=tmp_path/'candidate.pt';torch.save(candidate,path)
+    restored=torch.load(path,weights_only=False)
+    assert 'optimizer_state_dict' not in restored and 'metrics' not in restored
+    assert torch.equal(restored['model_state_dict']['visual.weight'],parent['model_state_dict']['visual.weight'])
+    assert torch.equal(restored['model_state_dict']['classifier.bias'],parent['model_state_dict']['classifier.bias'])
+    assert torch.equal(parent['model_state_dict']['classifier.weight'],torch.tensor([[3.,4.],[0.,10.]]))
+    torch.testing.assert_close(restored['model_state_dict']['classifier.weight'].norm(dim=1),torch.tensor([7.5,7.5]))
+    assert restored['classifier_norm_alignment']['inference_only']
+
+
+def test_materialization_requires_explicit_source():
+    from aegis_clip.classifier_norm import aligned_inference_checkpoint
+    with pytest.raises(ValueError):aligned_inference_checkpoint({},parent_sha256='a'*64,authorization={})

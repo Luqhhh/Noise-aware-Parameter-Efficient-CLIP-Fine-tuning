@@ -116,7 +116,7 @@ def run_stage_pipeline(manifest_path: str | Path) -> Path:
     trust_dir = split_dir / "trust"
     steps = [str(step) for step in manifest.get("steps", ["split", "features", "folds", "oof", "trust", "final_train"])]
     unknown = set(steps) - {
-        "split", "features", "folds", "oof", "trust", "final_train",
+        "split", "features", "folds", "oof", "trust", "final_train", "prepare_final_train_csv",
     }
     if unknown:
         raise ValueError(f"Unknown pipeline steps: {sorted(unknown)}")
@@ -135,6 +135,7 @@ def run_stage_pipeline(manifest_path: str | Path) -> Path:
     def record(step: str, **details: Any) -> None:
         run_record["step_results"][step] = details
         run_record["completed"].append(step)
+        atomic_json_dump(run_record, output_root / "pipeline_run.json")
 
     if "split" in steps:
         result = prepare_stage(
@@ -269,7 +270,9 @@ def run_stage_pipeline(manifest_path: str | Path) -> Path:
             bundle_sha256=sha256_file(bundle_path),
         )
 
-    if "final_train" in steps:
+    if "final_train" in steps and "prepare_final_train_csv" in steps:
+        raise ValueError("final_train is a legacy alias; do not request both CSV preparation names")
+    if "final_train" in steps or "prepare_final_train_csv" in steps:
         expected_merge = int(manifest["expected_samples"])
         merged = merge_splits(
             split_dir / "train.csv",
@@ -277,7 +280,12 @@ def run_stage_pipeline(manifest_path: str | Path) -> Path:
             split_dir / "final_train.csv",
             expected_samples=expected_merge,
         )
-        record("final_train", output=str(merged))
+        record(
+            "final_train" if "final_train" in steps else "prepare_final_train_csv",
+            operation="prepare_final_train_csv",
+            model_training_performed=False,
+            output=str(merged),
+        )
 
     run_path = output_root / "pipeline_run.json"
     atomic_json_dump(run_record, run_path)
