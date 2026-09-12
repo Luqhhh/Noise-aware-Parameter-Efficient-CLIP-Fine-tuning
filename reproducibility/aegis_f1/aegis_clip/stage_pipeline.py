@@ -20,6 +20,7 @@ from sklearn.model_selection import StratifiedGroupKFold
 from aegis_clip.cli.cache_features import cache_stage_features
 from aegis_clip.cli.prepare_final_train import merge_splits
 from aegis_clip.cli.prepare_stage import prepare_stage
+from aegis_clip.development_scope import development_rows, select_development_features
 from aegis_clip.oof_rebuild import load_oof_inputs, rebuild_oof_logits
 from aegis_clip.runtime import atomic_json_dump, sha256_file
 from aegis_clip.trust import TrustBuildConfig, atomic_torch_save, build_cross_fitted_trust
@@ -146,6 +147,17 @@ def run_stage_pipeline(manifest_path: str | Path) -> Path:
     if unknown:
         raise ValueError(f"Unknown pipeline steps: {sorted(unknown)}")
 
+    fit_scope = manifest.get('fit_scope', 'final_fit')
+    if fit_scope not in {'final_fit', 'development_fit', 'synthetic_dryrun'}:
+        raise ValueError('Unsupported pipeline fit scope')
+    if fit_scope == 'development_fit':
+        if not manifest.get('allowed_fit_groups'):
+            raise ValueError('Development pipeline requires hash-bound allowed_fit_groups')
+        if {'final_train','prepare_final_train_csv'} & set(steps):
+            raise ValueError('Development pipeline cannot merge validation into fitting CSV')
+        for step, destination in (('features', features_dir), ('oof', oof_dir), ('trust', trust_dir)):
+            if step in steps and destination.exists():
+                raise FileExistsError(f'Development {step} output exists; explicit new run required')
     output_root.mkdir(parents=True, exist_ok=True)
     run_record: dict[str, Any] = {
         "format_version": 1,
@@ -153,6 +165,8 @@ def run_stage_pipeline(manifest_path: str | Path) -> Path:
         "stage": stage,
         "seed": seed,
         "steps": steps,
+        "fit_scope": fit_scope,
+        "source_authenticity_verified": False,
         "step_results": {},
         "completed": [],
     }
@@ -174,6 +188,12 @@ def run_stage_pipeline(manifest_path: str | Path) -> Path:
             hash_workers=int(manifest.get("hash_workers", 8)),
         )
         record("split", manifest=result)
+
+    development_train = allowed_groups = canonical_development = None
+    if fit_scope == 'development_fit':
+        development_train, allowed_groups, canonical_development = development_rows(
+            split_dir, train_root.name, manifest['allowed_fit_groups'],
+            base_dir=Path(manifest_path).resolve().parent)
 
     features_manifest = None
     if "features" in steps:
@@ -209,12 +229,18 @@ def run_stage_pipeline(manifest_path: str | Path) -> Path:
             folds=folds,
             seed=seed,
             root_name=train_root.name,
+            fit_scope=fit_scope, allowed_fit_groups=allowed_groups,
         )
         record("folds", assignments=str(assignments_csv), folds=folds)
 
     if "oof" in steps:
         if not features_dir.exists():
             raise RuntimeError("oof step requires the features step")
+        if fit_scope == 'development_fit':
+            assignments = pd.read_csv(assignments_csv)
+            keys = [canonical_development(p) for p in assignments['image_path']]
+            if len(set(keys)) != len(keys) or dict(zip(keys,assignments['label'].astype(int))) != development_train:
+                raise ValueError('OOF assignments do not match registered development rows')
         inputs = load_oof_inputs(
             assignments_csv,
             features_dir / "features.pt",
@@ -256,6 +282,9 @@ def run_stage_pipeline(manifest_path: str | Path) -> Path:
             json.loads((features_dir / "labels.json").read_text(encoding="utf-8")),
             dtype=torch.long,
         )
+        if fit_scope == 'development_fit':
+            features, labels, paths = select_development_features(
+                features, labels, paths, development_train, canonical_development)
         groups_path = split_dir / "content_groups.json"
         group_mapping = json.loads(groups_path.read_text(encoding="utf-8"))
         canonical = [_canonical_group_key(path, train_root.name) for path in paths]
@@ -284,6 +313,10 @@ def run_stage_pipeline(manifest_path: str | Path) -> Path:
             config=trust_config,
             device=str(device),
         )
+        bundle['fit_scope'] = fit_scope
+        summary['fit_scope'] = fit_scope
+        summary['fitting_samples'] = len(paths)
+        summary['source_authenticity_verified'] = False
         trust_dir.mkdir(parents=True, exist_ok=True)
         bundle_path = trust_dir / "trust.pt"
         atomic_torch_save(bundle, bundle_path)

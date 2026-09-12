@@ -49,7 +49,7 @@ python3 scripts/run_historical_recovery_queue.py --run-dir outputs/stage_readine
 | P4–P7 初赛机制 | 范数对齐 63.3676%，匹配无校准对照 66.7681%，差 -3.4005 pp，已拒绝；本次恢复尚非新候选 |
 | R1 明确错误与回归 | 已修复并通过当前回归 |
 | R2 完整真实训练链 | 7 节点恢复完成；现存更早 trust/cvt 来源及全部最终分支仍未完整重建 |
-| R3 开发隔离 | 图审计、切分及 OOF 检查已有；完整 trust 开发接线与真实性认证未完成 |
+| R3 开发隔离 | 图审计、切分及 OOF 检查已有；开发 trust 行过滤已接线并测试；完整父模型来源真实性认证未完成 |
 | R4 长尾监督诊断 | 实际目标量日志已有；原始频次/内容组/可信覆盖全字段尚缺 |
 | R5 校准 | 应用绑定检查已有；可信拟合审计与正式生产流程未闭合 |
 | R6 演练 | 合成训练/推理/打包及当前阶段结构检查完成；真实完整规模资源账本未完成 |
@@ -67,3 +67,15 @@ python3 scripts/run_historical_recovery_queue.py --run-dir outputs/stage_readine
 产物：`outputs/stage_readiness/20260912_full_rebuild_r1/recovered_selftrain_submission/submission.zip`。ZIP SHA-256：`e56b3129c0027ac37fc136d825e69c29de4bc0d1a65060d1763830ce7c5cb479`。未上传、未替换桌面包；没有平台成绩，也未选为历史最佳替代。上游 trust/cvt 真实性闭合仍是完整复现的未完成项。
 
 新增 report_class_support.py 与 class_support 模块，实际生成 500 类统计，绑定原始/拟合/验证 CSV、内容组和类别映射文件哈希；10,316 个验证样本的内容组均已进入当前拟合范围。缺少的逐类准确率和频次分组留空，不能填零或从已有总分推算。冲突组数是原标签冲突统计，不是真值噪声率。新模块反例与手算测试 2 项通过。
+
+## 桌面待测登记与资源账本
+
+用户要求将恢复包放到桌面并等待回传分数。已复制到 `submission_recovered_selftrain_r1.zip`，核对与本地 ZIP 哈希一致。登记 ID：`RECOVERED_SELFTRAIN_R1_BARE_NOCAL_20260912`，平台分数和实际上传时间保持空白，不覆盖现有历史最佳或匹配对照记录。该模型及单视图协议与此前双 Adapter 四尺度+Flip 流程不同，未来分差不能全部归因于单一训练机制。
+
+`report_recovery_resources.py` 对照逐轮监督账本与训练日志：实际共 72 epoch（E2 49，其他共 23），92,682 个观察到的训练 batch，6,750,840 次样本抽样；各节点日志跨度合计 16,839.922 秒。观察到 batch 不证明 AMP 从未跳过更新。当前七节点目录文件总量 32,855,241,512 bytes，不是磁盘峰值。峰值显存/内存/磁盘未完整采集，保持 null，不能从当前数值倒推。报告位于本地运行目录 resource_report.json，包含日志与每轮账本哈希。
+
+统计工具的手算例及缺失账本反例测试共 2 项通过。待测包保持冻结；仍需补齐的上游来源、开发 trust 接线、可信校准生产流程和干净环境复现见前述状态表。
+
+开发 pipeline 增量：组集合哈希绑定、训练/验证组隔离、OOF assignments 精确匹配、trust 学习前子集过滤、开发链禁止最终合并。反例覆盖验证特征混入、旧全量 OOF、组文件篡改和缓存标签错配。保留正式来源认证未完成状态，没有新正式训练。
+
+本段验证：Aegis 全套 439 passed / 1 skipped（CUDA 不可用）；随后加入开发输出保护并运行相关套件 5 passed。资源报告测试 2 passed。桌面包哈希不受工程代码修改影响。

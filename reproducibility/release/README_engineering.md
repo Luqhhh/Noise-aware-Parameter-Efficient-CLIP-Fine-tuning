@@ -87,7 +87,7 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.reproduce_stage --
 ## 2026-09-12 实现增量与使用边界
 
 * `prepare_stage` 输出 split_diagnostics.json；不可切分类、容量不足或实际缺类时停止，已有输出拒绝覆盖。
-* `assign_oof_folds(..., fit_scope="development_fit", allowed_fit_groups=...)` 只对训练行分折；显式检查验证内容组和已登记拟合范围。旧调用仍按 final_fit 处理。完整 stage_pipeline 的 trust 分支尚未接入开发隔离，不能以此宣称整个开发链独立。
+* `assign_oof_folds(..., fit_scope="development_fit", allowed_fit_groups=...)` 只对训练行分折；显式检查验证内容组和已登记拟合范围。旧调用仍按 final_fit 处理。开发 trust 行过滤已接线；仍不能认证全部父模型来源独立。
 * 配置 `diagnostics: {longtail: {enabled: true}}` 开启实际监督账本，可选 frequency_segments 必须显式给出每类 head/middle/tail。未登记分组返回空值。记录每 batch 分类损失实际分母，不含辅助损失或真实梯度范数。暂拒绝 trust_subspace 的非标准目标。原始类频、内容组/可信覆盖等全量 R4 字段仍需补充。
 * `build_teacher_trust --feature-cache-dir <new-cache>` 允许显式使用重建缓存，检查特征协议和历史样本顺序；不修改 checkpoint。读取路径重定位不是历史数值等价证明。
 
@@ -101,3 +101,12 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.reproduce_stage --
 ## 已授权历史资产恢复队列
 
 本次历史恢复独立登记在 `outputs/stage_readiness/20260912_full_rebuild_r1/recovery_plan.json`，执行记录见 `results/stage_readiness_recovery_20260912.md`。仓库根运行 `python3 scripts/run_historical_recovery_queue.py --run-dir <登记目录>` 默认审计；显式 `--execute` 等待已启动 E2 的最终训练清单，再顺序调用冻结源码中的现有训练 CLI。此专用队列只接受已登记的七节点、最多 73 epoch 历史恢复，父模型选择沿用原配置。它不解除通用 reproduce_stage 的正式来源限制，也不认证尚未闭合的 trust/cvt 上游。
+
+
+## 开发 pipeline 的拟合行隔离
+
+manifest 显式选择 `fit_scope: development_fit`，并提供 `allowed_fit_groups: {path, sha256}`。组文件相对路径按 manifest 所在目录解析，内容为唯一组 ID 数组，必须精确对应开发训练 CSV 的组集合。已有 train/val/content_groups 文件相互检查，训练与验证不得共享内容组。分组政策须事先登记，入口不替用户生成正式比例或缺类回退。
+
+开发 folds 只读取训练行；oof 在读取缓存前拒绝包含额外验证行或标签错配的旧 assignments。trust 可读取逐图编码的全量缓存，但在任何学习统计之前按训练 CSV 顺序过滤特征、标签、路径和组，拒绝重复、缺失或标签错配缓存。输出记录 fit_scope 与 fitting_samples。开发链拒绝 final_train/prepare_final_train_csv。旧 manifest 默认 final_fit 保持兼容。
+
+来源报告仍保持 source_authenticity_verified=false：范围过滤不能证明缓存编码器、父模型和历史声明的真实性，不能解除通用正式复现入口的来源限制。本次只运行软件测试，未选择或执行新的正式开发训练配方。
