@@ -1,0 +1,510 @@
+{
+  "experiment_id": "PRELIM75_V2_20260912",
+  "segment": "visual",
+  "recorded_at_utc": "2026-09-12T18:11:17.893535+00:00",
+  "configuration": "configs/prelim75_v2.yaml",
+  "queue": {
+    "candidates": [
+      "V0",
+      "V1"
+    ],
+    "combination_C_not_started": true,
+    "completed_steps": [
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-u",
+          "-m",
+          "aegis_clip.cli.train_global_local_joint",
+          "--config",
+          "/home/lux1/noise/configs/prelim75_v2.yaml",
+          "--candidate",
+          "V0"
+        ],
+        "elapsed_seconds": 1857.018702194,
+        "exit_code": 0,
+        "log": "V0_training.log"
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-u",
+          "-m",
+          "aegis_clip.cli.evaluate_prelim75",
+          "--config",
+          "/home/lux1/noise/configs/prelim75_v2.yaml",
+          "--candidate",
+          "V0"
+        ],
+        "elapsed_seconds": 164.8705424430009,
+        "exit_code": 0,
+        "log": "V0_diagnostic.log"
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-u",
+          "-m",
+          "aegis_clip.cli.infer_prelim75",
+          "--config",
+          "/home/lux1/noise/configs/prelim75_v2.yaml",
+          "--candidate",
+          "V0"
+        ],
+        "elapsed_seconds": 358.5543201989967,
+        "exit_code": 0,
+        "log": "V0_delivery.log"
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-u",
+          "-m",
+          "aegis_clip.cli.train_global_local_joint",
+          "--config",
+          "/home/lux1/noise/configs/prelim75_v2.yaml",
+          "--candidate",
+          "V1"
+        ],
+        "elapsed_seconds": 2987.573877951003,
+        "exit_code": 0,
+        "log": "V1_training.log"
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-u",
+          "-m",
+          "aegis_clip.cli.evaluate_prelim75",
+          "--config",
+          "/home/lux1/noise/configs/prelim75_v2.yaml",
+          "--candidate",
+          "V1"
+        ],
+        "elapsed_seconds": 138.08934546900127,
+        "exit_code": 0,
+        "log": "V1_diagnostic.log"
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-u",
+          "-m",
+          "aegis_clip.cli.infer_prelim75",
+          "--config",
+          "/home/lux1/noise/configs/prelim75_v2.yaml",
+          "--candidate",
+          "V1"
+        ],
+        "elapsed_seconds": 308.37058987999626,
+        "exit_code": 0,
+        "log": "V1_delivery.log"
+      }
+    ],
+    "status": "complete_pending_platform_feedback"
+  },
+  "cache_manifest_sha256": "738c58c2d3b2d2dd39e8701cd0d1ecad6597c293aa9a980ebbe98d751956486c",
+  "P_overlap_diagnostic": {
+    "candidate": "P",
+    "checkpoint_sha256": "f72b0104257f49d2667fe335553a861dd1dea947753feebdc7301b8890b48765",
+    "class_mapping_sha256": "3edfd9e48e2f171b5d452577c52e0d189ae99dbfed3759d3e4f164fc090a6647",
+    "elapsed_seconds": 136.06902862800052,
+    "independent_generalization_claim": false,
+    "max_cuda_memory_allocated": 645694464,
+    "metrics": {
+      "clean_core_macro": 0.923491358757019,
+      "clean_core_micro": 0.919247031211853,
+      "clean_core_samples": 7331,
+      "prediction_count_cv": 0.20089887082576752,
+      "prediction_count_max": 46,
+      "prediction_count_min": 6,
+      "prediction_empty_classes": 0,
+      "proxy_macro": 0.8889923095703125,
+      "proxy_micro": 0.8855047821998596,
+      "raw_macro": 0.7948206663131714,
+      "raw_micro": 0.794978678226471,
+      "samples": 10316,
+      "trusted_macro": 0.8890755772590637,
+      "trusted_micro": 0.891291618347168
+    },
+    "online_accuracy": null,
+    "prior_in_inference": false,
+    "real_candidate_attention_recomputed": true,
+    "status": "complete",
+    "val_csv_sha256": "54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e",
+    "validation_scope": "overlap_diagnostic"
+  },
+  "platform_baseline_accuracy_percent": 66.7681,
+  "historical_best_accuracy_percent": 70.352866,
+  "candidates": {
+    "V0": {
+      "training": {
+        "candidate": "V0",
+        "checkpoint_sha256": "2deaa155069636e5673fc75575efbd45deaed872af101a31182d78edb8bfda5f",
+        "elapsed_seconds": 1843.3735709739994,
+        "history": [
+          {
+            "anchor_loss": 0.016977460710951308,
+            "elapsed_seconds": 618.9957749519999,
+            "epoch": 1,
+            "global_loss": 0.144635883306918,
+            "local_loss": 0.0,
+            "loss": 0.17859080468377847,
+            "optimizer_steps": 3226,
+            "samples": 103218
+          },
+          {
+            "anchor_loss": 0.014104050478443543,
+            "elapsed_seconds": 1197.8992700620001,
+            "epoch": 2,
+            "global_loss": 0.1267036170687135,
+            "local_loss": 0.0,
+            "loss": 0.15491171806392973,
+            "optimizer_steps": 6452,
+            "samples": 103218
+          },
+          {
+            "anchor_loss": 0.012700363591477361,
+            "elapsed_seconds": 1839.494988079001,
+            "epoch": 3,
+            "global_loss": 0.11428316420322009,
+            "local_loss": 0.0,
+            "loss": 0.13968389135080517,
+            "optimizer_steps": 9678,
+            "samples": 103218
+          }
+        ],
+        "max_cuda_memory_allocated": 2733108736,
+        "online_accuracy": null,
+        "status": "trained_pending_real_diagnostic",
+        "validation_scope": "overlap_diagnostic"
+      },
+      "diagnostic": {
+        "candidate": "V0",
+        "checkpoint_sha256": "2deaa155069636e5673fc75575efbd45deaed872af101a31182d78edb8bfda5f",
+        "class_mapping_sha256": "3edfd9e48e2f171b5d452577c52e0d189ae99dbfed3759d3e4f164fc090a6647",
+        "delta_pp_vs_P": {
+          "clean_core_micro": 2.891826629638672,
+          "raw_micro": 2.714228630065918
+        },
+        "elapsed_seconds": 157.9350811999975,
+        "engineering_stop": false,
+        "independent_generalization_claim": false,
+        "max_cuda_memory_allocated": 645694464,
+        "metrics": {
+          "clean_core_macro": 0.951439619064331,
+          "clean_core_micro": 0.9481652975082397,
+          "clean_core_samples": 7331,
+          "prediction_count_cv": 0.18189910054206848,
+          "prediction_count_max": 37,
+          "prediction_count_min": 7,
+          "prediction_empty_classes": 0,
+          "proxy_macro": 0.9125382304191589,
+          "proxy_micro": 0.9096936583518982,
+          "raw_macro": 0.8221049904823303,
+          "raw_micro": 0.8221209645271301,
+          "samples": 10316,
+          "trusted_macro": 0.9189236164093018,
+          "trusted_micro": 0.9215929508209229
+        },
+        "online_accuracy": null,
+        "prior_in_inference": false,
+        "real_candidate_attention_recomputed": true,
+        "status": "complete",
+        "val_csv_sha256": "54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e",
+        "validation_scope": "overlap_diagnostic"
+      },
+      "training_git_commit": "491c7f91ac44a03946bc175b2951c9b22e85ccde",
+      "source_manifest_sha256": "e1d4295e28c1e58f2b9e2304014d9699eefe2202afe9ddbe5837d6faa7f88a87",
+      "delivery": {
+        "actual_platform_upload_time": null,
+        "candidate": "V0",
+        "checkpoint_sha256": "2deaa155069636e5673fc75575efbd45deaed872af101a31182d78edb8bfda5f",
+        "csv_sha256": "7e004124ee586145f12a8a2198958ac445760ebcf4b749ed4e43ee71a190afa7",
+        "diagnostic": {
+          "candidate": "V0",
+          "checkpoint_sha256": "2deaa155069636e5673fc75575efbd45deaed872af101a31182d78edb8bfda5f",
+          "class_mapping_sha256": "3edfd9e48e2f171b5d452577c52e0d189ae99dbfed3759d3e4f164fc090a6647",
+          "delta_pp_vs_P": {
+            "clean_core_micro": 2.891826629638672,
+            "raw_micro": 2.714228630065918
+          },
+          "elapsed_seconds": 157.9350811999975,
+          "engineering_stop": false,
+          "independent_generalization_claim": false,
+          "max_cuda_memory_allocated": 645694464,
+          "metrics": {
+            "clean_core_macro": 0.951439619064331,
+            "clean_core_micro": 0.9481652975082397,
+            "clean_core_samples": 7331,
+            "prediction_count_cv": 0.18189910054206848,
+            "prediction_count_max": 37,
+            "prediction_count_min": 7,
+            "prediction_empty_classes": 0,
+            "proxy_macro": 0.9125382304191589,
+            "proxy_micro": 0.9096936583518982,
+            "raw_macro": 0.8221049904823303,
+            "raw_micro": 0.8221209645271301,
+            "samples": 10316,
+            "trusted_macro": 0.9189236164093018,
+            "trusted_micro": 0.9215929508209229
+          },
+          "online_accuracy": null,
+          "prior_in_inference": false,
+          "real_candidate_attention_recomputed": true,
+          "status": "complete",
+          "val_csv_sha256": "54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e",
+          "validation_scope": "overlap_diagnostic"
+        },
+        "inference_command": [
+          "/usr/bin/python3",
+          "-u",
+          "-m",
+          "aegis_clip.cli.infer",
+          "--checkpoint",
+          "/home/lux1/noise/outputs/prelim75_v2_20260912/V0/candidate.pt",
+          "--output-dir",
+          "/home/lux1/noise/outputs/prelim75_v2_20260912/V0/submission",
+          "--local-view",
+          "attention_multiscale",
+          "--local-crop-sizes",
+          "112,128,144,160",
+          "--local-scale-weights",
+          "0.20,0.30,0.40,0.10",
+          "--local-top-k",
+          "5",
+          "--local-weight",
+          "0.40",
+          "--local-temperature",
+          "1.5",
+          "--adapt-local-features",
+          "--adapt-part-token-features",
+          "--tta",
+          "horizontal_flip",
+          "--tta-fusion",
+          "mean_probabilities",
+          "--tta-temperature",
+          "1.5",
+          "--tta-view-weight",
+          "0.50",
+          "--acknowledge-local-view-risk",
+          "--acknowledge-tta-risk",
+          "--batch-size",
+          "64"
+        ],
+        "inference_manifest_sha256": "d3c7dc5c462999cf473ed09aead1c40c6efddfe8f53729b854a759a81c6bf36b",
+        "online_accuracy": null,
+        "prior_in_inference": false,
+        "resolved_config_sha256": "684bf2bfa87990151b5840d502d91587f317ec95f5c6e61319851d15c585d11e",
+        "rows": 24967,
+        "single_checkpoint": true,
+        "status": "submission_ready_pending_platform",
+        "validation_command": [
+          "/usr/bin/python3",
+          "/home/lux1/noise/scripts/check_submission.py",
+          "--test_dir",
+          "/home/lux1/noise/test",
+          "--num-classes",
+          "500",
+          "--csv",
+          "/home/lux1/noise/outputs/prelim75_v2_20260912/V0/submission/pred_results.csv",
+          "--zip",
+          "/home/lux1/noise/outputs/prelim75_v2_20260912/V0/submission/submission.zip"
+        ],
+        "validation_exit_code": 0,
+        "zip_internal_csv_byte_equal": true,
+        "zip_sha256": "bf866f45fa959e552f28006940f9dbd4be0ea68ed6ce385e0d45032ab4a45b64"
+      }
+    },
+    "V1": {
+      "training": {
+        "candidate": "V1",
+        "checkpoint_sha256": "a52548511f5971836dbd6ffc07f62685050e2dc9b4318818573c53e9a7c5a696",
+        "elapsed_seconds": 2979.741915963001,
+        "history": [
+          {
+            "anchor_loss": 0.019020902811778588,
+            "elapsed_seconds": 1054.6783625579992,
+            "epoch": 1,
+            "global_loss": 0.14531239895928377,
+            "local_loss": 0.2572460067010826,
+            "loss": 0.22812765308033275,
+            "optimizer_steps": 3226,
+            "samples": 103218
+          },
+          {
+            "anchor_loss": 0.016574191678971617,
+            "elapsed_seconds": 2051.0020241579987,
+            "epoch": 2,
+            "global_loss": 0.13262904684326346,
+            "local_loss": 0.21895178852987177,
+            "loss": 0.2003065315783965,
+            "optimizer_steps": 6452,
+            "samples": 103218
+          },
+          {
+            "anchor_loss": 0.01555719338868504,
+            "elapsed_seconds": 2977.104651501002,
+            "epoch": 3,
+            "global_loss": 0.12353677678917588,
+            "local_loss": 0.19515679763437413,
+            "loss": 0.1832991761921053,
+            "optimizer_steps": 9678,
+            "samples": 103218
+          }
+        ],
+        "max_cuda_memory_allocated": 4012382720,
+        "online_accuracy": null,
+        "status": "trained_pending_real_diagnostic",
+        "validation_scope": "overlap_diagnostic"
+      },
+      "diagnostic": {
+        "candidate": "V1",
+        "checkpoint_sha256": "a52548511f5971836dbd6ffc07f62685050e2dc9b4318818573c53e9a7c5a696",
+        "class_mapping_sha256": "3edfd9e48e2f171b5d452577c52e0d189ae99dbfed3759d3e4f164fc090a6647",
+        "delta_pp_vs_P": {
+          "clean_core_micro": 2.168869972229004,
+          "raw_micro": 2.2877097129821777
+        },
+        "elapsed_seconds": 132.92540971400012,
+        "engineering_stop": false,
+        "independent_generalization_claim": false,
+        "max_cuda_memory_allocated": 645694464,
+        "metrics": {
+          "clean_core_macro": 0.9451937675476074,
+          "clean_core_micro": 0.9409357309341431,
+          "clean_core_samples": 7331,
+          "prediction_count_cv": 0.19217322766780853,
+          "prediction_count_max": 49,
+          "prediction_count_min": 8,
+          "prediction_empty_classes": 0,
+          "proxy_macro": 0.9078579545021057,
+          "proxy_micro": 0.9039211273193359,
+          "raw_macro": 0.8178277611732483,
+          "raw_micro": 0.8178557753562927,
+          "samples": 10316,
+          "trusted_macro": 0.9116419553756714,
+          "trusted_micro": 0.9139472246170044
+        },
+        "online_accuracy": null,
+        "prior_in_inference": false,
+        "real_candidate_attention_recomputed": true,
+        "status": "complete",
+        "val_csv_sha256": "54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e",
+        "validation_scope": "overlap_diagnostic"
+      },
+      "training_git_commit": "491c7f91ac44a03946bc175b2951c9b22e85ccde",
+      "source_manifest_sha256": "7bd5098f046018e4bcf236bccd2df2f8298537c54390b8292f9ee7dddda3b370",
+      "delivery": {
+        "actual_platform_upload_time": null,
+        "candidate": "V1",
+        "checkpoint_sha256": "a52548511f5971836dbd6ffc07f62685050e2dc9b4318818573c53e9a7c5a696",
+        "csv_sha256": "0d81a88aa9119fb25c62ff3b8ed70614976f7d6c852fd4bd263cb96ad6e2f52a",
+        "diagnostic": {
+          "candidate": "V1",
+          "checkpoint_sha256": "a52548511f5971836dbd6ffc07f62685050e2dc9b4318818573c53e9a7c5a696",
+          "class_mapping_sha256": "3edfd9e48e2f171b5d452577c52e0d189ae99dbfed3759d3e4f164fc090a6647",
+          "delta_pp_vs_P": {
+            "clean_core_micro": 2.168869972229004,
+            "raw_micro": 2.2877097129821777
+          },
+          "elapsed_seconds": 132.92540971400012,
+          "engineering_stop": false,
+          "independent_generalization_claim": false,
+          "max_cuda_memory_allocated": 645694464,
+          "metrics": {
+            "clean_core_macro": 0.9451937675476074,
+            "clean_core_micro": 0.9409357309341431,
+            "clean_core_samples": 7331,
+            "prediction_count_cv": 0.19217322766780853,
+            "prediction_count_max": 49,
+            "prediction_count_min": 8,
+            "prediction_empty_classes": 0,
+            "proxy_macro": 0.9078579545021057,
+            "proxy_micro": 0.9039211273193359,
+            "raw_macro": 0.8178277611732483,
+            "raw_micro": 0.8178557753562927,
+            "samples": 10316,
+            "trusted_macro": 0.9116419553756714,
+            "trusted_micro": 0.9139472246170044
+          },
+          "online_accuracy": null,
+          "prior_in_inference": false,
+          "real_candidate_attention_recomputed": true,
+          "status": "complete",
+          "val_csv_sha256": "54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e",
+          "validation_scope": "overlap_diagnostic"
+        },
+        "inference_command": [
+          "/usr/bin/python3",
+          "-u",
+          "-m",
+          "aegis_clip.cli.infer",
+          "--checkpoint",
+          "/home/lux1/noise/outputs/prelim75_v2_20260912/V1/candidate.pt",
+          "--output-dir",
+          "/home/lux1/noise/outputs/prelim75_v2_20260912/V1/submission",
+          "--local-view",
+          "attention_multiscale",
+          "--local-crop-sizes",
+          "112,128,144,160",
+          "--local-scale-weights",
+          "0.20,0.30,0.40,0.10",
+          "--local-top-k",
+          "5",
+          "--local-weight",
+          "0.40",
+          "--local-temperature",
+          "1.5",
+          "--adapt-local-features",
+          "--adapt-part-token-features",
+          "--tta",
+          "horizontal_flip",
+          "--tta-fusion",
+          "mean_probabilities",
+          "--tta-temperature",
+          "1.5",
+          "--tta-view-weight",
+          "0.50",
+          "--acknowledge-local-view-risk",
+          "--acknowledge-tta-risk",
+          "--batch-size",
+          "64"
+        ],
+        "inference_manifest_sha256": "929257b334599d73a7260baf893a393147a138f8fde08be0e2dfdc2602ccb757",
+        "online_accuracy": null,
+        "prior_in_inference": false,
+        "resolved_config_sha256": "6fbc003cfc35ec4d4886ea1a98532ea0426f16d1957ffa4cd61e9d208df687c8",
+        "rows": 24967,
+        "single_checkpoint": true,
+        "status": "submission_ready_pending_platform",
+        "validation_command": [
+          "/usr/bin/python3",
+          "/home/lux1/noise/scripts/check_submission.py",
+          "--test_dir",
+          "/home/lux1/noise/test",
+          "--num-classes",
+          "500",
+          "--csv",
+          "/home/lux1/noise/outputs/prelim75_v2_20260912/V1/submission/pred_results.csv",
+          "--zip",
+          "/home/lux1/noise/outputs/prelim75_v2_20260912/V1/submission/submission.zip"
+        ],
+        "validation_exit_code": 0,
+        "zip_internal_csv_byte_equal": true,
+        "zip_sha256": "7f28c1300e4a50bcb8e99aabff5c9d8df50db813c3ff165dbfbe916c8e37b77e"
+      }
+    }
+  },
+  "platform_feedback_at_record": {
+    "H0": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 65.8629,
+      "zip_sha256": "08fb4339f63f0b3ecd78dad7eab5f88dfe8e9d0356b7189076fb939f23702abe",
+      "reported_at_utc": "2026-09-12T17:20:42.798404+00:00",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    }
+  },
+  "partial_segment": false
+}
