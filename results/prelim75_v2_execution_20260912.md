@@ -48,3 +48,11 @@ CPU回归中跳过的CUDA有效样本数检查单独在GPU补跑：`PYTHONPATH=r
 两者未触发2pp止损，均使用真实候选attention重新定位，固定无校准协议输出24967行并通过全部提交检查，ZIP包内外CSV字节一致。交付位于 `outputs/prelim75_v2_20260912/{H0,H1}/submission/`，各目录的 `artifact_sha256.json` 绑定checkpoint、配置、源码、诊断、CSV/ZIP等。桌面副本 `submission_prelim75_H0_20260912.zip` 和 `submission_prelim75_H1_20260912.zip` 与仓库包哈希相同。平台分数/上传时间未知，registry新增待测行，不晋级、不预填。
 
 H段实现和实际训练/提交交付已完成，可由队友pull复用；只本地提交，用户负责push和平台上传。H路线是否有效尚未裁决。V段继续从原P独立启动；C未触发。
+
+## V0已完成交付，V1已开跑（2026-09-13）
+
+实验PRELIM75_V2_V0，配置 `configs/prelim75_v2.yaml`，实际命令 `python3 -u -m aegis_clip.cli.train_global_local_joint --config /home/lux1/noise/configs/prelim75_v2.yaml --candidate V0`（队列使用冻结PYTHONPATH源码，登记代码491c7f9）。3 epoch、9678 optimizer steps，耗时1843.3736秒，CUDA峰值分配2733108736字节，未OOM降档；末轮loss=0.13968389。首步视觉/head梯度非零，局部Adapter梯度零；最终冻结参数字节不变检查通过。
+
+真实十视图重叠诊断raw micro=82.2120965%，clean-core micro=94.8165298%，比P分别+2.7142286pp/+2.8918266pp。未触发2pp止损；这些指标不是独立泛化或平台成绩。V0真实测试推理已完成，24967行与全部提交检查通过、包内外CSV字节相同。ZIP `outputs/prelim75_v2_20260912/V0/submission/submission.zip`，SHA-256 `bf866f45fa959e552f28006940f9dbd4be0ea68ed6ce385e0d45032ab4a45b64`；桌面同哈希副本 `submission_prelim75_V0_20260912.zip`。checkpoint SHA-256 `2deaa155069636e5673fc75575efbd45deaed872af101a31182d78edb8bfda5f`。完整命令/结果/交付哈希见 `results/prelim75_v2_v0_20260913.json`。平台未知，不晋级。
+
+V0结果可pull复用；只本地提交，用户负责push。V1已从原P独立启动。首步local-only梯度范数visual proj=6.99440、O3 up=1.37985、PTA up=1.59095，证明局部损失能真实反传至三者；总loss梯度审核通过，冻结参数无泄漏，batch32无需降档。V1尚未完成，不把首步检查称作结果交付。V1接续前再次自动stash模式pull，origin/main仍fece41b，refs无新重叠；自动stash93b2cfd已恢复，没有第二次pop。证据在运行目录 `V1_additional_preflight.json`。
