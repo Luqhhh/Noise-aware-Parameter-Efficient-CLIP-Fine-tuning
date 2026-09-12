@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "stage": "preliminary",
+  "status": "historical_recovery_in_progress",
+  "approved": false,
+  "nodes": [],
+  "note": "Do not turn approved true without a complete registered recipe and source audit."
+}

@@ -1,0 +1,5 @@
+claim_id,claim_text,claim_type,source_run_id,source_artifact,validation_scope,inference_protocol,confounders_or_limits,owner_review_status
+parent_score,66.7681%,platform_observation,PRELIM_PARENT_NOCAL_CONTROL_R1,results/parent_nocal_control_20260911.md,platform_aggregate,four_scale_flip_no_calibration,user-reported rounded score,owner_reported
+norm_score,63.3676%; -3.4005pp versus matched parent,paired_platform_observation,PRELIM_NORMALIGN_R1,results/preliminary_normalign_r1_20260911.md,platform_aggregate,four_scale_flip_no_calibration,single fixed variant; not all classifier methods,owner_reported
+overlap,Original validation is seen by full-fit parent,lineage_observation,20260911_scope_graph_r1,docs/stage_readiness_status_20260911.md,overlap_diagnostic,not_applicable,full upstream authenticity incomplete,owner_review_pending
+feature_restore,"103218 x 512 finite fp32 features, historical sample order",engineering_check,20260912_full_rebuild_r1,outputs/stage_readiness/20260912_full_rebuild_r1/feature_validation.json,fixed_image_encoding,openai_clip_original_view,historical tensor absent; cannot compare numeric values,owner_review_pending

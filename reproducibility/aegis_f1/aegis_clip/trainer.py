@@ -552,6 +552,14 @@ def train(
         )
 
     for epoch in range(start_epoch, epochs + 1):
+        supervision_ledger = None
+        diagnostic_config = config.get('diagnostics', {}).get('longtail', {})
+        if diagnostic_config.get('enabled', False):
+            from aegis_clip.longtail_diagnostics import SupervisionLedger
+            if trust_subspace is not None:
+                raise ValueError('Longtail ledger requires standard weighted classification normalization')
+            supervision_ledger = SupervisionLedger(train_dataset.labels, num_classes,
+                frequency_segments=diagnostic_config.get('frequency_segments'))
         # --- Dynamic Trust Refresh (P4) ---
         if dynamic_enabled and epoch == dynamic_refresh_epoch:
             logger.info("Dynamic trust refresh at epoch %d...", epoch)
@@ -1240,8 +1248,13 @@ def train(
                 totals["attention_local_examples"] += batch_size
             if used_cached_forward:
                 totals["cached_forward_examples"] += batch_size
+            if supervision_ledger is not None:
+                supervision_ledger.update(batch_indices, mixed_targets, mixed_weights,
+                    denominator=mixed_weights.sum().clamp_min(1.0e-8).detach())
             global_step += 1
 
+        if supervision_ledger is not None:
+            atomic_json_dump(supervision_ledger.report(), log_dir / f'longtail_epoch_{epoch}.json')
         train_metrics = {
             "train_loss": totals["loss"] / totals["examples"],
             "train_accuracy": totals["correct"] / totals["examples"],

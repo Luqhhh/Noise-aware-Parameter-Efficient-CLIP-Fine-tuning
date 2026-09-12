@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from pathlib import Path
 
@@ -22,9 +23,29 @@ from aegis_clip.runtime import atomic_json_dump, seed_worker, sha256_file
 from aegis_clip.teacher_trust import augment_teacher_trust
 
 
+def relocated_feature_cache(config: dict, directory: str | None) -> dict:
+    """Relocate a regenerated cache explicitly; never rewrite checkpoint config."""
+    if directory is None:
+        return dict(config['features'])
+    root = Path(directory).resolve()
+    manifest = json.loads((root/'manifest.json').read_text())
+    if (manifest.get('stage') != config['project']['stage'] or
+        manifest.get('backbone') != 'ViT-B/32' or manifest.get('pretrained') != 'openai' or
+        manifest.get('augmentation') != 'none' or manifest.get('normalized') is not True or
+        manifest.get('feature_dim') != config['model'].get('feature_dim', 512)):
+        raise ValueError('Regenerated feature cache protocol mismatch')
+    old_paths = json.loads(Path(config['features']['paths_path']).read_text())
+    new_paths = json.loads((root/'image_paths.json').read_text())
+    if old_paths != new_paths:
+        raise ValueError('Regenerated feature cache sample order mismatch')
+    return {'tensor_path':str(root/'features.pt'), 'paths_path':str(root/'image_paths.json'),
+            'manifest_path':str(root/'manifest.json')}
+
+
 @torch.no_grad()
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--feature-cache-dir", help="Explicit regenerated feature cache with identical sample order")
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--train-csv", required=True)
     parser.add_argument("--base-trust", required=True)
@@ -150,7 +171,7 @@ def main() -> None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model, preprocess, checkpoint = build_from_checkpoint(checkpoint_path, device)
         config = checkpoint["config"]
-        features = config["features"]
+        features = relocated_feature_cache(config, args.feature_cache_dir)
         feature_store = FrozenFeatureStore(
             features["tensor_path"],
             features["paths_path"],
@@ -315,6 +336,7 @@ def main() -> None:
                 sha256_file(cache_path) if cache_path else None
             ),
             "teacher_logits_cache_reused": reuse_cache,
+            "regenerated_feature_cache_dir": args.feature_cache_dir,
             "teacher_view_spec": teacher_view_spec,
         }
     )

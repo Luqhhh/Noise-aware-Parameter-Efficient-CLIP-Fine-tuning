@@ -42,14 +42,20 @@ def assign_oof_folds(
     folds: int,
     seed: int,
     root_name: str,
+    fit_scope: str = "final_fit",
+    allowed_fit_groups: set[str] | None = None,
 ) -> Path:
     """Assign content-group-aware stratified OOF folds to every official image."""
     if folds < 2:
         raise ValueError("folds must be at least 2")
     train_frame = pd.read_csv(train_csv)
     val_frame = pd.read_csv(val_csv)
-    frame = pd.concat([train_frame, val_frame], ignore_index=True)
-    if set(frame.columns) < {"image_path", "label"}:
+    if fit_scope not in {'final_fit','development_fit','synthetic_dryrun'}:
+        raise ValueError('Explicit supported OOF fit scope required')
+    if fit_scope == 'development_fit' and allowed_fit_groups is None:
+        raise ValueError('Development OOF requires registered allowed_fit_groups')
+    frame = train_frame.copy() if fit_scope == 'development_fit' else pd.concat([train_frame, val_frame], ignore_index=True)
+    if not {'image_path', 'label'} <= set(frame.columns):
         raise ValueError("split CSVs must contain image_path and label")
     groups = json.loads(Path(groups_path).read_text(encoding="utf-8"))
     canonical = [
@@ -59,7 +65,22 @@ def assign_oof_folds(
     missing = [path for path in canonical if path not in groups]
     if missing:
         raise ValueError(f"Content groups miss {len(missing)} samples; first={missing[0]}")
+    if len(canonical) != len(set(canonical)):
+        raise ValueError('Duplicate OOF sample identity')
     group_keys = [str(groups[path]) for path in canonical]
+    if fit_scope == 'development_fit':
+        validation_keys = [_canonical_group_key(str(p), root_name) for p in val_frame['image_path']]
+        if any(p not in groups for p in validation_keys):raise ValueError('Validation content groups missing')
+        if set(group_keys) & {str(groups[p]) for p in validation_keys}:
+            raise ValueError('Development training and validation share content groups')
+        if not set(group_keys) <= allowed_fit_groups:
+            raise ValueError('OOF groups outside registered development fit scope')
+    group_support = {}
+    for label, group in zip(frame['label'].astype(int), group_keys):
+        group_support.setdefault(label,set()).add(group)
+    insufficient = sorted(label for label, ids in group_support.items() if len(ids) < folds)
+    if insufficient:
+        raise ValueError(f'OOF folds exceed independent groups for classes {insufficient}')
     splitter = StratifiedGroupKFold(
         n_splits=int(folds), shuffle=True, random_state=int(seed)
     )
@@ -67,6 +88,9 @@ def assign_oof_folds(
     for fold, (_, holdout) in enumerate(
         splitter.split(canonical, frame["label"], groups=group_keys)
     ):
+        supported = set(frame.iloc[holdout]['label'])
+        if supported != set(frame['label']):
+            raise ValueError('OOF holdout lacks class support; explicit policy required')
         fold_column.iloc[holdout] = fold
     if (fold_column < 0).any():
         raise RuntimeError("StratifiedGroupKFold left unassigned samples")
@@ -79,6 +103,7 @@ def assign_oof_folds(
         }
     )
     destination = Path(output_csv)
+    if destination.exists():raise FileExistsError(f"OOF output already exists: {destination}")
     destination.parent.mkdir(parents=True, exist_ok=True)
     assignments.to_csv(destination, index=False)
     return destination

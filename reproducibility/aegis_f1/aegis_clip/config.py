@@ -31,6 +31,7 @@ TOP_LEVEL_KEYS = {
     "clean_routing",
     "prototype_contrastive",
     "dynamic_trust",
+    "diagnostics",
 }
 
 REQUIRED_SECTIONS = {
@@ -102,6 +103,20 @@ def validate_config(config: dict[str, Any]) -> None:
     missing = REQUIRED_SECTIONS - public_keys
     if missing:
         raise ConfigError(f"Missing required sections: {sorted(missing)}")
+
+    diagnostics = config.get('diagnostics', {})
+    if not isinstance(diagnostics, dict) or set(diagnostics) - {'longtail'}:
+        raise ConfigError('diagnostics supports only longtail')
+    ledger = diagnostics.get('longtail', {})
+    if not isinstance(ledger, dict) or set(ledger) - {'enabled', 'frequency_segments'}:
+        raise ConfigError('invalid longtail diagnostics options')
+    if not isinstance(ledger.get('enabled', False), bool):
+        raise ConfigError('diagnostics.longtail.enabled must be boolean')
+    segments = ledger.get('frequency_segments')
+    if segments is not None and (not isinstance(segments, list) or
+        len(segments) != config['model']['num_classes'] or
+        any(x not in {'head','middle','tail'} for x in segments)):
+        raise ConfigError('frequency_segments must give fixed head/middle/tail membership for each class')
 
     project = config["project"]
     data = config["data"]

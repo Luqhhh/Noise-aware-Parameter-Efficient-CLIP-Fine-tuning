@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "stage": "repechage",
+  "status": "pending_formal_stage_protocol",
+  "approved": false,
+  "nodes": [],
+  "note": "Do not turn approved true without a complete registered recipe and source audit."
+}

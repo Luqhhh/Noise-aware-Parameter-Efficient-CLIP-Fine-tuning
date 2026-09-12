@@ -1,0 +1,8 @@
+{
+  "backbone": "ViT-B/32",
+  "official_download_url": "https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt",
+  "expected_sha256_from_installed_openai_clip": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+  "actual_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+  "file_present": true,
+  "verification": "cached bytes match official URL digest from installed package; library upstream commit not independently attested"
+}

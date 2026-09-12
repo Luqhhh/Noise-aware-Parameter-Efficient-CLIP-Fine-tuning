@@ -14,6 +14,7 @@ from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+from aegis_clip.split_diagnostics import diagnose_group_split
 from aegis_clip.data import IMAGE_EXTENSIONS
 from aegis_clip.features import canonical_sample_path
 from aegis_clip.runtime import atomic_json_dump, sha256_file
@@ -62,6 +63,8 @@ def prepare_stage(
 ) -> dict:
     root = Path(train_root).resolve()
     destination = Path(output_dir).resolve()
+    if destination.exists() and any(destination.iterdir()):
+        raise FileExistsError(f"Prepared output already exists: {destination}")
     if not root.is_dir():
         raise FileNotFoundError(f"Official training root does not exist: {root}")
     if not 0.0 < val_ratio < 1.0:
@@ -125,6 +128,12 @@ def prepare_stage(
                 "majority_label": Counter(labels).most_common(1)[0][0],
             }
         )
+    diagnosis = diagnose_group_split([r['label'] for r in records], hashes,
+                                     num_classes=expected_classes, val_ratio=val_ratio)
+    if diagnosis['errors']:
+        destination.mkdir(parents=True, exist_ok=True)
+        atomic_json_dump(diagnosis, destination / 'split_diagnostics.json')
+        raise ValueError(f"Content-group split infeasible: {diagnosis['errors']}")
     group_frame = pd.DataFrame(group_records)
     train_groups, val_groups = train_test_split(
         group_frame,
@@ -140,12 +149,21 @@ def prepare_stage(
     frame = pd.DataFrame(records)
     train_frame = frame[[digest in train_hashes for digest in hashes]].copy()
     val_frame = frame[[digest in val_hashes for digest in hashes]].copy()
+    missing_train = sorted(set(range(expected_classes)) - set(train_frame['label']))
+    missing_val = sorted(set(range(expected_classes)) - set(val_frame['label']))
+    if missing_train or missing_val:
+        diagnosis.update(status='blocked', missing_train_classes=missing_train,
+                         missing_validation_classes=missing_val)
+        destination.mkdir(parents=True, exist_ok=True)
+        atomic_json_dump(diagnosis, destination / 'split_diagnostics.json')
+        raise ValueError('Realized split lacks class support; explicit policy required')
     train_frame = train_frame.sort_values("image_path").reset_index(drop=True)
     val_frame = val_frame.sort_values("image_path").reset_index(drop=True)
     if len(train_frame) + len(val_frame) != expected_samples:
         raise RuntimeError("Prepared split does not cover every official image")
 
     destination.mkdir(parents=True, exist_ok=True)
+    atomic_json_dump(diagnosis, destination / "split_diagnostics.json")
     train_csv = destination / "train.csv"
     val_csv = destination / "val.csv"
     _atomic_csv(train_frame, train_csv)
