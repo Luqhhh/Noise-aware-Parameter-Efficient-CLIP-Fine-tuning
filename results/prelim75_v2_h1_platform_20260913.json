@@ -1,0 +1,17 @@
+{
+  "result_id": "PRELIM75_V2_H1_NOCAL_20260912",
+  "experiment_id": "PRELIM75_V2_H1",
+  "online_accuracy_percent": 66.1914,
+  "online_accuracy": 0.661914,
+  "source": "user_reported_platform",
+  "zip_sha256": "3640997770dd9bd56f105ab8a17e2bc96da4dbe584e3067b14e7ce955a16cf22",
+  "checkpoint_sha256": "ca932deeaf2b3be36da1b41357111cd6b8cea73ecf92d7ea4f321a90e3cd4e22",
+  "reported_at_utc": "2026-09-12T18:15:21.459710+00:00",
+  "exact_correct_count": null,
+  "actual_upload_time": null,
+  "delta_pp_vs_matched_P": -0.5767,
+  "delta_pp_vs_matched_H0": 0.3285,
+  "status": "platform_valid_not_promoted",
+  "diagnostic_scope": "overlap_diagnostic",
+  "notes": "User supplied 66.1914 in reply to the H1 package question. Rounded aggregate; exact correct count/upload time not supplied. H1 is 0.3285pp above matched H0 but 0.5767pp below fixed P 66.7681%. H0/H1 both below P: close H and cancel C; no additional refit or sweep. V0/V1 platform scores pending."
+}

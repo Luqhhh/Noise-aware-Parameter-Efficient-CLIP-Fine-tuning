@@ -77,3 +77,11 @@ V1耗时2979.7419秒，CUDA峰值分配4012382720字节，batch32未降档。V1 
 已运行预算：在线6epoch、缓存head20epoch、4个独立平台包；第五个C尚未启动。实际反馈及C判定为 `pending_real_platform_feedback`，仅真实H/V胜者各比P高至少0.30pp（67.0681%）才执行C；本地指标不触发组合。当前75%尚未被实际平台反馈验证。四组工程交付完成，可复用本地checkpoint/配置和受跟踪报告；只本地提交，用户负责push/上传。训练源snapshot及其逐文件哈希不变，历史包不覆盖。
 
 最终复核：历史最佳及匹配无校准P的CSV/ZIP四个哈希均与执行前一致；C入口只读审计退出0、返回pending_real_platform_feedback，未生成C目录。四个桌面副本、候选checkpoint及ZIP实际哈希再次核对通过。
+
+## H1真实平台回填，关闭H及C（2026-09-13）
+
+用户回复H1包问题：66.1914%，绑定H1 ZIP SHA-256 `3640997770dd9bd56f105ab8a17e2bc96da4dbe584e3067b14e7ce955a16cf22`。比匹配H0高0.3285pp，但比无校准P66.7681%低0.5767pp。H0=65.8629%、H1=66.1914%均未超过P，按既定规则关闭H，不追加loss/tau/seed/epoch拟合；本轮C不满足门槛，取消，不需要等待V平台成绩才能作此否定判断。V0/V1工程交付已完成，平台成绩待回填以决定视觉路线。精确正确数及上传时间未提供。registry/current_platform_summary已登记，候选交付报告和其哈希保留为交付时截面；当前平台字段见新增platform结果/路线决策。
+
+C入口修正：某条路线的全部有效候选已评分且最好仍低于门槛时立即关闭，不要求另一条路线提供无法改变结论的分数。均达到门槛时仍必须完整评分后选实际胜者。该变更不启动训练、不改变任何checkpoint、预测或提交包。
+
+H及C关闭验收：组合/几何专项8 passed（包括路线负结果提前关闭、门槛边界、拒绝未评分胜者、已止损成员不参与胜者选择）；`PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.train_prelim75_combination --config configs/prelim75_v2.yaml --execute`真实退出0，返回closed_below_combination_gate。C及C_cache均不存在。四包ZIP哈希未变，registry四个唯一行中仅H0/H1写入真实成绩；V0/V1保持空白。日志 `outputs/prelim75_v2_20260912/gate_closed_tests.log`。

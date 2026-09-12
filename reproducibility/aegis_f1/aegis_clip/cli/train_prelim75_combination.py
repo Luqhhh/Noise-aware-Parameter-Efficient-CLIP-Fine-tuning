@@ -21,12 +21,20 @@ def select_combination(scores, stopped=()):
     if any(v >= 75 for v in valid.values()):
         return {'status':'target_reached_no_new_training'}
     required = set(('H0','H1','V0','V1')) - set(stopped)
+    # A fully scored route below the gate rules out C immediately.
+    # The other route's pending scores cannot change that decision.
+    for route in (('H0', 'H1'), ('V0', 'V1')):
+        active = set(route) & required
+        if not active:
+            return {'status':'closed_no_eligible_route_pair'}
+        if active <= set(valid) and max(valid[name] for name in active) < 67.0681:
+            return {'status':'closed_below_combination_gate'}
     if not required <= set(valid):
         return {'status':'pending_real_platform_feedback'}
     if not any(k in valid for k in ('H0','H1')) or not any(k in valid for k in ('V0','V1')):
         return {'status':'closed_no_eligible_route_pair'}
-    h = max((k for k in ('H0','H1') if k in valid), key=lambda k:valid[k])
-    v = max((k for k in ('V0','V1') if k in valid), key=lambda k:valid[k])
+    h = max((k for k in ('H0','H1') if k in required), key=lambda k:valid[k])
+    v = max((k for k in ('V0','V1') if k in required), key=lambda k:valid[k])
     if valid[h] < 67.0681 or valid[v] < 67.0681:
         return {'status':'closed_below_combination_gate'}
     return {'status':'eligible','head_winner':h,'visual_winner':v,

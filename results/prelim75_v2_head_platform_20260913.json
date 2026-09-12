@@ -1,0 +1,14 @@
+{
+  "status": "closed_H_no_platform_improvement",
+  "platform_accuracy_percent": {
+    "H0": 65.8629,
+    "H1": 66.1914
+  },
+  "matched_P_accuracy_percent": 66.7681,
+  "head_cohort_best": "H1",
+  "head_winner_promoted": false,
+  "combination_decision": {
+    "status": "closed_below_combination_gate"
+  },
+  "V0_V1_scores_pending": true
+}

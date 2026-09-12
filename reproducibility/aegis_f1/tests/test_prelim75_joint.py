@@ -67,3 +67,23 @@ def test_combination_requires_real_scores_and_closes_at_target():
     scores['H0']['accuracy_percent'] = None
     with pytest.raises(ValueError, match='real user-reported'):
         select_combination(scores)
+
+
+@pytest.mark.parametrize('route', [('H0', 'H1'), ('V0', 'V1')])
+def test_scored_route_below_gate_closes_C_without_other_route_feedback(route):
+    scores = {name: {'source': 'user_reported_platform', 'accuracy_percent': score}
+              for name, score in zip(route, (65.8629, 66.1914))}
+    assert select_combination(scores)['status'] == 'closed_below_combination_gate'
+    scores[route[1]]['accuracy_percent'] = 67.0681
+    assert select_combination(scores)['status'] == 'pending_real_platform_feedback'
+
+
+def test_stopped_route_member_does_not_keep_C_waiting_or_win_selection():
+    scores = {'H0': {'source': 'user_reported_platform', 'accuracy_percent': 66.5}}
+    assert select_combination(scores, stopped=('H1',))['status'] == 'closed_below_combination_gate'
+    assert select_combination({}, stopped=('H0', 'H1'))['status'] == 'closed_no_eligible_route_pair'
+    scores = {name: {'source': 'user_reported_platform', 'accuracy_percent': score}
+              for name, score in zip(('H0', 'H1', 'V0', 'V1'), (67.1, 70., 67.1, 67.1))}
+    choice = select_combination(scores, stopped=('H1',))
+    assert choice['status'] == 'eligible'
+    assert choice['head_winner'] == 'H0'
