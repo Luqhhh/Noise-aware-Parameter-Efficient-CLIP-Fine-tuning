@@ -61,3 +61,18 @@ R2 真实节点复现与恢复、R3 间接谱系/开发隔离、R4 类级真实�
 恢复需另建输出目录并核对实际官方初始化、样本顺序和预处理，不承诺恢复相同序列化哈希。
 初始化父模型和 trust 包存在，但完整生产来源尚未验证。冻结特征参考与教师伪标签输入分开记录。
 私有清单见 `outputs/stage_readiness/20260911_reproduction_dependencies_r1/fullft_input_audit.json`。
+
+
+## 2026-09-12 教师生产记录追溯
+
+已从历史 `teacher_trust_audit.json` 和 trust 元数据恢复依赖：
+`cvt_v1 → fullfit_r1_teacher_v1 → selftrain_r1_teacher_v2_relaxed → selftrain_r2_teacher_v3_multiscale`。
+这 4 个 trust 文件存在。3 个教师增强节点的 9 条输入引用中，7 条实际哈希匹配，
+2 条 checkpoint 引用缺失：`F1_FLAT_MLP_LORA_SELFTRAIN_R1_FP32/seed42/checkpoints/epoch_3.pt`
+和 `F1_FLAT_MLP_LORA_FULLFIT_R1_FP32/seed42/checkpoints/epoch_3.pt`（相对 AEGIS outputs）。
+最末级 R2 checkpoint 存在且哈希匹配；最末级多尺度教师 logits 缓存缺失。
+此前已确认原始 CLIP 特征张量缺失。这些是实际资产缺口，不用其他 seed/epoch 填补。
+
+生成阈值与视图来自已有审计和历史报告，未重新选择或扫描。根 cvt 生产过程、各父模型训练
+及缓存恢复仍未验证，完整 R2/R3 尚未完成。核对清单和来源记录仅本地保存于
+`outputs/stage_readiness/20260912_teacher_provenance_r1/`。

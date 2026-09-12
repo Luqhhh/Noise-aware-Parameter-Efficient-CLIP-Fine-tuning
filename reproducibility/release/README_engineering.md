@@ -72,3 +72,13 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.reproduce_stage --
 执行 features → train → infer，并生成经格式检查的 5 类、5 张预测包。
 这是软件演练包，不能上传官方赛事或进入正式模型谱系。正式执行仍阻塞；
 配置中隐式图像依赖、官方初始化权重绑定和完整生产链等检查仍需继续补齐。
+
+
+## 历史教师生成记录核对
+
+仓库根运行 `python3 scripts/audit_teacher_producer.py --audit <teacher_audit.json>
+--base-dir <AEGIS根目录> --output-dir <新目录>`。该入口只核对记录指定的实际字节，
+生成参数完整的非执行命令模板；不填补缺失阈值，不覆盖历史 trust/cache。
+缺资产或哈希不符返回 2。模板保留新输出路径与运行条件占位符，不能直接用于训练。
+`bytes_checks_passed` 只表示所列文件匹配历史记录；不证明生产来源或作用域真实性。
+目前支持历史明确登记的 attention_multiscale 分支，其他分支不会套用默认值。
