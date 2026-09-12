@@ -81,3 +81,7 @@ python3 scripts/run_historical_recovery_queue.py --run-dir outputs/stage_readine
 开发 pipeline 增量：组集合哈希绑定、训练/验证组隔离、OOF assignments 精确匹配、trust 学习前子集过滤、开发链禁止最终合并。反例覆盖验证特征混入、旧全量 OOF、组文件篡改和缓存标签错配。保留正式来源认证未完成状态，没有新正式训练。
 
 本段验证：Aegis 全套 439 passed / 1 skipped（CUDA 不可用）；随后加入开发输出保护并运行相关套件 5 passed。资源报告测试 2 passed。桌面包哈希不受工程代码修改影响。
+
+## 用户平台成绩回填
+
+恢复 Selftrain R1 单视图无校准包：**61.4010%**，对应 ZIP e56b3129c0027ac37fc136d825e69c29de4bc0d1a65060d1763830ce7c5cb479。用户仅提供四位小数百分比，不反推精确正确数或上传时间。候选不晋级。相比无校准双 Adapter 四尺度+Flip 父模型 66.7681% 低 5.3671pp；模型与推理协议同时不同，不能把差值全部归因于重训或某单一模块。当前计划已归档，不自动追加实验或重启复现。
