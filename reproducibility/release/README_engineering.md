@@ -1,5 +1,7 @@
 # 复现入口工程说明
 
+> 当前执行范围已由用户调整：复现任务移出本轮计划。以下保留为历史事实与未完成项记录，不再据此自动启动复现。当前待办见 [current_execution_plan.md](../../docs/current_execution_plan.md)。
+
 当前官方规模及来源在 `configs/official_stage_sizes.json`。750/500 类是当前复赛/半决赛口径；旧 1500/1000 类合成测试只用于软件边界覆盖。
 
 新增入口从仓库根目录运行：
