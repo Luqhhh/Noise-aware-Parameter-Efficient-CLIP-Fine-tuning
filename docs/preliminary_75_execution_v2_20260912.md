@@ -3,7 +3,8 @@
 日期：2026-09-12。项目：`Luqhhh/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning`。
 源码基线：`fece41ba5df33d773de7af575b209fab6e385bf7`，已执行 fetch 和自动 stash 模式的 `git pull --rebase --autostash origin main`，远端无新增提交。
 
-状态：**方案及只读资产核对完成；新训练入口尚未实现，H/V/C 未训练、未推理、未提交。**
+初始状态（83c03dd）：方案及只读资产核对完成，H/V/C未执行。
+执行更新：用户已授权“按顺序执行”；新训练/诊断/交付入口已实现并通过初始检查，完整P缓存生成中。实际执行状态以 [current_execution_plan.md](current_execution_plan.md) 和本地运行目录为准，以下规格不冒称实测提分。
 本文件将用户提供的 v2 方案落实到当前仓库，并补齐末轮监督、双 Adapter 残差缓存和几何绑定的实施选择。方案、配方与停止条件由助手选择，不要求用户先判断瓶颈。
 
 ## 1. 工作基线与目标
