@@ -13,7 +13,7 @@
 - 新监督日志开关的合成训练完成，154 个模型张量与既有关闭开关的合成对照完全相等。生成 5 类/5 图 CSV、ZIP，并通过格式与包内外一致性检查；产物 `diagnostic_smoke2/submission/` 仅限软件演练。
 - 官方当前复赛 750 类、半决赛 500 类结构演练完成。生成中文技术报告 PDF 初稿，逐页检查渲染；不代表正式材料验收。
 
-## 正在执行的模型恢复
+## 模型恢复完成（22:34）
 
 `recovery_plan.json` 登记 7 个顺序节点，最多 73 个 epoch（E2 原有早停政策保留）。
 只改变运行路径、来源标签和可选观察日志，不改变历史方法或扫描参数。
@@ -25,7 +25,7 @@ python3 scripts/run_historical_recovery_queue.py --run-dir outputs/stage_readine
 python3 scripts/run_historical_recovery_queue.py --run-dir outputs/stage_readiness/20260912_full_rebuild_r1 --execute
 ```
 
-第一个命令只审计。第二个已启动，等待此前启动的 E2 最终 artifact_manifest，之后逐节点调用已有训练 CLI。
+第一个命令只审计。第二个已完成七节点恢复，最终队列状态 checks_passed。E2 于第 49 轮按原策略早停，其余六个节点均按登记轮数完成。
 队列核对冻结源码、配置、预算、原始方法、父 checkpoint 选择和完成产物哈希；已有输出或失败会停下，不隐式 overwrite/resume。
 源码固定在 `training_source/`；日志为 `e2_recovery.log`、各节点日志和 `recovery_queue_status.json`。
 此入口专用于本次登记恢复，不是完整正式阶段复现认证。现存 cvt/trust 更早上游仍需闭合。
@@ -38,7 +38,7 @@ python3 scripts/run_historical_recovery_queue.py --run-dir outputs/stage_readine
 发布目录加入三个阶段说明/待定配方模板、环境版本清单、官方权重字节核验记录、证据索引及技术报告源文件。
 
 最终根套件 422 passed / 1 skipped，包含新增队列完成绑定测试 5 项。
-最终 Aegis 回归 433 passed / 1 skipped；CUDA 单测在沙箱内不可用而跳过，实际 GPU 特征/教师生成已成功，模型恢复正在运行。
+最终 Aegis 回归 433 passed / 1 skipped；CUDA 单测在沙箱内不可用而跳过，实际 GPU 特征/教师生成已成功，七节点模型恢复已完成。
 测试日志与退出码保存在运行目录。`git diff --check` 通过。
 
 ## 尚未完成
@@ -48,7 +48,7 @@ python3 scripts/run_historical_recovery_queue.py --run-dir outputs/stage_readine
 | P0–P3 / R0 资产及来源 | 已盘点并部分补齐，仍有上游谱系未闭合 |
 | P4–P7 初赛机制 | 范数对齐 63.3676%，匹配无校准对照 66.7681%，差 -3.4005 pp，已拒绝；本次恢复尚非新候选 |
 | R1 明确错误与回归 | 已修复并通过当前回归 |
-| R2 完整真实训练链 | 7 节点恢复正在运行；现存更早 trust/cvt 来源及全部最终分支仍未完整重建 |
+| R2 完整真实训练链 | 7 节点恢复完成；现存更早 trust/cvt 来源及全部最终分支仍未完整重建 |
 | R3 开发隔离 | 图审计、切分及 OOF 检查已有；完整 trust 开发接线与真实性认证未完成 |
 | R4 长尾监督诊断 | 实际目标量日志已有；原始频次/内容组/可信覆盖全字段尚缺 |
 | R5 校准 | 应用绑定检查已有；可信拟合审计与正式生产流程未闭合 |
@@ -57,3 +57,13 @@ python3 scripts/run_historical_recovery_queue.py --run-dir outputs/stage_readine
 | R8 干净环境 | 正式全过程、结果比较及用户复核未完成 |
 
 不能将本次工程回归、恢复中的训练或 PDF 初稿写成两方案全部完成。历史最佳 70.352866% 不转移到新缓存、模型或校准协议。
+
+## 恢复模型交付检查
+
+最终 Selftrain R1 第 3 轮原验证 raw_micro = 72.1501%，仅为重叠诊断。七个 best checkpoint 已再次按清单核验实际 SHA-256。
+
+在源码 19fa2ee 下按单 checkpoint、原单视图、无校准路径执行 infer（`--tta none --local-view none`），退出 0。完整命令绑定在运行目录 recovered_inference_registration.json。生成 24,967 行预测，经 check_submission.py 检查通过，ZIP 内 CSV 与外部文件逐字节相同。
+
+产物：`outputs/stage_readiness/20260912_full_rebuild_r1/recovered_selftrain_submission/submission.zip`。ZIP SHA-256：`e56b3129c0027ac37fc136d825e69c29de4bc0d1a65060d1763830ce7c5cb479`。未上传、未替换桌面包；没有平台成绩，也未选为历史最佳替代。上游 trust/cvt 真实性闭合仍是完整复现的未完成项。
+
+新增 report_class_support.py 与 class_support 模块，实际生成 500 类统计，绑定原始/拟合/验证 CSV、内容组和类别映射文件哈希；10,316 个验证样本的内容组均已进入当前拟合范围。缺少的逐类准确率和频次分组留空，不能填零或从已有总分推算。冲突组数是原标签冲突统计，不是真值噪声率。新模块反例与手算测试 2 项通过。
