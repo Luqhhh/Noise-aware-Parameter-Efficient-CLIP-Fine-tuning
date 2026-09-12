@@ -12,11 +12,11 @@
 
 用户已回传 RECOVERED_SELFTRAIN_R1_BARE_NOCAL_20260912 平台分数61.4010%，已登记，不晋级。低于无校准父模型66.7681%共5.3671pp，但模型组成和视图协议不同，不归因为单一机制。历史最高70.352866%及原包保留。
 
-## 本轮：按用户授权顺序执行，缓存生成中
+## 本轮：按用户授权顺序执行，H0/H1已交付，继续V0/V1
 
 用户追加授权“按顺序执行”。完整方案见 [preliminary_75_execution_v2_20260912.md](preliminary_75_execution_v2_20260912.md)，初始预检见 [prelim75_v2_preflight_20260912.json](../results/prelim75_v2_preflight_20260912.json)。再次 fetch/pull，远端仍为fece41b。在main实现了完整P缓存、H0/H1拟合、V0/V1联合微调、真实十视图诊断与固定无校准交付入口。
 
-本轮目录 `outputs/prelim75_v2_20260912/`。真实训练图的初始CUDA前向/局部缓存重构最大差0，argmax一致；8项新手算/几何/归一化检查通过。当前CPU Aegis回归448 passed/1 skipped，根回归424 passed/1 skipped。回归中主动隔离GPU，避免与当前缓存争卡；实际CUDA检查另行执行。正在生成103218张十视图base/residual缓存，尚无新候选平台成绩，不把代码接线或缓存进度写成实验完成。
+本轮目录 `outputs/prelim75_v2_20260912/`。真实训练图的初始CUDA前向/局部缓存重构最大差0，argmax一致；8项新手算/几何/归一化检查通过。当前CPU Aegis回归451 passed/1 skipped，根回归424 passed/1 skipped。回归中主动隔离GPU，避免与当前缓存争卡；实际CUDA检查另行执行。103218张十视图base/residual缓存已完成（22.6分钟，初始数值差0），H0/H1训练、真实诊断与提交校验均已完成，H0/H1包位于运行目录submission及桌面，尚无新候选平台成绩，不把代码接线或缓存进度写成实验完成。
 
 固定路线：完整FULLFT_DUAL无校准P上，先H0/H1共享head普通CE/有效监督Balanced Softmax对照，再V0/V1 global-only/global-local短微调；只有H/V平台胜者均比P高至少0.30pp才进行一次C重新拟合组合。最多6 epoch在线微调、30 epoch缓存head训练、五个新平台候选；75%或既定预算/路线终止后结束本轮。
 
