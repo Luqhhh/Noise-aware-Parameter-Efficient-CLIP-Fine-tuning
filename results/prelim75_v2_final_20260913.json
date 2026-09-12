@@ -1,0 +1,108 @@
+{
+  "status": "completed_fixed_round_target_not_reached",
+  "configuration": "configs/prelim75_v2.yaml",
+  "reported_at_utc": "2026-09-12T20:02:48.809052+00:00",
+  "actual_platform_feedback": {
+    "H0": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 65.8629,
+      "zip_sha256": "08fb4339f63f0b3ecd78dad7eab5f88dfe8e9d0356b7189076fb939f23702abe",
+      "reported_at_utc": "2026-09-12T17:20:42.798404+00:00",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    },
+    "H1": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 66.1914,
+      "zip_sha256": "3640997770dd9bd56f105ab8a17e2bc96da4dbe584e3067b14e7ce955a16cf22",
+      "reported_at_utc": "2026-09-12T18:15:21.459710+00:00",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    },
+    "V0": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 67.409,
+      "zip_sha256": "bf866f45fa959e552f28006940f9dbd4be0ea68ed6ce385e0d45032ab4a45b64",
+      "reported_at_utc": "2026-09-12T19:03:47.920130+00:00",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    },
+    "V1": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 67.5932,
+      "zip_sha256": "7f28c1300e4a50bcb8e99aabff5c9d8df50db813c3ff165dbfbe916c8e37b77e",
+      "reported_at_utc": "2026-09-12T20:02:48.809052+00:00",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    }
+  },
+  "matched_P_accuracy_percent": 66.7681,
+  "historical_best_accuracy_percent": 70.352866,
+  "selected_no_calibration_winner": "V1",
+  "selected_checkpoint_path": "outputs/prelim75_v2_20260912/V1/candidate.pt",
+  "selected_checkpoint_sha256": "a52548511f5971836dbd6ffc07f62685050e2dc9b4318818573c53e9a7c5a696",
+  "selected_submission_zip_path": "outputs/prelim75_v2_20260912/V1/submission/submission.zip",
+  "selected_submission_zip_sha256": "7f28c1300e4a50bcb8e99aabff5c9d8df50db813c3ff165dbfbe916c8e37b77e",
+  "head_route_decision": {
+    "status": "closed_H_no_platform_improvement",
+    "platform_accuracy_percent": {
+      "H0": 65.8629,
+      "H1": 66.1914
+    },
+    "matched_P_accuracy_percent": 66.7681,
+    "head_cohort_best": "H1",
+    "head_winner_promoted": false,
+    "combination_decision": {
+      "status": "closed_below_combination_gate"
+    },
+    "V0_V1_scores_pending": false
+  },
+  "visual_route_decision": {
+    "status": "completed_V1_selected",
+    "winner": "V1",
+    "winner_accuracy_percent": 67.5932,
+    "platform_accuracy_percent": {
+      "V0": 67.409,
+      "V1": 67.5932
+    },
+    "matched_P_accuracy_percent": 66.7681,
+    "delta_pp_vs_matched_P": 0.8251,
+    "delta_pp_vs_V0": 0.1842,
+    "historical_best_accuracy_percent": 70.352866,
+    "delta_pp_vs_historical_best": -2.759666,
+    "historical_best_promoted": false,
+    "V1_score_pending": false,
+    "all_visual_platform_scores_recorded": true,
+    "75_percent_verified": false,
+    "new_training_authorized_by_this_feedback": false,
+    "combination_decision": {
+      "status": "closed_below_combination_gate"
+    }
+  },
+  "combination_decision": {
+    "status": "closed_below_combination_gate"
+  },
+  "prescribed_candidates_delivered_and_scored": 4,
+  "combination_executed": false,
+  "pending_platform_scores": [],
+  "75_percent_verified": false,
+  "historical_best_promoted": false,
+  "new_platform_uploads_by_agent": false,
+  "git_push_by_agent": false,
+  "independent_validation_claim": false,
+  "no_new_training_or_prior_fitting": true,
+  "verification": {
+    "metadata_only_update": true,
+    "all_four_score_package_bindings_and_unique_registry_rows": true,
+    "all_four_submission_and_delivery_report_hashes_preserved": true,
+    "V1_full_artifact_manifest_hashes_verified": true,
+    "all_four_desktop_zip_hashes_verified": true,
+    "historical_best_and_matched_P_csv_zip_hashes_preserved": true,
+    "V1_zip_internal_csv_byte_equal": true,
+    "combination_cli_command": "PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.train_prelim75_combination --config configs/prelim75_v2.yaml",
+    "combination_cli_exit_code": 0,
+    "combination_cli_result": "closed_below_combination_gate",
+    "C_and_C_cache_absent": true,
+    "git_diff_check_passed": true
+  }
+}

@@ -14,8 +14,10 @@
   "historical_best_accuracy_percent": 70.352866,
   "delta_pp_vs_matched_P": 0.6409,
   "delta_pp_vs_historical_best": -2.943866,
-  "status": "working_no_calibration_best_pending_V1",
+  "status": "retained_scored_alternative_final_winner_V1",
   "historical_best_promoted": false,
   "diagnostic_scope": "overlap_diagnostic",
-  "notes": "User supplied 67.4090 in reply to the V0 package question. Rounded aggregate; exact correct count/upload time not supplied. +0.6409pp vs same-protocol uncalibrated P66.7681%, -2.943866pp vs historical calibrated best70.352866%. Preserve V0 as provisional best under current no-calibration protocol; historical best not refreshed. V1 platform feedback pending. H and C remain closed; no additional training."
+  "notes": "User supplied 67.4090 in reply to the V0 package question. Rounded aggregate; exact correct count/upload time not supplied. +0.6409pp vs same-protocol uncalibrated P66.7681%, -2.943866pp vs historical calibrated best70.352866%. Preserve V0 as provisional best under current no-calibration protocol; historical best not refreshed. V1 platform feedback pending. H and C remain closed; no additional training. UPDATE 2026-09-13: V1 real67.5932% is0.1842pp higher; final fixed-protocol winner V1. V0 remains a preserved alternative; no pending visual score.",
+  "final_visual_winner": "V1",
+  "V1_score_pending": false
 }

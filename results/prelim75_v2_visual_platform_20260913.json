@@ -1,13 +1,20 @@
 {
-  "status": "V0_preserved_pending_V1_platform",
-  "provisional_winner": "V0",
-  "winner_accuracy_percent": 67.409,
+  "status": "completed_V1_selected",
+  "winner": "V1",
+  "winner_accuracy_percent": 67.5932,
+  "platform_accuracy_percent": {
+    "V0": 67.409,
+    "V1": 67.5932
+  },
   "matched_P_accuracy_percent": 66.7681,
-  "delta_pp_vs_matched_P": 0.6409,
+  "delta_pp_vs_matched_P": 0.8251,
+  "delta_pp_vs_V0": 0.1842,
   "historical_best_accuracy_percent": 70.352866,
-  "delta_pp_vs_historical_best": -2.943866,
+  "delta_pp_vs_historical_best": -2.759666,
   "historical_best_promoted": false,
-  "V1_score_pending": true,
+  "V1_score_pending": false,
+  "all_visual_platform_scores_recorded": true,
+  "75_percent_verified": false,
   "new_training_authorized_by_this_feedback": false,
   "combination_decision": {
     "status": "closed_below_combination_gate"
