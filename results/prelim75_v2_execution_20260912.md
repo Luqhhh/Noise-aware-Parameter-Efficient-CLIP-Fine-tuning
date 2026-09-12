@@ -56,3 +56,7 @@ H段实现和实际训练/提交交付已完成，可由队友pull复用；只�
 真实十视图重叠诊断raw micro=82.2120965%，clean-core micro=94.8165298%，比P分别+2.7142286pp/+2.8918266pp。未触发2pp止损；这些指标不是独立泛化或平台成绩。V0真实测试推理已完成，24967行与全部提交检查通过、包内外CSV字节相同。ZIP `outputs/prelim75_v2_20260912/V0/submission/submission.zip`，SHA-256 `bf866f45fa959e552f28006940f9dbd4be0ea68ed6ce385e0d45032ab4a45b64`；桌面同哈希副本 `submission_prelim75_V0_20260912.zip`。checkpoint SHA-256 `2deaa155069636e5673fc75575efbd45deaed872af101a31182d78edb8bfda5f`。完整命令/结果/交付哈希见 `results/prelim75_v2_v0_20260913.json`。平台未知，不晋级。
 
 V0结果可pull复用；只本地提交，用户负责push。V1已从原P独立启动。首步local-only梯度范数visual proj=6.99440、O3 up=1.37985、PTA up=1.59095，证明局部损失能真实反传至三者；总loss梯度审核通过，冻结参数无泄漏，batch32无需降档。V1尚未完成，不把首步检查称作结果交付。V1接续前再次自动stash模式pull，origin/main仍fece41b，refs无新重叠；自动stash93b2cfd已恢复，没有第二次pop。证据在运行目录 `V1_additional_preflight.json`。
+
+## H0真实平台回填（2026-09-13）
+
+用户回复H0包问题：65.8629%。绑定已交付H0 ZIP SHA-256 `08fb4339f63f0b3ecd78dad7eab5f88dfe8e9d0356b7189076fb939f23702abe`。比匹配无校准P66.7681%低0.9052pp，H0不晋级；原本地重叠clean-core+0.4092pp不能当成平台收益。精确正确数、上传时间未提供。registry及current_platform_summary已回填；不新增扫描，H1尚待真实成绩，V1继续固定训练。C只可能由满足门槛的其他真实H/V胜者触发。

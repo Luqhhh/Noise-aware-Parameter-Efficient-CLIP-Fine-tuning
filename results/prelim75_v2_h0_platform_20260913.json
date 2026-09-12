@@ -1,0 +1,16 @@
+{
+  "result_id": "PRELIM75_V2_H0_NOCAL_20260912",
+  "experiment_id": "PRELIM75_V2_H0",
+  "online_accuracy_percent": 65.8629,
+  "online_accuracy": 0.658629,
+  "source": "user_reported_platform",
+  "zip_sha256": "08fb4339f63f0b3ecd78dad7eab5f88dfe8e9d0356b7189076fb939f23702abe",
+  "checkpoint_sha256": "1be8f0404ae066dcbe8dd94d66a614a4124ed42e2c2f70685d292cc777ab1b96",
+  "reported_at_utc": "2026-09-12T17:20:42.798404+00:00",
+  "exact_correct_count": null,
+  "actual_upload_time": null,
+  "delta_pp_vs_matched_P": -0.9052,
+  "status": "platform_valid_not_promoted",
+  "diagnostic_scope": "overlap_diagnostic",
+  "notes": "User supplied 65.8629 in reply to the H0 package question. Rounded aggregate; no exact correct count or upload time supplied. Fixed no-calibration parent 66.7681%; H0 below parent by 0.9052pp. No retuning or new candidate. H1/V feedback still pending; V1 continues."
+}
