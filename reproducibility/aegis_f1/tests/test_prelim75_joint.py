@@ -5,6 +5,7 @@ import pytest
 from aegis_clip.prelim75_joint import fixed_choices, crop_with_bound_boxes, weighted_micro_loss
 from aegis_clip.cli.infer_prelim75 import infer
 import json
+from aegis_clip.cli.train_prelim75_combination import select_combination
 
 
 def test_choices_do_not_change_with_microbatch_partition():
@@ -53,3 +54,16 @@ def test_submission_stops_before_test_access_on_engineering_stop(tmp_path):
     with pytest.raises(ValueError, match='stopped'):
         infer({'output':str(tmp_path)},'H0')
     assert not (tmp_path/'H0/submission').exists()
+
+
+def test_combination_requires_real_scores_and_closes_at_target():
+    assert select_combination({})['status'] == 'pending_real_platform_feedback'
+    scores = {k:{'source':'user_reported_platform','accuracy_percent':67.1} for k in ('H0','H1','V0','V1')}
+    assert select_combination({k:scores[k] for k in ('H0','V0')})['status'] == 'pending_real_platform_feedback'
+    choice = select_combination(scores)
+    assert choice['head_winner']=='H0' and choice['visual_winner']=='V0'
+    scores['H0']['accuracy_percent'] = 75.
+    assert select_combination(scores)['status']=='target_reached_no_new_training'
+    scores['H0']['accuracy_percent'] = None
+    with pytest.raises(ValueError, match='real user-reported'):
+        select_combination(scores)

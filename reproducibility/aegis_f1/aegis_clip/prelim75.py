@@ -190,7 +190,7 @@ def candidate_config(checkpoint, plan, name):
     config['data']['train_augmentation'] = 'clip_center_crop'
     config['train']['init_checkpoint'] = plan['parent']
     config['train']['require_lineage_for_init_checkpoint'] = True
-    config['lineage'] = {'enabled': True, 'parent_experiment_id': 'F1_FLAT_FULL_FT_R3MS',
+    config['lineage'] = {'enabled': True, 'parent_experiment_id': plan.get('_feature_parent_experiment_id', 'F1_FLAT_FULL_FT_R3MS'),
                          'parent_train_csv': plan['train_csv'], 'parent_val_csv': plan['val_csv'],
                          'require_same_train': True, 'require_same_val': True,
                          'allow_parent_val_in_child_train': True,
@@ -225,7 +225,7 @@ def cache_binding(plan, paths):
 
 @torch.no_grad()
 def cache_features(plan):
-    output = Path(plan['output']) / 'cache'
+    output = Path(plan['output']) / plan.get('_cache_directory', 'cache')
     output.mkdir(parents=True, exist_ok=False)
     device = gpu_setup(); start = time.monotonic()
     data = supervision(plan)
@@ -297,7 +297,7 @@ def cache_features(plan):
 
 
 def read_cache(plan, verify=True):
-    output = Path(plan['output']) / 'cache'
+    output = Path(plan['output']) / plan.get('_cache_directory', 'cache')
     manifest = json.loads((output / 'manifest.json').read_text())
     paths = json.loads((output / 'paths.json').read_text())
     if manifest['status'] != 'complete' or manifest['rows'] != 103218:
@@ -357,7 +357,8 @@ def saved_candidate(checkpoint, model, config, name, plan, optimizer, scheduler,
     result['optimizer_state_dict'] = optimizer.state_dict()
     result['scheduler_state_dict'] = scheduler.state_dict()
     result['prelim75_training'] = {'name': name, 'plan_id': plan['plan_id'],
-                                  'parent_sha256': plan['parent_sha256'], 'selection': 'last_epoch',
+                                  'parent_sha256': plan.get('_root_parent_sha256', plan['parent_sha256']),
+                                  'feature_parent_sha256': plan['parent_sha256'], 'selection': 'last_epoch',
                                   'supervision': 'P_epoch3_fixed_w_q', 'prior_in_inference': False,
                                   'upstream_provenance_complete': False}
     if o3 is not None:
@@ -371,7 +372,7 @@ def saved_candidate(checkpoint, model, config, name, plan, optimizer, scheduler,
 
 
 def train_head(plan, name):
-    if name not in ('H0', 'H1'):
+    if name not in ('H0', 'H1') and not (name == 'C' and plan.get('_combination_approved') is True):
         raise ValueError('Only the two registered head candidates are authorized')
     output = Path(plan['output']) / name
     output.mkdir(parents=True, exist_ok=False)
@@ -381,7 +382,8 @@ def train_head(plan, name):
     model.requires_grad_(False); o3.requires_grad_(False); pta.requires_grad_(False)
     model.classifier.requires_grad_(True)
     head = model.classifier
-    counts = data['n_eff'].float().to(device) if name == 'H1' else None
+    head_variant = plan.get('_head_variant', name)
+    counts = data['n_eff'].float().to(device) if head_variant == 'H1' else None
     if counts is not None and (counts <= 0).any():
         raise ValueError('Zero effective class support; H1 closed')
     config = candidate_config(checkpoint, plan, name)
@@ -397,8 +399,8 @@ def train_head(plan, name):
     audit_parent(config, plan, output)
     atomic_json_dump(config, output / 'resolved_config.json')
     atomic_json_dump(source_manifest(), output / 'source_manifest.json')
-    atomic_json_dump({'cache_manifest_sha256': sha256_file(Path(plan['output'])/'cache/manifest.json'),
-                      'n_eff': data['n_eff'].tolist(), 'training_prior_tau': int(name == 'H1'),
+    atomic_json_dump({'cache_manifest_sha256': sha256_file(Path(plan['output'])/plan.get('_cache_directory','cache')/'manifest.json'),
+                      'n_eff': data['n_eff'].tolist(), 'training_prior_tau': int(head_variant == 'H1'),
                       'supervision_state': 'parent_epoch3_all_ten_epochs',
                       'trainable_parameters': [n for n,p in model.named_parameters() if p.requires_grad],
                       'frozen_modules_eval': True}, output / 'training_recipe.json')
