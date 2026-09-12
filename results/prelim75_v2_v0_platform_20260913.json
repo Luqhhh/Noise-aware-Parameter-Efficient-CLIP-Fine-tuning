@@ -1,0 +1,21 @@
+{
+  "result_id": "PRELIM75_V2_V0_NOCAL_20260912",
+  "experiment_id": "PRELIM75_V2_V0",
+  "online_accuracy_percent": 67.409,
+  "online_accuracy": 0.67409,
+  "source": "user_reported_platform",
+  "zip_sha256": "bf866f45fa959e552f28006940f9dbd4be0ea68ed6ce385e0d45032ab4a45b64",
+  "csv_sha256": "7e004124ee586145f12a8a2198958ac445760ebcf4b749ed4e43ee71a190afa7",
+  "checkpoint_sha256": "2deaa155069636e5673fc75575efbd45deaed872af101a31182d78edb8bfda5f",
+  "reported_at_utc": "2026-09-12T19:03:47.920130+00:00",
+  "exact_correct_count": null,
+  "actual_upload_time": null,
+  "matched_P_accuracy_percent": 66.7681,
+  "historical_best_accuracy_percent": 70.352866,
+  "delta_pp_vs_matched_P": 0.6409,
+  "delta_pp_vs_historical_best": -2.943866,
+  "status": "working_no_calibration_best_pending_V1",
+  "historical_best_promoted": false,
+  "diagnostic_scope": "overlap_diagnostic",
+  "notes": "User supplied 67.4090 in reply to the V0 package question. Rounded aggregate; exact correct count/upload time not supplied. +0.6409pp vs same-protocol uncalibrated P66.7681%, -2.943866pp vs historical calibrated best70.352866%. Preserve V0 as provisional best under current no-calibration protocol; historical best not refreshed. V1 platform feedback pending. H and C remain closed; no additional training."
+}

@@ -85,3 +85,7 @@ V1耗时2979.7419秒，CUDA峰值分配4012382720字节，batch32未降档。V1 
 C入口修正：某条路线的全部有效候选已评分且最好仍低于门槛时立即关闭，不要求另一条路线提供无法改变结论的分数。均达到门槛时仍必须完整评分后选实际胜者。该变更不启动训练、不改变任何checkpoint、预测或提交包。
 
 H及C关闭验收：组合/几何专项8 passed（包括路线负结果提前关闭、门槛边界、拒绝未评分胜者、已止损成员不参与胜者选择）；`PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.train_prelim75_combination --config configs/prelim75_v2.yaml --execute`真实退出0，返回closed_below_combination_gate。C及C_cache均不存在。四包ZIP哈希未变，registry四个唯一行中仅H0/H1写入真实成绩；V0/V1保持空白。日志 `outputs/prelim75_v2_20260912/gate_closed_tests.log`。
+
+## V0真实平台回填：无校准工作候选改善，历史最佳未刷新（2026-09-13）
+
+用户回复V0包问题：67.4090%，绑定ZIP SHA-256 `bf866f45fa959e552f28006940f9dbd4be0ea68ed6ce385e0d45032ab4a45b64`。比同模型起点/同推理协议的无校准P66.7681%高0.6409pp，暂保留V0；比历史FULLFT_DUAL四尺度/Flip+prior0.90的70.352866%低2.943866pp，不能标为刷新历史最好。两项差值按用户提供的精度计算，精确正确数及实际上传时间未提供。训练起点仍是历史方案同一份完整P；区别是当前新推理未应用旧prior。V1工程包已交付，平台待回填；H/C已关闭，不因V0超过组合的单路线门槛而重新开启H或C，不追加epoch或扫描。registry/current_platform_summary已登记，交付报告/产物哈希保留为交付时截面，平台结果另存；模型与预测文件未变。
