@@ -1,0 +1,126 @@
+{
+  "plan_id": "PRELIM75_V2_20260912",
+  "project": "Luqhhh/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning",
+  "source_commit": "fece41ba5df33d773de7af575b209fab6e385bf7",
+  "date": "2026-09-12",
+  "scope": "read_only_asset_and_supervision_feasibility",
+  "plan_status": "formed_not_implemented",
+  "new_training_started": false,
+  "new_candidate_generated": false,
+  "new_platform_submission": false,
+  "git": {
+    "branch": "main",
+    "initial_worktree": "clean",
+    "fetch_exit_code": 0,
+    "pull_command": "git pull --rebase --autostash origin main",
+    "pull_result": "Already up to date.",
+    "origin_main": "fece41ba5df33d773de7af575b209fab6e385bf7",
+    "all_available_branch_refs_and_overlap_history_inspected": true
+  },
+  "assets": [
+    {
+      "role": "P_composite_epoch3",
+      "path": "reproducibility/aegis_f1/outputs/F1_FLAT_FULL_FT_R3MS/seed42/dual_adapters/best.pt",
+      "exists": true,
+      "bytes": 1038725964,
+      "sha256": "f72b0104257f49d2667fe335553a861dd1dea947753feebdc7301b8890b48765",
+      "historical_hash_matches": true,
+      "local_feature_adapter": {"bottleneck_dim": 32, "residual_scale": 0.25, "dropout": 0.1},
+      "part_token_adapter": {"bottleneck_dim": 64, "residual_scale": 0.25, "dropout": 0.1, "top_patches": 8, "temperature": 0.07}
+    },
+    {
+      "role": "P_original_trust",
+      "path": "reproducibility/aegis_f1/artifacts/trust/selftrain_r2_teacher_v3_multiscale.pt",
+      "exists": true,
+      "bytes": 11568091,
+      "sha256": "6868041cc7b995a3e8e557ae925d1d25160acf23af09202f46911ce92125b30f",
+      "historical_hash_matches": true
+    },
+    {
+      "role": "P_fitting_list",
+      "path": "reproducibility/aegis_f1/artifacts/stages/preliminary/final_full_train.csv",
+      "exists": true,
+      "sha256": "7643e120589e69d6bdc0c54abc605a7271d78c41aed1a638534ea43e4c0c4a90"
+    },
+    {
+      "role": "overlap_diagnostic_list",
+      "path": "reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/val.csv",
+      "exists": true,
+      "sha256": "54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e"
+    },
+    {
+      "role": "class_mapping",
+      "path": "reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/class_to_idx.json",
+      "exists": true,
+      "sha256": "3edfd9e48e2f171b5d452577c52e0d189ae99dbfed3759d3e4f164fc090a6647"
+    },
+    {
+      "role": "missing_original_OpenAI_feature_tensor",
+      "path": "reproducibility/aegis_f1/artifacts/stages/preliminary/features/clip_vit_b32_openai/features.pt",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "role": "rebuilt_OpenAI_feature_tensor_reference_only",
+      "path": "outputs/stage_readiness/20260912_full_rebuild_r1/features/features.pt",
+      "exists": true,
+      "bytes": 211392132,
+      "sha256": "118f658c1837ee93611ae04f2a4e4630439a02e5ef921de0466d06beedfb6dfe",
+      "equality_to_missing_original_tensor": "not_certified"
+    }
+  ],
+  "supervision": {
+    "rule": "P epoch3: w=(0.6+0.4*clean) where clean>=0.60, else zero; corrected_targets with original trust alpha",
+    "source": "existing_final_fitting_list_only",
+    "test_or_extra_validation_rows_added": false,
+    "overlap_with_historical_validation": true,
+    "rows": 103218,
+    "unique_canonical_paths": 103218,
+    "trust_coverage": true,
+    "targets_and_weights_finite": true,
+    "target_distributions_normalized": true,
+    "target_weight_dtype": "float32",
+    "effective_count_accumulation_dtype": "float64",
+    "retained_rows": 76954,
+    "zero_weight_rows": 26264,
+    "nonzero_weight_soft_corrected_to_other_class_rows": 5708,
+    "sum_effective_supervision": 74659.25754404027,
+    "effective_class_min": 54.8587684156702,
+    "effective_class_median": 152.100741953424,
+    "effective_class_max": 214.71966673362255,
+    "zero_effective_class_count": 0,
+    "prior_max_min_ratio": 3.914044608268834,
+    "supports_H1_nonzero_prior_computation": true,
+    "bottleneck_or_generalization_proven": false
+  },
+  "retained_submissions": [
+    {
+      "role": "historical_best_with_prior",
+      "directory": "outputs/delivery/fullft_dual_pa0.9",
+      "csv_sha256": "790fabcfb57ada355bfdb2f732da5ea1e16d3c505cdbf77c558bccfe7112b16d",
+      "zip_sha256": "3d684c07027d905c3edf88e4ce88c3ef9f32a01a6304385600d3d0ced7af5251",
+      "historical_platform_accuracy_percent": 70.35286578283333,
+      "validation_exit_code": 0,
+      "rows": 24967,
+      "zip_internal_csv_byte_equal": true,
+      "historical_hashes_match": true
+    },
+    {
+      "role": "P_matched_no_calibration_control",
+      "directory": "outputs/preliminary_no_sweep/20260911_parent_nocal_control_r1/submission",
+      "csv_sha256": "3a61d3913c802c36cb0ac21bfdd47ea54e351223a89be258f15f23cad09e6682",
+      "zip_sha256": "7cd13a8913feb3eb15b5382182917b836cd0cd5905cccd3118cce0abd61a779b",
+      "historical_platform_accuracy_percent": 66.7681,
+      "validation_exit_code": 0,
+      "rows": 24967,
+      "zip_internal_csv_byte_equal": true,
+      "historical_hashes_match": true
+    }
+  ],
+  "limitations": [
+    "Preflight is not a new experiment or new platform score.",
+    "The retained final fitting list overlaps historical validation; local diagnostics are not independent generalization evidence.",
+    "P and trust byte identity does not certify unresolved upstream provenance or full historical reproduction.",
+    "H/V/C new training entry points and all candidate outputs remain unimplemented."
+  ]
+}
