@@ -115,7 +115,7 @@ for name in class_names:
     if len(name) != 4 or not name.isdigit():
         raise ValueError(f"Invalid class directory name: {name!r}")
 
-expected = config["data"]["expected_num_classes"]  # 500 preliminary, 1500 second_round, 1000 semifinal
+expected = config["data"]["expected_num_classes"]  # 500 preliminary, 750 repechage, 500 semifinal
 if len(class_names) != expected:
     raise ValueError(f"Expected {expected} classes, found {len(class_names)}")
 

@@ -62,7 +62,7 @@ FINE 强调潜在表征与类分布几何可用于噪声检测，避免完全依
 
 [Balanced Meta-Softmax for Long-Tailed Visual Recognition, NeurIPS 2020](https://proceedings.neurips.cc/paper/2020/hash/2ba61cc3a8f44143e1f2f13b2b729ab3-Abstract.html)
 
-复活赛和半决赛的数据规模说明明确存在长尾分布。Balanced Softmax 针对训练与测试类别先验不一致修正 Softmax 的训练偏差。AegisCLIP 实现了可关闭的训练期类先验 logit 校正：
+复赛（750 类）和半决赛（500 类）的数据规模说明明确存在长尾分布。Balanced Softmax 针对训练与测试类别先验不一致修正 Softmax 的训练偏差。AegisCLIP 实现了可关闭的训练期类先验 logit 校正：
 
 - 默认 `tau=0`，初赛不在没有证据时启用；
 - 后续赛段只比较 `0/0.5/1.0` 三个预注册值；

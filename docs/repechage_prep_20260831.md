@@ -1,11 +1,12 @@
-# 复赛（1500 类长尾）准备工作 — 2026-08-31
+# 复赛（750 类长尾）准备工作 — 2026-08-31
 
-> 历史记录：2026-09-11 用户已决定以当前官网为准，复赛现为
-> 750 类 / 148,695 训练 / 37,444 测试，半决赛为
-> 500 类 / 90,197 训练 / 24,912 测试。
-> 下文 1500 类演练和容量估算保留为历史软件测试，不代表当前官方规模。
+> 现行口径：2026-09-15 组委会通知，考虑复赛和半决赛的时间周期，
+> 两阶段类别数量分别减半，现为复赛 750 类、半决赛 500 类。
+> 训练/测试样本数沿用官网已登记的复赛 148,695 / 37,444、半决赛
+> 90,197 / 24,912，正式数据到位后仍须按实际清单核验。
+> 下文明确标为“历史”的 1500 类演练保留作软件边界测试，不代表当前官方规模。
 
-目标：把初赛代码与算法经验迁移到复赛（1,500 类 / 297,282 训练 / 74,896
+目标：把初赛代码与算法经验迁移到复赛（750 类 / 148,695 训练 / 37,444
 测试，含长尾分布），同时严格做到「只传代码，不传数据/伪标签/原型/已拟合
 参数」。本文件记录本轮落地的组件、用法与验证结果。
 
@@ -42,7 +43,7 @@ longtail:
 ### 2. head / medium / tail 三段评估
 
 - `aegis_clip/evaluation.py::longtail_segment_metrics`：按训练频率把类别等分
-  为三段（500/500/500 或 166/167/167），输出每段 micro/macro 与类数，
+  为三段（复赛 250/250/250；半决赛约 166/167/167），输出每段 micro/macro 与类数，
   `evaluate()` 在传入 `class_counts` 时自动附带，trainer 四个评估点均已接入。
 - 根仓库 `common/logit_adjustment.py`：新增 `compute_class_counts` 与
   `head_medium_tail_metrics`，`_compute_metrics_from_logits` /
@@ -81,7 +82,7 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.infer \
 - `scripts/check_submission.py`：标签范围检查新增 `--num-classes` /
   `--class-mapping`，不再写死 `[0000, 0499]`。
 
-### 5. 1500 类合成 dry-run
+### 5. 历史 1500 类合成 dry-run（软件边界测试）
 
 - 新增 `scripts/build_synthetic_stage.py`：生成长尾 1500 类训练目录 + 平铺
   测试目录（确定性噪声 JPEG），供全链路演练。
@@ -107,7 +108,7 @@ PYTHONPATH=$PWD python3 -m aegis_clip.cli.stage_pipeline --manifest pipeline.jso
 |---|---|
 | 合成数据 | 1500 类，18,274 训练（min 12 / max 80）+ 3,000 测试 |
 | prepare_stage | 通过；分层 + SHA-256 分组 split 正常 |
-| 特征缓存吞吐 | 18,274 张约 32s ≈ 565 img/s → 复赛 297,282 张约 9 min；fp32 缓存 ≈ 608MB |
+| 特征缓存吞吐 | 18,274 张约 32s ≈ 565 img/s → 按当前复赛 148,695 张估算约 4.4 min；fp32 缓存约 304MB |
 | 长尾训练 | 1 epoch 通过；class-balanced 采样 + 逆频率重加权 + tau=0.5 生效 |
 | 分段指标 | 评估输出 head/medium/tail 各 500 类 micro/macro 正常 |
 | prior 工作流 | 验证集拟合 → 强度扫描 → `prior_config.json`（test_data_used=false）→ 冻结推理 |
