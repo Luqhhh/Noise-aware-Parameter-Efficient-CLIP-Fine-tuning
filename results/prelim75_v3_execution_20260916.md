@@ -9,10 +9,10 @@
 - D0 cache and cohort: complete, gate passed
 - S0/S1 training: complete, fixed epoch 3 outputs retained
 - Submission packages: both generated and validated
-- Platform feedback: S0 = 68.2982%; S1 = null
-- Current decision: S0 is the real winner over V1 while S1 remains pending. No KD-effect claim is made.
+- Platform feedback: S0 = 68.2982%; S1 = 67.2167%
+- Final decision: retain S0; close the recovery KD route because S1 did not improve on S0 or V1.
 
-No package was uploaded automatically and no commit was pushed.
+No package was uploaded automatically. Git history was committed and pushed only after explicit user requests.
 
 ## Exact execution
 
@@ -64,18 +64,18 @@ Teacher artifact hashes:
 | Raw delta vs V1 | +0.9888pp | +0.7076pp |
 | Clean-core delta vs V1 | +1.2413pp | +0.9139pp |
 | Engineering stop | no | no |
-| Platform score | **68.2982%** | null |
+| Platform score | **68.2982%** | 67.2167% |
 
-The overlap diagnostics are engineering checks only because the 10316-row set overlaps training. They were not used to select an epoch. S1's lower overlap diagnostic does not substitute for its platform result.
+The overlap diagnostics are engineering checks only because the 10316-row set overlaps training. They were not used to select an epoch.
 
-S0 platform deltas are +0.7050pp versus V1 (67.5932%) and -2.054666pp versus the historical prior-0.90 result (70.352866%). Exact correct count and upload time were not provided and remain null. As S0 does not contain the new KD term, its gain cannot establish that recovery distillation works; S1 feedback is required for the planned S1-versus-S0 decision.
+S0 platform deltas are +0.7050pp versus V1 (67.5932%) and -2.054666pp versus the historical prior-0.90 result (70.352866%). S1 is -1.0815pp versus S0, -0.3765pp versus V1, and -3.136166pp versus the historical result. Exact correct counts and upload times were not provided and remain null. S0 does not contain the new KD term, while S1 does; therefore the added recovery distillation did not improve the platform result in this fixed comparison. S0 is retained and the recovery KD route is closed without further scanning or training.
 
 ## Delivered artifacts
 
-| Candidate | Repository ZIP | Windows desktop ZIP | ZIP SHA-256 | CSV SHA-256 |
+| Candidate | Repository ZIP | Desktop disposition | ZIP SHA-256 | CSV SHA-256 |
 |---|---|---|---|---|
-| S0 | `outputs/prelim75_v3_20260915/S0/submission/submission.zip` | `C:\\Users\\lqh22\\Desktop\\prelim75_v3_S0_submission.zip` | `f6925507dd51f5a25a17805a1be1322d0e37b1aafa6eb15aba782c3ff7b419db` | `54d69cce616a550587885249a90ab888ab763e1b9c3d85c85606dfb97a0c7cdf` |
-| S1 | `outputs/prelim75_v3_20260915/S1/submission/submission.zip` | `C:\\Users\\lqh22\\Desktop\\prelim75_v3_S1_submission.zip` | `4d508a09b6ff5476ee36faec45e4af476d1c4a5df12989ed40acb5edf466c438` | `95f212bad389916485a70257a625f0f1d9e42279ed231f46a037a9b04a07cbf7` |
+| S0 | `outputs/prelim75_v3_20260915/S0/submission/submission.zip` | desktop copy deleted after feedback | `f6925507dd51f5a25a17805a1be1322d0e37b1aafa6eb15aba782c3ff7b419db` | `54d69cce616a550587885249a90ab888ab763e1b9c3d85c85606dfb97a0c7cdf` |
+| S1 | `outputs/prelim75_v3_20260915/S1/submission/submission.zip` | desktop copy deleted after feedback | `4d508a09b6ff5476ee36faec45e4af476d1c4a5df12989ed40acb5edf466c438` | `95f212bad389916485a70257a625f0f1d9e42279ed231f46a037a9b04a07cbf7` |
 
 Both packages contain all 24967 test filenames exactly once, use four-digit labels, have 500 predicted classes, and have byte-identical inner/outer CSV files. The existing submission validator exited 0 for both. Final inference used one student checkpoint and did not access the teacher cache or checkpoint.
 
@@ -88,4 +88,4 @@ Both packages contain all 24967 test filenames exactly once, use four-digit labe
 - S1 KD-only gradients reached the permitted visual projection, O3-up and PTA-up parameters.
 - V2 source/plan checks were retained; no `strict=False` loading workaround was introduced.
 
-Implementation commit `0bea559` added the v3 config, recovery module and CLIs, fixed queue, and tests. Commit `7027f2c` corrected only the epoch-0 fusion comparison scale and added output-directory ignore coverage. These commits are local on `main`; `origin/main` was not pushed.
+Implementation commit `0bea559` added the v3 config, recovery module and CLIs, fixed queue, and tests. Commit `7027f2c` corrected only the epoch-0 fusion comparison scale and added output-directory ignore coverage. Both commits and the result records were pushed to `origin/main` only after explicit user requests.

@@ -1,0 +1,57 @@
+{
+  "status": "completed_fixed_round_S0_selected_recovery_KD_closed",
+  "plan_id": "PRELIM75_V3_20260915",
+  "configuration": "configs/prelim75_v3.yaml",
+  "reported_date": "2026-09-16",
+  "actual_platform_feedback": {
+    "S0": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 68.2982,
+      "zip_sha256": "f6925507dd51f5a25a17805a1be1322d0e37b1aafa6eb15aba782c3ff7b419db",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    },
+    "S1": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 67.2167,
+      "zip_sha256": "4d508a09b6ff5476ee36faec45e4af476d1c4a5df12989ed40acb5edf466c438",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    }
+  },
+  "reference_scores_percent": {
+    "V1": 67.5932,
+    "historical_prior_0_90": 70.352866,
+    "target": 75.0
+  },
+  "selected_candidate": "S0",
+  "selected_accuracy_percent": 68.2982,
+  "selected_checkpoint_path": "outputs/prelim75_v3_20260915/S0/candidate.pt",
+  "selected_checkpoint_sha256": "04cb95ad8d565c633510411a52de631063767b1e43af5e177241aea768eec029",
+  "selected_submission_zip_path": "outputs/prelim75_v3_20260915/S0/submission/submission.zip",
+  "selected_submission_zip_sha256": "f6925507dd51f5a25a17805a1be1322d0e37b1aafa6eb15aba782c3ff7b419db",
+  "delta_pp": {
+    "S0_vs_V1": 0.705,
+    "S0_vs_S1": 1.0815,
+    "S0_vs_historical_prior_0_90": -2.054666,
+    "S0_vs_target_75": -6.7018,
+    "S1_vs_V1": -0.3765,
+    "S1_vs_historical_prior_0_90": -3.136166
+  },
+  "recovery_route_decision": {
+    "status": "closed_no_platform_improvement",
+    "S1_improved_over_S0": false,
+    "S1_met_0_30pp_engineering_gate": false,
+    "new_KD_effect_supported": false,
+    "additional_training_authorized": false
+  },
+  "prescribed_candidates_delivered_and_scored": 2,
+  "pending_platform_scores": [],
+  "target_75_verified": false,
+  "historical_best_promoted": false,
+  "desktop_submission_copies_deleted": true,
+  "repository_submission_archives_preserved": true,
+  "new_platform_uploads_by_agent": false,
+  "git_push_by_agent": true,
+  "independent_validation_claim": false
+}

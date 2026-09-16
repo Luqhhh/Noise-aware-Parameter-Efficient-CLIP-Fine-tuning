@@ -17,11 +17,12 @@
     "vs_V1": 0.705,
     "vs_historical_prior_0_90": -2.054666
   },
-  "decision": "S0_real_winner_pending_S1_platform_feedback",
-  "s1_accuracy_percent": null,
+  "decision": "S0_selected_KD_recovery_closed_no_platform_improvement",
+  "s1_accuracy_percent": 67.2167,
+  "s0_delta_pp_vs_s1": 1.0815,
   "notes": [
     "S0 improves on V1 under the no-prior protocol.",
-    "S1 platform feedback is still required before attributing any gain to the recovery KD term.",
+    "S1 underperformed S0 by 1.0815 percentage points, so the recovery KD route is closed.",
     "Exact correct count and actual upload time were not supplied and remain null."
   ]
 }
