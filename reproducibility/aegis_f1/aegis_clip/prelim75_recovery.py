@@ -433,9 +433,17 @@ def cache_recovery_teacher(plan):
             if not np.array_equal(boxes, repeat_boxes):
                 raise RuntimeError("Epoch-0 V1 box reconstruction mismatch")
             views = torch.cat((global_logits, local_logits.reshape(len(images), 8, 500)), dim=1)
-            existing_fusion = fused_logits(views)
-            torch.testing.assert_close(fused["probabilities"], existing_fusion, atol=1e-5, rtol=1e-5)
-            if not torch.equal(fused["teacher_prediction"], existing_fusion.argmax(1)):
+            # The established helper returns log(fused probabilities) so its
+            # argmax can be consumed as logits.  Compare on that documented
+            # scale instead of accidentally comparing probabilities to logs.
+            existing_log_fusion = fused_logits(views)
+            reconstructed_log_fusion = fused["probabilities"].clamp_min(
+                torch.finfo(fused["probabilities"].dtype).tiny
+            ).log()
+            torch.testing.assert_close(
+                reconstructed_log_fusion, existing_log_fusion, atol=1e-5, rtol=1e-5
+            )
+            if not torch.equal(fused["teacher_prediction"], existing_log_fusion.argmax(1)):
                 raise RuntimeError("Epoch-0 final fusion argmax mismatch")
             epoch0_check = {
                 "rows": len(images),
@@ -443,8 +451,13 @@ def cache_recovery_teacher(plan):
                 "rtol": 1e-5,
                 "global_logits_max_abs": float((global_logits - repeat_global).abs().max()),
                 "local_logits_max_abs": float((local_logits - repeat_local).abs().max()),
-                "fused_probability_max_abs": float((fused["probabilities"] - existing_fusion).abs().max()),
-                "argmax_disagreements": int((fused["teacher_prediction"] != existing_fusion.argmax(1)).sum()),
+                "fused_log_probability_max_abs": float(
+                    (reconstructed_log_fusion - existing_log_fusion).abs().max()
+                ),
+                "established_fusion_return_scale": "log_probability",
+                "argmax_disagreements": int(
+                    (fused["teacher_prediction"] != existing_log_fusion.argmax(1)).sum()
+                ),
                 "global_local_flip_and_final_fusion_checked": True,
             }
         probabilities[indices] = fused["probabilities"].cpu().numpy()

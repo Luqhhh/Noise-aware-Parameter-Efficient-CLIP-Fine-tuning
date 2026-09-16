@@ -10,6 +10,7 @@ outputs/**/*.pt
 outputs/preliminary_no_sweep/
 outputs/stage_readiness/
 outputs/prelim75_v2_20260912/
+outputs/prelim75_v3_20260915*/
 
 # Generated feature cache (large binary)
 cache/
