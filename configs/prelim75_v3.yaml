@@ -1,0 +1,43 @@
+plan_id: PRELIM75_V3_20260915
+seed: 42
+parent: ../outputs/prelim75_v2_20260912/V1/candidate.pt
+parent_sha256: a52548511f5971836dbd6ffc07f62685050e2dc9b4318818573c53e9a7c5a696
+parent_submission: ../outputs/prelim75_v2_20260912/V1/submission/submission.zip
+parent_submission_sha256: 7f28c1300e4a50bcb8e99aabff5c9d8df50db813c3ff165dbfbe916c8e37b77e
+parent_diagnostic: ../outputs/prelim75_v2_20260912/V1/diagnostic/result.json
+parent_diagnostic_sha256: 3292a235f89e6b0b9c847a6ac23d6b459467cbf27d5df8ece6d3173554c47e89
+trust: ../reproducibility/aegis_f1/artifacts/trust/selftrain_r2_teacher_v3_multiscale.pt
+trust_sha256: 6868041cc7b995a3e8e557ae925d1d25160acf23af09202f46911ce92125b30f
+train_csv: ../reproducibility/aegis_f1/artifacts/stages/preliminary/final_full_train.csv
+train_csv_sha256: 7643e120589e69d6bdc0c54abc605a7271d78c41aed1a638534ea43e4c0c4a90
+val_csv: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/val.csv
+val_csv_sha256: 54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e
+class_mapping: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/class_to_idx.json
+class_mapping_sha256: 3edfd9e48e2f171b5d452577c52e0d189ae99dbfed3759d3e4f164fc090a6647
+groups: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/content_groups.json
+groups_sha256: 41e2668e0fa5e10291051c14a9c75fc96096a69ae7d36d84d0e774270a99bb87
+train_root: ../train
+test_root: ../test
+output: ../outputs/prelim75_v3_20260915
+cache_batch_size: 64
+num_workers: 4
+protocol:
+  temperature: 1.5
+  confidence_threshold: 0.45
+  margin_threshold: 0.15
+  global_weight: 0.6
+  local_weight: 0.4
+  flip_weight: 0.5
+  local_scales: [112, 128, 144, 160]
+  local_scale_weights: [0.2, 0.3, 0.4, 0.1]
+  attention_top_k: 5
+  class_cap: 32
+  class_support_fraction: 0.2
+  minimum_groups: 512
+  minimum_classes: 100
+  epochs: 3
+  schedule_epochs: 18
+  effective_batch_size: 32
+  kd_weight: 0.25
+  epoch_numbers: [4, 5, 6]
+  gpu_budget_seconds: 28800
