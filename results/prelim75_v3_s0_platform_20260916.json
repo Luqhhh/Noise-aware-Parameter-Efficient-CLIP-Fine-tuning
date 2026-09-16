@@ -1,0 +1,27 @@
+{
+  "plan_id": "PRELIM75_V3_20260915",
+  "candidate": "S0",
+  "source": "user_reported_platform",
+  "reported_date": "2026-09-16",
+  "accuracy_percent": 68.2982,
+  "exact_correct": null,
+  "actual_upload_time": null,
+  "checkpoint_sha256": "04cb95ad8d565c633510411a52de631063767b1e43af5e177241aea768eec029",
+  "submission_zip_sha256": "f6925507dd51f5a25a17805a1be1322d0e37b1aafa6eb15aba782c3ff7b419db",
+  "submission_csv_sha256": "54d69cce616a550587885249a90ab888ab763e1b9c3d85c85606dfb97a0c7cdf",
+  "reference_scores_percent": {
+    "V1": 67.5932,
+    "historical_prior_0_90": 70.352866
+  },
+  "delta_pp": {
+    "vs_V1": 0.705,
+    "vs_historical_prior_0_90": -2.054666
+  },
+  "decision": "S0_real_winner_pending_S1_platform_feedback",
+  "s1_accuracy_percent": null,
+  "notes": [
+    "S0 improves on V1 under the no-prior protocol.",
+    "S1 platform feedback is still required before attributing any gain to the recovery KD term.",
+    "Exact correct count and actual upload time were not supplied and remain null."
+  ]
+}
