@@ -6,9 +6,11 @@
 
 v3 已完成两组真实平台回填：S0 为 **68.2982%**，S1 为 **67.2167%**。S0 比此前 V1 高 0.7050pp，S1 比同轮 S0 低 1.0815pp；因此保留 S0，关闭固定恢复蒸馏路线。完整数量、训练记录和最终决策见 [v3 执行记录](../results/prelim75_v3_execution_20260916.md) 与 [v3 最终记录](../results/prelim75_v3_final_20260916.json)。历史 prior0.90 最高仍为 70.352866%，没有被无校准 S0 刷新。
 
-下一固定段从 v3 S0 checkpoint 独立初始化 C0/C1，各训练 3 epoch。C0 延续原 global/local GCE 与 global 同像素锚定；C1 只对原监督权重大于零、旧 clean_probability 至少 0.90、目标严格等于原标签一热、内容组无原标签冲突的样本，将 global 分类损失最多 25% 混为 CE。local 始终保持 GCE。CPU 支持量至少 512 个唯一组、覆盖 100 类才运行 C1；不足时只运行 C0且不降门槛。
+v4 已实现并完成 C0/C1 各 3 epoch 固定末轮训练与交付。C0 延续原 global/local GCE 与 global 同像素锚定；C1 只对原监督权重大于零、旧 clean_probability 至少 0.90、目标严格等于原标签一热、内容组无原标签冲突的样本，将 global 分类损失最多 25% 混为 CE。local 始终保持 GCE。CPU 支持检查得到 54,131 个唯一合格组、覆盖 497 类，故 C1 按原门槛运行。
 
-权重父模型为 S0；训练框继续只读复用 v3 中由 V1 生成并登记哈希的几何，不能读取 v3 teacher 类别概率、恢复权重或恢复样本清单。sample epoch 固定 7/8/9，fresh AdamW/cosine，末轮交付，最多两个无 prior 单模型候选。重叠验证只防超过 2.0pp 的明显退化，不选 epoch。不会自动上传、push、启动 C2 或扫描阈值/β；真实平台结果与 S0 68.2982% 比较后关闭本轮。
+权重父模型为 S0；训练框只读复用 v3 中由 V1 生成并登记哈希的几何，没有读取 v3 teacher 类别概率、恢复权重或恢复样本清单。两组均使用 sample epoch 7/8/9、fresh AdamW/cosine、batch 32、固定末轮。C0/C1 的重叠 raw 诊断分别为 83.2299%/83.2396%，clean-core 分别为 95.7441%/95.8123%，均未触发 2.0pp 工程止损；这些指标不作独立泛化结论。
+
+两个无 prior 单模型包均已覆盖 24,967 个测试文件并通过提交检查，平台分数仍为空。C0 ZIP SHA-256 为 `b85d680781407bcf90b9b8b37bc1540387c42296d4e1ba97b78a10720d7e27a0`，C1 为 `45d92bb649ace9e1edf33bda305e545637e8f27f3477303a72ee99b899d9e873`。不会自动上传、push、启动 C2 或扫描阈值/β；待真实平台结果与 S0 68.2982% 比较后关闭本轮。执行细节见 [v4 执行记录](../results/prelim75_v4_execution_20260917.md) 与 [v4 待回填记录](../results/prelim75_v4_delivery_20260917.json)。
 
 ## 已完成
 
