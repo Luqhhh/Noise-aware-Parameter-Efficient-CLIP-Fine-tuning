@@ -86,10 +86,10 @@ Both strict reload checks included the visual state, shared classifier, O3, and 
 
 | Candidate | Repository ZIP | Desktop copy | ZIP SHA-256 | CSV SHA-256 |
 |---|---|---|---|---|
-| C0 | `outputs/prelim75_v4_20260916/C0/submission/submission.zip` | `submission_prelim75_v4_C0_20260917.zip` | `b85d680781407bcf90b9b8b37bc1540387c42296d4e1ba97b78a10720d7e27a0` | `a298295ee86c5d1959b77b76cdcf229a7ebda7eab8edac653e44f91987695032` |
-| C1 | `outputs/prelim75_v4_20260916/C1/submission/submission.zip` | `submission_prelim75_v4_C1_20260917.zip` | `45d92bb649ace9e1edf33bda305e545637e8f27f3477303a72ee99b899d9e873` | `fb02542fe6de2aeb7d4fc0da917ae490f921a3888a2af1e8ba0b6c1966fec11a` |
+| C0 | `outputs/prelim75_v4_20260916/C0/submission/submission.zip` | deleted after platform feedback | `b85d680781407bcf90b9b8b37bc1540387c42296d4e1ba97b78a10720d7e27a0` | `a298295ee86c5d1959b77b76cdcf229a7ebda7eab8edac653e44f91987695032` |
+| C1 | `outputs/prelim75_v4_20260916/C1/submission/submission.zip` | deleted after platform feedback | `45d92bb649ace9e1edf33bda305e545637e8f27f3477303a72ee99b899d9e873` | `fb02542fe6de2aeb7d4fc0da917ae490f921a3888a2af1e8ba0b6c1966fec11a` |
 
-Both archives contain only `pred_results.csv`, cover all 24,967 test filenames exactly once, use four-digit labels in range 0000–0499, and have byte-identical inner/outer CSV files. The existing validator exited 0 for both. Each prediction happened to cover all 500 classes; coverage was reported, not forced. Desktop copies were hash-checked against the repository archives.
+Both archives contain only `pred_results.csv`, cover all 24,967 test filenames exactly once, use four-digit labels in range 0000–0499, and have byte-identical inner/outer CSV files. The existing validator exited 0 for both. Each prediction happened to cover all 500 classes; coverage was reported, not forced. Desktop copies were hash-checked against the repository archives, then deleted after platform feedback; repository archives remain preserved.
 
 ## Verification and final decision
 
