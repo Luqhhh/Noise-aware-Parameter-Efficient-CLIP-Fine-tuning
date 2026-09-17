@@ -9,10 +9,11 @@
 - Trusted-support gate: passed
 - C0/C1 training: complete, fixed epoch 9 outputs retained
 - Submission packages: both generated and independently revalidated
-- Platform feedback: pending for both candidates
-- Automatic upload/push/C2: none
+- Platform feedback: C0 = 68.4544%; C1 = 68.4303%
+- Final decision: retain C0; close the trusted-CE variant because C1 was 0.0241pp lower
+- Automatic upload/C2: none; Git push was performed only after the user's explicit request
 
-No score is inferred from the overlapping local diagnostic. The selected v3 S0 fallback remains 68.2982% until real platform feedback is supplied.
+No score is inferred from the overlapping local diagnostic. Real platform feedback selects C0 at 68.4544%, a 0.1562pp improvement over the v3 S0 fallback.
 
 ## Exact execution
 
@@ -70,9 +71,9 @@ The isolated worst-case C1 smoke passed at effective batch 32 without accumulati
 | Raw delta vs S0 | +0.455606pp | +0.465298pp |
 | Clean-core delta vs S0 | +0.409222pp | +0.477421pp |
 | Engineering stop | no | no |
-| Platform score | pending | pending |
+| Platform score | **68.4544%** | 68.4303% |
 
-The 10,316-row diagnostic overlaps training and was used only for the fixed obvious-regression check. Neither candidate was selected from this table, and the small C1–C0 difference is not treated as evidence of platform improvement.
+The 10,316-row diagnostic overlaps training and was used only for the fixed obvious-regression check. The platform, not this table, selected C0. In particular, C1 had the slightly higher overlap diagnostic but scored 0.0241pp below C0 online.
 
 Checkpoint SHA-256 values:
 
@@ -90,7 +91,7 @@ Both strict reload checks included the visual state, shared classifier, O3, and 
 
 Both archives contain only `pred_results.csv`, cover all 24,967 test filenames exactly once, use four-digit labels in range 0000–0499, and have byte-identical inner/outer CSV files. The existing validator exited 0 for both. Each prediction happened to cover all 500 classes; coverage was reported, not forced. Desktop copies were hash-checked against the repository archives.
 
-## Verification and remaining decision
+## Verification and final decision
 
 - New v4 tests: 10 passed.
 - All preliminary-75 tests: 31 passed.
@@ -98,4 +99,4 @@ Both archives contain only `pred_results.csv`, cover all 24,967 test filenames e
 - Root repository test directory: 425 passed (12 warnings).
 - Plain repository-wide pytest discovery also entered `.claude/worktrees/baseline-improvements` and hit duplicate `tests` module names; explicit root suites above passed and this unrelated discovery collision was not hidden.
 
-Platform accuracy, exact correct counts, and upload timestamps remain null. Apply the fixed decision only after the user reports C0 and C1 scores: retain S0 if neither exceeds 68.2982%; retain C0 if it is best; retain C1 only if it exceeds both S0 and C0. A +0.30pp C1 margin is the engineering return gate, not a significance claim. No further training, beta scan, prior, C2, upload, or push is authorized by this execution.
+The user reported C0 = 68.4544% and C1 = 68.4303%, in candidate submission order. Exact correct counts and upload timestamps were not supplied and remain null. C0 is +0.1562pp versus S0, +0.8612pp versus V1, -1.898466pp versus the historical prior-0.90 result, and 6.5456pp below 75%. C1 is +0.1321pp versus S0 but -0.0241pp versus C0, so the trusted-CE variant is closed and C0 becomes the current no-calibration winner. C1 did not meet the +0.30pp engineering gate. This fixed round ends without further training, beta scans, prior fitting, or C2.

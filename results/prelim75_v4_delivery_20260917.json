@@ -1,5 +1,5 @@
 {
-  "status": "completed_training_and_delivery_pending_platform_feedback",
+  "status": "completed_fixed_round_C0_selected_trusted_CE_closed",
   "plan_id": "PRELIM75_V4_20260916",
   "configuration": "configs/prelim75_v4.yaml",
   "reported_date": "2026-09-17",
@@ -17,7 +17,7 @@
       "desktop_copy": "/mnt/c/Users/lqh22/Desktop/submission_prelim75_v4_C0_20260917.zip",
       "submission_zip_sha256": "b85d680781407bcf90b9b8b37bc1540387c42296d4e1ba97b78a10720d7e27a0",
       "submission_csv_sha256": "a298295ee86c5d1959b77b76cdcf229a7ebda7eab8edac653e44f91987695032",
-      "platform_accuracy_percent": null,
+      "platform_accuracy_percent": 68.4544,
       "exact_correct_count": null,
       "actual_upload_time": null
     },
@@ -28,7 +28,7 @@
       "desktop_copy": "/mnt/c/Users/lqh22/Desktop/submission_prelim75_v4_C1_20260917.zip",
       "submission_zip_sha256": "45d92bb649ace9e1edf33bda305e545637e8f27f3477303a72ee99b899d9e873",
       "submission_csv_sha256": "fb02542fe6de2aeb7d4fc0da917ae490f921a3888a2af1e8ba0b6c1966fec11a",
-      "platform_accuracy_percent": null,
+      "platform_accuracy_percent": 68.4303,
       "exact_correct_count": null,
       "actual_upload_time": null
     }
@@ -39,10 +39,28 @@
     "historical_prior_0_90": 70.352866,
     "target": 75.0
   },
-  "pending_platform_scores": ["C0", "C1"],
-  "selected_candidate": "S0_pending_v4_feedback",
+  "delta_pp": {
+    "C0_vs_S0": 0.1562,
+    "C1_vs_S0": 0.1321,
+    "C1_vs_C0": -0.0241,
+    "C0_vs_V1": 0.8612,
+    "C0_vs_historical_prior_0_90": -1.898466,
+    "C0_vs_target_75": -6.5456
+  },
+  "decision": {
+    "selected_candidate": "C0",
+    "selected_accuracy_percent": 68.4544,
+    "trusted_CE_variant_improved_over_C0": false,
+    "C1_met_0_30pp_engineering_gate": false,
+    "trusted_CE_route_status": "closed_below_C0",
+    "additional_training_authorized": false
+  },
+  "pending_platform_scores": [],
+  "selected_candidate": "C0",
+  "desktop_submission_copies_preserved": true,
   "new_platform_uploads_by_agent": false,
-  "git_push_by_agent": false,
+  "git_push_requested_by_user": true,
+  "git_push_by_agent": true,
   "automatic_C2": false,
   "independent_validation_claim": false
 }
