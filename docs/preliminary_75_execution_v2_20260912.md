@@ -31,7 +31,7 @@
 | P 的训练清单 | `reproducibility/aegis_f1/artifacts/stages/preliminary/final_full_train.csv` | 103,218 行；原 trust 完整覆盖 |
 | 类别映射与旧诊断清单 | `reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/` | 映射、`val.csv` 存在 |
 | 原配置引用的 OpenAI 特征张量 | `reproducibility/aegis_f1/artifacts/stages/preliminary/features/clip_vit_b32_openai/features.pt` | 缺失，不能直接运行旧配置 |
-| 新恢复的 OpenAI 特征 | `outputs/stage_readiness/20260912_full_rebuild_r1/features/features.pt` | 存在；SHA-256 为 `118f658c1837ee93611ae04f2a4e4630439a02e5ef921de0466d06beedfb6dfe`；不认证与丢失缓存数值等价 |
+| 新恢复的 OpenAI 特征 | `outputs/stage_readiness/20260912_full_rebuild_r1/features/features.pt` | 执行时存在，SHA-256 为 `118f658c1837ee93611ae04f2a4e4630439a02e5ef921de0466d06beedfb6dfe`；不认证与丢失缓存数值等价。完整恢复路线关闭后，该本地大文件已于 2026-09-18 清理 |
 | 历史最高提交包 | `outputs/delivery/fullft_dual_pa0.9/submission.zip` | 哈希匹配；本次格式、覆盖及包内外 CSV 一致性复检通过 |
 | P 无校准提交包 | `outputs/preliminary_no_sweep/20260911_parent_nocal_control_r1/submission/submission.zip` | 哈希匹配；同上复检通过 |
 

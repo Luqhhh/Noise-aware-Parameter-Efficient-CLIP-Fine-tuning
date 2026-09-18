@@ -2,7 +2,7 @@
 
 ## 状态
 
-`PRELIM75_V5_20260917` 的实现、正式 GPU smoke、F0/F1 各 3 epoch 固定训练、重叠诊断、测试推理、提交校验和真实平台回填均已完成。F0 为 69.0752%，F1 为 69.1393%；保留 F1 为当前无校准胜者并关闭 v5。没有自动上传、push、F2 或推理参数扫描。
+`PRELIM75_V5_20260917` 的实现、正式 GPU smoke、F0/F1 各 3 epoch 固定训练、重叠诊断、测试推理、提交校验和真实平台回填均已完成。F0 为 69.0752%，F1 为 69.1393%；保留 F1 为当前无校准胜者并关闭 v5。平台上传不是代理自动操作；成绩闭环 Git 提交已按用户明确指令推送。没有自动 F2 或推理参数扫描。
 
 权重父模型固定为 v4 C0（平台 68.4544%）：
 
@@ -18,12 +18,12 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -u scripts/run_prelim75_v5_queue.py 
   --config configs/prelim75_v5.yaml --execute
 ```
 
-用户第一次暂停发生在 F0 epoch 10 的 83,232/103,218 行；第二次按指令在 epoch 11 完成后暂停，信号生效前 epoch 12 已执行一个 32 图 batch。两次均未生成候选 checkpoint，半程权重没有被恢复、评估或提交；对应目录为：
+用户第一次暂停发生在 F0 epoch 10 的 83,232/103,218 行；第二次按指令在 epoch 11 完成后暂停，信号生效前 epoch 12 已执行一个 32 图 batch。两次均未生成候选 checkpoint，半程权重没有被恢复、评估或提交；对应目录在闭环前为：
 
 - `outputs/prelim75_v5_20260917_paused_20260917T160449/`
 - `outputs/prelim75_v5_20260917_paused_20260917T175712/`
 
-重新执行后 F0 完整结束。F1 首步融合梯度审计在任何 optimizer 更新前因 `weighted["fusion"]` 键名错误失败。提交 `2a9680084d68743cd13c5f044f51f3f4bf4e3073` 将其修复为 `weighted["fusion_gce"]`；损失公式、blend、温度、数据和随机序列均未改变。失败现场保存在 `outputs/prelim75_v5_20260917/F1_failed_keyerror/`，修复登记在 `f1_retry_registration.json`。
+重新执行后 F0 完整结束。F1 首步融合梯度审计在任何 optimizer 更新前因 `weighted["fusion"]` 键名错误失败。提交 `2a9680084d68743cd13c5f044f51f3f4bf4e3073` 将其修复为 `weighted["fusion_gce"]`；损失公式、blend、温度、数据和随机序列均未改变。失败现场曾保存在 `outputs/prelim75_v5_20260917/F1_failed_keyerror/`，修复登记在 `f1_retry_registration.json`。两个暂停目录和失败现场在 v5 闭环后于 2026-09-18 清理，结果登记不变。
 
 修复后验证：v5 18 passed；prelim75 49 passed；完整 `reproducibility/aegis_f1/tests` 489 passed、1 skipped。F1 从同一 C0 独立重启。F0/F1 首批身份 SHA-256 均为 `31915ba8a0af2b8517d2eebf65dc214fdfa72b2be4506dfcccc47aa007cf6d91`，global/local/separate/fusion GCE 与 anchor 公共分量逐项一致，blend 分别为 0.0/0.5。
 
@@ -63,4 +63,8 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -u scripts/run_prelim75_v5_queue.py 
 - F1 只比 `max(C0,F0)` 高 0.0641pp，未达到 0.30pp 投入回报门槛；这是真实小幅收益，不授权自动追加 F2。
 - F1 仍比历史 prior0.90 最高 70.352866% 低 1.213566pp，距 75% 低 5.8607pp；历史绝对最高和 75% 目标均未刷新。
 
-v5 按固定规则结束，不自动追加续训、prior、温度或融合比例扫描。F0/F1 包和 C0 回退包均保留。
+v5 按固定规则结束，不自动追加续训、prior、温度或融合比例扫描。F0/F1 提交包、C0 回退资产和胜者 F1 checkpoint 保留；落败 F0 checkpoint 后续按存储清理规则删除。
+
+## 闭环后的存储清理
+
+用户于 2026-09-18 明确要求删除桌面旧提交包和后续不需要的大文件。已删除 F0/F1 桌面副本、F0 落败 checkpoint、暂停/失败现场，以及其他已关闭路线的大型中间资产；保留仓库内 F0/F1 提交 ZIP、F1 完整 checkpoint、晋级父链和 v3 几何框。全部删除项合计 `45,754,734,484` bytes，精确路径与逐项大小见 [存储清理记录](prelim75_storage_cleanup_20260918.md)。这些被忽略的输出字节未进入 Git，删除后只能通过相应历史命令重新生成。

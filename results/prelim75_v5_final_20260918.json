@@ -53,10 +53,18 @@
   "target_75_verified": false,
   "historical_best_promoted": false,
   "current_no_prior_best_promoted": true,
-  "desktop_submission_copies_preserved": true,
+  "desktop_submission_copies_preserved": false,
   "repository_submission_archives_preserved": true,
   "new_platform_uploads_by_agent": false,
-  "git_push_requested_by_user": false,
-  "git_push_by_agent": false,
+  "git_push_requested_by_user": true,
+  "git_push_by_agent": true,
+  "git_push_head_before_storage_cleanup": "be4f94581986117c2eec674f03446e08d6a4f189",
+  "storage_cleanup": {
+    "completed_date": "2026-09-18",
+    "deleted_bytes": 45754734484,
+    "report": "results/prelim75_storage_cleanup_20260918.md",
+    "selected_checkpoint_preserved": true,
+    "selected_repository_submission_preserved": true
+  },
   "independent_validation_claim": false
 }

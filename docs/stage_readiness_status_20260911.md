@@ -2,6 +2,8 @@
 
 > 当前执行范围已由用户调整：复现任务移出本轮计划。以下保留为历史事实与未完成项记录，不再据此自动启动复现。当前待办见 [current_execution_plan.md](current_execution_plan.md)。
 
+> 2026-09-18 存储更新：完整恢复与合成复现的本地大输出已按用户要求清理，历史命令、哈希和结论仍保留。本文下方引用的 `outputs/stage_readiness/...` 路径描述执行时状态，不表示文件当前仍存在；精确删除清单见 [存储清理记录](../results/prelim75_storage_cleanup_20260918.md)。
+
 > 2026-09-15 更新：组委会正式通知，考虑复赛和半决赛的时间周期，
 > 两阶段类别数量分别减半，现确定为复赛 750 类、半决赛 500 类。
 > 当前规模已落盘到 `configs/official_stage_sizes.json` 并更新规则文件。
@@ -63,7 +65,7 @@ R2 真实节点复现与恢复、R3 间接谱系/开发隔离、R4 类级真实�
 路径清单和 manifest 存在不能代替张量文件；预期生成入口为 `aegis_clip.cli.cache_features`，
 恢复需另建输出目录并核对实际官方初始化、样本顺序和预处理，不承诺恢复相同序列化哈希。
 初始化父模型和 trust 包存在，但完整生产来源尚未验证。冻结特征参考与教师伪标签输入分开记录。
-私有清单见 `outputs/stage_readiness/20260911_reproduction_dependencies_r1/fullft_input_audit.json`。
+执行时私有清单位于 `outputs/stage_readiness/20260911_reproduction_dependencies_r1/fullft_input_audit.json`；该合成演练输出已于 2026-09-18 清理，摘要与限制保留在结果报告中。
 
 
 ## 2026-09-12 教师生产记录追溯

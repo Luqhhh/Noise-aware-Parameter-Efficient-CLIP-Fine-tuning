@@ -70,8 +70,8 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.reproduce_stage --
 使用 prior 时也必须将其声明为输入。复现入口拒绝测试批内 prior 拟合参数。
 这些补充不是 prior 来源真实性证明；R5 仍未完成。
 
-合成链已在 `outputs/stage_readiness/20260911_reproduction_dependencies_r1/`
-执行 features → train → infer，并生成经格式检查的 5 类、5 张预测包。
+合成链曾在 `outputs/stage_readiness/20260911_reproduction_dependencies_r1/`
+执行 features → train → infer，并生成经格式检查的 5 类、5 张预测包；该本地演练目录已在 2026-09-18 按存储清理要求删除，命令、哈希与结论仍见 `results/reproduction_dependencies_20260911.md`。
 这是软件演练包，不能上传官方赛事或进入正式模型谱系。正式执行仍阻塞；
 配置中隐式图像依赖、官方初始化权重绑定和完整生产链等检查仍需继续补齐。
 
@@ -102,7 +102,7 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.reproduce_stage --
 
 ## 已授权历史资产恢复队列
 
-本次历史恢复独立登记在 `outputs/stage_readiness/20260912_full_rebuild_r1/recovery_plan.json`，执行记录见 `results/stage_readiness_recovery_20260912.md`。仓库根运行 `python3 scripts/run_historical_recovery_queue.py --run-dir <登记目录>` 默认审计；显式 `--execute` 等待已启动 E2 的最终训练清单，再顺序调用冻结源码中的现有训练 CLI。此专用队列只接受已登记的七节点、最多 73 epoch 历史恢复，父模型选择沿用原配置。它不解除通用 reproduce_stage 的正式来源限制，也不认证尚未闭合的 trust/cvt 上游。
+本次历史恢复执行时独立登记在 `outputs/stage_readiness/20260912_full_rebuild_r1/recovery_plan.json`，执行记录见 `results/stage_readiness_recovery_20260912.md`。该 61.4010% 负结果对应的本地大输出已在 2026-09-18 清理；以下命令仅说明历史入口，不能直接读取已删登记目录。仓库根运行 `python3 scripts/run_historical_recovery_queue.py --run-dir <登记目录>` 默认审计；显式 `--execute` 等待已启动 E2 的最终训练清单，再顺序调用冻结源码中的现有训练 CLI。此专用队列只接受已登记的七节点、最多 73 epoch 历史恢复，父模型选择沿用原配置。它不解除通用 reproduce_stage 的正式来源限制，也不认证尚未闭合的 trust/cvt 上游。
 
 
 ## 开发 pipeline 的拟合行隔离
