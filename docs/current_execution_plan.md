@@ -1,8 +1,18 @@
-# 当前执行计划（2026-09-18 初赛 75 分方案 v5）
+# 当前执行计划（2026-09-18 初赛 75 分方案 v6）
 
 用户指令：拉取更新，生成初赛平台75分优化方案；项目按功能性比赛处理，方案由助手选择，不要求用户判断瓶颈。此前“复现暂时不考虑，从计划删除”的决定继续有效；历史记录保留，不将未完成事项改为已完成。
 
-## 当前入口：PRELIM75_V5_20260917
+## 当前入口：PRELIM75_V6_20260918（已实现，未执行真实数据/GPU）
+
+v6 固定从 v5 F1（平台 69.1393%）独立初始化两个候选，各训练 3 个 sample epoch：G0 继续使用 v3/V1 冻结训练框，G1 使用当前学生每次 global forward 最后一层 attention 生成的在线 local 训练框。两组共享同一个训练可用 global wrapper、原监督 w/q、v5 F1 的融合 GCE（T=1.5、blend=0.5）、Anchor 2.0、fresh AdamW/cosine 和最终四尺度＋Flip无 prior 单 checkpoint 推理。框选择本身停止梯度，local 分类梯度仍照常反传；不引入定位网络、教师概率、恢复掩码或测试数据。
+
+D0 先以 2,048 个固定内容组检查旧 V1 框与当前 F1 attention 框的几何差异，只有当至少 205 组在八个框中出现至少 8 原生像素的中心位移才允许启动 G0/G1；未达到门槛则结束 v6，不降门槛、不单独训练 G0。GPU 累计预算上限 28,800 秒，包含检查、D0、共同 smoke、训练、诊断、推理和失败尝试；最多两个新平台候选，不自动上传、push、追加 G2 或扫描参数。
+
+实现文件已接入：`configs/prelim75_v6.yaml`、`reproducibility/aegis_f1/aegis_clip/prelim75_online_geometry.py`、`.../cli/train_prelim75_v6.py`、`scripts/run_prelim75_v6_queue.py`、`reproducibility/aegis_f1/tests/test_prelim75_v6.py`。CPU 合成集成测试覆盖 wrapper/attention/detach/hook/框几何/D0选样/空监督安全；完整 Aegis 测试通过。尚未在真实数据上运行 D0，未做 GPU smoke、未训练、未诊断、未生成 v6 平台包；平台分数保持 null。F1 checkpoint/提交包仍是当前回退资产。
+
+完整 v6 规格、梯度边界、预算与代码落点见 [v6 执行方案](preliminary_75_execution_v6_20260918.md)。
+
+## 上一轮：PRELIM75_V5_20260917（已完成）
 
 v5 固定从 v4 C0（平台 68.4544%）独立初始化 F0/F1，各训练 3 epoch。两组都将训练分类温度从旧 C0 的 1.0 固定为最终推理同源的 1.5；F0 保留 global/local 独立 GCE，F1 只增加 50% 的 global/local 概率融合 GCE。原监督、权重、V1 几何、优化器设置和最终四尺度＋Flip无prior推理保持一致。F1 与 F0 才是新增融合目标的同条件比较，F0 与 C0 的差值不能只归因于温度。
 

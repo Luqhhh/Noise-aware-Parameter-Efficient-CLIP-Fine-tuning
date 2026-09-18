@@ -1,0 +1,54 @@
+plan_id: PRELIM75_V6_20260918
+seed: 42
+weight_parent: ../outputs/prelim75_v5_20260917/F1/candidate.pt
+weight_parent_sha256: 44e64a9528653f1d76db6a12b56a22c3ad23851665e8cef45d06f7ece9f52e1b
+fallback_submission: ../outputs/prelim75_v5_20260917/F1/submission/submission.zip
+fallback_submission_sha256: 0863b93c785042692ec928107429d679815b50d2b1971b4a984cc1bceb9a705d
+fallback_csv: ../outputs/prelim75_v5_20260917/F1/submission/pred_results.csv
+fallback_csv_sha256: eea66dec1c79c8c8a9392dfc225f24772933f02b1bfbd686052fd89cec3f5a50
+parent_diagnostic: ../outputs/prelim75_v5_20260917/F1/diagnostic/result.json
+geometry_manifest: ../outputs/prelim75_v3_20260915/teacher/manifest.json
+geometry_manifest_sha256: 93e35940e19bbc371a30e67f0c12a429ecd48e88ca784be0983d4c8eacfc86e4
+geometry_paths: ../outputs/prelim75_v3_20260915/teacher/paths.json
+geometry_paths_sha256: 3a9bbfe4e3049aff1f081962c798be713dd17bef354612ad86321327dcf3c50c
+geometry_boxes: ../outputs/prelim75_v3_20260915/teacher/boxes.npy
+geometry_boxes_sha256: 9041665389e51b8da6af21b457a6d8a69eb365495d17558e9a5dedb4a7ed2ff1
+geometry_origin_sha256: a52548511f5971836dbd6ffc07f62685050e2dc9b4318818573c53e9a7c5a696
+trust: ../reproducibility/aegis_f1/artifacts/trust/selftrain_r2_teacher_v3_multiscale.pt
+trust_sha256: 6868041cc7b995a3e8e557ae925d1d25160acf23af09202f46911ce92125b30f
+train_csv: ../reproducibility/aegis_f1/artifacts/stages/preliminary/final_full_train.csv
+train_csv_sha256: 7643e120589e69d6bdc0c54abc605a7271d78c41aed1a638534ea43e4c0c4a90
+val_csv: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/val.csv
+val_csv_sha256: 54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e
+class_mapping: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/class_to_idx.json
+class_mapping_sha256: 3edfd9e48e2f171b5d452577c52e0d189ae99dbfed3759d3e4f164fc090a6647
+groups: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/content_groups.json
+groups_sha256: 41e2668e0fa5e10291051c14a9c75fc96096a69ae7d36d84d0e774270a99bb87
+original_supervision_sha256: 7fc6dcf0efb87e0a402114a7ff7ef9421e7f1c8fedcc06db10ba6d6485c606c4
+train_root: ../train
+test_root: ../test
+output: ../outputs/prelim75_v6_20260918
+num_workers: 4
+protocol:
+  epochs: 3
+  schedule_epochs: 18
+  effective_batch_size: 32
+  epoch_numbers: [13, 14, 15]
+  global_weight: 0.6
+  local_weight: 0.4
+  anchor_weight: 2.0
+  fusion_blend: 0.5
+  classification_temperature: 1.5
+  gce_q: 0.5
+  epsilon: 1.0e-7
+  local_scales: [112, 128, 144, 160]
+  local_scale_weights: [0.2, 0.3, 0.4, 0.1]
+  attention_top_k: 5
+  gpu_budget_seconds: 28800
+d0:
+  seed: 42
+  group_count: 2048
+  hash_prefix: prelim75-v6-d0/42/
+  material_center_distance_px: 8.0
+  material_fraction: 0.10
+  minimum_material_groups: 205
