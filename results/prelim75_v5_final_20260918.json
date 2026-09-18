@@ -1,0 +1,62 @@
+{
+  "status": "completed_fixed_round_F1_selected_below_engineering_gate",
+  "plan_id": "PRELIM75_V5_20260917",
+  "configuration": "configs/prelim75_v5.yaml",
+  "reported_date": "2026-09-18",
+  "actual_platform_feedback": {
+    "F0": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 69.0752,
+      "zip_sha256": "6bbe24731f2a83a5e4ba401e94fe8035944eb57d2bad04d23c5365c775a14a3a",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    },
+    "F1": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 69.1393,
+      "zip_sha256": "0863b93c785042692ec928107429d679815b50d2b1971b4a984cc1bceb9a705d",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    }
+  },
+  "reference_scores_percent": {
+    "C0": 68.4544,
+    "S0": 68.2982,
+    "historical_prior_0_90": 70.352866,
+    "target": 75.0
+  },
+  "selected_candidate": "F1",
+  "selected_accuracy_percent": 69.1393,
+  "selected_checkpoint_path": "outputs/prelim75_v5_20260917/F1/candidate.pt",
+  "selected_checkpoint_sha256": "44e64a9528653f1d76db6a12b56a22c3ad23851665e8cef45d06f7ece9f52e1b",
+  "selected_submission_zip_path": "outputs/prelim75_v5_20260917/F1/submission/submission.zip",
+  "selected_submission_zip_sha256": "0863b93c785042692ec928107429d679815b50d2b1971b4a984cc1bceb9a705d",
+  "delta_pp": {
+    "F0_vs_C0": 0.6208,
+    "F1_vs_C0": 0.6849,
+    "F1_vs_F0": 0.0641,
+    "F1_vs_S0": 0.8411,
+    "F1_vs_historical_prior_0_90": -1.213566,
+    "F1_vs_target_75": -5.8607
+  },
+  "fusion_route_decision": {
+    "status": "selected_small_platform_gain_below_0_30pp_gate",
+    "F1_improved_over_C0": true,
+    "F1_improved_over_F0": true,
+    "F1_met_0_30pp_engineering_gate_over_best_comparator": false,
+    "probability_fusion_effect_supported": true,
+    "effect_size_pp_vs_same_condition_F0": 0.0641,
+    "additional_training_authorized": false
+  },
+  "prescribed_candidates_delivered_and_scored": 2,
+  "pending_platform_scores": [],
+  "target_75_verified": false,
+  "historical_best_promoted": false,
+  "current_no_prior_best_promoted": true,
+  "desktop_submission_copies_preserved": true,
+  "repository_submission_archives_preserved": true,
+  "new_platform_uploads_by_agent": false,
+  "git_push_requested_by_user": false,
+  "git_push_by_agent": false,
+  "independent_validation_claim": false
+}

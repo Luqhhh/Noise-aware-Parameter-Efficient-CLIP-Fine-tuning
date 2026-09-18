@@ -2,7 +2,7 @@
 
 ## 状态
 
-`PRELIM75_V5_20260917` 的实现、正式 GPU smoke、F0/F1 各 3 epoch 固定训练、重叠诊断、测试推理和提交校验已完成。平台分数尚未回填，F0/F1 均处于 `submission_ready_pending_platform`。没有自动上传、push、F2 或推理参数扫描。
+`PRELIM75_V5_20260917` 的实现、正式 GPU smoke、F0/F1 各 3 epoch 固定训练、重叠诊断、测试推理、提交校验和真实平台回填均已完成。F0 为 69.0752%，F1 为 69.1393%；保留 F1 为当前无校准胜者并关闭 v5。没有自动上传、push、F2 或推理参数扫描。
 
 权重父模型固定为 v4 C0（平台 68.4544%）：
 
@@ -45,7 +45,7 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -u scripts/run_prelim75_v5_queue.py 
 | checkpoint SHA-256 | `afd21e73442441fbb3b885c1081b34bde00306c910c3623c50e841ad3c7079f9` | `44e64a9528653f1d76db6a12b56a22c3ad23851665e8cef45d06f7ece9f52e1b` |
 | CSV SHA-256 | `073bf727b61e00f1cfe4f10277440b9ffe5e1af8a5e3704216b694db76088488` | `eea66dec1c79c8c8a9392dfc225f24772933f02b1bfbd686052fd89cec3f5a50` |
 | ZIP SHA-256 | `6bbe24731f2a83a5e4ba401e94fe8035944eb57d2bad04d23c5365c775a14a3a` | `0863b93c785042692ec928107429d679815b50d2b1971b4a984cc1bceb9a705d` |
-| 平台成绩 | null | null |
+| 平台成绩 | 69.0752% | 69.1393% |
 
 路径：
 
@@ -54,6 +54,13 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -u scripts/run_prelim75_v5_queue.py 
 
 两个 ZIP 均只含 `pred_results.csv`，覆盖 24,967 个测试文件且无重复，标签为 0000–0499 四位编号，包内外 CSV 字节一致；独立复检均通过。两份预测相差 299 行。最终协议为单 checkpoint、原生 224、四尺度 attention local、Flip、T=1.5、无 prior；训练框、监督和教师资产均不是最终推理依赖。
 
-## 待回填与停止边界
+## 平台回填与停止决定
 
-待用户分别提供 F0、F1 的真实平台 Top-1。收到前不推算精确正确数或选择胜者。直接基线为 C0 68.4544%，历史 prior0.90 最高 70.352866% 单列。按固定规则比较后结束 v5，不自动追加 F2、续训、prior、温度或融合比例扫描。
+用户按 F0、F1 顺序回传真实平台 Top-1：69.0752%、69.1393%。精确正确数和上传时间未提供，保持 null。
+
+- F0 比 C0 68.4544% 高 0.6208pp。
+- F1 比 C0 高 0.6849pp，比同条件 F0 高 0.0641pp，因此保留 F1 为当前无校准胜者。
+- F1 只比 `max(C0,F0)` 高 0.0641pp，未达到 0.30pp 投入回报门槛；这是真实小幅收益，不授权自动追加 F2。
+- F1 仍比历史 prior0.90 最高 70.352866% 低 1.213566pp，距 75% 低 5.8607pp；历史绝对最高和 75% 目标均未刷新。
+
+v5 按固定规则结束，不自动追加续训、prior、温度或融合比例扫描。F0/F1 包和 C0 回退包均保留。
