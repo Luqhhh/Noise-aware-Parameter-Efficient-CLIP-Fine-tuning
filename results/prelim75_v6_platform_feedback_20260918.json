@@ -1,0 +1,45 @@
+{
+  "plan_id": "PRELIM75_V6_20260918",
+  "recorded_at": "2026-09-18T20:01:07",
+  "feedback_source": "user",
+  "platform_accuracy_percent": {
+    "G0": 69.2274,
+    "G1": 69.1993
+  },
+  "online_exact_correct": {
+    "G0": null,
+    "G1": null
+  },
+  "actual_platform_upload_time": {
+    "G0": null,
+    "G1": null
+  },
+  "differences_pp": {
+    "G0_minus_F1": 0.0881,
+    "G1_minus_F1": 0.06,
+    "G0_minus_G1": 0.0281,
+    "G0_minus_F0": 0.1522,
+    "G1_minus_F0": 0.1241,
+    "G0_minus_C0": 0.773,
+    "G1_minus_C0": 0.7449,
+    "G0_minus_historical_prior_0.90": -1.125466,
+    "G1_minus_historical_prior_0.90": -1.153566,
+    "G0_distance_to_75": 5.7726,
+    "G1_distance_to_75": 5.8007,
+    "G1_minus_max_F1_G0": -0.0281,
+    "investment_gate_pp": 0.3
+  },
+  "decision": {
+    "selected_candidate": "G0",
+    "reason": "G0 is the best platform candidate; G1 online geometry is 0.0281pp below G0 and does not support an online-location benefit claim.",
+    "g1_investment_gate_met": false,
+    "keep": "G0",
+    "close_v6": true,
+    "automatic_g2": false,
+    "historical_prior_0.90_remains_absolute_best": true,
+    "historical_prior_0.90_percent": 70.352866,
+    "target_75_achieved": false
+  },
+  "diagnostic_note": "G1 overlap diagnostic raw micro was +0.048470pp over G0, but the platform result is -0.0281pp; diagnostic differences are not platform gains.",
+  "geometry_note": "No localization ground truth is available; do not claim current-student boxes are more accurate. The platform comparison only evaluates the whole online-geometry strategy under this training protocol."
+}

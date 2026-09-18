@@ -2,13 +2,13 @@
 
 用户指令：拉取更新，生成初赛平台75分优化方案；项目按功能性比赛处理，方案由助手选择，不要求用户判断瓶颈。此前“复现暂时不考虑，从计划删除”的决定继续有效；历史记录保留，不将未完成事项改为已完成。
 
-## 当前入口：PRELIM75_V6_20260918（已实现，未执行真实数据/GPU）
+## 当前状态：PRELIM75_V6_20260918 已完成闭环（保留 G0）
 
-v6 固定从 v5 F1（平台 69.1393%）独立初始化两个候选，各训练 3 个 sample epoch：G0 继续使用 v3/V1 冻结训练框，G1 使用当前学生每次 global forward 最后一层 attention 生成的在线 local 训练框。两组共享同一个训练可用 global wrapper、原监督 w/q、v5 F1 的融合 GCE（T=1.5、blend=0.5）、Anchor 2.0、fresh AdamW/cosine 和最终四尺度＋Flip无 prior 单 checkpoint 推理。框选择本身停止梯度，local 分类梯度仍照常反传；不引入定位网络、教师概率、恢复掩码或测试数据。
+v6 固定从 v5 F1（平台 69.1393%）独立初始化 G0/G1，各训练 3 个 sample epoch：G0 使用 v3/V1 冻结训练框，G1 使用当前学生每次 global forward 最后一层 attention 生成的在线 local 训练框。两组共享同一个训练可用 global wrapper、原监督 w/q、v5 F1 的融合 GCE（T=1.5、blend=0.5）、Anchor 2.0、fresh AdamW/cosine 和最终四尺度＋Flip无 prior 单 checkpoint 推理。框选择本身停止梯度，local 分类梯度仍照常反传；未引入定位网络、教师概率、恢复掩码或测试数据。2026-09-18 实际执行已完成：D0 过门槛（1080/2048，阈值 205），共同 smoke 通过，G0/G1 各完成三轮固定末轮训练、诊断和提交包。用户回传平台成绩：G0 **69.2274%**、G1 **69.1993%**；G0 比 F1 高 0.0881pp，比 G1 高 0.0281pp。G1−max(F1,G0)=−0.0281pp，未达到 0.30pp 投入回报门槛，故保留 G0、关闭在线几何配方，不支持“当前学生在线框优于冻结 V1 框”的平台收益结论，不自动追加 G2。历史 prior0.90 的 70.352866% 仍是不同协议最高纪录，75% 目标未达到。
 
-D0 先以 2,048 个固定内容组检查旧 V1 框与当前 F1 attention 框的几何差异，只有当至少 205 组在八个框中出现至少 8 原生像素的中心位移才允许启动 G0/G1；未达到门槛则结束 v6，不降门槛、不单独训练 G0。GPU 累计预算上限 28,800 秒，包含检查、D0、共同 smoke、训练、诊断、推理和失败尝试；最多两个新平台候选，不自动上传、push、追加 G2 或扫描参数。
+D0 固定检查 2,048 个内容组；本轮 `material_change_groups=1080`，达到 205 门槛。GPU 累计预算上限 28,800 秒；实际队列总耗时 9,333.45s。最多两个新平台候选，实际创建 G0/G1 两个包；未自动上传、push、追加 G2 或扫描参数。G0/G1 首 batch、Flip/尺度、soft targets、weights、global logits/features/anchor 的 common-control 全部对齐。完整平台反馈、诊断差值、哈希与决策见 [v6 执行与平台闭环](../results/prelim75_v6_execution_20260918.md) 和 [v6 final 记录](../results/prelim75_v6_final_20260918.json)。当前保留提交包为 G0：ZIP SHA-256 `efccb9f2b601a8b24830ef601739b166c214b8316b441bb9bc7d7aaf6bd4b634`。
 
-实现文件已接入：`configs/prelim75_v6.yaml`、`reproducibility/aegis_f1/aegis_clip/prelim75_online_geometry.py`、`.../cli/train_prelim75_v6.py`、`scripts/run_prelim75_v6_queue.py`、`reproducibility/aegis_f1/tests/test_prelim75_v6.py`。CPU 合成集成测试覆盖 wrapper/attention/detach/hook/框几何/D0选样/空监督安全；完整 Aegis 测试通过。尚未在真实数据上运行 D0，未做 GPU smoke、未训练、未诊断、未生成 v6 平台包；平台分数保持 null。F1 checkpoint/提交包仍是当前回退资产。
+实现入口保留在 `configs/prelim75_v6.yaml`、`reproducibility/aegis_f1/aegis_clip/prelim75_online_geometry.py`、`.../cli/train_prelim75_v6.py`、`scripts/run_prelim75_v6_queue.py`、`reproducibility/aegis_f1/tests/test_prelim75_v6.py`。CPU 合成集成测试覆盖 wrapper/attention/detach/hook/框几何/D0选样/空监督安全；完整 Aegis 测试通过。G0/G1 的 checkpoint、诊断、CSV/ZIP 和队列 final status 均保留在 `outputs/prelim75_v6_20260918/`。G1 桌面包仍保留，但当前胜者与保留提交包为 G0。
 
 完整 v6 规格、梯度边界、预算与代码落点见 [v6 执行方案](preliminary_75_execution_v6_20260918.md)。
 
