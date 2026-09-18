@@ -1,13 +1,14 @@
 """PRELIM75 v5 probability-fusion loss and invariants."""
 from __future__ import annotations
 
+import inspect
 import math
 
 import torch
 import torch.nn.functional as F
 
 from aegis_clip.losses import soft_generalized_cross_entropy
-from aegis_clip.prelim75_fusion import fusion_gce_terms, probability_gce
+from aegis_clip.prelim75_fusion import fusion_gce_terms, probability_gce, train_fusion
 
 
 def _fixture(batch=6, classes=5, dtype=torch.float32):
@@ -62,6 +63,12 @@ def test_fusion_term_has_gradient_to_both_logits():
     fusion_gce_terms(global_logits, local_logits, targets, blend=0.5)["fusion"].sum().backward()
     assert global_logits.grad.abs().sum() > 0
     assert local_logits.grad.abs().sum() > 0
+
+
+def test_f1_training_gradient_audit_uses_weighted_fusion_gce_key():
+    source = inspect.getsource(train_fusion)
+    assert 'weighted["fusion_gce"]' in source
+    assert 'weighted["fusion"]' not in source
 
 
 def test_fp64_gradcheck():

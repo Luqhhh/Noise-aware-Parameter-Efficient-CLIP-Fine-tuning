@@ -522,7 +522,7 @@ def train_fusion(plan, name):
                     fusion_gradient_audit = {
                         "optimizer_step": optimizer_step,
                         **_fusion_gradient_probe(
-                            weighted["fusion"], global_logits, local_logits, model, o3, pta
+                            weighted["fusion_gce"], global_logits, local_logits, model, o3, pta
                         ),
                     }
                     atomic_json_dump(fusion_gradient_audit, output / "fusion_gradient_audit.json")
