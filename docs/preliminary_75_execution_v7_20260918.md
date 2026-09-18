@@ -1,0 +1,52 @@
+# PRELIM75 v7 执行方案：一次固定收尾退火对照
+
+计划 ID：`PRELIM75_V7_20260918`
+
+状态：**代码和 CPU 调度检查已实现；未启动真实 GPU，未生成平台候选，未 push。**
+
+## 起点
+
+- 权重父模型：v6 G0，平台 69.2274%
+- 父 checkpoint SHA-256：`fb164dcac4ce3aae9f66129cf9ad5ba5160fabd26960742b5e00d2a8bdb43bea`
+- 原有回退包：v6 G0 ZIP，SHA-256 `efccb9f2b601a8b24830ef601739b166c214b8316b441bb9bc7d7aaf6bd4b634`
+- 不重建已删除缓存，不使用测试数据，不引入 teacher/伪标签/恢复掩码/定位网络。
+
+## 唯一正式对照
+
+| 项目 | L0 | L1 |
+|---|---|---|
+| 父模型 | v6 G0 | v6 G0 |
+| 训练轮数 | 3 | 3 |
+| sample epochs | 16/17/18 | 16/17/18 |
+| cosine horizon | 18 epoch（H=58,068） | 3 epoch（H=9,678） |
+| floor | 0.01 | 0.01 |
+| warmup | 无 | 无 |
+| 其他损失/监督/框/推理 | v6 G0 | 相同 |
+
+实际训练更新次数 K=3×M=3×3,226=9,678；L0 三轮结束 schedule multiplier 为 `0.9336825748732972`，L1 为 floor `0.01`。sample epoch 只控制视图选择，不传入 LambdaLR。
+
+## 实现要点
+
+- `ScheduleSpec`、`build_fresh_scheduler`、`audit_position`、`step_and_audit` 固定在 `prelim75_cooldown.py`。
+- 训练循环在 `optimizer.step()` 前记录 `used_lr`，在 `scheduler.step()` 后记录 `next_lr`，逐 update 审计并在 `lr_trace.csv` 留痕。
+- G0 global wrapper 原样复用；local 训练框仍为冻结 V1 框；loss 复用 `fusion_gce_terms`。
+- 共同 smoke 选择 32 或 16×2；两组共享 microbatch、有效 batch 分母与视图序列。
+- 队列：read-only preflight → prepare → CPU scheduler check → common smoke → L0 train/eval/deliver → L1 train/eval/deliver → final pending feedback。
+- 预算上限 28,800 GPU 秒，最多两个平台候选；不自动上传、不 push、不自动开 G2、不扫描 horizon/floor/LR/epoch。
+
+## 代码落点
+
+- `configs/prelim75_v7.yaml`
+- `reproducibility/aegis_f1/aegis_clip/prelim75_cooldown.py`
+- `reproducibility/aegis_f1/aegis_clip/cli/train_prelim75_v7.py`
+- `scripts/run_prelim75_v7_queue.py`
+- `reproducibility/aegis_f1/tests/test_prelim75_v7.py`
+
+## 决策规则
+
+- L0/L1 均 ≤ G0：保留 G0，关闭收尾调度配方。
+- L0 最高且 > G0：保留 L0，不宣称退火有效。
+- L1 严格高于 L0 且 > G0：保留 L1，报告 L1−L0。
+- 同分：保留 G0；L0/L1 同分且均 > G0 时保留 L0。
+- `L1 − max(G0,L0) ≥ 0.30pp`：记为达到投入门槛，但本轮仍结束。
+- 无真实平台分时不宣称相应方向胜出；精确正确数/上传时间未提供则保持 null。
