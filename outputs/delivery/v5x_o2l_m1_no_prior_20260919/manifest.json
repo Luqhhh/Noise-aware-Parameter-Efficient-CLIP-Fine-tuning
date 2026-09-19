@@ -1,0 +1,29 @@
+{
+  "attention_local_global": {
+    "attention_block": "last",
+    "attention_heads": "mean_all_12",
+    "crop_size": 160,
+    "fusion": "1:1_probability_mean",
+    "input_size": 224,
+    "top_patches": 5
+  },
+  "balanced_test_prior_acknowledged": false,
+  "checkpoint_sha256": "32c463df68fa71cac20768162bae16105137865478e41677faa5965bbdb1fc6d",
+  "corrupt_images": 0,
+  "format_version": 1,
+  "inference_batch_size": 64,
+  "inference_mode": "attention_local_global:crop=160:top5:mean_probabilities",
+  "input_resize_mode": "clip_center_crop",
+  "input_resolution": 224,
+  "prediction_count": 24967,
+  "prediction_csv_sha256": "54da4fd410fbb38521225521bbe8740452b7297ec0070fbe66d27617e5b2b0c9",
+  "prediction_head": "linear",
+  "prior_alignment": null,
+  "platform_accuracy_percent": 64.0806,
+  "platform_feedback_source": "user_reported",
+  "promotion_status": "valid_not_promoted_closed",
+  "single_checkpoint": true,
+  "submission_zip_sha256": "55e037ccb3891b456c1c58cc690527b075562a626d2c9211b9fa1aa0b910e7d4",
+  "tta_fusion": "mean_probabilities",
+  "tta_temperature": 1.0
+}
