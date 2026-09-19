@@ -1,0 +1,94 @@
+{
+  "status": "completed_fixed_round_L1_selected_below_investment_gate",
+  "plan_id": "PRELIM75_V7_20260918",
+  "configuration": "configs/prelim75_v7.yaml",
+  "reported_date": "2026-09-19",
+  "execution_command": "PYTHONPATH=reproducibility/aegis_f1 python3 -u scripts/run_prelim75_v7_queue.py --config configs/prelim75_v7.yaml --execute",
+  "actual_platform_feedback": {
+    "L0": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 69.0632,
+      "zip_sha256": "d79ca3759a29319b0abce7d9a56169e77958318fab68bf3dd240e9d0d4d7b150",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    },
+    "L1": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 69.2794,
+      "zip_sha256": "55d25f1fea9c57ba3431164d53d21f34d20baa2a49c805ad87cca188b5634c5a",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    },
+    "G0_prior0.9_side_package": {
+      "source": "user_reported_platform",
+      "accuracy_percent": 72.4677,
+      "zip_sha256": "1313c40265ca4e3ab92b001b1d33e006737d26b5cc3f3a9dc4d4d6df5d9f9803",
+      "protocol_scope": "legacy_test_batch_balanced_prior_outside_formal_L0_L1_comparison",
+      "exact_correct_count": null,
+      "actual_upload_time": null
+    }
+  },
+  "reference_scores_percent": {
+    "v5_F1": 69.1393,
+    "v6_G0": 69.2274,
+    "historical_prior_0.90": 70.352866,
+    "target": 75.0
+  },
+  "selected_no_prior_candidate": "L1",
+  "selected_no_prior_accuracy_percent": 69.2794,
+  "selected_checkpoint_path": "outputs/prelim75_v7_20260918/L1/candidate.pt",
+  "selected_checkpoint_sha256": "cd485c7beed2781ac13d08fbd33d63b8f1c46971be008966f7280c67cec1fcee",
+  "selected_submission_csv_sha256": "5277b2c33f63b951ea2236ae2e50b8c574ef9f8d2f989e8239fcce7b065c0171",
+  "selected_submission_zip_path": "outputs/prelim75_v7_20260918/L1/submission/submission.zip",
+  "selected_submission_zip_sha256": "55d25f1fea9c57ba3431164d53d21f34d20baa2a49c805ad87cca188b5634c5a",
+  "absolute_platform_best": {
+    "candidate": "G0_prior0.9_side_package",
+    "accuracy_percent": 72.4677,
+    "submission_zip_path": "outputs/prelim75_v7_monitor/g0_prior09/prior09_submission/submission.zip",
+    "submission_zip_sha256": "1313c40265ca4e3ab92b001b1d33e006737d26b5cc3f3a9dc4d4d6df5d9f9803"
+  },
+  "delta_pp": {
+    "L0_vs_G0": -0.1642,
+    "L1_vs_G0": 0.052,
+    "L1_vs_L0": 0.2162,
+    "L1_vs_F1": 0.1401,
+    "L1_vs_historical_prior_0.90": -1.073466,
+    "L1_vs_target_75": -5.7206,
+    "G0_prior0.9_vs_L1": 3.1883,
+    "G0_prior0.9_vs_target_75": -2.5323
+  },
+  "cooldown_route_decision": {
+    "status": "selected_L1_small_platform_gain_below_0_30pp_gate",
+    "L1_improved_over_G0": true,
+    "L1_improved_over_L0": true,
+    "L1_met_0_30pp_investment_gate_over_best_comparator": false,
+    "effect_size_pp_vs_best_comparator": 0.052,
+    "additional_training_authorized": false,
+    "automatic_G2": false
+  },
+  "execution_evidence": {
+    "common_control_passed": true,
+    "elapsed_seconds": 9148.499345134995,
+    "gpu_budget_seconds": 28800,
+    "platform_packages_created": 2,
+    "engineering_stopped_candidates": [],
+    "submission_rows": 24967,
+    "prediction_classes": 500,
+    "submission_validation_passed": {
+      "L0": true,
+      "L1": true
+    },
+    "zip_internal_csv_byte_equal": {
+      "L0": true,
+      "L1": true
+    }
+  },
+  "prescribed_candidates_delivered_and_scored": 2,
+  "pending_platform_scores": [],
+  "target_75_verified": false,
+  "current_no_prior_best_promoted": true,
+  "new_absolute_platform_best_promoted": true,
+  "new_platform_uploads_by_agent": false,
+  "git_push_by_agent": false,
+  "independent_validation_claim": false
+}

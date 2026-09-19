@@ -1,10 +1,10 @@
 {
   "plan_id": "PRELIM75_V7_20260918",
-  "recorded_at": "2026-09-19T17:17:22",
+  "recorded_at": "2026-09-19T20:21:17+08:00",
   "feedback_source": "user",
   "platform_accuracy_percent": {
     "L0": 69.0632,
-    "L1": null,
+    "L1": 69.2794,
     "G0_prior0.9": 72.4677
   },
   "online_exact_correct": {
@@ -22,14 +22,18 @@
     "L0_minus_C0": 0.6088,
     "L0_minus_historical_prior_0.90": -1.289666,
     "L0_distance_to_75": 5.9368,
-    "L1_minus_G0": null,
-    "L1_minus_L0": null,
+    "L1_minus_G0": 0.052,
+    "L1_minus_L0": 0.2162,
+    "L1_minus_F1": 0.1401,
+    "L1_minus_historical_prior_0.90": -1.073466,
+    "L1_distance_to_75": 5.7206,
     "G0_prior0.9_minus_G0": 3.2403,
+    "G0_prior0.9_minus_L1": 3.1883,
     "G0_prior0.9_minus_historical_prior_0.90": 2.114834,
     "G0_prior0.9_distance_to_75": 2.5323
   },
-  "current_decision_state": "L0 does not beat G0; keep G0 as current leader; final decision waits for L1 platform feedback.",
-  "diagnostic_note": "L0 overlap diagnostic was +0.533152pp raw / +0.409222pp clean-core vs G0, but the platform result is -0.1642pp; diagnostic is not a platform substitute.",
+  "current_decision_state": "L1 is the v7 and no-prior winner because it exceeds both G0 and L0, but its +0.0520pp gain over max(G0,L0) is below the pre-registered +0.30pp investment gate. Close v7 without G2 or additional tuning; the G0+prior0.9 side package remains the absolute platform best.",
+  "diagnostic_note": "L0/L1 overlap raw diagnostics were +0.533152pp/+0.339276pp versus G0, while their platform deltas were -0.1642pp/+0.0520pp. The overlap diagnostic is not a platform substitute.",
   "prior09_side_result": {
     "platform_accuracy_percent": 72.4677,
     "new_absolute_platform_best": true,

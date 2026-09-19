@@ -2,9 +2,11 @@
 
 计划 ID：`PRELIM75_V7_20260918`
 
-状态：**已真实执行完成 L0/L1；common-control 通过；平台反馈已部分回填；本地记录待提交推送。**
+状态：**已闭环；L1 为正式无 prior 胜者，但未达到 0.30pp 投入回报门槛；不追加 G2。**
 
-已回填结果：L0=69.0632%（低于 G0），L1 平台分待回填。按用户要求另生成的侧包 G0+prior0.9（legacy test-batch balanced-prior，不属于预注册 L0/L1 无 prior 对照）平台 **72.4677%**，刷新历史最高 70.352866%，距 75% 差 2.5323pp。
+平台结果：L0=69.0632%，L1=**69.2794%**。L1 比 G0 高 0.0520pp、比 L0 高 0.2162pp，按预注册规则保留 L1；但 L1−max(G0,L0)=0.0520pp，未达到 0.30pp 投入回报门槛，因此本轮关闭，不追加 G2 或调参。按用户要求另生成的侧包 G0+prior0.9（legacy test-batch balanced-prior，不属于预注册 L0/L1 无 prior 对照）平台 **72.4677%**，仍为绝对最高，距 75% 差 2.5323pp。
+
+完整命令、指标、哈希、提交验证与最终判定见 [`results/prelim75_v7_execution_20260919.md`](../results/prelim75_v7_execution_20260919.md) 和 [`results/prelim75_v7_final_20260919.json`](../results/prelim75_v7_final_20260919.json)。
 
 ## 起点
 
