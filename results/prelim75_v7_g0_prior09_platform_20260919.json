@@ -1,0 +1,27 @@
+{
+  "plan_id": "PRELIM75_V7_20260918",
+  "experiment": "G0 + legacy balanced prior strength 0.9",
+  "recorded_at": "2026-09-19T17:17:22",
+  "feedback_source": "user",
+  "package_path": "outputs/prelim75_v7_monitor/g0_prior09/prior09_submission/submission.zip",
+  "desktop_path": "C:\\Users\\lqh22\\Desktop\\submission_prelim75_v7_G0_prior0.9_20260918.zip",
+  "checkpoint_path": "outputs/prelim75_v6_20260918/G0/candidate.pt",
+  "checkpoint_sha256": "fb164dcac4ce3aae9f66129cf9ad5ba5160fabd26960742b5e00d2a8bdb43bea",
+  "zip_sha256": "1313c40265ca4e3ab92b001b1d33e006737d26b5cc3f3a9dc4d4d6df5d9f9803",
+  "csv_sha256": "6746faa9dae2849451d8ffbea6226a04577db4dee37c7e490b9626947e317062",
+  "platform_accuracy_percent": 72.4677,
+  "online_exact_correct": null,
+  "actual_platform_upload_time": null,
+  "differences_pp": {
+    "prior09_G0_minus_G0": 3.2403,
+    "prior09_G0_minus_L0": 3.4045,
+    "prior09_G0_minus_L1": 3.2684,
+    "prior09_G0_minus_F1": 3.3284,
+    "prior09_G0_minus_historical_prior0.90": 2.114834,
+    "prior09_G0_distance_to_75": 2.5323
+  },
+  "new_absolute_platform_best": true,
+  "previous_absolute_platform_best_percent": 70.352866,
+  "decision_state": "Real-platform best in the current repository, but this calibration package was a user-requested side test outside the pre-registered v7 L0/L1 no-prior comparison.",
+  "provenance_note": "Generated with the legacy align_logits_to_prior/test-batch balanced-prior route, same family as the historical prior0.90 package; current infer.py official source-bound path forbids test-batch prior fitting. Do not silently relabel it as the no-prior L0/L1 result."
+}

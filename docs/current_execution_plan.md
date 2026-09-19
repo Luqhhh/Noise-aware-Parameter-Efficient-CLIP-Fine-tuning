@@ -8,7 +8,9 @@ v7 从 v6 G0（平台 69.2274%）独立初始化 L0/L1，只改变 fresh LambdaL
 
 代码入口已接入：`configs/prelim75_v7.yaml`、`reproducibility/aegis_f1/aegis_clip/prelim75_cooldown.py`、`.../cli/train_prelim75_v7.py`、`scripts/run_prelim75_v7_queue.py`、`reproducibility/aegis_f1/tests/test_prelim75_v7.py`。CPU 调度对齐通过：L0 三轮边界 multiplier 为 1.0 / 0.9924798377 / 0.9701478473 / 0.9336825749；L1 为 1.0 / 0.7525 / 0.2575 / 0.01；floor 在各自 horizon 末端精确为 0.01。真实 G0 parent 的 metadata/diagnostic 只读 preflight 已通过，队列默认只读模式不创建 v7 输出。
 
-当前状态：实现和 CPU 测试已完成，**未启动真实 GPU、未生成 v7 平台包、未 push v7 代码、未操作平台账号**。历史 v6 结论保留在下一节；G0 仍是当前回退和保留提交包。
+2026-09-18/19 的真实执行已完成：L0/L1 各完成 3 epoch、诊断和 ZIP 包，common-control 通过。用户回传的正式 v7 候选平台成绩中 L0=69.0632%，低于 G0；L1 平台分尚未回填。另有一项按用户要求生成的侧包 G0+prior0.9（legacy test-batch balanced-prior，非预注册 L0/L1 无 prior 对照）获得平台 **72.4677%**，超过旧历史最高 70.352866% 2.114834pp，距 75% 还差 2.5323pp；该结果已单独登记，不能冒充 v7 正式无 prior 结论，也不自动派生新训练。
+
+当前状态：v7 代码、执行记录、平台反馈文件保存在本地并待本轮提交推送；历史 v6 结论保留在下一节；G0 仍是 v7 正式候选中的保留包。
 
 ## 上一轮：PRELIM75_V6_20260918 已完成闭环（保留 G0）
 

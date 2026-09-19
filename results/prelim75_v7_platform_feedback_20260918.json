@@ -1,0 +1,40 @@
+{
+  "plan_id": "PRELIM75_V7_20260918",
+  "recorded_at": "2026-09-19T17:17:22",
+  "feedback_source": "user",
+  "platform_accuracy_percent": {
+    "L0": 69.0632,
+    "L1": null,
+    "G0_prior0.9": 72.4677
+  },
+  "online_exact_correct": {
+    "L0": null,
+    "L1": null
+  },
+  "actual_platform_upload_time": {
+    "L0": null,
+    "L1": null
+  },
+  "differences_pp": {
+    "L0_minus_G0": -0.1642,
+    "L0_minus_F1": -0.0761,
+    "L0_minus_F0": -0.012,
+    "L0_minus_C0": 0.6088,
+    "L0_minus_historical_prior_0.90": -1.289666,
+    "L0_distance_to_75": 5.9368,
+    "L1_minus_G0": null,
+    "L1_minus_L0": null,
+    "G0_prior0.9_minus_G0": 3.2403,
+    "G0_prior0.9_minus_historical_prior_0.90": 2.114834,
+    "G0_prior0.9_distance_to_75": 2.5323
+  },
+  "current_decision_state": "L0 does not beat G0; keep G0 as current leader; final decision waits for L1 platform feedback.",
+  "diagnostic_note": "L0 overlap diagnostic was +0.533152pp raw / +0.409222pp clean-core vs G0, but the platform result is -0.1642pp; diagnostic is not a platform substitute.",
+  "prior09_side_result": {
+    "platform_accuracy_percent": 72.4677,
+    "new_absolute_platform_best": true,
+    "previous_best_percent": 70.352866,
+    "package_zip_sha256": "1313c40265ca4e3ab92b001b1d33e006737d26b5cc3f3a9dc4d4d6df5d9f9803",
+    "note": "User-requested side package, legacy test-batch balanced-prior alignment; not part of the pre-registered L0/L1 no-prior comparison."
+  }
+}
