@@ -16,7 +16,7 @@ def validate_frozen_prior(record, context, *, base_dir):
     if record.get('schema_version') != 2:
         raise ValueError('Legacy prior lacks source bindings; version 2 required for inference')
     for key in ('stage', 'dataset_id', 'target_checkpoint_sha256', 'class_mapping_sha256',
-                'num_classes', 'inference_protocol_sha256'):
+                'num_classes', 'inference_protocol_sha256', 'original_supervision_sha256'):
         if key not in context or record.get(key) != context[key]:
             raise ValueError(f'Frozen prior {key} mismatch')
     if record.get('fit_checkpoint_sha256') != record['target_checkpoint_sha256']:
@@ -38,11 +38,12 @@ def validate_frozen_prior(record, context, *, base_dir):
     if audit.get('fit_scope') not in {'calibration_fit', 'training_overlap_calibration'}:
         raise ValueError('Source scope cannot fit calibration')
     for key in ('stage','dataset_id','fit_checkpoint_sha256','class_mapping_sha256',
-                'inference_protocol_sha256'):
+                'inference_protocol_sha256', 'original_supervision_sha256'):
         if audit.get(key) != record.get(key):raise ValueError(f'Source audit {key} mismatch')
     # Source files remain necessary at apply time until a portable signed/verified
     # release receipt exists. Merely changing test_data_used cannot pass this.
-    for key in ('fit_sample_manifest', 'fit_group_set', 'validation_logits'):
+    for key in ('fit_sample_manifest', 'fit_group_set', 'validation_logits',
+                'original_train_csv', 'trust_bundle'):
         binding = audit.get(key,{})
         asset = Path(binding.get('path',''))
         if not asset.is_absolute():asset = path.parent/asset
@@ -85,8 +86,12 @@ def validate_frozen_prior(record, context, *, base_dir):
     payload = torch.load(source_path('validation_logits'), map_location='cpu', weights_only=True)
     if not isinstance(payload, dict) or payload.get('fit_scope') != audit['fit_scope']:
         raise ValueError('Logits source scope mismatch')
-    for key in ('fit_checkpoint_sha256', 'inference_protocol_sha256', 'class_mapping_sha256'):
+    for key in ('fit_checkpoint_sha256', 'inference_protocol_sha256',
+                'class_mapping_sha256', 'original_supervision_sha256'):
         if payload.get(key) != record.get(key):raise ValueError('Logits producer binding mismatch')
+    if (payload.get('score_semantics') != record.get('score_semantics') or
+        payload.get('score_semantics') != 'log_final_fused_probabilities'):
+        raise ValueError('Logits score semantics mismatch')
     if payload.get('paths') != identities:
         raise ValueError('Logits sample order/source mismatch')
     logits = payload.get('logits')

@@ -40,6 +40,7 @@ from aegis_clip.calibration_binding import protocol_sha256, validate_frozen_prio
 from aegis_clip.runtime import sha256_file
 from aegis_clip.prior_alignment import apply_prior_bias
 from aegis_clip.runtime import seed_worker, set_seed
+from aegis_clip.source_bias import build_inference_protocol_descriptor
 from aegis_clip.submission import create_submission
 from aegis_clip.tta import TTA_FUSION_MODES, fuse_paired_logits
 
@@ -235,30 +236,37 @@ def main() -> None:
     set_seed(int(config["project"].get("seed", 42)), deterministic=True)
     _, idx_to_class = load_class_mapping(config["data"]["class_mapping"])
     num_classes = len(idx_to_class)
-    excluded = {'checkpoint','config','output_dir','prior_config','prior_alignment_strength',
-                'prior_alignment_iterations','overwrite','dump_logits','dump_branch_logits'}
-    code_root = Path(__file__).resolve().parents[1]
-    implementation = {str(p.relative_to(code_root)):sha256_file(p) for p in sorted(code_root.rglob('*.py'))}
-    descriptor = {'cli': {k:v for k,v in vars(args).items() if k not in excluded},
-                  'implementation_sha256':protocol_sha256(implementation),
-                  'model':checkpoint.get('effective_model_spec', config['model']),
-                  'preprocess':repr(preprocess), 'amp':bool(config['train'].get('amp',True)) and device.type == 'cuda',
-                  'device':device.type, 'default_inference_batch_size':config['evaluation'].get('inference_batch_size',
-                        min(int(config['evaluation'].get('batch_size',256)),256))}
-    context = {'stage':config['project']['stage'], 'dataset_id':config['project'].get('dataset_id'),
-               'train_root':config['data']['train_root'],
-               'target_checkpoint_sha256':sha256_file(args.checkpoint),
-               'class_mapping_sha256':sha256_file(config['data']['class_mapping']),
-               'num_classes':num_classes, 'inference_protocol_sha256':protocol_sha256(descriptor)}
+    descriptor = build_inference_protocol_descriptor(
+        args, checkpoint, config, preprocess, device
+    )
+    original_supervision_sha256 = checkpoint.get("prelim75_training", {}).get(
+        "original_supervision_sha256"
+    )
+    context = {
+        "stage": config["project"]["stage"],
+        "dataset_id": config["project"].get("dataset_id"),
+        "train_root": config["data"]["train_root"],
+        "target_checkpoint_sha256": sha256_file(args.checkpoint),
+        "class_mapping_sha256": sha256_file(config["data"]["class_mapping"]),
+        "num_classes": num_classes,
+        "inference_protocol_sha256": protocol_sha256(descriptor),
+        "original_supervision_sha256": original_supervision_sha256,
+    }
     prior_config = None
     if args.prior_config:
         prior_path = Path(args.prior_config)
         if not prior_path.exists():
             raise FileNotFoundError(f"Prior config not found: {prior_path}")
         prior_config = json.loads(prior_path.read_text(encoding="utf-8"))
-        if not context['dataset_id']:
-            raise ValueError('Frozen prior requires an explicit dataset_id')
-        frozen_bias, frozen_strength = validate_frozen_prior(prior_config, context, base_dir=prior_path.parent)
+        if not context["dataset_id"]:
+            raise ValueError("Frozen prior requires an explicit dataset_id")
+        if not context["original_supervision_sha256"]:
+            raise ValueError(
+                "Frozen prior requires checkpoint-bound original supervision"
+            )
+        frozen_bias, frozen_strength = validate_frozen_prior(
+            prior_config, context, base_dir=prior_path.parent
+        )
     dataset = TestImageDataset(config["data"]["test_root"], preprocess)
     expected_test_samples = int(config["data"]["expected_test_samples"])
     if len(dataset) != expected_test_samples:

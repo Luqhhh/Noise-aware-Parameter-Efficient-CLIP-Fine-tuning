@@ -8,27 +8,45 @@ from aegis_clip.runtime import sha256_file
 
 def fixture(tmp_path):
     context=dict(stage='preliminary',dataset_id='synthetic_unit',target_checkpoint_sha256='model',
-                 class_mapping_sha256='mapping',num_classes=2,inference_protocol_sha256=protocol_sha256({'views':2,'temperature':1.5}))
+                 class_mapping_sha256='mapping',num_classes=2,
+                 original_supervision_sha256='supervision',
+                 inference_protocol_sha256=protocol_sha256({'views':2,'temperature':1.5}))
     prior=dict(context,schema_version=2,fit_checkpoint_sha256='model',test_data_used=False,
-               bias=[.1,-.1],strength=.9,strength_source='test fixture',calibration_design_record='test fixture')
-    audit={k:v for k,v in prior.items() if k in ['stage','dataset_id','fit_checkpoint_sha256','class_mapping_sha256','inference_protocol_sha256']}
+               score_semantics='log_final_fused_probabilities',bias=[.1,-.1],strength=.9,
+               strength_source='test fixture',calibration_design_record='test fixture')
+    audit={k:v for k,v in prior.items() if k in ['stage','dataset_id','fit_checkpoint_sha256',
+           'class_mapping_sha256','inference_protocol_sha256','original_supervision_sha256']}
     audit.update(status='checks_passed',source_authenticity_verified=True,authorizes_calibration=True,fit_scope='calibration_fit')
     train=tmp_path/'train'; (train/'0000').mkdir(parents=True)
     (train/'0000/a.jpg').write_bytes(b'synthetic image bytes')
     context['train_root']=str(train)
     (tmp_path/'fit_sample_manifest').write_text('image_path,label\n0000/a.jpg,0\n')
     (tmp_path/'fit_group_set').write_text(json.dumps([sha256_file(train/'0000/a.jpg')]))
+    (tmp_path/'original_train_csv').write_text('image_path,label\n0000/a.jpg,0\n')
+    (tmp_path/'trust_bundle').write_bytes(b'synthetic trust')
     torch.save(dict(logits=torch.tensor([[1.,2.]]),paths=['0000/a.jpg'],fit_scope='calibration_fit',
+                    score_semantics='log_final_fused_probabilities',
                     fit_checkpoint_sha256='model',class_mapping_sha256='mapping',
+                    original_supervision_sha256='supervision',
                     inference_protocol_sha256=context['inference_protocol_sha256']),tmp_path/'validation_logits')
-    for k in ('fit_sample_manifest','fit_group_set','validation_logits'):
+    for k in ('fit_sample_manifest','fit_group_set','validation_logits','original_train_csv','trust_bundle'):
         p=tmp_path/k
         audit[k]={'path':str(p),'sha256':sha256_file(p)};prior[k+'_sha256']=sha256_file(p)
     p=tmp_path/'audit.json';p.write_text(json.dumps(audit));prior['source_audit']={'path':str(p),'sha256':sha256_file(p)}
     return prior,context,audit
 
 
-@pytest.mark.parametrize('key', ['stage','dataset_id','target_checkpoint_sha256','class_mapping_sha256','inference_protocol_sha256'])
+@pytest.mark.parametrize(
+    'key',
+    [
+        'stage',
+        'dataset_id',
+        'target_checkpoint_sha256',
+        'class_mapping_sha256',
+        'inference_protocol_sha256',
+        'original_supervision_sha256',
+    ],
+)
 def test_same_dimensions_cannot_hide_binding_mismatch(tmp_path,key):
     p,c,_=fixture(tmp_path);c[key]='changed'
     with pytest.raises(ValueError,match='mismatch'):validate_frozen_prior(p,c,base_dir=tmp_path)
@@ -37,6 +55,30 @@ def test_same_dimensions_cannot_hide_binding_mismatch(tmp_path,key):
 def test_test_scope_and_false_flag_do_not_prove_source(tmp_path):
     p,c,a=fixture(tmp_path);a['fit_scope']='official_test';path=tmp_path/'audit.json';path.write_text(json.dumps(a));p['source_audit']['sha256']=sha256_file(path)
     with pytest.raises(ValueError,match='scope'):validate_frozen_prior(p,c,base_dir=tmp_path)
+
+
+def test_training_overlap_scope_is_explicitly_accepted(tmp_path):
+    p,c,a=fixture(tmp_path);a['fit_scope']='training_overlap_calibration'
+    q=tmp_path/'validation_logits';payload=torch.load(q,weights_only=True)
+    payload['fit_scope']='training_overlap_calibration';torch.save(payload,q)
+    a['validation_logits']['sha256']=sha256_file(q);p['validation_logits_sha256']=sha256_file(q)
+    path=tmp_path/'audit.json';path.write_text(json.dumps(a));p['source_audit']['sha256']=sha256_file(path)
+    validate_frozen_prior(p,c,base_dir=tmp_path)
+
+
+def test_test_fitted_prior_is_rejected_even_with_valid_assets(tmp_path):
+    p,c,_=fixture(tmp_path);p['test_data_used']=True
+    with pytest.raises(ValueError,match='Test-fitted'):validate_frozen_prior(p,c,base_dir=tmp_path)
+
+
+def test_cross_model_bias_is_rejected(tmp_path):
+    p,c,_=fixture(tmp_path);p['fit_checkpoint_sha256']='different-model'
+    with pytest.raises(ValueError,match='Cross-model'):validate_frozen_prior(p,c,base_dir=tmp_path)
+
+
+def test_score_semantics_mismatch_is_rejected(tmp_path):
+    p,c,_=fixture(tmp_path);p['score_semantics']='single_branch_logits'
+    with pytest.raises(ValueError,match='semantics'):validate_frozen_prior(p,c,base_dir=tmp_path)
 
 
 def test_legacy_and_source_tampering_rejected(tmp_path):

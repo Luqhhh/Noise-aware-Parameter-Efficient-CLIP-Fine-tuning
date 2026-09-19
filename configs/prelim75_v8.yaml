@@ -1,0 +1,81 @@
+plan_id: PRELIM75_V8_20260919
+seed: 42
+fixed_review_commit: 3f83d69f9a4496976e7d50beecd7e0baa0400d4d
+dataset_id: preliminary_official_train_103218_v8
+num_workers: 4
+original_supervision_sha256: 7fc6dcf0efb87e0a402114a7ff7ef9421e7f1c8fedcc06db10ba6d6485c606c4
+
+candidates:
+  B0:
+    model_id: PRELIM75_V6_G0
+    checkpoint: ../outputs/prelim75_v6_20260918/G0/candidate.pt
+    checkpoint_sha256: fb164dcac4ce3aae9f66129cf9ad5ba5160fabd26960742b5e00d2a8bdb43bea
+    baseline_submission: ../outputs/prelim75_v6_20260918/G0/submission/submission.zip
+    baseline_submission_sha256: efccb9f2b601a8b24830ef601739b166c214b8316b441bb9bc7d7aaf6bd4b634
+    baseline_platform_percent: 69.2274
+  B1:
+    model_id: PRELIM75_V7_L1
+    checkpoint: ../outputs/prelim75_v7_20260918/L1/candidate.pt
+    checkpoint_sha256: cd485c7beed2781ac13d08fbd33d63b8f1c46971be008966f7280c67cec1fcee
+    baseline_submission: ../outputs/prelim75_v7_20260918/L1/submission/submission.zip
+    baseline_submission_sha256: 55d25f1fea9c57ba3431164d53d21f34d20baa2a49c805ad87cca188b5634c5a
+    baseline_platform_percent: 69.2794
+
+train_csv: ../reproducibility/aegis_f1/artifacts/stages/preliminary/final_full_train.csv
+train_csv_sha256: 7643e120589e69d6bdc0c54abc605a7271d78c41aed1a638534ea43e4c0c4a90
+trust: ../reproducibility/aegis_f1/artifacts/trust/selftrain_r2_teacher_v3_multiscale.pt
+trust_sha256: 6868041cc7b995a3e8e557ae925d1d25160acf23af09202f46911ce92125b30f
+class_mapping: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/class_to_idx.json
+class_mapping_sha256: 3edfd9e48e2f171b5d452577c52e0d189ae99dbfed3759d3e4f164fc090a6647
+groups: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/content_groups.json
+groups_sha256: 41e2668e0fa5e10291051c14a9c75fc96096a69ae7d36d84d0e774270a99bb87
+train_root: ../train
+test_root: ../test
+legacy_prior_submission: ../outputs/prelim75_v7_monitor/g0_prior09/prior09_submission/submission.zip
+legacy_prior_submission_sha256: 1313c40265ca4e3ab92b001b1d33e006737d26b5cc3f3a9dc4d4d6df5d9f9803
+output: ../outputs/prelim75_v8_20260919
+
+inference_protocol:
+  input_resize_mode: clip_center_crop
+  local_view: attention_multiscale
+  local_crop_sizes: [112, 128, 144, 160]
+  local_scale_weights: [0.2, 0.3, 0.4, 0.1]
+  local_top_k: 5
+  local_weight: 0.4
+  local_temperature: 1.5
+  adapt_local_features: true
+  adapt_part_token_features: true
+  tta: horizontal_flip
+  tta_fusion: mean_probabilities
+  tta_temperature: 1.5
+  tta_view_weight: 0.5
+  batch_size: 64
+  score_semantics: log_final_fused_probabilities
+
+fitting:
+  regularization: 0.01
+  bound: 1.3862943611198906
+  strength: 0.9
+  chunk_size: 4096
+  solver: L-BFGS-B
+  dtype: float64
+  maxiter: 100
+  maxfun: 300
+  maxls: 30
+  maxcor: 10
+  ftol: 1.0e-12
+  gtol: 1.0e-8
+
+budget:
+  backbone_optimizer_updates: 0
+  maximum_train_forwards: 2
+  maximum_cpu_fits: 2
+  maximum_test_candidates: 2
+  gpu_action_seconds: 7200
+  cpu_fit_seconds: 3600
+
+reference_platform_percent:
+  G0_no_prior: 69.2274
+  L1_no_prior: 69.2794
+  G0_legacy_test_batch_prior0.9: 72.4677
+  target: 75.0
