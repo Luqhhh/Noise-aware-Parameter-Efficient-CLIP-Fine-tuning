@@ -1,6 +1,6 @@
 {
   "plan_id": "PRELIM75_V8_20260919",
-  "status": "submission_ready_pending_real_platform_feedback",
+  "status": "partial_platform_feedback_B0_negative_pending_B1",
   "execution_source_commit": "18111e51b9d2e856b57d2e39bff47c1911cf5f00",
   "protocol_repair_commit": "ad547bddf77779c368050df80329969f42d608fa",
   "fixed_review_commit": "3f83d69f9a4496976e7d50beecd7e0baa0400d4d",
@@ -77,7 +77,8 @@
       "csv_sha256": "1547404404af2b2e8b8ff07e01fa83567f7ee70aaf52daf1dfa3fd977fa76ca2",
       "zip_sha256": "77fcff469608ab502a8a3a85facc109c4b260753556b74677a0eb80c13b2fa7a",
       "zip_path": "outputs/prelim75_v8_20260919/B0/submission/submission.zip",
-      "platform_percent": null,
+      "platform_percent": 67.8816,
+      "platform_feedback_source": "user",
       "actual_platform_upload_time": null
     },
     "B1": {
@@ -114,7 +115,15 @@
     "G0_legacy_test_batch_prior0.9": 72.4677,
     "target": 75.0
   },
-  "decision": "pending_B0_and_B1_platform_feedback",
+  "platform_differences_pp": {
+    "B0_minus_G0_no_prior": -1.3458,
+    "B0_minus_L1_no_prior": -1.3978,
+    "B0_minus_G0_legacy_test_batch_prior0.9": -4.5861,
+    "B0_distance_to_75": 7.1184,
+    "B1_minus_L1_no_prior": null,
+    "B1_minus_B0": null
+  },
+  "decision": "B0_negative_and_eliminated; pending_B1_platform_feedback",
   "automatic_upload": false,
   "automatic_push": false
 }

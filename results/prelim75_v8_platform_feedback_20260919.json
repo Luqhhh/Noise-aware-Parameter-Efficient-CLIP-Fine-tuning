@@ -1,0 +1,28 @@
+{
+  "plan_id": "PRELIM75_V8_20260919",
+  "recorded_at": "2026-09-19T23:04:15+08:00",
+  "feedback_source": "user",
+  "platform_accuracy_percent": {
+    "B0": 67.8816,
+    "B1": null
+  },
+  "online_exact_correct": {
+    "B0": null,
+    "B1": null
+  },
+  "actual_platform_upload_time": {
+    "B0": null,
+    "B1": null
+  },
+  "differences_pp": {
+    "B0_minus_G0_no_prior": -1.3458,
+    "B0_minus_L1_no_prior": -1.3978,
+    "B0_minus_G0_legacy_test_batch_prior0.9": -4.5861,
+    "B0_minus_historical_prior0.90": -2.471266,
+    "B0_distance_to_75": 7.1184,
+    "B1_minus_L1_no_prior": null,
+    "B1_minus_B0": null
+  },
+  "current_decision_state": "B0 is a negative platform result and is eliminated as the non-test-fitted-path winner. B1 remains pending, so PRELIM75 v8 is not yet closed and no new scan is authorized.",
+  "precision_note": "The user supplied only the percentage. Exact correct count and actual upload time remain unknown and are not inferred."
+}
