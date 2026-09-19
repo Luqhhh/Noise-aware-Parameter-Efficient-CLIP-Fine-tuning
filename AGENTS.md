@@ -78,7 +78,7 @@ YAML files loaded by `common/utils.py:load_config()`. Key sections:
 
 - Before starting every new experiment segment, verify the current branch, working-tree state, and whether `origin/main` is current; use `git pull --rebase --autostash origin main` when updating a mixed worktree, and never run a second `git stash pop` after automatic stashing.
 - Before starting every new experiment segment, inspect all available local and remote branch refs plus recent main history for overlapping experiment names, algorithms, configs, result reports, or in-flight work; if a similar direction exists, compare/coordinate/close it before implementing duplicate work.
-- After each experiment segment finishes, report the experiment identifier, exact command/config, result metrics, changed files, commit SHA, and whether the result is suitable for pushing or pulling. Pause at that checkpoint so teammates can avoid duplicate work, reuse findings, or perform elimination comparisons.
+- After each experiment segment finishes, promptly commit and push the verified changes to `origin/main`, then report the experiment identifier, exact command/config, result metrics, changed files, commit SHA, and push status. Pause at that checkpoint so teammates can avoid duplicate work, reuse findings, or perform elimination comparisons.
 - Keep experiment reports reproducible and distinguish implementation changes from measured results; do not claim a segment is complete until verification output is available.
 - Before pausing after any experiment segment, carry it through to a submission-ready artifact: generate the required prediction CSV/ZIP, run submission validation, and record its path and validation result. A code-only or unit-test-only segment must continue rather than pause.
 
@@ -94,4 +94,4 @@ manual stash/pop or Git's automatic stash mode; never mix the two.
   `git stash pop`.
 - Never use `git push --force` to resolve a non-fast-forward push.
 - `output`: log_dir, submission_dir
-- For future experiment segments, work directly on the checked-out `main` branch: do not create a feature branch. After verification, commit locally only; do not run `git push`. The user owns all pushes to `origin/main`. Before the next segment, fetch/rebase or pull the latest `origin/main` using the automatic-stash workflow when the worktree is mixed.
+- For future experiment segments, work directly on the checked-out `main` branch: do not create a feature branch. After verification, promptly commit the result, synchronize with the latest `origin/main` using `git pull --rebase --autostash origin main`, and push the fast-forward result to `origin/main`; Git restores the automatic stash, so never run a second `git stash pop`. Never defer a verified push to a later segment and never use force push.
