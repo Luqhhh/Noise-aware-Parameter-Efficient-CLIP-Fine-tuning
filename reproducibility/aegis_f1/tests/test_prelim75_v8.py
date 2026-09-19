@@ -15,6 +15,7 @@ from aegis_clip.source_bias import (
     SCORE_SEMANTICS,
     balanced_sample_weights,
     build_inference_protocol_descriptor,
+    canonical_preprocess_repr,
     fit_bounded_source_bias,
     objective_delta_and_gradient,
     projected_gradient_inf_norm,
@@ -38,6 +39,20 @@ def _source():
 
 def test_score_semantics_is_final_fused_log_probability():
     assert SCORE_SEMANTICS == "log_final_fused_probabilities"
+
+
+@pytest.mark.parametrize(
+    "address",
+    ["0x7f9025ea85e0", "0x7f0ed59445e0"],
+)
+def test_preprocess_descriptor_removes_process_local_function_address(address):
+    class SyntheticPreprocess:
+        def __repr__(self):
+            return f"Compose(<function _convert_image_to_rgb at {address}>, ToTensor())"
+
+    assert canonical_preprocess_repr(SyntheticPreprocess()) == (
+        "Compose(<function _convert_image_to_rgb>, ToTensor())"
+    )
 
 
 def test_balanced_row_weights_sum_to_one():

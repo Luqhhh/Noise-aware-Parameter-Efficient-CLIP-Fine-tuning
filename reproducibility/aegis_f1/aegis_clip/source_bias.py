@@ -8,6 +8,7 @@ calibration record cannot be rebound to a merely similar inference command.
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -23,6 +24,16 @@ SCORE_SEMANTICS = "log_final_fused_probabilities"
 DEFAULT_BOUND = math.log(4.0)
 DEFAULT_REGULARIZATION = 0.01
 DEFAULT_CHUNK_SIZE = 4096
+
+
+def canonical_preprocess_repr(preprocess: Any) -> str:
+    """Serialize a transform repr without process-local function addresses."""
+    value = repr(preprocess)
+    return re.sub(
+        r"(<function\s+[^>]+?)\s+at\s+0x[0-9a-fA-F]+(>)",
+        r"\1\2",
+        value,
+    )
 
 
 def build_inference_protocol_descriptor(
@@ -57,7 +68,7 @@ def build_inference_protocol_descriptor(
         },
         "implementation_sha256": protocol_sha256(implementation),
         "model": checkpoint.get("effective_model_spec", config["model"]),
-        "preprocess": repr(preprocess),
+        "preprocess": canonical_preprocess_repr(preprocess),
         "amp": bool(config["train"].get("amp", True)) and device.type == "cuda",
         "device": device.type,
         "default_inference_batch_size": config["evaluation"].get(
