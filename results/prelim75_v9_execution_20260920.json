@@ -1,5 +1,5 @@
 {
-  "status": "complete_pending_real_platform_feedback",
+  "status": "complete_platform_feedback_both_below_L1_closed",
   "plan_id": "PRELIM75_V9_20260920",
   "implementation_commit": "ae75f5ddd5a3db663618dab301e36945578c939b",
   "cuda_numerics_repair_commit": "38acbdb89829724936b0b035af1bb07131feebbf",
@@ -42,7 +42,8 @@
       "zip_sha256": "b99de5fb259604184ee75a9d7082939800368a6c150c0d6b564b423539478f2f",
       "zip_path": "outputs/prelim75_v9_20260920/R0/submission/submission.zip",
       "validation": "passed",
-      "platform_percent": null,
+      "platform_percent": 69.1633,
+      "platform_feedback_source": "user",
       "online_exact_correct": null,
       "actual_platform_upload_time": null
     },
@@ -53,7 +54,8 @@
       "zip_sha256": "d57d0e143fccbc283a1f46ca24711de67589f5eb6f00f4b9e06e1ade0d4188e5",
       "zip_path": "outputs/prelim75_v9_20260920/R1/submission/submission.zip",
       "validation": "passed",
-      "platform_percent": null,
+      "platform_percent": 69.2033,
+      "platform_feedback_source": "user",
       "online_exact_correct": null,
       "actual_platform_upload_time": null
     }
@@ -70,9 +72,19 @@
     "target": 75.0
   },
   "online_scores": {
-    "R0": null,
-    "R1": null
+    "R0": 69.1633,
+    "R1": 69.2033
   },
+  "platform_differences_pp": {
+    "R0_minus_L1_no_prior": -0.1161,
+    "R1_minus_L1_no_prior": -0.0761,
+    "R1_minus_R0": 0.04,
+    "R0_minus_G0_legacy_test_batch_prior0.9": -3.3044,
+    "R1_minus_G0_legacy_test_batch_prior0.9": -3.2644,
+    "R0_distance_to_75": 5.8367,
+    "R1_distance_to_75": 5.7967
+  },
+  "decision": "both_candidates_below_L1_no_prior; retain_L1_no_prior; close_PRELIM75_V9_without_recrop_follow_on_scan",
   "automatic_upload": false,
   "parameter_scan": false,
   "prior_used": false

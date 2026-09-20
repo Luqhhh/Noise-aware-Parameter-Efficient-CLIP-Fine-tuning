@@ -1,12 +1,18 @@
-# 当前执行计划（2026-09-20 初赛 75 分方案 v9）
+# 当前执行计划（2026-09-20）
 
-## 当前入口：PRELIM75_V9_20260920（候选就绪，待平台回填）
+## 当前入口：PRELIM75_V10_SAM_20260920（仅研究预注册，尚未实施）
+
+v10 已在最新主线预注册为 L1 上普通 AdamW 与标准 SAM 的严格配对，但尚未实现、训练或生成候选。v9 平台回填只完成其前置同步条件，不改变 v10 的 `rho=0.05`、三轮、控制组、预算或停止规则；正式实施仍须单独完成资产核验、代码接入与 A0 门禁。完整规格见 [v10 SAM 预注册](preliminary_75_v10_sam_preregistration_20260920.md)。
+
+## 已关闭：PRELIM75_V9_20260920
 
 v9 固定冻结 L1 无 prior 单模型，只改变 attention native 框内 local 像素的取得方式。R0 从 native 224 PIL canvas 用 Pillow bilinear float-box 重采样，R1 将完全相同的框按真实 Resize(224)+CenterCrop(224) 整数几何逆映射到原始解码 RGB 后重采样；global tensor、global logits、attention、四个框、O3/PTA、四尺度及融合协议均不变。逐图 `source_gain<1.5` 时两候选严格回退原生 L1 local tensor，不拟合参数、不使用 prior、不读取测试批统计选择规则。
 
 执行先做训练源 D0：按固定 SHA-256 顺序抽取 2,048 个唯一内容组的字典序 canonical 代表，仅解码尺寸；至少 205 组达到 `source_gain>=1.5` 才允许 GPU 阶段。随后依次执行冻结 smoke、10,316 行重叠工程诊断、完整 L1 基线重放和最多两个唯一预测集的 R0/R1 推理。完整测试重放必须与归档 L1 的 24,967 个 `(basename,label)` 全量一致，否则不交付新候选；结果不用于回改门槛、插值核、尺度或融合参数。代码入口为 `configs/prelim75_v9.yaml`、`aegis_clip/source_recrop.py`、`aegis_clip/prelim75_source_recrop.py`、`aegis_clip/cli/infer_prelim75_v9.py`、`scripts/run_prelim75_v9_queue.py` 和 `tests/test_prelim75_v9.py`。完整规格见 [v9 执行方案](preliminary_75_execution_v9_20260920.md)。
 
-只读资产 preflight 已核对 L1 checkpoint、回退 CSV/ZIP/manifest、500 类映射、103,218 行训练清单、101,980 个内容组、10,316 行重叠诊断清单及 24,967 个测试 basename；L1 checkpoint 含完整 visual、shared head、O3、PTA，登记哈希匹配。D0 为 1,532/2,048，通过 205 门槛；冻结 smoke 通过。首轮完整重放因误用训练 `gpu_setup()` 关闭 cuDNN TF32，造成 32 行不一致并按守卫停止；固定 batch A/B 确认根因后，修复为归档通用 L1 数值协议。修复后完整 baseline 重放 24,967 行差异为 0，R0/R1 分别相对 L1 改变 423/1,783 行，两份唯一候选均通过独立提交校验并复制到 C 盘桌面。累计 GPU 动作按保守口径为 6,676.012 秒，低于 7,200 秒预算。平台分数尚未上传或回填；执行记录见 [v9 执行记录](../results/prelim75_v9_execution_20260920.md)。
+只读资产 preflight 已核对 L1 checkpoint、回退 CSV/ZIP/manifest、500 类映射、103,218 行训练清单、101,980 个内容组、10,316 行重叠诊断清单及 24,967 个测试 basename；L1 checkpoint 含完整 visual、shared head、O3、PTA，登记哈希匹配。D0 为 1,532/2,048，通过 205 门槛；冻结 smoke 通过。首轮完整重放因误用训练 `gpu_setup()` 关闭 cuDNN TF32，造成 32 行不一致并按守卫停止；固定 batch A/B 确认根因后，修复为归档通用 L1 数值协议。修复后完整 baseline 重放 24,967 行差异为 0，R0/R1 分别相对 L1 改变 423/1,783 行，两份唯一候选均通过独立提交校验并复制到 C 盘桌面。累计 GPU 动作按保守口径为 6,676.012 秒，低于 7,200 秒预算。
+
+用户按 R0、R1 顺序回填平台 **69.1633% / 69.2033%**，分别比 L1 无 prior 69.2794% 低 **0.1161pp / 0.0761pp**；R1 比 R0 高 0.0400pp，但仍未超过 L1。按固定规则保留 L1 并关闭 v9，不派生门槛、核函数、尺度或融合扫描。执行记录见 [v9 执行记录](../results/prelim75_v9_execution_20260920.md)。
 
 ## 已关闭：PRELIM75_V8_20260919
 
