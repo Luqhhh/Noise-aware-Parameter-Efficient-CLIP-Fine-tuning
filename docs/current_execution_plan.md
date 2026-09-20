@@ -6,7 +6,7 @@ v9 固定冻结 L1 无 prior 单模型，只改变 attention native 框内 local
 
 执行先做训练源 D0：按固定 SHA-256 顺序抽取 2,048 个唯一内容组的字典序 canonical 代表，仅解码尺寸；至少 205 组达到 `source_gain>=1.5` 才允许 GPU 阶段。随后依次执行冻结 smoke、10,316 行重叠工程诊断、完整 L1 基线重放和最多两个唯一预测集的 R0/R1 推理。完整测试重放必须与归档 L1 的 24,967 个 `(basename,label)` 全量一致，否则不交付新候选；结果不用于回改门槛、插值核、尺度或融合参数。代码入口为 `configs/prelim75_v9.yaml`、`aegis_clip/source_recrop.py`、`aegis_clip/prelim75_source_recrop.py`、`aegis_clip/cli/infer_prelim75_v9.py`、`scripts/run_prelim75_v9_queue.py` 和 `tests/test_prelim75_v9.py`。完整规格见 [v9 执行方案](preliminary_75_execution_v9_20260920.md)。
 
-实现阶段只读资产 preflight 已核对 L1 checkpoint、回退 CSV/ZIP/manifest、500 类映射、103,218 行训练清单、101,980 个内容组、10,316 行重叠诊断清单及 24,967 个测试 basename；L1 checkpoint 含完整 visual、shared head、O3、PTA，登记哈希匹配。33 项合成 CPU 几何/像素测试通过；尚未运行 D0、GPU smoke、真实诊断或测试推理，平台分数保持空值。
+实现阶段只读资产 preflight 已核对 L1 checkpoint、回退 CSV/ZIP/manifest、500 类映射、103,218 行训练清单、101,980 个内容组、10,316 行重叠诊断清单及 24,967 个测试 basename；L1 checkpoint 含完整 visual、shared head、O3、PTA，登记哈希匹配。首轮 D0 为 1,532/2,048，通过 205 门槛；smoke 通过，重叠诊断未触发止损。首轮完整重放因错误复用训练 `gpu_setup()` 而关闭 cuDNN TF32，与归档通用 L1 推理数值协议不同，造成 32 行预测不一致并按守卫停止，未生成候选。固定 batch A/B 已确认恢复归档 `cudnn.allow_tf32=True` 可将首个不一致样本恢复为归档标签；失败目录与 3,286.40 秒 GPU 账本保留，修复后仍须重新通过 smoke、诊断和全量重放，累计不得超过 7,200 秒。
 
 ## 已关闭：PRELIM75_V8_20260919
 

@@ -1,0 +1,35 @@
+{
+  "plan_id": "PRELIM75_V9_20260920",
+  "status": "failed_native_replay_no_candidate_delivery",
+  "implementation_commit": "ae75f5ddd5a3db663618dab301e36945578c939b",
+  "failure": {
+    "stage": "full_test_native_replay",
+    "mismatch_rows": 32,
+    "total_rows": 24967,
+    "candidate_packages_created": 0,
+    "guard_removed_or_weakened": false
+  },
+  "root_cause": {
+    "description": "The v9 runner reused prelim75.gpu_setup(), which sets torch.backends.cudnn.allow_tf32=false, while the archived L1 package was produced by the generic inference entry in a clean process with cudnn.allow_tf32=true.",
+    "model_or_checkpoint_changed": false,
+    "candidate_hyperparameters_changed": false
+  },
+  "fixed_batch_ab": {
+    "basename": "0583ac16ec3a4b0dbb6dd1560a7d940a.jpg",
+    "sorted_test_index": 530,
+    "batch_size": 64,
+    "batch_index": 8,
+    "archived_label": "0462",
+    "cudnn_tf32_false_prediction": "0254",
+    "cudnn_tf32_true_prediction": "0462",
+    "matmul_allow_tf32": false
+  },
+  "timing_seconds": {
+    "smoke": 16.70035847200006,
+    "diagnostic": 1110.255083311,
+    "failed_full_inference": 2159.440695564,
+    "failed_attempt_gpu_action_total": 3286.396137347,
+    "cumulative_gpu_budget": 7200
+  },
+  "recovery_rule": "Preserve the failed output, make the archived generic inference CUDA numerics explicit, then rerun smoke, diagnostic, and full replay. All failed and recovery GPU actions count toward the same 7200-second cap."
+}

@@ -31,8 +31,8 @@ from aegis_clip.localization import (
     forward_with_last_block_attention,
     fuse_global_multilocal_flip_probabilities,
 )
-from aegis_clip.prelim75 import gpu_setup, load_composite, repository_root
-from aegis_clip.runtime import atomic_json_dump, seed_worker, sha256_file
+from aegis_clip.prelim75 import load_composite, repository_root
+from aegis_clip.runtime import atomic_json_dump, seed_worker, set_seed, sha256_file
 from aegis_clip.source_recrop import (
     D0_MINIMUM_SUPPORTED,
     D0_SAMPLE_SIZE,
@@ -88,6 +88,11 @@ EXPECTED_REFERENCES = {
     "L1_no_prior": 69.2794,
     "G0_legacy_test_batch_prior0.9": 72.4677,
     "target": 75.0,
+}
+CUDA_NUMERICS = {
+    "matmul_allow_tf32": False,
+    "cudnn_allow_tf32": True,
+    "float32_matmul_precision": "highest",
 }
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -344,6 +349,24 @@ def _native_preprocess_without_model():
     return preprocess
 
 
+def inference_gpu_setup() -> torch.device:
+    """Match the archived generic L1 inference process, not training setup.
+
+    ``prelim75.gpu_setup`` disables cuDNN TF32 for training experiments. The
+    archived L1 package was produced by ``aegis_clip.cli.infer``, whose clean
+    process uses the PyTorch defaults made explicit below. Near-tied outputs
+    can change when the convolution path is silently switched.
+    """
+    if not torch.cuda.is_available():
+        raise RuntimeError("The authorized PRELIM75 v9 inference requires CUDA")
+    set_seed(42, deterministic=True)
+    torch.backends.cuda.matmul.allow_tf32 = CUDA_NUMERICS["matmul_allow_tf32"]
+    torch.backends.cudnn.allow_tf32 = CUDA_NUMERICS["cudnn_allow_tf32"]
+    torch.set_float32_matmul_precision(CUDA_NUMERICS["float32_matmul_precision"])
+    torch.cuda.reset_peak_memory_stats()
+    return torch.device("cuda")
+
+
 def run_d0(plan: dict) -> dict:
     output = Path(plan["output"])
     destination = output / "d0"
@@ -513,7 +536,7 @@ def _run_paths(
     if unknown:
         raise ValueError(f"Unknown v9 candidates: {sorted(unknown)}")
     started = time.monotonic()
-    device = gpu_setup()
+    device = inference_gpu_setup()
     model, preprocess, checkpoint, o3, pta = load_composite(plan["checkpoint"], device)
     model.float().eval().requires_grad_(False)
     o3.float().eval().requires_grad_(False)
@@ -651,6 +674,7 @@ def _run_paths(
         "max_cuda_memory_allocated": int(torch.cuda.max_memory_allocated()),
         "host_max_rss_kib": int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss),
         "preprocess_contract": validate_native_preprocess(preprocess),
+        "cuda_numerics": dict(CUDA_NUMERICS),
     }
 
 
@@ -675,7 +699,7 @@ def smoke_v9(plan: dict) -> dict:
         raise ValueError("v9 smoke cannot run before a passing D0 gate")
     selected = list(csv.DictReader(Path(d0["selected_groups_csv"]).open(encoding="utf-8")))
     paths = [row["canonical_path"] for row in selected[:4]]
-    device = gpu_setup()
+    device = inference_gpu_setup()
     model, preprocess, checkpoint, o3, pta = load_composite(plan["checkpoint"], device)
     model.float().eval().requires_grad_(False)
     o3.float().eval().requires_grad_(False)
@@ -753,6 +777,7 @@ def smoke_v9(plan: dict) -> dict:
         "all_weights_and_buffers_unchanged": True,
         "module_state_sha256_before": before,
         "module_state_sha256_after": after,
+        "cuda_numerics": dict(CUDA_NUMERICS),
         "optimizer_created": False,
         "optimizer_updates": 0,
         "test_images_read": False,
@@ -884,6 +909,7 @@ def _write_submission(
             "torchvision": torchvision.__version__,
             "pillow": PILLOW_VERSION,
         },
+        "cuda_numerics": dict(CUDA_NUMERICS),
         **report_fields,
     }
     atomic_json_dump(manifest, submission / "manifest.json")

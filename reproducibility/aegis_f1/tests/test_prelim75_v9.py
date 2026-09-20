@@ -23,6 +23,7 @@ from aegis_clip.source_recrop import (
     unflip_box,
     validate_native_preprocess,
 )
+from aegis_clip.prelim75_source_recrop import CUDA_NUMERICS
 
 
 @pytest.fixture
@@ -273,3 +274,11 @@ def test_stable_path_hash_is_order_sensitive_and_repeatable():
     first = stable_path_list_sha256(["a", "b"])
     assert first == stable_path_list_sha256(["a", "b"])
     assert first != stable_path_list_sha256(["b", "a"])
+
+
+def test_v9_cuda_numerics_match_archived_generic_l1_inference():
+    assert CUDA_NUMERICS == {
+        "matmul_allow_tf32": False,
+        "cudnn_allow_tf32": True,
+        "float32_matmul_precision": "highest",
+    }
