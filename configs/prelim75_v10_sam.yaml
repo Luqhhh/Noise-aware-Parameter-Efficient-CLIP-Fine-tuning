@@ -1,0 +1,107 @@
+plan_id: PRELIM75_V10_SAM_20260920
+seed: 42
+reviewed_commit: 5045e71e69f4ee7de67af6410bbb336c60ecb171
+num_workers: 4
+
+weight_parent_experiment_id: PRELIM75_V7_L1
+weight_parent: ../outputs/prelim75_v7_20260918/L1/candidate.pt
+weight_parent_sha256: cd485c7beed2781ac13d08fbd33d63b8f1c46971be008966f7280c67cec1fcee
+parent_training_result: ../outputs/prelim75_v7_20260918/L1/training_result.json
+parent_training_result_sha256: c70f16d63fed5f522ce972041a1b66a4ae3680dfcf3f5bbeaaf7a21c62fbcdda
+parent_diagnostic: ../outputs/prelim75_v7_20260918/L1/diagnostic/result.json
+parent_diagnostic_sha256: 2409587f40ddbedba457670b65772e9fd16f4981e3c2c604762b564701242690
+fallback_submission: ../outputs/prelim75_v7_20260918/L1/submission/submission.zip
+fallback_submission_sha256: 55d25f1fea9c57ba3431164d53d21f34d20baa2a49c805ad87cca188b5634c5a
+fallback_csv: ../outputs/prelim75_v7_20260918/L1/submission/pred_results.csv
+fallback_csv_sha256: 5277b2c33f63b951ea2236ae2e50b8c574ef9f8d2f989e8239fcce7b065c0171
+fallback_manifest: ../outputs/prelim75_v7_20260918/L1/submission/manifest.json
+fallback_manifest_sha256: 24738a955eae1b4c51b462721b86222aa4ef7999ace3844e57e9caa342ce57ef
+
+geometry_manifest: ../outputs/prelim75_v3_20260915/teacher/manifest.json
+geometry_manifest_sha256: 93e35940e19bbc371a30e67f0c12a429ecd48e88ca784be0983d4c8eacfc86e4
+geometry_paths: ../outputs/prelim75_v3_20260915/teacher/paths.json
+geometry_paths_sha256: 3a9bbfe4e3049aff1f081962c798be713dd17bef354612ad86321327dcf3c50c
+geometry_boxes: ../outputs/prelim75_v3_20260915/teacher/boxes.npy
+geometry_boxes_sha256: 9041665389e51b8da6af21b457a6d8a69eb365495d17558e9a5dedb4a7ed2ff1
+geometry_origin_sha256: a52548511f5971836dbd6ffc07f62685050e2dc9b4318818573c53e9a7c5a696
+trust: ../reproducibility/aegis_f1/artifacts/trust/selftrain_r2_teacher_v3_multiscale.pt
+trust_sha256: 6868041cc7b995a3e8e557ae925d1d25160acf23af09202f46911ce92125b30f
+train_csv: ../reproducibility/aegis_f1/artifacts/stages/preliminary/final_full_train.csv
+train_csv_sha256: 7643e120589e69d6bdc0c54abc605a7271d78c41aed1a638534ea43e4c0c4a90
+val_csv: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/val.csv
+val_csv_sha256: 54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e
+class_mapping: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/class_to_idx.json
+class_mapping_sha256: 3edfd9e48e2f171b5d452577c52e0d189ae99dbfed3759d3e4f164fc090a6647
+groups: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/content_groups.json
+groups_sha256: 41e2668e0fa5e10291051c14a9c75fc96096a69ae7d36d84d0e774270a99bb87
+original_supervision_sha256: 7fc6dcf0efb87e0a402114a7ff7ef9421e7f1c8fedcc06db10ba6d6485c606c4
+train_root: ../train
+test_root: ../test
+output: ../outputs/prelim75_v10_sam_20260920
+
+protocol:
+  candidates: [S0, S1]
+  epochs: 3
+  sample_epochs: [19, 20, 21]
+  effective_batch_size: 32
+  microbatch_size: 16
+  steps_per_epoch: 3226
+  total_updates_per_candidate: 9678
+  global_weight: 0.6
+  local_weight: 0.4
+  anchor_weight: 2.0
+  fusion_blend: 0.5
+  classification_temperature: 1.5
+  gce_q: 0.5
+  epsilon: 1.0e-7
+  local_scales: [112, 128, 144, 160]
+  local_scale_weights: [0.2, 0.3, 0.4, 0.1]
+  attention_top_k: 5
+  prior: false
+
+optimizer:
+  type: AdamW
+  visual_lr: 1.0e-6
+  visual_weight_decay: 0.0
+  head_lr: 1.5e-7
+  head_weight_decay: 1.0e-4
+  adapters_lr: 3.0e-6
+  adapters_weight_decay: 0.0
+  gradient_clip_norm: 1.0
+  scheduler: cosine
+  schedule_horizon_epochs: 3
+  floor_ratio: 0.01
+  warmup_steps: 0
+  amp: false
+
+sam:
+  candidate: S1
+  type: standard_nonadaptive_global_l2
+  rho: 0.05
+  epsilon: 1.0e-12
+  actual_radius_tolerance: 5.0e-6
+  average_first_and_second_gradients: false
+  perturb_weight_decay: false
+  exact_copy_restore: true
+
+diagnostic:
+  rows: 10316
+  maximum_drop_pp: 2.0
+  scope: training_overlap_engineering_only
+
+inference:
+  batch_size: 64
+  matmul_allow_tf32: false
+  cudnn_allow_tf32: true
+  float32_matmul_precision: highest
+
+budget:
+  gpu_action_seconds: 28800
+  maximum_platform_candidates: 2
+  diagnostic_and_delivery_reserve_seconds: 4000
+  estimate_uncertainty_multiplier: 1.25
+
+reference_platform_percent:
+  L1_no_prior: 69.2794
+  G0_legacy_test_batch_prior0.9: 72.4677
+  target: 75.0

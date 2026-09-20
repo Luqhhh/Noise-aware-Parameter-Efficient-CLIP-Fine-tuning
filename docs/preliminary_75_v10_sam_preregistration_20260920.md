@@ -11,6 +11,8 @@
 - Verification status: repository history and primary-method sources reviewed; **not implemented or trained**
 - Version label: `research_preregistration_v1`
 
+实施补充：[`preliminary_75_v10_sam_implementation_20260920.md`](preliminary_75_v10_sam_implementation_20260920.md)。补充只细化两遍梯度、精确恢复、资源与推理数值守卫，不改变本文件的配方和停止规则。
+
 ## 结论
 
 下一项有信息增益且不与队长 prior 线重叠的正式训练实验，应是从 v7 L1 独立加载的普通 AdamW 与非自适应 SAM 严格配对。L1 是当前无 prior 平台最高 `69.2794%`；`G0 + legacy test-batch prior0.9 = 72.4677%` 只作为不同协议的绝对分数参照，不进入本实验训练、推理或参数选择。

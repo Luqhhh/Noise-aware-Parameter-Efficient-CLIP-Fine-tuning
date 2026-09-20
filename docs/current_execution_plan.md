@@ -1,8 +1,10 @@
 # 当前执行计划（2026-09-20）
 
-## 当前入口：PRELIM75_V10_SAM_20260920（仅研究预注册，尚未实施）
+## 当前入口：PRELIM75_V10_SAM_20260920（实现与只读 preflight 完成，待 GPU A0）
 
-v10 已在最新主线预注册为 L1 上普通 AdamW 与标准 SAM 的严格配对，但尚未实现、训练或生成候选。v9 平台回填只完成其前置同步条件，不改变 v10 的 `rho=0.05`、三轮、控制组、预算或停止规则；正式实施仍须单独完成资产核验、代码接入与 A0 门禁。完整规格见 [v10 SAM 预注册](preliminary_75_v10_sam_preregistration_20260920.md)。
+v10 已按原预注册接入为 L1 上普通 AdamW 与标准非自适应 SAM 的严格配对。固定 `rho=0.05`、sample epoch 19/20/21、每候选 9,678 次更新、三组原 LR/WD、3-epoch cosine、原 w/Q、概率融合 GCE、2.0 anchor、V1 冻结框和最终十视图无 prior 推理；S1 两遍使用同一完整有效 batch，只用 g2 在精确恢复后的原参数上执行 AdamW。v9 平台结果没有改动协议。完整规格见 [v10 SAM 预注册](preliminary_75_v10_sam_preregistration_20260920.md) 与 [实施补充](preliminary_75_v10_sam_implementation_20260920.md)。
+
+真实只读 preflight 已核对 L1 checkpoint、训练/诊断清单、回退 CSV/ZIP/manifest、500 类映射、trust、content groups、V1 boxes/paths/manifest 和原监督语义，103,218 行训练集对应每轮 3,226 次更新。34 项 v10 合成测试、76 项 v7/v9/v10 定向测试和完整 609 项 Aegis 测试通过。正式队列仍须先通过无 optimizer 的 A0 和隔离真实 AdamW smoke；资源估计或任一数值/恢复/来源守卫失败即关闭，不启动 S0/S1。
 
 ## 已关闭：PRELIM75_V9_20260920
 
