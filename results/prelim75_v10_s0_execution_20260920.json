@@ -1,0 +1,39 @@
+{
+  "plan_id": "PRELIM75_V10_SAM_20260920",
+  "execution_checkpoint": "S0_submission_ready_S1_not_started",
+  "date": "2026-09-20",
+  "execution_commit": "cddeaac827773f093fd188a33ca5bc14b9b04191",
+  "candidate": "S0",
+  "candidate_id": "PRELIM75_V10_SAM_S0",
+  "standard_sam": false,
+  "optimizer": "AdamW",
+  "optimizer_updates": 9678,
+  "checkpoint_sha256": "923e358c68d29aa60f7d92daef3cd97f117ec8732cbb441f97094368d469b143",
+  "training_elapsed_seconds": 4730.736696118001,
+  "diagnostic": {
+    "scope": "training_overlap_diagnostic",
+    "samples": 10316,
+    "raw_micro": 0.8434470891952515,
+    "clean_core_micro": 0.9712181091308594,
+    "delta_pp_vs_L1_raw_micro": 0.1260221004486084,
+    "delta_pp_vs_L1_clean_core_micro": 0.13640522956848145,
+    "engineering_stop": false
+  },
+  "submission": {
+    "status": "submission_ready_pending_platform",
+    "rows": 24967,
+    "unique_prediction_classes": 500,
+    "csv_sha256": "424258a941c2c10b36c9626a85db6b6d7b64d2ec3876193d73c05c97b64d15c8",
+    "zip_sha256": "98c2a51bb720ec127d7f0d52cbba200a250460917a3dcd80ba2aca65c7fb17a6",
+    "validation_exit_code": 0,
+    "zip_internal_csv_byte_equal": true,
+    "desktop_path": "C:\\Users\\lqh22\\Desktop\\PRELIM75_V10_SAM_S0_20260920.zip",
+    "desktop_copy_sha256_matches": true
+  },
+  "S1_started": false,
+  "automatic_platform_upload": false,
+  "online_accuracy": null,
+  "online_exact_correct": null,
+  "actual_platform_upload_time": null,
+  "v10_comparison_complete": false
+}
