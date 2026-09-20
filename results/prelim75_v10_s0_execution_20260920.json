@@ -1,6 +1,6 @@
 {
   "plan_id": "PRELIM75_V10_SAM_20260920",
-  "execution_checkpoint": "S0_submission_ready_S1_not_started",
+  "execution_checkpoint": "S0_platform_feedback_recorded_S1_running",
   "date": "2026-09-20",
   "execution_commit": "cddeaac827773f093fd188a33ca5bc14b9b04191",
   "candidate": "S0",
@@ -30,9 +30,10 @@
     "desktop_path": "C:\\Users\\lqh22\\Desktop\\PRELIM75_V10_SAM_S0_20260920.zip",
     "desktop_copy_sha256_matches": true
   },
-  "S1_started": false,
+  "S1_started": true,
   "automatic_platform_upload": false,
-  "online_accuracy": null,
+  "online_accuracy": 69.3195,
+  "delta_pp_vs_L1_online": 0.0401,
   "online_exact_correct": null,
   "actual_platform_upload_time": null,
   "v10_comparison_complete": false
