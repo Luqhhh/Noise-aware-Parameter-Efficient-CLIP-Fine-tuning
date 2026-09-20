@@ -1,0 +1,79 @@
+{
+  "status": "complete_pending_real_platform_feedback",
+  "plan_id": "PRELIM75_V9_20260920",
+  "implementation_commit": "ae75f5ddd5a3db663618dab301e36945578c939b",
+  "cuda_numerics_repair_commit": "38acbdb89829724936b0b035af1bb07131feebbf",
+  "commands": {
+    "initial_queue": "PYTHONPATH=reproducibility/aegis_f1 python3 -u scripts/run_prelim75_v9_queue.py --config configs/prelim75_v9.yaml --execute",
+    "repaired_full_inference": "PYTHONPATH=outputs/prelim75_v9_20260920/execution_source python3 -u -m aegis_clip.cli.infer_prelim75_v9 --config configs/prelim75_v9.yaml --action infer"
+  },
+  "d0": {
+    "supported_count": 1532,
+    "sample_count": 2048,
+    "supported_fraction": 0.748046875,
+    "minimum_supported": 205,
+    "model_forward_calls": 0,
+    "test_images_read": false
+  },
+  "native_replay": {
+    "rows": 24967,
+    "mismatch_rows": 0,
+    "archived_csv_sha256": "5277b2c33f63b951ea2236ae2e50b8c574ef9f8d2f989e8239fcce7b065c0171"
+  },
+  "diagnostic": {
+    "scope": "training_overlap_engineering_only",
+    "source_cuda_cudnn_allow_tf32": false,
+    "R0_drop_vs_baseline_pp": -0.029081106185913086,
+    "R1_drop_vs_baseline_pp": -0.12601613998413086,
+    "engineering_stop_threshold_pp": -2.0,
+    "stopped_candidates": [],
+    "repeat_with_archived_numerics_interrupted_rows": 4224,
+    "reuse_reason": "The completed engineering diagnostic was retained because rerunning it plus the mandatory full test replay risked the cumulative 7200-second cap; it was not used to tune or select parameters."
+  },
+  "test_source_gain": {
+    "enabled_count": 18545,
+    "total_count": 24967,
+    "enabled_fraction": 0.7427804702206913
+  },
+  "candidates": {
+    "R0": {
+      "changed_predictions_vs_L1": 423,
+      "csv_sha256": "566ce158f1ed980585068c000880148f6bc6e67ec0d37f8e88d1ded631fa1340",
+      "zip_sha256": "b99de5fb259604184ee75a9d7082939800368a6c150c0d6b564b423539478f2f",
+      "zip_path": "outputs/prelim75_v9_20260920/R0/submission/submission.zip",
+      "validation": "passed",
+      "platform_percent": null,
+      "online_exact_correct": null,
+      "actual_platform_upload_time": null
+    },
+    "R1": {
+      "changed_predictions_vs_L1": 1783,
+      "changed_predictions_vs_R0": 1609,
+      "csv_sha256": "bc9557c4ee059e0cd05ad65e0116dd2e97f0b25686e35b2c36b843be4743f72b",
+      "zip_sha256": "d57d0e143fccbc283a1f46ca24711de67589f5eb6f00f4b9e06e1ade0d4188e5",
+      "zip_path": "outputs/prelim75_v9_20260920/R1/submission/submission.zip",
+      "validation": "passed",
+      "platform_percent": null,
+      "online_exact_correct": null,
+      "actual_platform_upload_time": null
+    }
+  },
+  "budget": {
+    "gpu_action_seconds_budget": 7200,
+    "cumulative_gpu_action_seconds_conservative": 6676.011745706999,
+    "within_budget": true,
+    "optimizer_updates": 0
+  },
+  "reference_platform_percent": {
+    "L1_no_prior": 69.2794,
+    "G0_legacy_test_batch_prior0.9": 72.4677,
+    "target": 75.0
+  },
+  "online_scores": {
+    "R0": null,
+    "R1": null
+  },
+  "automatic_upload": false,
+  "parameter_scan": false,
+  "prior_used": false
+}
