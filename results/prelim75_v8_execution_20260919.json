@@ -1,6 +1,6 @@
 {
   "plan_id": "PRELIM75_V8_20260919",
-  "status": "partial_platform_feedback_B0_negative_pending_B1",
+  "status": "complete_platform_feedback_both_negative_closed",
   "execution_source_commit": "18111e51b9d2e856b57d2e39bff47c1911cf5f00",
   "protocol_repair_commit": "ad547bddf77779c368050df80329969f42d608fa",
   "fixed_review_commit": "3f83d69f9a4496976e7d50beecd7e0baa0400d4d",
@@ -105,7 +105,8 @@
       "csv_sha256": "16309ff07c41d08daac82cd40a583c9e20410ab9f5a500d5e5c5e73738133d7c",
       "zip_sha256": "623d18c5ebc2d7f549e6b859694284945b1303d0eb2f5a4c533680614b62764c",
       "zip_path": "outputs/prelim75_v8_20260919/B1/submission/submission.zip",
-      "platform_percent": null,
+      "platform_percent": 62.0659,
+      "platform_feedback_source": "user",
       "actual_platform_upload_time": null
     }
   },
@@ -120,10 +121,13 @@
     "B0_minus_L1_no_prior": -1.3978,
     "B0_minus_G0_legacy_test_batch_prior0.9": -4.5861,
     "B0_distance_to_75": 7.1184,
-    "B1_minus_L1_no_prior": null,
-    "B1_minus_B0": null
+    "B1_minus_L1_no_prior": -7.2135,
+    "B1_minus_G0_no_prior": -7.1615,
+    "B1_minus_B0": -5.8157,
+    "B1_minus_G0_legacy_test_batch_prior0.9": -10.4018,
+    "B1_distance_to_75": 12.9341
   },
-  "decision": "B0_negative_and_eliminated; pending_B1_platform_feedback",
+  "decision": "both_candidates_negative; retain_L1_no_prior_as_default_non_test_fitted_path; close_PRELIM75_V8_without_follow_on_scan",
   "automatic_upload": false,
   "automatic_push": false
 }
