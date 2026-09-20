@@ -14,6 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "reproducibility/aegis_f1"))
+PRIOR_FAILURE_RECORD = ROOT / "results/prelim75_v10_a0_dropout_failure_20260920.json"
 
 from aegis_clip.prelim75_sam import (  # noqa: E402
     CANDIDATES,
@@ -71,6 +72,13 @@ def main() -> None:
     if output.exists():
         raise FileExistsError(f"Existing PRELIM75 v10 output is never overwritten or auto-resumed: {output}")
     checked = preflight_v10(plan)
+    prior_failure = _read_json(PRIOR_FAILURE_RECORD)
+    if (
+        prior_failure.get("plan_id") != PLAN_ID
+        or prior_failure.get("status") != "failed_closed_before_forward_or_optimizer"
+        or float(prior_failure.get("gpu_action_seconds", -1.0)) < 0.0
+    ):
+        raise ValueError("PRELIM75 v10 prior failed-attempt budget receipt is invalid")
     refs = subprocess.check_output(
         ["git", "for-each-ref", "--format=%(refname:short) %(objectname) %(subject)",
          "refs/heads", "refs/remotes"], cwd=ROOT, text=True,
@@ -94,6 +102,7 @@ def main() -> None:
         "formal_optimizer_updates_total": 2 * TOTAL_UPDATES,
         "steps_per_epoch": DEFAULT_STEPS_PER_EPOCH,
         "gpu_action_seconds_budget": plan["budget"]["gpu_action_seconds"],
+        "prior_failed_gpu_action_seconds": prior_failure["gpu_action_seconds"],
         "preflight": checked,
         "scheduler_reference": scheduler_reference(),
         "branch_refs": refs,
@@ -140,8 +149,19 @@ def main() -> None:
     environment = os.environ.copy()
     environment["PYTHONPATH"] = str(snapshot)
     queue_started = time.monotonic()
-    gpu_action_seconds = 0.0
-    history = []
+    gpu_action_seconds = float(prior_failure["gpu_action_seconds"])
+    history = [{
+        "action": "a0",
+        "candidate": None,
+        "execution_commit": prior_failure["execution_commit"],
+        "exit_code": 1,
+        "elapsed_seconds": gpu_action_seconds,
+        "counts_against_gpu_budget": True,
+        "failure_record": str(PRIOR_FAILURE_RECORD.relative_to(ROOT)),
+        "reason": prior_failure["reason"],
+        "optimizer_updates": 0,
+        "test_data_read": False,
+    }]
 
     def fail_status(status: str, **extra) -> None:
         atomic_json_dump({

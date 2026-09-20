@@ -317,6 +317,76 @@ def standard_sam_update(
     }
 
 
+def capture_rng_state(device: torch.device) -> dict[str, torch.Tensor | None]:
+    return {
+        "cpu": torch.get_rng_state().clone(),
+        "cuda": torch.cuda.get_rng_state(device).clone() if device.type == "cuda" else None,
+    }
+
+
+def restore_rng_state(state: dict[str, torch.Tensor | None], device: torch.device) -> None:
+    torch.set_rng_state(state["cpu"])
+    if device.type == "cuda":
+        if state["cuda"] is None:
+            raise ValueError("Missing CUDA RNG state for CUDA replay")
+        torch.cuda.set_rng_state(state["cuda"], device)
+
+
+def rng_states_equal(left: dict[str, torch.Tensor | None], right: dict[str, torch.Tensor | None]) -> bool:
+    return bool(
+        torch.equal(left["cpu"], right["cpu"])
+        and (
+            (left["cuda"] is None and right["cuda"] is None)
+            or (
+                left["cuda"] is not None and right["cuda"] is not None
+                and torch.equal(left["cuda"], right["cuda"])
+            )
+        )
+    )
+
+
+@dataclass
+class TwoPassRNGReplay:
+    """Make both SAM passes use the same stochastic-module masks."""
+
+    device: torch.device
+    before_first: dict[str, torch.Tensor | None] | None = None
+    after_first: dict[str, torch.Tensor | None] | None = None
+    replay_exact: bool | None = None
+
+    def before(self, pass_id: int) -> None:
+        if pass_id == 1:
+            self.before_first = capture_rng_state(self.device)
+        elif pass_id == 2:
+            if self.before_first is None or self.after_first is None:
+                raise RuntimeError("Cannot replay SAM RNG before completing pass one")
+            restore_rng_state(self.before_first, self.device)
+        else:
+            raise ValueError("SAM pass id must be one or two")
+
+    def after(self, pass_id: int) -> None:
+        if pass_id == 1:
+            self.after_first = capture_rng_state(self.device)
+        elif pass_id == 2:
+            if self.after_first is None:
+                raise RuntimeError("Missing first-pass RNG receipt")
+            self.replay_exact = rng_states_equal(self.after_first, capture_rng_state(self.device))
+            if not self.replay_exact:
+                raise RuntimeError("SAM second pass did not exactly replay the first-pass RNG stream")
+        else:
+            raise ValueError("SAM pass id must be one or two")
+
+    def receipt(self) -> dict:
+        if self.before_first is None or self.after_first is None:
+            raise RuntimeError("Incomplete SAM RNG replay receipt")
+        return {
+            "policy": "replay_full_effective_batch_rng_between_passes",
+            "first_pass_consumed_rng": not rng_states_equal(self.before_first, self.after_first),
+            "second_pass_replay_exact": self.replay_exact,
+            "net_rng_consumption": "one_effective_batch_pass",
+        }
+
+
 # ---------------------------------------------------------------------------
 # Fixed plan and asset checks
 # ---------------------------------------------------------------------------
@@ -673,9 +743,16 @@ def _module_state_audit(model, o3, pta) -> dict:
                 stochastic.append(qualified)
             if isinstance(module, torch.nn.modules.batchnorm._BatchNorm) and module.training and module.track_running_stats:
                 mutable.append(qualified)
-    if stochastic or mutable:
-        raise RuntimeError(f"Active stochastic/mutable training modules are not registered: {stochastic}, {mutable}")
-    return {"active_dropout": stochastic, "active_batchnorm": mutable}
+    if mutable:
+        raise RuntimeError(f"Active mutable training buffers are not registered: {mutable}")
+    return {
+        "active_dropout": stochastic,
+        "active_batchnorm": mutable,
+        "dropout_policy": (
+            "replay_full_effective_batch_rng_between_SAM_passes"
+            if stochastic else "no_active_dropout"
+        ),
+    }
 
 
 def _snapshot_buffers(model, o3, pta) -> dict[str, torch.Tensor]:
@@ -863,24 +940,27 @@ def a0_v10(plan: dict) -> dict:
     parameters = [parameter for _, parameter in named]
     buffers = _snapshot_buffers(model, o3, pta)
     identity = _effective_batch_identity(prepared)
-    rng_cpu = torch.get_rng_state().clone()
-    rng_cuda = torch.cuda.get_rng_state(device).clone()
+    rng_replay = TwoPassRNGReplay(device)
     model.zero_grad(set_to_none=True); o3.zero_grad(set_to_none=True); pta.zero_grad(set_to_none=True)
+    rng_replay.before(1)
     _synchronize(device); first_started = time.monotonic()
     first_loss, first_parts, first_micro = _backward_effective_batch(
         model, o3, pta, prepared, device, microbatch=16, capture_first_microbatch=True
     )
     _synchronize(device); first_seconds = time.monotonic() - first_started
+    rng_replay.after(1)
     g1 = global_l2_gradient_norm(parameters)
     leaks_first = _frozen_gradient_leaks(model, o3, pta)
     perturb = apply_standard_sam_perturbation(parameters)
     try:
         model.zero_grad(set_to_none=True); o3.zero_grad(set_to_none=True); pta.zero_grad(set_to_none=True)
+        rng_replay.before(2)
         _synchronize(device); second_started = time.monotonic()
         second_loss, second_parts, _ = _backward_effective_batch(
             model, o3, pta, prepared, device, microbatch=16, capture_first_microbatch=False
         )
         _synchronize(device); second_seconds = time.monotonic() - second_started
+        rng_replay.after(2)
         g2 = global_l2_gradient_norm(parameters)
         leaks_second = _frozen_gradient_leaks(model, o3, pta)
     finally:
@@ -896,14 +976,13 @@ def a0_v10(plan: dict) -> dict:
         "parameters_restored_bitwise": perturb.restored,
         "frozen_gradient_leaks": leaks_first + leaks_second,
         "buffers_unchanged": _buffers_equal(buffers, model, o3, pta),
-        "cpu_rng_unchanged": bool(torch.equal(rng_cpu, torch.get_rng_state())),
-        "cuda_rng_unchanged": bool(torch.equal(rng_cuda, torch.cuda.get_rng_state(device))),
+        "rng_replay": rng_replay.receipt(),
     }
     passed = (
         checks["finite"] and checks["loss_strictly_increased"]
         and checks["actual_radius_in_tolerance"] and checks["parameters_restored_bitwise"]
         and not checks["frozen_gradient_leaks"] and checks["buffers_unchanged"]
-        and checks["cpu_rng_unchanged"] and checks["cuda_rng_unchanged"]
+        and checks["rng_replay"]["second_pass_replay_exact"] is True
     )
     result = {
         "status": "passed" if passed else "closed_a0_gate_failed",
@@ -953,12 +1032,17 @@ def _smoke_one(plan: dict, name: str, data: dict, boxes: np.ndarray, device: tor
     scheduler = build_v10_scheduler(optimizer, spec)
     buffers = _snapshot_buffers(model, o3, pta)
     pass_records = {}
+    rng_replay = TwoPassRNGReplay(device) if name == "S1" else None
 
     def backward(pass_id: int) -> torch.Tensor:
+        if rng_replay is not None:
+            rng_replay.before(pass_id)
         loss, parts, first = _backward_effective_batch(
             model, o3, pta, prepared, device, microbatch=16,
             capture_first_microbatch=pass_id == 1,
         )
+        if rng_replay is not None:
+            rng_replay.after(pass_id)
         pass_records[str(pass_id)] = {"loss": float(loss), "parts": parts, "first_microbatch": first}
         return loss
 
@@ -997,6 +1081,10 @@ def _smoke_one(plan: dict, name: str, data: dict, boxes: np.ndarray, device: tor
         "frozen_gradient_leaks": _frozen_gradient_leaks(model, o3, pta),
         "buffers_unchanged": _buffers_equal(buffers, model, o3, pta),
         "state_audit": state_audit,
+        "rng_replay": rng_replay.receipt() if rng_replay is not None else {
+            "policy": "single_pass_control",
+            "net_rng_consumption": "one_effective_batch_pass",
+        },
         "max_cuda_memory_allocated": torch.cuda.max_memory_allocated(),
     }
     if (
@@ -1018,7 +1106,11 @@ def smoke_v10(plan: dict) -> dict:
     start = time.monotonic()
     device = gpu_setup()
     data, boxes, _ = read_v10_assets(plan)
-    candidates = {name: _smoke_one(plan, name, data, boxes, device) for name in CANDIDATES}
+    from aegis_clip.runtime import set_seed
+    candidates = {}
+    for name in CANDIDATES:
+        set_seed(42, deterministic=True)
+        candidates[name] = _smoke_one(plan, name, data, boxes, device)
     left, right = candidates["S0"]["common_first_pass"], candidates["S1"]["common_first_pass"]
     exact_fields = (
         "batch_indices_sha256", "batch_paths_sha256", "batch_images_sha256",
@@ -1096,6 +1188,7 @@ def _trace_header(writer: csv.writer) -> None:
         "first_loss", "perturbed_loss", "loss_increase",
         "g1_global_l2", "g2_global_l2", "actual_radius",
         "preclip_update_gradient_l2", "gradient_clipped", "restored_bitwise",
+        "rng_replay_exact",
     ])
 
 
@@ -1178,6 +1271,7 @@ def train_v10(plan: dict, name: str) -> Path:
         "licensed_visual_parameters": sorted(licensed_visual),
         "licensed_parameter_names": [parameter_name for parameter_name, _ in named],
         "state_audit": state_audit,
+        "dropout_rng_contract": "S1_replays_full_effective_batch_rng_and_consumes_one_pass",
         "test_used_for_training": False,
         "prior_in_inference": False,
     }
@@ -1186,6 +1280,7 @@ def train_v10(plan: dict, name: str) -> Path:
     optimizer_step = 0
     clipped_steps = 0
     sam_nonincreasing_steps = 0
+    rng_replay_exact_steps = 0
     history = []
     first_step_audit = None
     trace_path = output / "update_trace.csv"
@@ -1209,12 +1304,17 @@ def train_v10(plan: dict, name: str) -> Path:
                     batch, data, boxes, flips, scales, anchor_teacher, device, microbatch=16
                 )
                 pass_records: dict[str, dict] = {}
+                rng_replay = TwoPassRNGReplay(device) if name == "S1" else None
 
                 def backward(pass_id: int) -> torch.Tensor:
+                    if rng_replay is not None:
+                        rng_replay.before(pass_id)
                     loss, parts, first_micro = _backward_effective_batch(
                         model, o3, pta, prepared, device, microbatch=16,
                         capture_first_microbatch=optimizer_step == 0 and pass_id == 1,
                     )
+                    if rng_replay is not None:
+                        rng_replay.after(pass_id)
                     pass_records[str(pass_id)] = {
                         "loss": float(loss), "parts": parts, "first_microbatch": first_micro,
                         "gradient_groups": _group_gradient_norms(groups),
@@ -1244,9 +1344,11 @@ def train_v10(plan: dict, name: str) -> Path:
                 else:
                     update = standard_sam_update(parameters, optimizer, backward)
                     sam_nonincreasing_steps += int(update["loss_increase"] <= 0.0)
+                    rng_receipt = rng_replay.receipt()
+                    rng_replay_exact_steps += int(rng_receipt["second_pass_replay_exact"] is True)
                 scheduler.step()
                 after_lrs = audit_position(optimizer, spec, optimizer_step + 1)
-                if pass_records["1"]["frozen_gradient_leaks"]:
+                if any(record["frozen_gradient_leaks"] for record in pass_records.values()):
                     raise RuntimeError("Frozen parameter received a formal PRELIM75 v10 gradient")
                 if optimizer_step == 0:
                     first_step_audit = {
@@ -1257,6 +1359,10 @@ def train_v10(plan: dict, name: str) -> Path:
                         "first_pass_gradient_groups": pass_records["1"]["gradient_groups"],
                         "first_used_lrs": before_lrs,
                         "first_update": update,
+                        "rng_replay": (
+                            rng_replay.receipt() if rng_replay is not None
+                            else {"policy": "single_pass_control"}
+                        ),
                     }
                     required_groups = ("visual", "head", "o3", "pta")
                     if any(
@@ -1274,6 +1380,8 @@ def train_v10(plan: dict, name: str) -> Path:
                     update["first_gradient_norm"], update["second_gradient_norm"],
                     update["actual_radius"], update["preclip_second_gradient_norm"],
                     int(update["gradient_clipped"]), int(update["restored_bitwise"]),
+                    int(rng_replay.receipt()["second_pass_replay_exact"])
+                    if rng_replay is not None else 1,
                 ])
                 if optimizer_step % 50 == 0:
                     trace.flush()
@@ -1303,6 +1411,7 @@ def train_v10(plan: dict, name: str) -> Path:
                         "sample_epoch": sample_epoch, "completed_samples": totals["samples"],
                         "optimizer_steps": optimizer_step,
                         "sam_nonincreasing_steps": sam_nonincreasing_steps,
+                        "rng_replay_exact_steps": rng_replay_exact_steps,
                         "used_lr": after_lrs, "elapsed_seconds": time.monotonic() - start,
                         "at_complete_optimizer_update_boundary": True,
                     }, output / "status.json")
@@ -1321,6 +1430,7 @@ def train_v10(plan: dict, name: str) -> Path:
                 "gradient_norm_max": totals["gradient_norm_max"],
                 "clipped_steps_cumulative": clipped_steps,
                 "sam_nonincreasing_steps_cumulative": sam_nonincreasing_steps,
+                "rng_replay_exact_steps_cumulative": rng_replay_exact_steps,
                 "actual_radius_mean": totals["actual_radius_sum"] / len(stream) if name == "S1" else 0.0,
                 "actual_radius_min": totals["actual_radius_min"] if name == "S1" else 0.0,
                 "actual_radius_max": totals["actual_radius_max"] if name == "S1" else 0.0,
@@ -1353,6 +1463,8 @@ def train_v10(plan: dict, name: str) -> Path:
 
     if optimizer_step != TOTAL_UPDATES:
         raise RuntimeError(f"PRELIM75 v10 update count mismatch: {optimizer_step} != {TOTAL_UPDATES}")
+    if name == "S1" and rng_replay_exact_steps != TOTAL_UPDATES:
+        raise RuntimeError("PRELIM75 v10 S1 did not exactly replay RNG on every update")
     for parameter_name, parameter in model.named_parameters():
         if parameter_name in frozen and not torch.equal(parameter.detach().cpu(), frozen[parameter_name]):
             raise RuntimeError(f"Frozen L1 tensor changed during PRELIM75 v10 training: {parameter_name}")
@@ -1428,6 +1540,7 @@ def train_v10(plan: dict, name: str) -> Path:
         "history": history,
         "first_step_gradient_audit": first_step_audit,
         "sam_nonincreasing_steps": sam_nonincreasing_steps,
+        "rng_replay_exact_steps": rng_replay_exact_steps,
         "reload_check": {
             "complete_model_strictly_reloaded": True,
             "shared_head_present": hasattr(reloaded_model, "classifier"),

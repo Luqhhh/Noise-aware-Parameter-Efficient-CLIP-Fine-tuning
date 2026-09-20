@@ -13,7 +13,9 @@ from aegis_clip.prelim75_sam import (
     EXPECTED_INFERENCE,
     EXPECTED_SAM,
     RHO,
+    TwoPassRNGReplay,
     V10Schedule,
+    _module_state_audit,
     _materialize_parameters,
     _validate_plan_schema,
     apply_standard_sam_perturbation,
@@ -295,3 +297,31 @@ def test_inference_numerics_preserve_v9_replay_boundary():
         "cudnn_allow_tf32": True,
         "float32_matmul_precision": "highest",
     }
+
+
+def test_two_pass_rng_replay_reuses_dropout_mask_and_consumes_once():
+    device = torch.device("cpu")
+    dropout = torch.nn.Dropout(p=0.5).train()
+    inputs = torch.ones(64)
+    torch.manual_seed(123)
+    replay = TwoPassRNGReplay(device)
+    replay.before(1); first = dropout(inputs); replay.after(1)
+    state_after_one = torch.get_rng_state().clone()
+    replay.before(2); second = dropout(inputs); replay.after(2)
+    assert torch.equal(first, second)
+    assert torch.equal(torch.get_rng_state(), state_after_one)
+    assert replay.receipt()["second_pass_replay_exact"] is True
+
+
+def test_module_audit_registers_active_dropout_policy():
+    model = torch.nn.Sequential(torch.nn.Linear(2, 2), torch.nn.Dropout(0.1)).train()
+    o3 = torch.nn.Identity().train(); pta = torch.nn.Identity().train()
+    result = _module_state_audit(model, o3, pta)
+    assert result["active_dropout"] == ["model.1"]
+    assert "replay" in result["dropout_policy"]
+
+
+def test_module_audit_rejects_training_batchnorm_buffers():
+    model = torch.nn.BatchNorm1d(2).train()
+    with pytest.raises(RuntimeError, match="mutable"):
+        _module_state_audit(model, torch.nn.Identity(), torch.nn.Identity())

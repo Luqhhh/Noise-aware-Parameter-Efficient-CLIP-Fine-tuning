@@ -1,0 +1,27 @@
+{
+  "status": "failed_closed_before_forward_or_optimizer",
+  "plan_id": "PRELIM75_V10_SAM_20260920",
+  "execution_commit": "18d0b0360594022b946c4d490fc5c826a631851b",
+  "failed_action": "a0",
+  "reason": "O3 and PTA each contain an active training-mode dropout module; the initial A0 implementation rejected all active stochastic modules before running the first model forward",
+  "active_dropout_modules": [
+    "o3.dropout",
+    "pta.dropout"
+  ],
+  "gpu_action_seconds": 26.05186358300125,
+  "optimizer_created": false,
+  "optimizer_updates": 0,
+  "model_forward_started": false,
+  "test_data_read": false,
+  "candidate_checkpoint_created": false,
+  "platform_package_created": false,
+  "failed_output": "outputs/prelim75_v10_sam_20260920_failed_dropout_audit",
+  "repair": {
+    "policy": "replay full-effective-batch CPU/CUDA RNG between SAM passes",
+    "dropout_disabled": false,
+    "same_dropout_mask_required_between_passes": true,
+    "net_rng_consumption": "one effective-batch pass, matching S0",
+    "mutable_training_buffers_still_rejected": true,
+    "rho_or_training_recipe_changed": false
+  }
+}

@@ -4,7 +4,7 @@
 
 v10 已按原预注册接入为 L1 上普通 AdamW 与标准非自适应 SAM 的严格配对。固定 `rho=0.05`、sample epoch 19/20/21、每候选 9,678 次更新、三组原 LR/WD、3-epoch cosine、原 w/Q、概率融合 GCE、2.0 anchor、V1 冻结框和最终十视图无 prior 推理；S1 两遍使用同一完整有效 batch，只用 g2 在精确恢复后的原参数上执行 AdamW。v9 平台结果没有改动协议。完整规格见 [v10 SAM 预注册](preliminary_75_v10_sam_preregistration_20260920.md) 与 [实施补充](preliminary_75_v10_sam_implementation_20260920.md)。
 
-真实只读 preflight 已核对 L1 checkpoint、训练/诊断清单、回退 CSV/ZIP/manifest、500 类映射、trust、content groups、V1 boxes/paths/manifest 和原监督语义，103,218 行训练集对应每轮 3,226 次更新。34 项 v10 合成测试、76 项 v7/v9/v10 定向测试和完整 609 项 Aegis 测试通过。正式队列仍须先通过无 optimizer 的 A0 和隔离真实 AdamW smoke；资源估计或任一数值/恢复/来源守卫失败即关闭，不启动 S0/S1。
+真实只读 preflight 已核对 L1 checkpoint、训练/诊断清单、回退 CSV/ZIP/manifest、500 类映射、trust、content groups、V1 boxes/paths/manifest 和原监督语义，103,218 行训练集对应每轮 3,226 次更新。首次 A0 在前向前发现 O3/PTA 训练态 dropout 并按守卫停止，未创建 optimizer 或读取 test；实施修复显式回放整批 CPU/CUDA RNG，使 SAM 两遍共享 dropout mask 且净消耗一次随机流，不关闭 dropout、不改 rho/loss/样本/更新数。修复后的 37 项 v10、79 项 v7/v9/v10 定向和完整 612 项 Aegis 测试通过；仍须重新通过 A0 和隔离真实 AdamW smoke，资源估计或任一数值/恢复/来源守卫失败即关闭，不启动 S0/S1。
 
 ## 已关闭：PRELIM75_V9_20260920
 

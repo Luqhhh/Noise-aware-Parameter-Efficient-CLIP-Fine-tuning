@@ -6,7 +6,7 @@
 
 审阅基线：`5045e71e69f4ee7de67af6410bbb336c60ecb171`
 
-状态：**实施、合成 CPU 测试与真实资产只读 preflight 已完成；尚未运行 GPU A0、正式 S0/S1 或平台推理。本文件补充原预注册，不建立第二条 v10 路线，也不改变原参数。**
+状态：**实施、合成 CPU 测试与真实资产只读 preflight 已完成。首次 GPU A0 在任何前向/optimizer/test 之前暴露 O3/PTA 训练态 dropout 并停止；现已登记失败并补充整批 RNG 精确回放，使 SAM 两遍使用相同 mask、净消耗一次随机流。尚未重跑 A0、正式 S0/S1 或平台推理。本文件补充原预注册，不建立第二条 v10 路线，也不改变原参数。**
 
 ## 已有结果与唯一问题
 
@@ -59,7 +59,9 @@ S1 的一次更新严格为：完整 batch 累积 `g1`；在 clip 和 AdamW weig
 
 ## A0 与 smoke 门禁
 
-A0 使用 sample epoch 19 的首个有效 batch，不创建 optimizer、不读 test、不做持久更新。必须同时满足：所有数值有限；无冻结梯度；参数逐位恢复；实际 FP32 位移范数在 `0.05±5e-6`；扰动损失严格增加；无活跃 dropout/可变 BN buffer；两遍不改变 RNG 或模型 buffers；microbatch 16 不 OOM。
+A0 使用 sample epoch 19 的首个有效 batch，不创建 optimizer、不读 test、不做持久更新。必须同时满足：所有数值有限；无冻结梯度；参数逐位恢复；实际 FP32 位移范数在 `0.05±5e-6`；扰动损失严格增加；无未登记的可变 BN buffer；模型 buffers 不变；microbatch 16 不 OOM。
+
+实施检查确认 O3/PTA 各有一个训练态 dropout。首次 A0 因原实现将任何活跃 dropout 直接视为未登记随机性而在前向前停止，消耗 26.052 秒 GPU 动作，未创建 optimizer、未读取 test。修复不关闭 dropout：S1 在第一遍前保存 CPU/CUDA RNG，第一遍后保存消费后状态，第二遍前恢复第一遍前状态，第二遍后必须逐位等于第一遍后的 RNG；因此两遍 mask 相同且净随机流消费等于 S0 的一遍。每次正式更新均记录并强制该检查。训练态 BN 等可变 buffers 仍直接拒绝。
 
 共同 smoke 在两个隔离临时实例中分别执行真实 S0/S1 一次 AdamW update，验证 optimizer 状态、两遍峰值和 scheduler；随后丢弃实例。S0/S1 第一遍的 batch、图像、Flip/scale、targets、weights、reference、固定框、global/local logits、loss 与初始 LR 必须一致。首更新后参数不要求相同。
 
@@ -94,4 +96,4 @@ GPU 动作累计上限 28,800 秒，包含 A0、smoke、失败尝试、S0/S1、�
 PYTHONPATH=reproducibility/aegis_f1 python3 -u scripts/run_prelim75_v10_sam_queue.py --config configs/prelim75_v10_sam.yaml
 ```
 
-正式入口只在实现提交并推送、main 与 origin/main 完全一致、工作区干净、输出不存在时接受 `--execute`。当前合成 SAM 测试为 34 passed；v7/v9/v10 定向测试为 76 passed；完整 Aegis 测试为 609 passed。它们验证数值合同和集成守卫，不替代真实 GPU A0 或平台证据。
+正式入口只在实现提交并推送、main 与 origin/main 完全一致、工作区干净、输出不存在时接受 `--execute`。dropout RNG 修复后 v10 合成测试为 37 passed；v7/v9/v10 定向测试为 79 passed；完整 Aegis 测试为 612 passed。测试验证数值合同和集成守卫，不替代真实 GPU A0 或平台证据。
