@@ -1,12 +1,12 @@
 # 当前执行计划（2026-09-20）
 
-## 当前入口：PRELIM75_V10_SAM_20260920（S0=69.3195%，S1 运行中）
+## 当前入口：PRELIM75_V10_SAM_20260920（S0=69.3195%，S1 待平台）
 
 v10 已按原预注册接入为 L1 上普通 AdamW 与标准非自适应 SAM 的严格配对。固定 `rho=0.05`、sample epoch 19/20/21、每候选 9,678 次更新、三组原 LR/WD、3-epoch cosine、原 w/Q、概率融合 GCE、2.0 anchor、V1 冻结框和最终十视图无 prior 推理；S1 两遍使用同一完整有效 batch，只用 g2 在精确恢复后的原参数上执行 AdamW。v9 平台结果没有改动协议。完整规格见 [v10 SAM 预注册](preliminary_75_v10_sam_preregistration_20260920.md) 与 [实施补充](preliminary_75_v10_sam_implementation_20260920.md)。
 
 真实只读 preflight 已核对 L1 checkpoint、训练/诊断清单、回退 CSV/ZIP/manifest、500 类映射、trust、content groups、V1 boxes/paths/manifest 和原监督语义，103,218 行训练集对应每轮 3,226 次更新。首次 A0 在前向前发现 O3/PTA 训练态 dropout 并按守卫停止，未创建 optimizer 或读取 test；实施修复显式回放整批 CPU/CUDA RNG，使 SAM 两遍共享 dropout mask 且净消耗一次随机流，不关闭 dropout、不改 rho/loss/样本/更新数。修复后的 37 项 v10、79 项 v7/v9/v10 定向和完整 612 项 Aegis 测试通过；真实 A0、隔离 AdamW smoke 与共同输入检查随后通过。
 
-用户要求在 S0 完成后暂停，因此正式 S0 普通 AdamW 控制组完成 3 轮、9,678 次更新后结束原自动队列。S0 checkpoint SHA-256 为 `923e358c68d29aa60f7d92daef3cd97f117ec8732cbb441f97094368d469b143`；10,316 行重叠诊断 raw/clean-core 相对 L1 分别为 `+0.126022pp` / `+0.136405pp`，未触发 2pp 工程止损。固定无 prior 十视图测试推理和 24,967 行提交校验已完成，ZIP SHA-256 为 `98c2a51bb720ec127d7f0d52cbba200a250460917a3dcd80ba2aca65c7fb17a6`，同哈希副本位于 C 盘桌面。用户回填 S0 平台 **69.3195%**，比 L1 无 prior 69.2794% 高 **0.0401pp**，成为无 prior 新高，但未达到 0.30pp 投入门槛。用户随后明确要求继续，S1 标准 SAM 已按原固定方案独立启动；其平台反馈前不能判断 SAM 是否优于 S0，v10 尚未闭环。执行证据见 [S0 执行检查点](../results/prelim75_v10_s0_execution_20260920.md)。
+用户要求在 S0 完成后暂停，因此正式 S0 普通 AdamW 控制组完成 3 轮、9,678 次更新后结束原自动队列。用户随后明确要求继续，S1 标准 SAM 从同一 L1 独立完成 3 轮、9,678 次更新；全部 SAM 步骤保持固定半径、精确参数恢复与 RNG 回放，S0/S1 common-control 通过。两候选均完成 10,316 行重叠诊断、无 prior 十视图测试推理和 24,967 行提交校验，桌面副本哈希一致。S0 ZIP SHA-256 为 `98c2a51bb720ec127d7f0d52cbba200a250460917a3dcd80ba2aca65c7fb17a6`；S1 ZIP SHA-256 为 `b92af8bfdbead9762b89f81e0bd54701e66885337777c0c0ab8c9b32823b6d01`，两者有 2,382 行预测不同。用户回填 S0 平台 **69.3195%**，比 L1 无 prior 69.2794% 高 **0.0401pp**，成为无 prior 新高但未达到 0.30pp 投入门槛。S1 平台结果待回填；此前不能判断 SAM 是否优于 S0，v10 尚未闭环。完整证据见 [v10 执行记录](../results/prelim75_v10_execution_20260920.md)。
 
 ## 已关闭：PRELIM75_V9_20260920
 

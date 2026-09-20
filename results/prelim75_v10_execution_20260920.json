@@ -1,0 +1,48 @@
+{
+  "plan_id": "PRELIM75_V10_SAM_20260920",
+  "status": "both_candidates_submission_ready_pending_S1_platform",
+  "implementation_commit": "cddeaac827773f093fd188a33ca5bc14b9b04191",
+  "S1_source_manifest_commit": "0838880b1fd406f32d29f680326669b4a8108840",
+  "common_control_passed": true,
+  "common_control_first_pass_loss_abs_difference": 0.0,
+  "fixed_optimizer_updates_per_candidate": 9678,
+  "conservative_gpu_action_seconds": 12817.130714758005,
+  "gpu_budget_seconds": 28800,
+  "candidates": {
+    "S0": {
+      "standard_sam": false,
+      "checkpoint_sha256": "923e358c68d29aa60f7d92daef3cd97f117ec8732cbb441f97094368d469b143",
+      "diagnostic_raw_micro": 0.8434470891952515,
+      "diagnostic_clean_core_micro": 0.9712181091308594,
+      "engineering_stop": false,
+      "csv_sha256": "424258a941c2c10b36c9626a85db6b6d7b64d2ec3876193d73c05c97b64d15c8",
+      "zip_sha256": "98c2a51bb720ec127d7f0d52cbba200a250460917a3dcd80ba2aca65c7fb17a6",
+      "online_accuracy": 69.3195,
+      "delta_pp_vs_L1_online": 0.0401
+    },
+    "S1": {
+      "standard_sam": true,
+      "sam_rho": 0.05,
+      "checkpoint_sha256": "9dd2747b36b0b91958ac07f10d17c1252fb7d9b345c2f33c339abb228710ff6a",
+      "rng_replay_exact_steps": 9678,
+      "sam_nonincreasing_steps": 0,
+      "diagnostic_raw_micro": 0.8347227573394775,
+      "diagnostic_clean_core_micro": 0.961806058883667,
+      "engineering_stop": false,
+      "csv_sha256": "7169336700da80c54123477b6b38504abbd8c83d8bdb345e7030b836149aa50a",
+      "zip_sha256": "b92af8bfdbead9762b89f81e0bd54701e66885337777c0c0ab8c9b32823b6d01",
+      "online_accuracy": null
+    }
+  },
+  "S0_S1_differing_prediction_rows": 2382,
+  "submission_validation_passed": {
+    "S0": true,
+    "S1": true
+  },
+  "desktop_copy_sha256_matches": {
+    "S0": true,
+    "S1": true
+  },
+  "automatic_platform_upload": false,
+  "v10_final_decision": null
+}
