@@ -1,8 +1,16 @@
-# 当前执行计划（2026-09-19 初赛 75 分方案 v8）
+# 当前执行计划（2026-09-20 初赛 75 分方案 v9）
 
-用户给定 `PRELIM75_V8_20260919` 固定方案：停止自动短续训，固定 G0/L1，只从当前初赛训练图和原 w/Q 为各自拟合一个有界 500 维类别偏置；不读取测试批统计或旧测试拟合偏置。此前“复现暂时不考虑，从计划删除”的决定继续有效；本次来源核对不冒充完整上游谱系认证。
+## 当前入口：PRELIM75_V9_20260920（实现预检阶段）
+
+v9 固定冻结 L1 无 prior 单模型，只改变 attention native 框内 local 像素的取得方式。R0 从 native 224 PIL canvas 用 Pillow bilinear float-box 重采样，R1 将完全相同的框按真实 Resize(224)+CenterCrop(224) 整数几何逆映射到原始解码 RGB 后重采样；global tensor、global logits、attention、四个框、O3/PTA、四尺度及融合协议均不变。逐图 `source_gain<1.5` 时两候选严格回退原生 L1 local tensor，不拟合参数、不使用 prior、不读取测试批统计选择规则。
+
+执行先做训练源 D0：按固定 SHA-256 顺序抽取 2,048 个唯一内容组的字典序 canonical 代表，仅解码尺寸；至少 205 组达到 `source_gain>=1.5` 才允许 GPU 阶段。随后依次执行冻结 smoke、10,316 行重叠工程诊断、完整 L1 基线重放和最多两个唯一预测集的 R0/R1 推理。完整测试重放必须与归档 L1 的 24,967 个 `(basename,label)` 全量一致，否则不交付新候选；结果不用于回改门槛、插值核、尺度或融合参数。代码入口为 `configs/prelim75_v9.yaml`、`aegis_clip/source_recrop.py`、`aegis_clip/prelim75_source_recrop.py`、`aegis_clip/cli/infer_prelim75_v9.py`、`scripts/run_prelim75_v9_queue.py` 和 `tests/test_prelim75_v9.py`。完整规格见 [v9 执行方案](preliminary_75_execution_v9_20260920.md)。
+
+实现阶段只读资产 preflight 已核对 L1 checkpoint、回退 CSV/ZIP/manifest、500 类映射、103,218 行训练清单、101,980 个内容组、10,316 行重叠诊断清单及 24,967 个测试 basename；L1 checkpoint 含完整 visual、shared head、O3、PTA，登记哈希匹配。33 项合成 CPU 几何/像素测试通过；尚未运行 D0、GPU smoke、真实诊断或测试推理，平台分数保持空值。
 
 ## 已关闭：PRELIM75_V8_20260919
+
+用户给定 `PRELIM75_V8_20260919` 固定方案：停止自动短续训，固定 G0/L1，只从当前初赛训练图和原 w/Q 为各自拟合一个有界 500 维类别偏置；不读取测试批统计或旧测试拟合偏置。此前“复现暂时不考虑，从计划删除”的决定继续有效；本次来源核对不冒充完整上游谱系认证。
 
 v8 固定 B0=G0、B1=L1，模型与 O3/PTA 全冻结。每个模型按既有四尺度＋Flip完整协议在 103,218 个训练样本上生成最终融合 FP32 `log(p)`，再以原监督构造类均衡拟合权重，用 CPU FP64 L-BFGS-B 拟合 `lambda=0.01`、边界 `±log(4)` 的类别常数，测试应用强度固定 0.90。两个模型各自拟合、各自绑定，不移植偏置、不融合预测、不扫描超参数。
 

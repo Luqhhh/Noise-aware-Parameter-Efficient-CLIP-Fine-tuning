@@ -1,0 +1,61 @@
+plan_id: PRELIM75_V9_20260920
+seed: 42
+fixed_review_commit: cbea37b03b75b91436b536cacd646f0e53a792e2
+num_workers: 4
+
+checkpoint: ../outputs/prelim75_v7_20260918/L1/candidate.pt
+checkpoint_sha256: cd485c7beed2781ac13d08fbd33d63b8f1c46971be008966f7280c67cec1fcee
+fallback_submission: ../outputs/prelim75_v7_20260918/L1/submission/submission.zip
+fallback_submission_sha256: 55d25f1fea9c57ba3431164d53d21f34d20baa2a49c805ad87cca188b5634c5a
+fallback_csv: ../outputs/prelim75_v7_20260918/L1/submission/pred_results.csv
+fallback_csv_sha256: 5277b2c33f63b951ea2236ae2e50b8c574ef9f8d2f989e8239fcce7b065c0171
+fallback_manifest: ../outputs/prelim75_v7_20260918/L1/submission/manifest.json
+
+train_csv: ../reproducibility/aegis_f1/artifacts/stages/preliminary/final_full_train.csv
+train_csv_sha256: 7643e120589e69d6bdc0c54abc605a7271d78c41aed1a638534ea43e4c0c4a90
+val_csv: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/val.csv
+val_csv_sha256: 54a790b35f836cfba4c19cbb5fe38c4b1b37aab62cc9d477f9285496b2d5568e
+groups: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/content_groups.json
+groups_sha256: 41e2668e0fa5e10291051c14a9c75fc96096a69ae7d36d84d0e774270a99bb87
+class_mapping: ../reproducibility/aegis_f1/artifacts/stages/preliminary/seed42/class_to_idx.json
+class_mapping_sha256: 3edfd9e48e2f171b5d452577c52e0d189ae99dbfed3759d3e4f164fc090a6647
+train_root: ../train
+test_root: ../test
+output: ../outputs/prelim75_v9_20260920
+
+d0:
+  sample_size: 2048
+  minimum_supported: 205
+  source_gain_threshold: 1.5
+  selection_salt: PRELIM75_V9_20260920/42/
+
+inference_protocol:
+  input_size: 224
+  local_scales: [112, 128, 144, 160]
+  local_scale_weights: [0.2, 0.3, 0.4, 0.1]
+  attention_top_k: 5
+  global_weight: 0.6
+  local_weight: 0.4
+  flip_weight: 0.5
+  global_temperature: 1.5
+  local_temperature: 1.5
+  source_gain_threshold: 1.5
+  local_kernel: Pillow_BILINEAR_float_box_reducing_gap_None
+  batch_size: 64
+  amp: false
+  prior: false
+
+diagnostic:
+  rows: 10316
+  maximum_drop_pp: 2.0
+  scope: training_overlap_engineering_only
+
+budget:
+  optimizer_updates: 0
+  maximum_platform_candidates: 2
+  gpu_action_seconds: 7200
+
+reference_platform_percent:
+  L1_no_prior: 69.2794
+  G0_legacy_test_batch_prior0.9: 72.4677
+  target: 75.0
