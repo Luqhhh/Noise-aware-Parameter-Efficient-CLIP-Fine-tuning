@@ -1,10 +1,12 @@
 # 当前执行入口：REMATCH750（2026-09-21）
 
-复赛主线为：严格解码和内容隔离划分 → RM-LP → RM-FT / RM-LT → 平台比较 → 胜者 RM-FULL。配置为 `configs/rematch750_{lp,ft,lt}.yaml`；入口为 `PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch`。详细方案及实际状态见 [复赛执行记录](rematch750_execution_20260921.md)。
+复赛主线为：严格解码和内容隔离划分 → RM-LP → RM-FT / RM-LT → 平台比较 → 策略选择（RM-FULL 已取消）。配置为 `configs/rematch750_{lp,ft,lt}.yaml`；入口为 `PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch`。详细方案及实际状态见 [复赛执行记录](rematch750_execution_20260921.md)。
 
 本轮只用官方 OpenAI CLIP ViT-B/32 与本阶段数据，从全新 750 类分类头开始。初赛模型和二进制缓存已清理，历史报告中的“保留”或“可重放”声明仅描述当时状态。S0 无 prior 69.3195%、S1/SAM 待回填、G0 legacy test-batch prior 72.4677% 均属于初赛历史，不能视为复赛基线或 SAM 有效性证据。旧 v10 队列不再是当前默认任务。
 
-当前检查点：RM-FT / RM-LT 均完成 8 轮并选中 epoch 8。独立验证 FT macro 71.8362%、micro 72.9032%；LT macro 71.8655%、micro 72.6949%。两包均含 37,444 条预测且校验通过，已复制到 `C:\Users\lqh22\Desktop\submission`（`RM_FT_20260921.zip`、`RM_LT_20260921.zip`）；RM-LP 回退包也已复制。优化器/调度器 33,456 次更新对齐，冻结参数审计通过。本段提交推送后暂停，等待用户上传并回传 FT/LT 平台成绩，再确定 RM-FULL 配方；不根据微小本地差距提前宣布平台胜者。
+当前检查点：RM-FT / RM-LT 均完成 8 轮并选中 epoch 8。独立验证 FT macro 71.8362%、micro 72.9032%；LT macro 71.8655%、micro 72.6949%。两包均含 37,444 条预测且校验通过，已复制到 `C:\Users\lqh22\Desktop\submission`（`RM_FT_20260921.zip`、`RM_LT_20260921.zip`）；RM-LP 回退包也已复制。优化器/调度器 33,456 次更新对齐，冻结参数审计通过。本段提交推送后暂停，等待用户上传并回传 FT/LT 平台成绩，用于策略比较与后续方向选择；按用户最新要求取消 RM-FULL，不自动生成配置或启动全量训练；不根据微小本地差距提前宣布平台胜者。
+
+baseline 定位：RM-FT 是本阶段正式视觉微调 baseline；RM-LP 是冻结特征参考基线与共享初始化；RM-LT 是只改变采样的对照候选。平台最高分包与 baseline 身份分开管理。
 
 以下内容保留为历史记录。
 

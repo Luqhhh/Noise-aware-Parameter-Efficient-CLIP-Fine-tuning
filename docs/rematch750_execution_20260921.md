@@ -2,7 +2,7 @@
 
 ## 状态与边界
 
-当前阶段 `repechage`，数据版本 `20260921`，seed 42。平台由用户上传并回传成绩；本地只生成、校验和登记提交包。RM-FULL 等 RM-FT 与 RM-LT 实测成绩齐全并确定胜出配方后执行，不因 pending 重复上传。
+当前阶段 `repechage`，数据版本 `20260921`，seed 42。平台由用户上传并回传成绩；本地只生成、校验和登记提交包。用户已取消 RM-FULL，本阶段以策略比较和选择为主；平台成绩用于比较 FT/LT，不触发全量训练，不因 pending 重复上传。
 
 初赛权重与二进制缓存已删除。只迁移代码与超参数经验，模型从官方 OpenAI CLIP ViT-B/32 权重（本地文件指纹必须匹配官方 CLIP 包的模型 URL SHA-256）及全新有 bias 的 `Linear(512,750)` 开始。单模型、224px global center crop、无 TTA/prior、无 trust/伪标签/额外数据。
 
@@ -60,7 +60,7 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch infer --co
 
 输出为 `outputs/rematch750/<candidate>/seed42/`。提交必须覆盖全部 37,444 张测试图，每张一次，映射合法，ZIP 与 CSV 字节一致，任何解码或哈希失败均拒绝发布。不要求预测覆盖全部 750 个类别。
 
-## 平台登记与全量训练
+## 平台登记与原全量训练方案（全量部分已取消）
 
 登记表 `results/rematch_submission_registry.csv` 中 `ready` 表示包已通过本地验证、尚未上传；`pending`/`valid`/`failed` 根据用户提供的真实提交回执更新。每日最多两次按用户提供的平台 reset-period 标识计数，不推测时区或重置时间。同一预测已提交则拒绝重复登记；最高分包与后续默认方案分开管理。
 
@@ -71,7 +71,7 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch record \
   --submitted-at ISO_TIMESTAMP_WITH_TIMEZONE --platform-period PLATFORM_RESET_PERIOD \
   --status valid --score MEASURED_SCORE
 
-# 双候选成绩齐全、选定 winner 后生成配置，拒绝提前执行。
+# 历史方案，用户已取消 RM-FULL：以下命令不属于当前执行队列。
 PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch prepare-full --candidate RM_FT
 ```
 
@@ -159,3 +159,12 @@ LT 提交为 `outputs/rematch750/RM_LT/seed42/submission/submission.zip`，含�
 - `RM_LT_20260921.zip`：平方根采样对照。
 
 [桌面交付记录](../results/rematch750_20260921_desktop_delivery.json)保存源、目标与哈希。三个候选登记仍为 `ready`，尚无平台回执。由用户上传并回传成绩；本段交付后等待 FT/LT 平台比较，RM-FULL 尚未启动。
+
+
+## 计划修订：取消 RM-FULL，优先选择策略
+
+用户在 FT/LT 交付后取消 RM-FULL。本阶段保留独立验证划分，围绕策略比较开展工作；即使平台成绩返回，也不自动运行 prepare-full 或全量训练。上文全量方案及交付时的待执行说明仅保留为历史，已被本修订取代。既有提交包、模型、配置与哈希绑定不变。
+
+正式 baseline 采用 RM-FT：它提供普通采样的视觉微调参照，后续采样改动可与之做单变量比较。RM-LP 作为冻结特征参考基线和共享初始化；RM-LT 作为平方根采样对照。baseline 身份不等于当前最高平台分；LT 若取得更高平台分，仍应更新最高分包。
+
+普通 shuffle 每轮随机打乱训练样本并各使用一次，类别总曝光与 train_dev 的类别样本数 n_c 成正比。平方根采样以每张图 1/sqrt(n_c) 为权重，有放回抽取同样数量的样本；某图可能重复或未被抽到，类别期望总曝光与 sqrt(n_c) 成正比，并非每类完全相等。它温和增加少样本类别的曝光，也可能重复放大其中的错误标签。两者均不改变损失权重。
