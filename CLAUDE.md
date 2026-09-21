@@ -121,7 +121,7 @@ YAML 由 `common/utils.py:load_config()` 加载。
 
 **开始新实验段之前：**
 
-1. 确认当前分支、工作区状态、`origin/main` 是否为最新。混合工作区用 `git pull --rebase --autostash origin main`。
+1. **每次会话/实验段一开始就先同步远端**：`git fetch origin main`，确认本地 HEAD 与 `origin/main` 的关系；落后就 `git pull --rebase --autostash origin main`。不要凭上次会话的记忆判断当前状态 —— 协作者随时可能已经推了新结果。
 2. 检查全部本地与远端分支、以及近期 main 历史，看是否已有**重叠的实验名、算法、配置、结果报告或在途工作**。若有相似方向，先比对 / 协调 / 关闭，再决定是否动手，不要重复实现。
 
 **实验段结束之后：**
@@ -138,6 +138,13 @@ YAML 由 `common/utils.py:load_config()` 加载。
   - 自动：`git pull --rebase --autostash origin main`（Git 自动恢复临时 stash，**不要再执行一次 `git stash pop`**）
 - **禁止 `git push --force`** 解决 non-fast-forward
 - 已验证的推送不得推迟到后续实验段
+
+**冲突以远端为准：**
+
+本地提交与 `origin/main` 冲突时，一律采用远端版本，改动让位、重做，不要为了保住本地版本去顶掉协作者的内容。
+
+- rebase 中方向容易搞反：`git checkout --ours <file>` 取的是**远端**（rebase 时 HEAD 是 origin/main），`--theirs` 取的是你正在应用的本地提交。
+- **README 开头那段状态句是协作方约定的状态落点**：每次交付后由交付方就地更新（做了什么 / 独立验证指标 / 是否有平台成绩）。不要删除或改写它的形式 —— 删了会让对方的下一次交付 commit 必然冲突。`docs/current_execution_plan.md` 只负责细节与历史，不与之竞争。
 
 ## 历史
 
