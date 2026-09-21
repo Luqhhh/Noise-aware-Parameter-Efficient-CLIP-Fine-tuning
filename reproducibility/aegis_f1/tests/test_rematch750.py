@@ -134,7 +134,8 @@ def test_full_recipe_requires_platform_and_keeps_original_horizon(tmp_path):
     assert b['data']['validation_overlap_with_training'] is True
 
 
-def test_interval_training_writes_only_selected_and_last(tmp_path,monkeypatch):
+@pytest.mark.parametrize('inject_nonfinite', [False, True])
+def test_interval_training_writes_only_selected_and_last(tmp_path,monkeypatch,inject_nonfinite):
     import json
     import pandas as pd
     import aegis_clip.trainer as trainer
@@ -157,6 +158,16 @@ def test_interval_training_writes_only_selected_and_last(tmp_path,monkeypatch):
     index=tmp_path/'paths.json';index.write_text(json.dumps(paths))
     cfg['features']=dict(tensor_path=str(tensor),paths_path=str(index))
     monkeypatch.setattr(trainer,'build_model',lambda c,d:(AegisCLIP(visual=torch.nn.Linear(4,4),num_classes=3,feature_dim=4,peft_mode='frozen'),None))
+    if inject_nonfinite:
+        cfg['train']['require_finite_gradients']=True
+        monkeypatch.setattr(trainer,'_gradient_norm',lambda params:float('inf'))
+        def forbidden_step(*args,**kwargs):
+            raise AssertionError('Optimizer must not run with nonfinite gradients')
+        monkeypatch.setattr(torch.optim.AdamW,'step',forbidden_step)
+        with pytest.raises(RuntimeError,match='before optimizer and scheduler'):
+            trainer.train(cfg)
+        assert not list((tmp_path/'out').rglob('*.pt'))
+        return
     best=trainer.train(cfg)
     assert best.exists()
     assert (best.parent/'last.pt').exists()

@@ -369,6 +369,7 @@ def train(
         device=device.type,
         enabled=use_amp,
         init_scale=float(train_config.get("amp_initial_scale", 65536.0)),
+        growth_interval=int(train_config.get("amp_growth_interval", 2000)),
     )
 
     cap_config = config["loss"].get("adaptive_cap", {})
@@ -1130,6 +1131,13 @@ def train(
             head_grad = _gradient_norm(model.classifier.parameters())
             adapter_grad = _gradient_norm(model.feature_adapter.parameters())
             visual_grad = _gradient_norm(model.visual.parameters())
+            if train_config.get("require_finite_gradients", False):
+                if not all(math.isfinite(value) for value in
+                           (float(loss.detach()), head_grad, adapter_grad, visual_grad)):
+                    raise RuntimeError(
+                        "Nonfinite loss/gradient before optimizer and scheduler step; "
+                        f"epoch={epoch} step={global_step} AMP scale={scaler.get_scale()}"
+                    )
 
             projection_config = config["trust"].get("gradient_projection", {})
             projection_interval = int(projection_config.get("interval", 0))
@@ -1263,6 +1271,12 @@ def train(
                 supervision_ledger.update(batch_indices, mixed_targets, mixed_weights,
                     denominator=mixed_weights.sum().clamp_min(1.0e-8).detach())
             global_step += 1
+            log_every = int(train_config.get("log_every_steps", 0))
+            if log_every and global_step % log_every == 0:
+                logger.info("Progress epoch=%d/%d step=%d/%d examples=%d/%d loss=%.6f amp_scale=%.1f",
+                            epoch, epochs, global_step, epochs * len(train_loader),
+                            totals["examples"], len(train_dataset),
+                            totals["loss"] / totals["examples"], scaler.get_scale())
 
         if supervision_ledger is not None:
             atomic_json_dump(supervision_ledger.report(), log_dir / f'longtail_epoch_{epoch}.json')

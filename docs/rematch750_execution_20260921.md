@@ -104,3 +104,9 @@ checkpoint 的 152 个视觉张量逐项与官方 OpenAI 权重相同；只有 3
 GPU 补测原先跳过的数值测试：1 passed；最后复赛与提交专项复核：17 passed。历史日志中的 `head/medium/tail` 等分三段属于兼容诊断，本轮正式报告采用 `support_head/support_middle/support_tail` 的固定计数边界。
 
 本段已完成数据准备＋RM-LP 提交就绪闭环，按协作约定在提交推送后暂停。RM-FT、RM-LT 尚未启动；RM-FULL 尚未定版。
+
+## RM-FT 执行数值修正（2026-09-21）
+
+首次 RM-FT 在首 batch 检出 FP16 梯度溢出：默认 GradScaler 初始值 65,536，视觉梯度为 inf，优化器跳过更新，首步审计随即停止；未生成训练 checkpoint。现场保留于 `outputs/rematch750/RM_FT/seed42_failed_initial_amp_65536/`。
+
+FT/LT 同步设置 `amp_initial_scale=128`、`amp_growth_interval=1000000000`（本轮内不自动增大），新增 `require_finite_gradients=true`：在优化器与调度器更新之前检查有限损失/梯度，失败立即停止，不静默漏掉更新。每 200 步记录实际进度和 AMP scale。学习率、数据、损失、增强、8 轮 cosine horizon 与 FT/LT 单变量采样对照不变。数值修正及训练/恢复定向测试 25 项通过，包含非有限梯度不得调用 optimizer 的集成检查。
