@@ -1,246 +1,81 @@
 # Noise-Aware Parameter-Efficient CLIP Fine-Tuning
 
-面向噪声标签数据的细粒度图像识别。初赛数据为 500 类、约 103K 训练图；2026-09-21 已将本地数据替换为复赛数据：**750 类、148,695 张训练图、37,444 张测试图**。数据来源、路径、完整性校验和使用前准备见[复赛数据集元信息](docs/rematch_dataset_20260921.md)。复赛数据准备、RM-LP 与 RM-FT 已完成；RM-FT 独立验证 macro **71.8362%**、micro **72.9032%**，提交包已校验、尚无平台成绩；见[当前复赛执行记录](docs/rematch750_execution_20260921.md)。下文既有实验结果属于历史数据阶段。
+面向噪声标签数据的细粒度图像分类比赛项目。骨干固定为 CLIP ViT-B/32，规则要求单模型交付：禁止集成，禁止测试时训练或自适应。
 
-基于 CLIP ViT-B/32 冻结 backbone + 线性分类头，系统消融 head 类型、数据增强和标签噪声的影响，并实现部分解冻基础设施用于后续视觉特征微调。
+## 当前状态
 
-> **当前状态（2026-08-05）**：单模型 R2 CLIP ViT-B/32 + crop112 Part-Token residual Adapter，采用 128/144/160 attention-local 多尺度（权重 0.45/0.50/0.05）+ Flip 0.5 + temp1.5 + **balanced-prior 0.85**，平台实测 **68.90295189650338%**（17,203/24,967），为新的审计完整平台最佳；相对上一最优 crop112 local-feature Adapter 增加 4 个正确样本。距离 70% 还差 274 个正确样本（1.0970pp）。完整结果见 [`results/f1_flat_mlp_lora_selftrain_r2_part_token_adapter_crop112_20260805.md`](results/f1_flat_mlp_lora_selftrain_r2_part_token_adapter_crop112_20260805.md) 与 [`results/submission_registry.csv`](results/submission_registry.csv)。
+**阶段相关的一切（类别数、数据规模、当前成绩、下一步）都在一处维护，不要在本文件重复：**
 
-## 已完成工作
+- **→ [docs/current_execution_plan.md](docs/current_execution_plan.md)** —— 当前执行入口 + 历史记录
+- 当轮详细方案与固定配方：该文件顶部「当前执行入口」所指向的文档
+- 提交登记表：[results/rematch_submission_registry.csv](results/rematch_submission_registry.csv)
 
-### 1. Baseline 建立与优化
+本文件的其余部分描述阶段之间不变的内容。
 
-- **B0 回归**：复现原始 baseline，验证基础设施正确性（61.39% vs 61.38%）
-- **Head 类型对比**：Linear Head (69.86%) 在所有学习率下均显著优于 Cosine Head (63.61%)，差距 ~6pp
-- **学习率搜索**：5 个 lr × 3 个 wd = 15 trials，确认 lr=5e-3 最优，weight decay 无影响（冻结 backbone 场景下预期行为）
-- **训练策略**：50 epochs + Cosine LambdaLR（保持参数组 LR 比例）+ 早停（patience=10），替代原始 20 epoch 固定训练
+## 快速上手
 
-### 2. 数据增强消融
+```bash
+# 当前主线（Aegis 框架）的总入口
+PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch --help
+# 子命令：prepare / verify / cache / train / infer / run / record / prepare-full
+# 完整可重放命令序列见 docs/current_execution_plan.md 顶部所指向的当轮执行文档
 
-系统测试 4 级增强预设（A0-A3），结论：**在细粒度 + 噪声标签任务上，所有数据增强均无正面收益**。
+# 提交校验（--num-classes 或 --class-mapping 二者必给其一）
+python3 scripts/check_submission.py \
+  --test_dir <测试集目录> --class-mapping <class_to_idx.json> \
+  --csv <pred_results.csv> --zip <submission.zip>
 
-| 预设 | 内容 | 最佳结果 |
-|------|------|---------|
-| A0 | CLIP 标准预处理（无增强） | **69.86%** |
-| A1 | RandomResizedCrop + RandomHorizontalFlip | 69.77% (lr=5e-3 对齐对照) |
-| A2 | + ColorJitter | 67.36% (平台期截断) |
-| A3 | + RandomErasing | 未完成（已弃用） |
-
-A1 在匹配学习率后与 A0 几乎持平（Δ = −0.09pp），A2 的 ColorJitter 显著破坏细粒度判别信息。最终采用 A0。
-
-### 3. 跨类别重复图像处理
-
-扫描发现训练集中存在 1,032 组跨类别 SHA-256 完全重复，涉及 2,095 张图片（2.0%）——同一张图被放入 2-4 个不同类别目录，训练监督彼此矛盾。
-
-实现 **CLIP 特征质心仲裁去重**：
-- 从 101,123 张非冲突图片计算每类 10% trimmed 质心（排除离群错标）
-- 三条件接受：全局 Top-1 必须在候选类别中 + 绝对相似度 ≥ p10 阈值 + Top1-Top2 margin ≥ 0.02
-- 203/1032 组高置信度仲裁，829 组低置信度整组移除
-- 最终过滤 1,892 张图片
-
-**历史探索结果**：旧独立 split 上 D3 达到 70.53%（+0.67pp vs 旧 E0），但因验证集与 E0 不共享，该 +0.67pp 不作为严格消融证据。E0_STRICT 后续已完成，严格同源结果为 E0_STRICT 70.5409%、D3_STRICT 70.6572%，D3−E0 = +0.1163pp。
-
-### 4. 部分解冻基础设施
-
-为后续视觉特征微调（F0-F3）实现了完整的基础设施：
-
-- **CLIPLinearClassifier 选择性解冻**：始终先冻结全部 visual 参数，再按 `unfreeze_last_n_blocks` + `train_ln_post` + `train_visual_proj` 精确解冻
-- **判别式优化器**：head 和 backbone 使用不同 LR / weight decay，通过 `get_param_groups()` 暴露
-- **比例 LambdaLR Scheduler**：替代 CosineAnnealingLR，保证 backbone_lr / head_lr 比例全程恒定
-- **`--init-checkpoint` CLI**：仅加载模型权重（不恢复 optimizer/scheduler/epoch），用于从冻结 baseline checkpoint 启动部分解冻实验
-- **训练诊断**：每 epoch CSV 输出 head_lr、backbone_lr、head_grad_norm、backbone_grad_norm
-
-### 5. 测试覆盖
-
-根目录 `tests/` 当前包含 405 个可收集测试。2026-07-30 实跑 `pytest -q tests` 的结果为 **402 passed、1 skipped、2 failed**：集成烟雾测试在 CPU 单进程 DataLoader 上因非零 `timeout` 失败，OOF soft-target 测试因 float32 精确相等断言失败。两项均已记录为现存测试问题，当前不能声明全量测试通过；Aegis 隔离实验线另有 **201 项测试全部通过**。重点覆盖包括：
-- `test_partial_unfreeze.py`（16 tests）：参数冻结/解冻、train mode 行为
-- `test_discriminative_optimizer.py`（11 tests）：参数组结构、LR/WD 正确性、覆盖率
-- `test_init_checkpoint.py`（4 tests）：权重加载、跨架构兼容、requires_grad 保持
-- `test_scheduler_ratio.py`（7 tests）：余弦因子边界、比例保持、缓存 guard
-- `test_run_artifact_guard.py`（7 tests）：fresh-run 产物保护、resume 放行、--allow-overwrite
-- `test_best_checkpoint_post_eval.py`（4 tests）：best.pt 重载、strict load 校验
-- `test_metric_consistency.py`（7 tests）：micro-macro gap 一致性、bottom-10% 计算
-- `test_submission_manifest.py`（18 tests）：SHA-256 哈希、ZIP vs CSV hash 区分、标签格式、预测计数、重复登记拒绝、manifest schema
-- Aegis 独立套件：配置合规、LoRA/AdaptFormer/visual prompt、OOF 重建、局部推理、M1/M3、Part-Token Adapter、多类噪声诊断、Q1 trajectory、T0/T1 可信梯度子空间与 U0 数字 Prompt 审计；最新隔离整合回归 `277 passed`
-
-### 6. 平台结果总览（updated 2026-08-06）
-
-**跨推理协议的已知平台锚点：**
-
-| 实验 | 平台 | 证据状态 | 说明 |
-|------|------:|----------|------|
-| **全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.90** | **70.352866%** | **已审计（当前平台最佳）** | 全微调 epoch-3 父模型 + O3/PTA 双 Adapter；4 尺度 attention + flip + prior 0.90；prior 峰值确认（0.89→0.91→0.92→0.93 曲线见 results/fullft_dual_adapters_20260806.md） |
-| 全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.89 | 70.344855% | 已审计 | 上一平台最佳；峰值左侧 |
-| 全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.92 | 70.340850% | 已审计 | −3 correct vs prior 0.90 |
-| 全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.93 | 70.328834% | 已审计 | 高侧衰减确认 |
-| 全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.91 | 70.308808% | 已审计 | −9 correct vs prior 0.89 |
-| 全微调 R3MS 父模型 + 双 Adapter + balanced-prior 0.85 | 70.256739% | 已审计 | 双 Adapter 基线；首个突破 70% |
-| 全微调 R3MS 父模型 + balanced-prior 0.85 | 69.575840% | 已审计 | 全微调父模型基线；+125 correct vs R3 dual 0.91 |
-| R3 + 双 Adapter + balanced-prior 0.91 | 69.075179% | 已审计 | R3 双 Adapter 家族峰值（用户指示停止该维度） |
-| R3 + 双 Adapter + BN64/crop112 + prior 0.88 | 69.043137% | 已审计 | BN64+crop112 组合，上一家族最佳 |
-| **R2 + crop112 Part-Token Adapter + weighted multiscale/Flip + balanced-prior 0.85** | **68.9030%** | 已审计（R2 系最佳） | 单一 R2 checkpoint + 一个 34,336 参数局部残差 Adapter；同一 local forward 的 CLS/patch token；128/144/160 权重 0.45/0.50/0.05 |
-| R2 + crop112 local-feature Adapter + weighted multiscale/Flip + balanced-prior 0.85 | 68.8869% | 已审计 | 上一平台最佳；比 crop128-trained Adapter 多 1 个正确样本 |
-| R2 + crop128 local-feature Adapter + weighted multiscale/Flip + balanced-prior 0.85 | 68.8829% | 已审计 | 单 checkpoint + local-only Adapter |
-| R2 + crop144 local-feature Adapter + weighted multiscale/Flip + balanced-prior 0.85 | 68.8589% | 已审计 | 单 checkpoint + local-only Adapter |
-| R2 + crop160 local-feature Adapter + weighted multiscale/Flip + balanced-prior 0.85 | 68.8228% | 已审计 | 首个 local-feature Adapter 平台提升 |
-| R2 + weighted 128/144/160 multiscale/Flip + balanced-prior 0.85 | 68.6787% | 已审计 | 无 Adapter 的 R2 多尺度推理锚点 |
-| A12_CORR + M1/Flip + temp1.5 + balanced-prior 0.85 | 67.6853% | 已审计（历史最佳） | LoRA 全 12 block + 伪标签修正 + M1/Flip 四视图 + temp1.5 + prior 0.85 |
-| A12 + M1/Flip + temp1.5 + balanced-prior 0.85 | 67.6173% | 已审计 | LoRA 全 12 block（广度）+ M1/Flip 四视图 + temp1.5 + prior 0.85 |
-| W060 + M1/Flip + temp1.5 + balanced-prior 0.85 | 67.5812% | 已审计 | 温度峰值 1.5 + prior 峰值 0.85 |
-| W060 + M1/Flip + balanced-prior 0.85 | 67.3569% | 已审计 | prior 0.85 峰值（temp1.0） |
-| W050 + M1/Flip + balanced-prior 0.75 | 67.2848% | 已审计 | prior 0.75 略低于 0.8 |
-| W060 + M1/Flip + balanced-prior 1.0 | 67.2007% | 已审计 | prior 1.0 对非完美均衡测试略过矫正 |
-| F1 REBUILD R1 + M1/Flip + balanced-prior 0.25 | 65.5786% | 已审计 | R1 checkpoint + M1/Flip + prior 0.25 |
-| F1 REBUILD R1 + M1/Flip 0.40/0.50 | 63.7802% | 已审计 | 单 checkpoint；原图/翻转图 × global/local 四视图融合 |
-| AEGIS F1 + M1 | 63.3276% | 已报告，待补 ZIP SHA-256 | 单 checkpoint；attention 定位局部裁剪与全局概率 1:1 融合 |
-| F1 REBUILD R1 + M1 weight 0.35 | 62.9791% | 已审计 | crop160/top5；比 A2 STRICT + M1 高 0.2921pp |
-| A2 STRICT + M1 weight 0.35 | 62.6870% | 已审计 | crop160/top5；相对同 checkpoint Bare +2.0349pp |
-| A2 + M1 | 62.6747% | 已报告，待补完整审计字段 | 同一 M1 协议 |
-| A2 + M3 | 62.0259% | 已报告，待补完整审计字段 | 独立研发侧报告 |
-
-M1 与下面的 Bare/Flip TTA 不是同一推理协议，不做直接消融归因。AEGIS F1 + M1、A2 + M1 和 A2 + M3 三条历史锚点来自 2026-07-22 团队同步文档；缺失字段已在提交登记表中显式留空。F1 REBUILD R1 + M1 与 M1 + Flip 均有本仓库完整审计哈希和真实平台回填。
-
-**历史 Top TTA 分数（2026-07-22 截面）：**
-
-| 实验 | 平台 TTA | vs ref (D3) | 推理策略 |
-|------|---------|-------------|----------|
-| **AEGIS F1 + M1 attention-local/global** | **63.33%** | **+5.99pp** | center + attention-local，1:1 概率均值 |
-| **A2 + M1 attention-local/global** | **62.67%** | **+5.33pp** | center + attention-local，1:1 概率均值 |
-| **A2 + M3 complementary fusion** | **62.03%** | **+4.69pp** | Flip 分支 + M1 分支，1:1 概率均值 |
-| **NR_CL_KNN_DROP (A2, kNN consensus drop, seed=42)** | **61.21%** | **+3.87pp** | 2-view Flip TTA |
-| **A2 STRICT (A2 parent + LoRA, lineage-fixed, seed=42)** | **61.15%** | **+3.81pp** | Flip mean-prob T=0.5 |
-| AEGIS F1 (visual LoRA, clean≥0.7, distill) | 61.10% | +3.76pp | Flip mean-prob T=0.5 |
-| s_oof_zero_0001_ff (OOF zero p<0.001, final_fit) | 60.51% | +3.17pp | 2-view Flip TTA |
-| S_MIXUP_CE5 (CE5 warmup + MixUp + GCE q=0.5) | 60.48% | +3.14pp | 2-view Flip TTA |
-| w1_gce05_mixup (MixUp + GCE q=0.5) | 60.36% | +3.02pp | 2-view Flip TTA |
-| **NR_CL_KNN_DROP (A2, seed=3407)** | **60.31%** | **+2.97pp** | 2-view Flip TTA |
-| nr_ctrl_fixed (A0, reject_policy=drop) | 60.31% | +3.03pp | 2-view Flip TTA |
-| s_oof_zero_0001 (OOF zero-weight p<0.001) | 60.28% | +2.94pp | 2-view Flip TTA |
-| w1_ce5_gce05 (CE5 warmup + GCE q=0.5) | 60.25% | +2.91pp | 2-view Flip TTA |
-| robust_lora (LoRA rank=8, last_block) | 60.24% | +2.90pp | 2-view Flip TTA |
-| b2_gce05 (纯 GCE q=0.5) | 60.16% | +2.82pp | 2-view Flip TTA |
-| s_oof_zero_001 (OOF zero-weight p<0.01) | 59.92% | +2.58pp | 2-view Flip TTA |
-| **NR_CONSENSUS_RELABEL_V2 (A3, 5-signal relabel 100)** | **59.89%** | **+2.55pp** | 2-view Flip TTA |
-| **NR_CL_CLASSWISE_DROP (A1, classwise drop 8680)** | **59.55%** | **+2.21pp** | 2-view Flip TTA |
-
-**Top Bare 分数：**
-
-| 实验 | 平台 Bare | vs ref (D3) | 推理策略 |
-|------|---------|-------------|----------|
-| **A2 STRICT (A2 parent + LoRA, lineage-fixed, seed=42)** | **60.65%** | **+3.31pp** | 单视图 |
-| **A2 STRICT (A2 parent + LoRA, lineage-fixed, seed=3407)** | **60.64%** | **+3.30pp** | 单视图 |
-| **AEGIS F1 (visual LoRA, clean≥0.7, distill)** | **60.52%** | **+3.18pp** | 单视图 |
-| s_oof_zero_0001_ff (OOF zero p<0.001, final_fit) | 60.29% | +2.95pp | 单视图 |
-| s_oof_zero_0001 (OOF zero-weight p<0.001) | 59.96% | +2.62pp | 单视图 |
-| nr_ctrl_fixed (A0, reject_policy=drop) | 59.90% | +2.56pp | 单视图 |
-| w1_gce05_mixup (MixUp + GCE q=0.5) | 59.86% | +2.52pp | 单视图 |
-| s_d3_mixup (GCE q=0.5 + MixUp, d3 control) | 59.86% | +2.52pp | 单视图 |
-
-**Noise-Robust 消融矩阵（Wave A）：**
-
-| 实验 | 操作 | 样本 | Bare | TTA | vs A0 TTA | 判定 |
-|------|------|------|------|------|-----------|------|
-| A0 `NR_CTRL_FIXED` | p<0.001 零权重 | 6,354 (7%) | 59.90% | 60.31% | — | 对照基线 |
-| **A2** `NR_CL_KNN_DROP` | 三方共识删除 | 991 (1.1%) | **60.64%*** | **61.21%** | **+0.90** | ✅ 最佳冻结 |
-| A3 `NR_CONSENSUS_RELABEL` | 5-signal relabel | 100 (0.1%) | — | 59.89% | −0.42 | ❌ 关闭 |
-| A1 `NR_CL_CLASSWISE_DROP` | CL classwise 删除 | 8,680 (9.5%) | — | 59.55% | −0.76 | ❌ 关闭 |
-
-> \* A2 seed=42 Bare 60.64% 来自当时实验回填，但 `submission_registry.csv` 缺少对应提交行与哈希，按 `reported_incomplete` 管理。A1 和 A3 均在全局黑名单引入前完成训练，即 991 个三方共识确认错标样本仍以 weight=1.0 参与训练。
-
-**多 seed 稳定性：**
-
-| 实验 | seed | 本地 Val | 平台 Bare | 平台 TTA | Paired Delta vs s42 |
-|------|------|----------|----------|----------|---------------------|
-| A2 | 42 | 69.44% | 60.64%* | **61.21%** | — |
-| A2 | 3407 | 69.39% | 59.81% | **60.31%** | −0.07pp (p=0.457) |
-| A2 STRICT | 42 | 69.64% | **60.65%** | **61.15%** | — |
-| A2 STRICT | 3407 | — | **60.64%** | — | −0.01pp |
-
-> A2 多 seed 稳定性确认：本地 paired delta 仅 7 张图差异（p=0.457），但平台 TTA 波动达 0.90pp。A2 STRICT LoRA 双 seed Bare 仅差 0.01pp（60.65% vs 60.64%），确认 LoRA 增益高度稳定。所有后续实验必须跑双 seed 验证。
-
-**历史已审计基线定义（2026-07-22 截面）：**
-- **平台 Bare 最佳**：A2 STRICT = **60.65%**（A2 parent + visual LoRA rank-8, clean filter, distill）
-- **平台多视图推理最佳**：F1 + M1 = **63.3276%**（F1 visual LoRA + attention-local/global probability fusion）
-- **平台普通 Flip TTA 最佳**：A2 seed=42 = **61.2128%**（frozen CLIP + GCE q=0.5 + MixUp + kNN consensus drop）
-- **最佳冻结合理期望**：约 60.76% TTA（A2 两 seed 平均）
-- **训练基线**：s_d3_mixup (GCE q=0.5 + MixUp, d3_strict) —— 所有 OOF 实验的配对对照
-
-**核心发现（2026-07-22 修订）：**
-- **attention-local/global 是当前最强跨模型信号**：M1 相对 F1 Flip 提升 +2.2269pp，相对 A2 Flip 提升 +1.4619pp；F1 + M1 达到 63.3276%。
-- **更多视图不等于更好**：A2 + M3 平台 62.0259%，比纯 A2 + M1 低 0.6488pp。带噪本地排序不能代替平台验证，M3 只保留作消融。
-- **Purification 精度 > 覆盖面**：删 991 个高精度样本 > 删 6354 个中精度 > 删 8680 个低精度。精度碾压数量。
-- **删除 > 重标**：A3 五信号共识 relabel 100 个样本（0.1%）反而有害（−0.42pp）。OOF 预测准确率 ~69% 不足以支撑可靠重标。当你确定标签错了但不确定正确答案时，删除比重标更安全。
-- **冻结 CLIP + GCE + MixUp 上限已触达**：A0→A2 本地 paired delta 仅 +17 张图（0.165pp, p=0.196），平台天花板 ~60.5-61% TTA。Purification 的边际增益已饱和。
-- **单 seed 不可靠**：A2 seed=42 TTA 61.21% vs seed=3407 TTA 60.31% = 0.90pp 波动。所有候选必须在 seed=3407 上验证后才能宣称收益。
-- **本地 val 与平台持续反相关**：A3 本地最高（69.47%）平台最差（59.89%）。本地分数不能用于模型选择。
-- **Visual LoRA 的增益成立但已进入边际区**：AEGIS F1 证明干净监督上的 LoRA 有效；A2 parent swap (STRICT) 将 Bare 提升至 60.65%，但 Phase 4 的 routing、prototype-contrastive、dynamic trust 等后续机制均未达到晋级门槛。
-- **表示适配与细粒度局部推理互补**：AEGIS F1 证明干净监督下的 visual LoRA 能贡献 bare 增益；M1 又在 F1 上获得比 A2 更大的平台提升，说明局部细节视图与 LoRA 表示适配存在正协同。
-- **Split-lineage protocol 至关重要**：原始 A2 parent swap 因 parent (d3_strict) 与 child (AEGIS prepare) 使用不同 split，导致本地 raw_micro 从真实 69.43% 假胀至 79.22%（+8.5pp 假信号）。修复后 epoch-0 baseline 精确匹配，证实验证必须与训练用同一 split。
-- **A2 parent swap 确认成立**：双 seed promotion 通过，bare +0.14pp, TTA +0.05pp vs F1 E2 parent。方向正确但收益太小，不进参数搜索。
-- **Phase 4 全部关闭**：结构化 Head、同轨迹 checkpoint averaging、Clean-Routed LoRA、Trusted Prototype-Contrastive、Dynamic Trust Refresh 均未通过预注册 gate；详见 [`docs/phase4_results.md`](docs/phase4_results.md)。
-- **数字类别不能直接继承语义 Prompt 鲁棒性**：U0 固定数字 Prompt 的 raw/clean-core 仅 0.232648%/0.229854%，500 个文本方向的 90% 能量秩为 1；direct numeric shared-context CoOp 已关闭。该结论是 train/validation-only 本地审计，不是平台成绩，也不排除另行设计视觉原型锚定 soft token。
-
-### 7. 本地评估与当前状态
-
-**已完成 (d3_strict, seed=42, reeval from best.pt):**
-
-| Experiment | Local Micro | Local Macro | Best Epoch | Platform Bare | Platform TTA |
-|---|---|---|---|---|---|
-| **A2** `NR_CL_KNN_DROP` | 69.44% | 69.45% | 48 | **60.64%*** | **61.21%** |
-| **A2** `NR_CL_KNN_DROP` seed=3407 | 69.39% | 69.40% | 43 | 59.81% | **60.31%** |
-| **A3** `NR_CONSENSUS_RELABEL_V2` | 69.47% | 69.47% | 40 | — | **59.89%** |
-| **A1** `NR_CL_CLASSWISE_DROP` | 68.61% | 68.61% | 45 | — | **59.55%** |
-| **A0** `nr_ctrl_fixed` (reject_policy=drop) | 69.33% | — | 50 | 59.90% | 60.31% |
-| **A2 STRICT** `F1_VISUAL_LORA_CLEAN_CORE_A2_PARENT_STRICT` | 69.71% | 69.71% | 2 (raw) / 6 (clean_core) | **60.65%** | **61.15%** |
-| **A2 STRICT** seed=3407 | 69.82% | 69.83% | 3 (raw) / 5-6 (clean_core) | **60.64%** | — |
-| s_d3_mixup（MixUp d3 control） | 69.47% | 69.47% | 40 | 59.86% | — |
-| s_oof_zero_0001_ff（OOF p<0.001, final_fit） | — | — | — | **60.29%** | **60.51%** |
-| s_oof_zero_0001（OOF zero-weight p<0.001） | 69.37% | 69.37% | 44 | 59.96% | 60.28% |
-| s_oof_zero_0001（OOF p<0.001） | 69.37% | 69.37% | 44 | **59.96%** | 60.28% |
-| s_oof_zero_001（OOF p<0.01） | 69.02% | 69.01% | 37 | 59.38% | 59.92% |
-| s_oof_discrete（OOF 3-tier） | 68.65% | — | 41 | 59.28% | 59.28% |
-| robust_oof_soft（OOF soft target distillation） | 69.29% | — | 37 | — | 59.87% |
-| s_elr_base（GCE+MixUp+ELR） | 68.20% | 68.21% | 19 | 58.59% | 59.14% |
-
-> ⚠️ **Important**: 本地 val 不能预测平台表现。A3 本地最高（69.47%）平台最差（59.89%）。所有模型选择必须以平台 Bare/TTA 为准，本地分数仅作辅助诊断。**单 seed 平台结果不可靠**（A2 两 seed TTA 差 0.90pp），所有候选必须在 seed=3407 上验证。
-
-**已关闭方向**：Dropout、ColorJitter/RandomErasing、Cosine Head、Label Smoothing、Head EMA、EMA Loss、Prototype Weighting、CE 下部分解冻、Head-only EMA Teacher + Consistency、GCE q=0.9、4-view TTA、vertical flip、OOF 3-tier discrete weight、OOF relabel/pseudo-label、Classwise CL-only drop、ELR、PEFT LN-tune、Rejected 半监督回收、NR_COMBINED_CLEAN_CORE，以及 Phase 4 的结构化 Head、checkpoint averaging、Clean Routing、Prototype-Contrastive、Dynamic Trust Refresh。
-
-### 下一步
-
-本仓库内不再继续普通 LoRA、routing 或 trust 参数搜索。下一步按以下顺序：
-
-1. ✅ 70+ 平台战役推进中：当前单模型最佳为 **68.90295189650338%**（17,203/24,967），距离 70% 还差 **274** 个正确样本；
-2. 平台实测是候选推广的唯一标准，本地验证仅用于安全审计和复现，不设置本地晋级门槛；
-3. 当前最佳提交、检查点谱系、精确推理参数和哈希见 [`results/f1_flat_mlp_lora_selftrain_r2_part_token_adapter_crop112_20260805.md`](results/f1_flat_mlp_lora_selftrain_r2_part_token_adapter_crop112_20260805.md)；后续继续限制为单模型 CLIP ViT-B/32，不使用模型集成或测试时训练。
+# Aegis 测试
+PYTHONPATH=reproducibility/aegis_f1 python3 -m pytest reproducibility/aegis_f1/tests -q
+```
 
 ## 项目结构
 
 ```
-├── common/              # 共享代码（dataset, cache, transforms, evaluation 等）
-├── experiments/
-│   ├── baseline/        # Linear Head 实验（train/evaluate/infer/model）
-│   └── cosine/          # Cosine Head 实验（委托 baseline）
-├── configs/             # 每个实验一个 YAML
-├── scripts/             # 数据准备、超参搜索、去重仲裁、提交验证
-├── tests/               # 团队根测试套件（405 项：402 passed / 1 skipped / 2 failed，2026-07-30）
-├── reproducibility/     # 隔离的 Aegis 独立实验线（含 R2、局部/Part-Token Adapter，277 项测试）
-
-├── outputs/             # 实验结果（tracked in git，*.pt 忽略）
-└── docs/superpowers/    # 设计文档与实施计划
+common/                      稳定骨架：数据集、配置/随机种子/日志、提交生成、PEFT、噪声鲁棒工具
+experiments/                 早期「一个方法一个子目录」的实验骨架（现多为薄封装）
+configs/                     实验 YAML（注意：存在多套互不兼容的 schema，见 CLAUDE.md）
+scripts/                     数据准备、提交校验、审计，实验无关
+reproducibility/aegis_f1/    当前主线实验框架（Aegis），绝大多数近期工作在这里
+results/                     每轮实验的结果记录与提交登记表
+docs/                        方案、预注册、执行记录
+outputs/                     产物（*.pt 与 cache/ 不入 git）
 ```
 
-## 关键技术细节
+`common/` + `experiments/` 是上一阶段的骨架；`reproducibility/aegis_f1/` 是当前前沿，自带独立的 `pyproject.toml` 与测试套件。
 
-- **特征缓存**：一次性 CLIP 编码全量训练集（~30min），训练时直接读 `[B,512]` 特征（~3s/epoch vs 在线 ~140s/epoch）。缓存的 cache/hit 比训练本身更快
-- **类别映射**：目录名字典序 → 0..499 索引，通过 `class_to_idx.json` / `idx_to_class.json` 在所有阶段复用
-- **配置优先级**：CLI 显式指定 > YAML > 硬编码默认值（`runtime_config.py` 统一解析）
-- **提交格式**：`submission.zip` 内含 `pred_results.csv`（`image_name.jpg, 0001`），9 项自动校验
-- **早停机制**：`train.early_stop_patience: 10`，连续 N 个 epoch 无提升自动终止
-- **指纹校验**：缓存与数据集通过 SHA-256 全量指纹匹配，防止特征-图片错位
+## 比赛约束
 
+完整规则见 [COMPETITION_RULES_AGENT.md](COMPETITION_RULES_AGENT.md)。要点：
+
+- 骨干固定 **CLIP ViT-B/32**，权重限 **OpenAI 官方**
+- **禁止跨阶段复用**数据、checkpoint、特征缓存、伪标签、拟合的 prior
+- **测试集只读**：禁止测试图入训、TTT、用测试分布调参
+- **禁止集成**：多模型 / 多 checkpoint / 多 seed / 多头融合均不允许。最终 = 单 checkpoint + 单确定性推理脚本 + 一份 `pred_results.csv`
+- 多尺度 + Flip TTA 已裁定合规（单 checkpoint + 单确定性流程）
+- 提交格式：`文件名, 0001`（逗号 + 空格 + 4 位补零），ZIP 只含 `pred_results.csv` 且内外字节一致
+
+## 经验与方法论
+
+上一阶段（初赛）跑了几十轮实验，有大量可迁移的结论 —— 哪些方向有效、哪些被证伪、以及若干会让人得出**错误结论**的陷阱（本地验证与平台反相关、单 seed 不可靠、split 谱系不一致会伪造 +8pp 假信号等）。
+
+**→ [docs/lessons_learned.md](docs/lessons_learned.md)**
+
+建议在任何一轮新实验开始前先读一遍，尤其是「陷阱」一节。
+
+## 文档地图
+
+| 文档 | 用途 |
+|---|---|
+| [docs/current_execution_plan.md](docs/current_execution_plan.md) | **当前状态权威入口** + 历史记录 |
+| [docs/lessons_learned.md](docs/lessons_learned.md) | 可迁移经验与方法论教训 |
+| [docs/README.md](docs/README.md) | 文档索引与结果状态约定 |
+| [COMPETITION_RULES_AGENT.md](COMPETITION_RULES_AGENT.md) | 比赛规则全文 |
+| [CLAUDE.md](CLAUDE.md) | 面向 agent 的工作指引（含协作约定） |
 
 ## Git 策略
 
-- ✅ 跟踪：`.json/.csv/.log/.yaml` 结果文件
-- ❌ 忽略：`.pt` 检查点、`cache/`、`train/`、`train_dedup/`、`test/`
+- ✅ 跟踪：`.json` / `.csv` / `.log` / `.yaml` / `.md` 结果与记录文件
+- ❌ 忽略：`.pt` 检查点、`cache/`、`train/` `train_dedup/` `test/`
+
+协作约定（提交推送纪律、避免重复劳动）见 [CLAUDE.md § 协作约定](CLAUDE.md)。

@@ -1,4 +1,7 @@
-# 最新发现（2026-08-06）
+# 研究结论（历史，最新条目 2026-08-06）
+
+> **本文件是上一阶段的结论日志，已停止更新。**
+> 当前状态见 [docs/current_execution_plan.md](docs/current_execution_plan.md)；经提炼的可迁移经验与陷阱见 [docs/lessons_learned.md](docs/lessons_learned.md)。
 
 ## 全微调 + 双 Adapter 平台 70.352866%，新平台最佳，距 75% 还差 1,161 正确
 

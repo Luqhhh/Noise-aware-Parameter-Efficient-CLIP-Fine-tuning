@@ -1,5 +1,8 @@
 # CURRENT STAGE ACCEPTANCE — 2026-09-13（保留历史记录）
 
+> **本文件是上一阶段的验收记录，已停止更新。**
+> 当前状态见 [docs/current_execution_plan.md](docs/current_execution_plan.md)；可迁移经验见 [docs/lessons_learned.md](docs/lessons_learned.md)。
+
 ## 2026-09-13 PRELIM75_V2工程交付及四组平台回填验收
 
 用户授权按H0/H1→V0/V1顺序执行，四个固定末轮候选全部完成真实attention诊断和24967行CSV/ZIP提交校验，包内外CSV字节相同。完整P缓存初始重构logits差0；head仅共享分类器收到梯度；V0/V1许可掩码及冻结参数终态检查通过；V1的local-only监督确实反传至视觉投影和O3/PTA。

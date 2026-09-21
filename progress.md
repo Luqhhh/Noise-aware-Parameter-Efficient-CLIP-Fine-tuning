@@ -1,10 +1,13 @@
+# 执行进度（历史日志）
+
+> **本文件是上一阶段的按时间执行日志，最新条目为 2026-09-13，已停止更新。**
+> 当前状态见 [docs/current_execution_plan.md](docs/current_execution_plan.md)；可迁移经验见 [docs/lessons_learned.md](docs/lessons_learned.md)。
+
 ## A2 LoRA 平台测试结果（2026-07-22）
 
 - A2_LORA_MIN：裸推理 **61.1167%**；horizontal_flip TTA **61.6574%**。
 - A2_LORA_FULL：裸推理 **61.5733%**；horizontal_flip TTA **62.1781%**。
 - 当前 A2 LoRA 消融最高为 **A2_LORA_FULL + TTA 62.1781%**；详见 [A2 LoRA 平台结果](docs/a2_lora_platform_results_2026-07-22.md)。
-
-# 执行进度
 
 ## 2026-09-13 PRELIM75_V2执行及四组平台回填完成，保留V1，75目标未达到
 
