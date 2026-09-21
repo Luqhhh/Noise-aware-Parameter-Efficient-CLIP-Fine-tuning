@@ -1,0 +1,39 @@
+{
+  "artifact_scope": "unverified",
+  "augmentation": "none",
+  "backbone": "ViT-B/32",
+  "dataset_size": 148695,
+  "external_data": false,
+  "feature_dim": 512,
+  "format_version": 1,
+  "normalized": true,
+  "path_index_sha256": "69ced9ea5f4c4ec656324640b3262e7fcffbeef0e7a6b019f5048a0f448b71c6",
+  "paths_file_sha256": "fcb7de523e06342c7ecad36d94b4f360ccd4f87cb402527897b7de4fef43d168",
+  "preprocessing_repr": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb at 0x7f72e61845e0>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+  "pretrained": "openai",
+  "rematch_binding": {
+    "autocast": false,
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "data_version": "20260921",
+    "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "encoder_precision": "float32",
+    "feature_precision": "float32",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "preprocessing": "OpenAI CLIP 224 bicubic resize/center crop/RGB/CLIP normalization",
+    "stage": "repechage"
+  },
+  "runtime": {
+    "clip_module": "/home/lux1/.local/lib/python3.10/site-packages/clip/__init__.py",
+    "cuda_available": true,
+    "cuda_runtime": "12.6",
+    "cudnn": 91002,
+    "gpu": "NVIDIA GeForce RTX 4070 Laptop GPU",
+    "python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]",
+    "torch": "2.12.1+cu126"
+  },
+  "source_root": "/home/lux1/noise/train",
+  "stage": "repechage",
+  "tensor_sha256": "21c35d1cce959ca6a547b7d352e7b4c1e491257f03855b40fa8b99cf11df7c64",
+  "test_data_used": false
+}

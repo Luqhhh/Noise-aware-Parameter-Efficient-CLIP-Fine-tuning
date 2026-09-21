@@ -1,0 +1,8 @@
+{
+  "all_model_tensors_finite": true,
+  "checkpoint_sha256": "67a77e81d87a565e135d1dae30df001c7b543bfc872751d57f0e89b1e94d804a",
+  "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+  "selected_epoch": 20,
+  "status": "passed",
+  "visual_tensors_identical_to_official": 152
+}

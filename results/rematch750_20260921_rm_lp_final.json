@@ -1,0 +1,62 @@
+{
+  "experiment_id": "RM_LP",
+  "stage": "repechage",
+  "data_version": "20260921",
+  "status": "submission_ready",
+  "platform_status": "not_submitted",
+  "code_commit": "960f7ae2244000a4ee9b0a0d8954ad261b84b84e",
+  "config": "configs/rematch750_lp.yaml",
+  "commands": [
+    "PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch train --config configs/rematch750_lp.yaml",
+    "PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch infer --config configs/rematch750_lp.yaml"
+  ],
+  "selected": {
+    "raw_macro": 0.6263637542724609,
+    "raw_micro": 0.6363575458526611,
+    "schedule_epochs": 20,
+    "selected_epoch": 20,
+    "support_segments": {
+      "support_head": {
+        "covered_classes": 736,
+        "macro": 0.6366289258003235,
+        "micro": 0.638948917388916,
+        "total_classes": 736,
+        "val_samples": 14804
+      },
+      "support_middle": {
+        "covered_classes": 12,
+        "macro": 0.10115740448236465,
+        "micro": 0.13513512909412384,
+        "total_classes": 12,
+        "val_samples": 74
+      },
+      "support_tail": {
+        "covered_classes": 2,
+        "macro": 0.0,
+        "micro": 0.0,
+        "total_classes": 2,
+        "val_samples": 2
+      }
+    },
+    "validation_covered_classes": 750,
+    "validation_interpretation": "independent content groups, noisy labels"
+  },
+  "checkpoint": "/home/lux1/noise/outputs/rematch750/RM_LP/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "67a77e81d87a565e135d1dae30df001c7b543bfc872751d57f0e89b1e94d804a",
+  "submission": "outputs/rematch750/RM_LP/seed42/submission/submission.zip",
+  "csv": "outputs/rematch750/RM_LP/seed42/submission/pred_results.csv",
+  "submission_zip_sha256": "db30ff7a5f309630a585907a3d976e8dae0cc43e0ff2806037be8e8fc5ef8b59",
+  "prediction_csv_sha256": "08f88223e3222f6d5978302adaa38d69bd7f0dc24b0449bd41939101489ab081",
+  "prediction_count": 37444,
+  "corrupt_images": 0,
+  "validation_correct": 9469,
+  "validation_samples": 14880,
+  "validation_checks": "passed",
+  "test_summary": {
+    "cpu_passed": 622,
+    "cuda_additional_passed": 1,
+    "historical_asset_tests_deselected": 2,
+    "postreview_rematch_submission_passed": 17
+  },
+  "next_segment": "RM_FT followed by RM_LT; platform scores required before RM_FULL"
+}

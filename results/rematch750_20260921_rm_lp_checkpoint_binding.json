@@ -1,0 +1,15 @@
+{
+  "binding": {
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "data_version": "20260921",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "stage": "repechage",
+    "train_csv_sha256": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6"
+  },
+  "checkpoint_sha256": "67a77e81d87a565e135d1dae30df001c7b543bfc872751d57f0e89b1e94d804a",
+  "epoch": 20,
+  "experiment_id": "RM_LP",
+  "training_config_sha256": "154b02c122da5ab79b6feb07ff1dfcdde8c60c7e5a42019a276d0a49e53d1a8f"
+}

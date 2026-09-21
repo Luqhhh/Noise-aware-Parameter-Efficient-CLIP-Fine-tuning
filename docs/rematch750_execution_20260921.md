@@ -84,3 +84,23 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch prepare-fu
 2026-09-21 完整 Aegis 测试初跑：618 passed、1 skipped、2 failed。两个失败均为历史 `test_scope_protocol.py` 直接依赖已按用户要求删除的初赛 checkpoint，不是复赛功能失败。新增平台登记、全量 horizon 和训练循环集成测试后，排除这两个历史资产集成测试的结果为 **622 passed、1 skipped、2 deselected**；skip 为沙箱无 CUDA 的采样器测试。复赛专项包含 13 项测试。
 
 真实数据的解码报告、数据 manifest 和逐类支持量已同步到 `results/rematch750_20260921_*`。本段交付边界为数据准备＋RM-LP，必须完成训练与提交校验后提交推送并暂停；RM-FT/RM-LT 与 RM-FULL 尚未宣称已执行。
+
+## RM-LP 实测交付
+
+固定 20 轮训练完成，选中 epoch 20（原 20 轮 cosine horizon 不变）。独立验证 **macro 62.636375%、micro 63.635755%（9,469 / 14,880）**，750 类全覆盖。少样本段 macro 0%（2 类 / 2 张）、中等段 macro 10.115740%（12 类 / 74 张）、多样本段 macro 63.662893%（736 类 / 14,804 张）。不将本地 noisy validation 当作平台成绩。
+
+checkpoint 的 152 个视觉张量逐项与官方 OpenAI 权重相同；只有 384,750 个分类头参数被训练。全部模型张量有限。特征缓存为 `[148695,512]` fp32，归一化最大误差 `2.980232238769531e-07`；编码后再次核对全部训练图片的文件 SHA-256，与审计清单一致。
+
+提交文件：
+
+- `outputs/rematch750/RM_LP/seed42/submission/pred_results.csv`
+- `outputs/rematch750/RM_LP/seed42/submission/submission.zip`
+- 共享分类头初始化 checkpoint：`outputs/rematch750/RM_LP/seed42/checkpoints/best.pt`
+
+37,444 条预测全部通过文件名、数量、唯一覆盖、映射、四位编号及 ZIP 内容检查；使用逗号＋空格格式，ZIP 内外 CSV 字节一致，坏图及占位图预测为 0。提交登记状态 `ready`，尚未上传，平台分数未知。
+
+模型、配置、映射、代码、CSV/ZIP 哈希绑定及精确命令见 [RM-LP 最终记录](../results/rematch750_20260921_rm_lp_final.json)、[提交登记表](../results/rematch_submission_registry.csv)。逐类独立组数、样本支持、实际曝光和召回见 [逐类报告](../results/rematch750_20260921_rm_lp_per_class.csv)。训练/推理代码快照逐文件一致。
+
+GPU 补测原先跳过的数值测试：1 passed；最后复赛与提交专项复核：17 passed。历史日志中的 `head/medium/tail` 等分三段属于兼容诊断，本轮正式报告采用 `support_head/support_middle/support_tail` 的固定计数边界。
+
+本段已完成数据准备＋RM-LP 提交就绪闭环，按协作约定在提交推送后暂停。RM-FT、RM-LT 尚未启动；RM-FULL 尚未定版。
