@@ -33,6 +33,10 @@ test/
 /artifacts/
 /outputs/rematch750/
 
+# Locally pasted dataset copies (must never be committed)
+/初赛数据集/
+/复赛数据集/
+
 # Config (local paths)
 configs/baseline.yaml
 configs/*.local.yaml
