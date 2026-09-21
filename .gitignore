@@ -28,6 +28,8 @@ cache/
 train/
 train_dedup/
 test/
+/train.zip
+/test.zip
 
 # Config (local paths)
 configs/baseline.yaml

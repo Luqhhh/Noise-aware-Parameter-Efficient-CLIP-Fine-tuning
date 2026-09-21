@@ -1,6 +1,8 @@
 # Noise-Aware Parameter-Efficient CLIP Fine-Tuning
 
-面向噪声标签数据的细粒度图像识别（500 类，~103K 训练图）。基于 CLIP ViT-B/32 冻结 backbone + 线性分类头，系统消融 head 类型、数据增强和标签噪声的影响，并实现部分解冻基础设施用于后续视觉特征微调。
+面向噪声标签数据的细粒度图像识别。初赛数据为 500 类、约 103K 训练图；2026-09-21 已将本地数据替换为复赛数据：**750 类、148,695 张训练图、37,444 张测试图**。数据来源、路径、完整性校验和使用前准备见[复赛数据集元信息](docs/rematch_dataset_20260921.md)。下文既有实验结果属于历史数据阶段。
+
+基于 CLIP ViT-B/32 冻结 backbone + 线性分类头，系统消融 head 类型、数据增强和标签噪声的影响，并实现部分解冻基础设施用于后续视觉特征微调。
 
 > **当前状态（2026-08-05）**：单模型 R2 CLIP ViT-B/32 + crop112 Part-Token residual Adapter，采用 128/144/160 attention-local 多尺度（权重 0.45/0.50/0.05）+ Flip 0.5 + temp1.5 + **balanced-prior 0.85**，平台实测 **68.90295189650338%**（17,203/24,967），为新的审计完整平台最佳；相对上一最优 crop112 local-feature Adapter 增加 4 个正确样本。距离 70% 还差 274 个正确样本（1.0970pp）。完整结果见 [`results/f1_flat_mlp_lora_selftrain_r2_part_token_adapter_crop112_20260805.md`](results/f1_flat_mlp_lora_selftrain_r2_part_token_adapter_crop112_20260805.md) 与 [`results/submission_registry.csv`](results/submission_registry.csv)。
 
