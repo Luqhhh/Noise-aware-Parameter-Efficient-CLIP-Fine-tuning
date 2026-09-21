@@ -1,0 +1,11 @@
+{
+  "amp_growth_interval": 1000000000,
+  "amp_initial_scale": 128,
+  "batch_size": 32,
+  "only_training_difference": "none versus sqrt_class_balanced sampler",
+  "shared_parent_sha256": "67a77e81d87a565e135d1dae30df001c7b543bfc872751d57f0e89b1e94d804a",
+  "status": "passed",
+  "total_updates": 33456,
+  "train_samples": 133815,
+  "updates_per_epoch": 4182
+}

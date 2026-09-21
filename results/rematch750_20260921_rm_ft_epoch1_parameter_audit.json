@@ -1,0 +1,13 @@
+{
+  "all_tensors_finite": true,
+  "amp_scale": 128.0,
+  "changed_visual_tensors": 150,
+  "epoch": 1,
+  "frozen_tensors_equal": [
+    "visual.conv1.weight",
+    "visual.positional_embedding"
+  ],
+  "optimizer_updates": 4182,
+  "scheduler_steps": 4182,
+  "status": "passed"
+}

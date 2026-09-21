@@ -1,0 +1,73 @@
+{
+  "experiment_id": "RM_FT",
+  "stage": "repechage",
+  "data_version": "20260921",
+  "status": "submission_ready",
+  "platform_status": "not_submitted",
+  "code_commit": "b975d3268c2b23512b9739135fa9e6b5d79e68fb",
+  "config": "configs/rematch750_ft.yaml",
+  "commands": [
+    "PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch train --config configs/rematch750_ft.yaml",
+    "PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch infer --config configs/rematch750_ft.yaml"
+  ],
+  "selected": {
+    "raw_macro": 0.7183619737625122,
+    "raw_micro": 0.7290322780609131,
+    "schedule_epochs": 8,
+    "selected_epoch": 8,
+    "support_segments": {
+      "support_head": {
+        "covered_classes": 736,
+        "macro": 0.72952800989151,
+        "micro": 0.7318292260169983,
+        "total_classes": 736,
+        "val_samples": 14804
+      },
+      "support_middle": {
+        "covered_classes": 12,
+        "macro": 0.15324074029922485,
+        "micro": 0.18918919563293457,
+        "total_classes": 12,
+        "val_samples": 74
+      },
+      "support_tail": {
+        "covered_classes": 2,
+        "macro": 0.0,
+        "micro": 0.0,
+        "total_classes": 2,
+        "val_samples": 2
+      }
+    },
+    "validation_covered_classes": 750,
+    "validation_interpretation": "independent content groups, noisy labels"
+  },
+  "validation_correct": 10848,
+  "validation_samples": 14880,
+  "delta_vs_rm_lp_pp": {
+    "macro": 9.199821949005127,
+    "micro": 9.267473220825195
+  },
+  "optimizer_updates": 33456,
+  "scheduler_steps": 33456,
+  "checkpoint": "/home/lux1/noise/outputs/rematch750/RM_FT/seed42/checkpoints/best.pt",
+  "checkpoint_sha256": "94a361e8672a0db67f43e1e35e91f22715964124ab59ee5157fd3d86c67be305",
+  "csv": "outputs/rematch750/RM_FT/seed42/submission/pred_results.csv",
+  "submission": "outputs/rematch750/RM_FT/seed42/submission/submission.zip",
+  "prediction_csv_sha256": "4490ff27c2374b93206b827fb86571f0f7a755aece17319a22dfca8c4ab6f282",
+  "submission_zip_sha256": "0f3ec4e4383ac22fea3e16adbb4aa4c34e21795d8d7cf4014cd7a4c833ff68bf",
+  "prediction_count": 37444,
+  "corrupt_images": 0,
+  "submission_validation": "passed",
+  "engineering_tests_passed": 25,
+  "numerical_adjustment": {
+    "initial_attempt": "AMP scale 65536 overflow before first effective update; no checkpoint",
+    "final_amp_scale": 128,
+    "growth_interval": 1000000000,
+    "nonfinite_guard": "before optimizer and scheduler",
+    "applies_to": [
+      "RM_FT",
+      "RM_LT"
+    ]
+  },
+  "next_segment": "RM_LT independently initialized from the same RM_LP; RM_FULL waits for both platform results"
+}

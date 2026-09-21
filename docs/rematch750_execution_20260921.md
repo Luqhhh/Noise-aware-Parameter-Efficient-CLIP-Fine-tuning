@@ -83,7 +83,7 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch prepare-fu
 
 2026-09-21 完整 Aegis 测试初跑：618 passed、1 skipped、2 failed。两个失败均为历史 `test_scope_protocol.py` 直接依赖已按用户要求删除的初赛 checkpoint，不是复赛功能失败。新增平台登记、全量 horizon 和训练循环集成测试后，排除这两个历史资产集成测试的结果为 **622 passed、1 skipped、2 deselected**；skip 为沙箱无 CUDA 的采样器测试。复赛专项包含 13 项测试。
 
-真实数据的解码报告、数据 manifest 和逐类支持量已同步到 `results/rematch750_20260921_*`。本段交付边界为数据准备＋RM-LP，必须完成训练与提交校验后提交推送并暂停；RM-FT/RM-LT 与 RM-FULL 尚未宣称已执行。
+真实数据的解码报告、数据 manifest 和逐类支持量已同步到 `results/rematch750_20260921_*`。首段交付边界为数据准备＋RM-LP，已完成训练与提交校验后提交推送；后续执行结果见文末各段记录。
 
 ## RM-LP 实测交付
 
@@ -103,10 +103,37 @@ checkpoint 的 152 个视觉张量逐项与官方 OpenAI 权重相同；只有 3
 
 GPU 补测原先跳过的数值测试：1 passed；最后复赛与提交专项复核：17 passed。历史日志中的 `head/medium/tail` 等分三段属于兼容诊断，本轮正式报告采用 `support_head/support_middle/support_tail` 的固定计数边界。
 
-本段已完成数据准备＋RM-LP 提交就绪闭环，按协作约定在提交推送后暂停。RM-FT、RM-LT 尚未启动；RM-FULL 尚未定版。
+RM-LP 交付检查点已完成并提交推送；该检查点当时 FT/LT 尚未启动，后续进展见下文。
 
 ## RM-FT 执行数值修正（2026-09-21）
 
 首次 RM-FT 在首 batch 检出 FP16 梯度溢出：默认 GradScaler 初始值 65,536，视觉梯度为 inf，优化器跳过更新，首步审计随即停止；未生成训练 checkpoint。现场保留于 `outputs/rematch750/RM_FT/seed42_failed_initial_amp_65536/`。
 
 FT/LT 同步设置 `amp_initial_scale=128`、`amp_growth_interval=1000000000`（本轮内不自动增大），新增 `require_finite_gradients=true`：在优化器与调度器更新之前检查有限损失/梯度，失败立即停止，不静默漏掉更新。每 200 步记录实际进度和 AMP scale。学习率、数据、损失、增强、8 轮 cosine horizon 与 FT/LT 单变量采样对照不变。数值修正及训练/恢复定向测试 25 项通过，包含非有限梯度不得调用 optimizer 的集成检查。
+
+## RM-FT 实测交付（当前检查点）
+
+从同一复赛 RM-LP epoch 20 独立初始化，完成普通 shuffle 的 8 轮视觉微调；第 1–2 轮 CE、第 3–8 轮 GCE q=.5，feature anchor 2.0。选择 epoch 8，原 8 轮 cosine horizon 不变。
+
+| 验证轮次 | 750 类 macro | micro |
+|---|---:|---:|
+| 2 | 68.255639% | 69.348121% |
+| 4 | 70.634145% | 71.653223% |
+| 6 | 71.662009% | 72.728497% |
+| 8（选中） | **71.836197%** | **72.903228%** |
+
+最终独立验证正确 10,848 / 14,880；相对 RM-LP，macro +9.199822pp、micro +9.267473pp。固定支持段 macro：少样本 0%（2 类 / 2 张验证图）、中等 15.324074%（12 类 / 74 张）、多样本 72.952801%（736 类 / 14,804 张）。中少样本仍明显落后，不能只凭整体分数认定长尾问题已解决；尾段仅两张验证图，不作稳定统计结论。
+
+最终审计通过：全部优化器参数的 step、global_step、scheduler step 均为 33,456（4,182 × 8），无 AMP 跳步；scale 始终 128。conv1 和位置嵌入与父模型逐项相同，150 个视觉张量已更新，所有模型张量有限。FT/LT 除实验 ID 和采样方式外的配置逐项相同，两者绑定同一 RM-LP checkpoint。
+
+交付文件：
+
+- `outputs/rematch750/RM_FT/seed42/checkpoints/best.pt`
+- `outputs/rematch750/RM_FT/seed42/submission/pred_results.csv`
+- `outputs/rematch750/RM_FT/seed42/submission/submission.zip`
+
+37,444 条测试预测全部通过唯一覆盖、四位标签映射、ZIP 内容及内外 CSV 字节一致性检查；解码失败与占位图预测均为 0。单 checkpoint、固定 global、无 prior/TTA。登记为 `ready`，用户尚未回传平台成绩。
+
+精确命令、配置、代码版本、指标和哈希见 [RM-FT 最终记录](../results/rematch750_20260921_rm_ft_final.json)；逐类支持、独立组数、训练曝光与召回见 [逐类报告](../results/rematch750_20260921_rm_ft_selected_per_class.csv)。训练/推理源码快照逐文件一致，25 项数值修正定向测试通过。
+
+本段完成 RM-FT 的训练和提交就绪闭环，按仓库协作约定提交推送后暂停。**RM-LT 尚未训练，RM-FULL 尚未定版**；下一段从原 RM-LP（不是 RM-FT）初始化 RM-LT。

@@ -1,0 +1,17 @@
+{
+  "all_tensors_finite": true,
+  "amp_scale": 128,
+  "changed_visual_tensors": 150,
+  "checkpoint_sha256": "94a361e8672a0db67f43e1e35e91f22715964124ab59ee5157fd3d86c67be305",
+  "frozen_tensors_equal": [
+    "visual.conv1.weight",
+    "visual.positional_embedding"
+  ],
+  "global_step": 33456,
+  "optimizer_step_values": [
+    33456
+  ],
+  "scheduler_steps": 33456,
+  "selected_epoch": 8,
+  "status": "passed"
+}
