@@ -1,0 +1,447 @@
+{
+  "date": "2026-09-21",
+  "scope": "Preliminary model weights and binary caches; rematch dataset preserved",
+  "deleted_regular_file_bytes": 15887954854,
+  "deleted_paths": [
+    {
+      "path": "outputs/prelim75_v10_sam_20260920/S0/candidate.pt",
+      "bytes": 1039529835,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v10_sam_20260920/S0/diagnostic/predictions.pt",
+      "bytes": 1024097,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v10_sam_20260920/S1/candidate.pt",
+      "bytes": 1039529899,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v10_sam_20260920/S1/diagnostic/predictions.pt",
+      "bytes": 1024097,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v2_20260912/H0/diagnostic/predictions.pt",
+      "bytes": 858505,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v2_20260912/H1/diagnostic/predictions.pt",
+      "bytes": 858505,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v2_20260912/P_diagnostic/predictions.pt",
+      "bytes": 858505,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v2_20260912/V0/diagnostic/predictions.pt",
+      "bytes": 858505,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v2_20260912/V1/candidate.pt",
+      "bytes": 1039527467,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v2_20260912/V1/diagnostic/predictions.pt",
+      "bytes": 858505,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/S0/candidate.pt",
+      "bytes": 1039527659,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/S0/diagnostic/predictions.pt",
+      "bytes": 858505,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/S1/diagnostic/predictions.pt",
+      "bytes": 858505,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/cohort/recovery_mask.npy",
+      "bytes": 103346,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/cohort/recovery_weights.npy",
+      "bytes": 413000,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/cohort/selected_indices.npy",
+      "bytes": 69472,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/teacher/boxes.npy",
+      "bytes": 6606080,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/teacher/branch_predictions.npy",
+      "bytes": 825872,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/teacher/confidence.npy",
+      "bytes": 413000,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/teacher/margin.npy",
+      "bytes": 413000,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/teacher/sample_metadata.npz",
+      "bytes": 1858978,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v3_20260915/teacher/teacher_prediction.npy",
+      "bytes": 206564,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v4_20260916/C0/candidate.pt",
+      "bytes": 1039528491,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v4_20260916/C0/diagnostic/predictions.pt",
+      "bytes": 858505,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v4_20260916/C1/diagnostic/predictions.pt",
+      "bytes": 858505,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v4_20260916/trusted_support/trusted_ce_mask.npy",
+      "bytes": 103346,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v5_20260917/F0/diagnostic/predictions.pt",
+      "bytes": 1024097,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v5_20260917/F1/candidate.pt",
+      "bytes": 1039528619,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v5_20260917/F1/diagnostic/predictions.pt",
+      "bytes": 1024097,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_20260918/D0/group_max_center_distance.npy",
+      "bytes": 8320,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_20260918/D0/new_boxes.npy",
+      "bytes": 131200,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_20260918/D0/old_boxes.npy",
+      "bytes": 131200,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_20260918/G0/candidate.pt",
+      "bytes": 1039529195,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_20260918/G0/diagnostic/predictions.pt",
+      "bytes": 1024097,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_20260918/G0/first_step_global.pt",
+      "bytes": 263321,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_20260918/G1/candidate.pt",
+      "bytes": 1039529195,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_20260918/G1/diagnostic/predictions.pt",
+      "bytes": 1024097,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_20260918/G1/first_step_global.pt",
+      "bytes": 263321,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_monitor/interrupted_20260918T165642/output_root/D0/group_max_center_distance.npy",
+      "bytes": 8320,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_monitor/interrupted_20260918T165642/output_root/D0/new_boxes.npy",
+      "bytes": 131200,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_monitor/interrupted_20260918T165642/output_root/D0/old_boxes.npy",
+      "bytes": 131200,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v6_monitor/interrupted_20260918T165642/output_root/G0/first_step_global.pt",
+      "bytes": 263321,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v7_20260918/L0/candidate.pt",
+      "bytes": 1039529451,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v7_20260918/L0/diagnostic/predictions.pt",
+      "bytes": 1024097,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v7_20260918/L0/first_step_global.pt",
+      "bytes": 263321,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v7_20260918/L0/first_update_probes.pt",
+      "bytes": 3008345,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v7_20260918/L1/candidate.pt",
+      "bytes": 1039529451,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v7_20260918/L1/diagnostic/predictions.pt",
+      "bytes": 1024097,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v7_20260918/L1/first_step_global.pt",
+      "bytes": 263321,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v7_20260918/L1/first_update_probes.pt",
+      "bytes": 3008345,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v7_monitor/g0_prior09/g0_fused_logits.pt",
+      "bytes": 51083829,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v8_20260919/B0/cache/validation_logits.pt",
+      "bytes": 211712835,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v8_20260919/B1/cache/validation_logits.pt",
+      "bytes": 211712835,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v9_20260920/diagnostic/predictions.pt",
+      "bytes": 775345,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v9_20260920/inference/predictions.pt",
+      "bytes": 1749425,
+      "symlink": false
+    },
+    {
+      "path": "outputs/prelim75_v9_20260920_failed_cudnn_tf32/diagnostic/predictions.pt",
+      "bytes": 775345,
+      "symlink": false
+    },
+    {
+      "path": "outputs/preliminary_no_sweep/20260911_normalign_r1/evaluation/paired_predictions.pt",
+      "bytes": 941481,
+      "symlink": false
+    },
+    {
+      "path": "outputs/stage_readiness/20260911_reproduce_r1/executed/features/features.pt",
+      "bytes": 42628,
+      "symlink": false
+    },
+    {
+      "path": "outputs/stage_readiness/20260911_reproduce_r1/executed_codebound/features/features.pt",
+      "bytes": 42628,
+      "symlink": false
+    },
+    {
+      "path": "outputs/stage_readiness/20260911_reproduce_r1/executed_final/features/features.pt",
+      "bytes": 42628,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/outputs/F1_FLAT_FULL_FT_R3MS/seed42/adapters_o3/best.pt",
+      "bytes": 1038451362,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/outputs/F1_FLAT_FULL_FT_R3MS/seed42/adapters_o3/best_adapter.pt",
+      "bytes": 143969,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/outputs/F1_FLAT_FULL_FT_R3MS/seed42/adapters_pta_bn64/best.pt",
+      "bytes": 1038582946,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/outputs/F1_FLAT_FULL_FT_R3MS/seed42/adapters_pta_bn64/best_adapter.pt",
+      "bytes": 275489,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/outputs/F1_FLAT_FULL_FT_R3MS/seed42/checkpoints/best.pt",
+      "bytes": 1038315192,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/outputs/F1_FLAT_FULL_FT_R3MS/seed42/dual_adapters/best.pt",
+      "bytes": 1038725964,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/outputs/F1_FLAT_MLP_LORA_SELFTRAIN_R2_FP32/seed42/checkpoints/epoch_3.pt",
+      "bytes": 360864373,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/outputs/F1_FLAT_MLP_LORA_SELFTRAIN_R3_MULTISCALE_FP32/seed42/checkpoints/epoch_3.pt",
+      "bytes": 360864373,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/artifacts/external/scope_k2/fullft_dual_pa090/best.pt",
+      "bytes": 69,
+      "symlink": true
+    },
+    {
+      "path": "reproducibility/aegis_f1/artifacts/external/scope_k2/fullft_dual_pa090/selftrain_r2_teacher_v3_multiscale.pt",
+      "bytes": 52,
+      "symlink": true
+    },
+    {
+      "path": "reproducibility/aegis_f1/artifacts/trust/cvt_v1.pt",
+      "bytes": 11565829,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/artifacts/trust/fullfit_r1_teacher_v1.pt",
+      "bytes": 11567601,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/artifacts/trust/selftrain_r1_teacher_v2.pt",
+      "bytes": 11567637,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/artifacts/trust/selftrain_r1_teacher_v2_relaxed.pt",
+      "bytes": 11567781,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/artifacts/trust/selftrain_r2_teacher_v3_broad.pt",
+      "bytes": 11567745,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/artifacts/trust/selftrain_r2_teacher_v3_mid.pt",
+      "bytes": 11567709,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/artifacts/trust/selftrain_r2_teacher_v3_multiscale.pt",
+      "bytes": 11568091,
+      "symlink": false
+    },
+    {
+      "path": "reproducibility/aegis_f1/artifacts/trust/selftrain_r2_teacher_v3_wide.pt",
+      "bytes": 11567727,
+      "symlink": false
+    },
+    {
+      "path": "cache/preliminary/clip_vit_b32_openai/class_to_idx.json",
+      "bytes": 7392,
+      "symlink": false
+    },
+    {
+      "path": "cache/preliminary/clip_vit_b32_openai/idx_to_class.json",
+      "bytes": 8392,
+      "symlink": false
+    },
+    {
+      "path": "cache/preliminary/clip_vit_b32_openai/image_paths.json",
+      "bytes": 4644810,
+      "symlink": false
+    },
+    {
+      "path": "cache/preliminary/clip_vit_b32_openai/labels.json",
+      "bytes": 493368,
+      "symlink": false
+    },
+    {
+      "path": "cache/preliminary/clip_vit_b32_openai/manifest.json",
+      "bytes": 1236,
+      "symlink": false
+    },
+    {
+      "path": "cache/preliminary/clip_vit_b32_openai_dedup/class_to_idx.json",
+      "bytes": 7392,
+      "symlink": false
+    },
+    {
+      "path": "cache/preliminary/clip_vit_b32_openai_dedup/idx_to_class.json",
+      "bytes": 8392,
+      "symlink": false
+    },
+    {
+      "path": "cache/preliminary/clip_vit_b32_openai_dedup/image_paths.json",
+      "bytes": 4559670,
+      "symlink": false
+    },
+    {
+      "path": "cache/preliminary/clip_vit_b32_openai_dedup/labels.json",
+      "bytes": 484142,
+      "symlink": false
+    },
+    {
+      "path": "cache/preliminary/clip_vit_b32_openai_dedup/manifest.json",
+      "bytes": 1317,
+      "symlink": false
+    }
+  ]
+}
