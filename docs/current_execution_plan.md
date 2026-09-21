@@ -1,3 +1,13 @@
+# 当前执行入口：REMATCH750（2026-09-21）
+
+复赛主线为：严格解码和内容隔离划分 → RM-LP → RM-FT / RM-LT → 平台比较 → 胜者 RM-FULL。配置为 `configs/rematch750_{lp,ft,lt}.yaml`；入口为 `PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch`。详细方案及实际状态见 [复赛执行记录](rematch750_execution_20260921.md)。
+
+本轮只用官方 OpenAI CLIP ViT-B/32 与本阶段数据，从全新 750 类分类头开始。初赛模型和二进制缓存已清理，历史报告中的“保留”或“可重放”声明仅描述当时状态。S0 无 prior 69.3195%、S1/SAM 待回填、G0 legacy test-batch prior 72.4677% 均属于初赛历史，不能视为复赛基线或 SAM 有效性证据。旧 v10 队列不再是当前默认任务。
+
+以下内容保留为历史记录。
+
+---
+
 # 当前执行计划（2026-09-20）
 
 ## 当前入口：PRELIM75_V10_SAM_20260920（S0=69.3195%，S1 待平台）

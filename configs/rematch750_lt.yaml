@@ -1,0 +1,78 @@
+project:
+  experiment_id: RM_LT
+  stage: repechage
+  seed: 42
+  data_version: '20260921'
+data:
+  train_root: ../train
+  test_root: ../test
+  train_csv: ../artifacts/stages/repechage/20260921/train_dev.csv
+  val_csv: ../artifacts/stages/repechage/20260921/val_dev.csv
+  class_mapping: ../artifacts/stages/repechage/20260921/class_to_idx.json
+  dataset_manifest: ../artifacts/stages/repechage/20260921/dataset_manifest.json
+  train_augmentation: weak_rrc_flip
+  expected_official_train_samples: 148695
+  expected_test_samples: 37444
+  validation_overlap_with_training: false
+  external_data: false
+  test_usage: inference_only
+features:
+  tensor_path: ../artifacts/stages/repechage/20260921/features/features.pt
+  paths_path: ../artifacts/stages/repechage/20260921/features/image_paths.json
+  manifest_path: ../artifacts/stages/repechage/20260921/features/manifest.json
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  num_classes: 750
+  feature_dim: 512
+  peft_mode: full_finetune
+  use_cached_training: false
+  official_checkpoint: ~/.cache/clip/ViT-B-32.pt
+trust:
+  enabled: false
+longtail:
+  sampler_mode: sqrt_class_balanced
+  loss_reweighting: none
+  balanced_softmax_tau: 0.0
+loss:
+  name: gce
+  gce_q: 0.5
+  ce_warmup_epochs: 2
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  feature_distillation_weight: 2.0
+train:
+  device: cuda
+  deterministic: true
+  amp: true
+  epochs: 8
+  schedule_epochs: 8
+  batch_size: 32
+  num_workers: 4
+  loader_timeout: 120
+  pin_memory: true
+  head_lr: 0.0001
+  head_weight_decay: 0.0001
+  backbone_lr: 3.0e-06
+  backbone_weight_decay: 0.0001
+  lr_warmup_epochs: 0
+  max_grad_norm: 1.0
+  early_stop_patience: 0
+  save_epoch_checkpoints: false
+  init_checkpoint: ../outputs/rematch750/RM_LP/seed42/checkpoints/best.pt
+evaluation:
+  batch_size: 128
+  inference_batch_size: 128
+  selector_metric: raw_macro
+  selection_policy: best_selector
+  interval_epochs: 2
+  tiebreak_metric: raw_micro
+  drift_penalty: 0.0
+  measure_flip_consistency: false
+  record_initial: false
+  evaluate_initial_checkpoint: false
+output:
+  root: ../outputs/rematch750
+diagnostics:
+  longtail:
+    enabled: true

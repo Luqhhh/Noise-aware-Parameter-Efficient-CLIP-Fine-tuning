@@ -24,6 +24,7 @@ def create_submission(
     valid_labels: set[str] | None = None,
     extra_manifest: Mapping[str, Any] | None = None,
     overwrite: bool = False,
+    space_after_comma: bool = False,
 ) -> dict[str, Any]:
     """Validate temporary artifacts first, publish CSV/ZIP only after success."""
     destination = Path(output_dir)
@@ -36,7 +37,7 @@ def create_submission(
         with csv_path.open("w", newline="", encoding="utf-8") as handle:
             writer = csv.writer(handle)
             for name, label in predictions:
-                writer.writerow([name, label])
+                writer.writerow([name, f" {label}" if space_after_comma else label])
         validate_predictions(predictions, expected_names, valid_labels=valid_labels)
         zip_path = temporary / "submission.zip"
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as archive:

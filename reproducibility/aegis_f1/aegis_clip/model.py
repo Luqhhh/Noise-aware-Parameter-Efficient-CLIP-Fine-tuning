@@ -1068,7 +1068,12 @@ def build_model(
     except ImportError as exc:
         raise ImportError("Install the pinned OpenAI CLIP dependency") from exc
 
-    clip_model, preprocess = clip.load("ViT-B/32", device=device, jit=False)
+    source = "ViT-B/32"
+    if model_config.get("official_checkpoint"):
+        from aegis_clip.rematch_assets import official_weight_hash
+        official_weight_hash(config)
+        source = model_config["official_checkpoint"]
+    clip_model, preprocess = clip.load(source, device=device, jit=False)
     clip_model.visual = clip_model.visual.float()
     input_resolution = int(
         model_config.get("input_resolution", clip_model.visual.input_resolution)

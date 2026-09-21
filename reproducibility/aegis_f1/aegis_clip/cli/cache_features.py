@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import csv
+import hashlib
+import io
 import json
 from pathlib import Path
 
@@ -34,9 +37,10 @@ def apply_feature_augmentation(
 
 
 class StageImageDataset(Dataset):
-    def __init__(self, root: str | Path, transform) -> None:
+    def __init__(self, root: str | Path, transform, source_hashes=None) -> None:
         self.root = Path(root).resolve()
         self.transform = transform
+        self.source_hashes = source_hashes
         class_dirs = sorted(path for path in self.root.iterdir() if path.is_dir())
         self.class_to_idx = {
             directory.name: index for index, directory in enumerate(class_dirs)
@@ -56,7 +60,13 @@ class StageImageDataset(Dataset):
     def __getitem__(self, index: int):
         path, canonical, label = self.records[index]
         try:
-            with Image.open(path) as image:
+            source = path
+            if self.source_hashes is not None:
+                raw = path.read_bytes()
+                if hashlib.sha256(raw).hexdigest() != self.source_hashes[canonical]:
+                    raise ValueError(f"Image changed since decode audit: {path}")
+                source = io.BytesIO(raw)
+            with Image.open(source) as image:
                 tensor = self.transform(image.convert("RGB"))
         except Exception as exc:
             raise RuntimeError(f"Pillow failed to decode official image: {path}") from exc
@@ -81,9 +91,26 @@ def cache_stage_features(
         import clip
     except ImportError as exc:
         raise ImportError("Install the pinned official OpenAI CLIP package") from exc
-    clip_model, preprocess = clip.load("ViT-B/32", device=device, jit=False)
+    rematch_binding = None
+    source = "ViT-B/32"
+    if config["data"].get("dataset_manifest"):
+        from aegis_clip.rematch_assets import validate_dataset, expected_binding
+        manifest = validate_dataset(config)
+        rematch_binding = expected_binding(config, manifest)
+        source = config["model"]["official_checkpoint"]
+        if augmentation != "none" or output_dir:
+            raise ValueError("Rematch uses only its bound canonical feature cache")
+        if any(Path(config["features"][k]).exists() for k in ("tensor_path", "paths_path", "manifest_path")):
+            raise FileExistsError("Refusing to overwrite rematch feature cache")
+    clip_model, preprocess = clip.load(source, device=device, jit=False)
+    if rematch_binding is not None:
+        clip_model.float()
     clip_model.eval()
-    dataset = StageImageDataset(config["data"]["train_root"], preprocess)
+    source_hashes = None
+    if rematch_binding is not None:
+        with (Path(config["data"]["dataset_manifest"]).parent / "full_train.csv").open() as f:
+            source_hashes = {r["image_path"].removeprefix("train/"): r["file_sha256"] for r in csv.DictReader(f)}
+    dataset = StageImageDataset(config["data"]["train_root"], preprocess, source_hashes)
     expected_samples = int(config["data"]["expected_official_train_samples"])
     expected_classes = int(config["model"]["num_classes"])
     if len(dataset) != expected_samples:
@@ -148,6 +175,12 @@ def cache_stage_features(
         "path_index_sha256": sha256_lines(paths),
         "runtime": runtime,
     }
+    if rematch_binding is not None:
+        from aegis_clip.runtime import sha256_file
+        manifest.update(rematch_binding=rematch_binding,
+                        tensor_sha256=sha256_file(tensor_path),
+                        paths_file_sha256=sha256_file(paths_path),
+                        preprocessing_repr=repr(preprocess))
     atomic_json_dump(manifest, manifest_path)
     return manifest
 

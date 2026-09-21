@@ -30,6 +30,8 @@ train_dedup/
 test/
 /train.zip
 /test.zip
+/artifacts/
+/outputs/rematch750/
 
 # Config (local paths)
 configs/baseline.yaml

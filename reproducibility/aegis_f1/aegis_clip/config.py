@@ -140,6 +140,12 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("data.expected_official_train_samples must be positive")
     if int(data.get("expected_test_samples", 0)) <= 0:
         raise ConfigError("data.expected_test_samples must be positive")
+    if (project.get("stage") == "repechage"
+            and int(data.get("expected_official_train_samples", 0)) == 148695
+            and not data.get("dataset_manifest")):
+        raise ConfigError("Official rematch data requires a bound dataset_manifest")
+    if int(evaluation.get("interval_epochs", 1)) < 1:
+        raise ConfigError("evaluation.interval_epochs must be positive")
     if data.get("train_augmentation", "clip_center_crop") not in {
         "clip_center_crop",
         "weak_rrc_flip",
@@ -601,6 +607,8 @@ def _resolve_paths(config: dict[str, Any], base: Path) -> None:
         ("data", "train_csv"),
         ("data", "val_csv"),
         ("data", "class_mapping"),
+        ("data", "dataset_manifest"),
+        ("model", "official_checkpoint"),
         ("data", "train_root"),
         ("data", "test_root"),
         ("features", "tensor_path"),

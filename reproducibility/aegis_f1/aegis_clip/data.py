@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import io
 from pathlib import Path
 from typing import Callable
 
 import pandas as pd
 import torch
-from PIL import Image
+from PIL import Image, ImageFile
 from torch.utils.data import Dataset
 
 from aegis_clip.features import FrozenFeatureStore, canonical_sample_path
@@ -148,7 +150,14 @@ class OnlineImageDataset(Dataset):
         label = self.labels[index]
         absolute_path = resolve_image_path(self.image_root, relative_path)
         try:
-            with Image.open(absolute_path) as image:
+            source = absolute_path
+            if "file_sha256" in self.frame.columns:
+                ImageFile.LOAD_TRUNCATED_IMAGES = False
+                raw = absolute_path.read_bytes()
+                if hashlib.sha256(raw).hexdigest() != self.frame.iloc[index]["file_sha256"]:
+                    raise ValueError("Training image changed after stage audit")
+                source = io.BytesIO(raw)
+            with Image.open(source) as image:
                 image = image.convert("RGB")
                 tensor = self.transform(image)
         except Exception as exc:
@@ -167,9 +176,10 @@ class OnlineImageDataset(Dataset):
 class TestImageDataset(Dataset):
     """Deterministically enumerate every test image and preserve corrupt entries."""
 
-    def __init__(self, image_root: str | Path, transform: Callable) -> None:
+    def __init__(self, image_root: str | Path, transform: Callable, source_hashes=None) -> None:
         self.image_root = Path(image_root)
         self.transform = transform
+        self.source_hashes = source_hashes
         self.paths = sorted(
             path
             for path in self.image_root.rglob("*")
@@ -188,9 +198,18 @@ class TestImageDataset(Dataset):
         path = self.paths[index]
         corrupt = False
         try:
-            with Image.open(path) as image:
+            source = path
+            if self.source_hashes is not None:
+                ImageFile.LOAD_TRUNCATED_IMAGES = False
+                raw = path.read_bytes()
+                if hashlib.sha256(raw).hexdigest() != self.source_hashes[path.name]:
+                    raise ValueError("Test image changed after stage audit")
+                source = io.BytesIO(raw)
+            with Image.open(source) as image:
                 tensor = self.transform(image.convert("RGB"))
         except Exception:
+            if self.source_hashes is not None:
+                raise RuntimeError(f"Strict test decode/integrity failure: {path}")
             corrupt = True
             tensor = torch.zeros(3, 224, 224, dtype=torch.float32)
         return {"images": tensor, "name": path.name, "corrupt": corrupt}

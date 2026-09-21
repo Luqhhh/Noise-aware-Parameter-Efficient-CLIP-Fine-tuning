@@ -224,6 +224,13 @@ def main() -> None:
         args.device if args.device != "cuda" or torch.cuda.is_available() else "cpu"
     )
     config = load_config(args.config) if args.config else None
+    if config and config["data"].get("dataset_manifest"):
+        from aegis_clip.rematch_assets import validate_dataset, validate_checkpoint
+        validate_dataset(config)
+        validate_checkpoint(args.checkpoint, config)
+        if (args.tta != "none" or args.local_view != "none" or args.prior_config
+                or args.prior_alignment_strength or args.adapt_local_features or args.adapt_part_token_features):
+            raise ValueError("Rematch first-round inference is global only, without prior")
     model, preprocess, checkpoint = build_from_checkpoint(
         args.checkpoint, device, config_override=config
     )
@@ -267,7 +274,12 @@ def main() -> None:
         frozen_bias, frozen_strength = validate_frozen_prior(
             prior_config, context, base_dir=prior_path.parent
         )
-    dataset = TestImageDataset(config["data"]["test_root"], preprocess)
+    source_hashes = None
+    if config["data"].get("dataset_manifest"):
+        import csv
+        with (Path(config["data"]["dataset_manifest"]).parent / "test_manifest.csv").open() as f:
+            source_hashes = {Path(r["image_path"]).name: r["file_sha256"] for r in csv.DictReader(f)}
+    dataset = TestImageDataset(config["data"]["test_root"], preprocess, source_hashes=source_hashes)
     expected_test_samples = int(config["data"]["expected_test_samples"])
     if len(dataset) != expected_test_samples:
         raise ValueError(
@@ -762,6 +774,7 @@ def main() -> None:
             args.acknowledge_tta_risk or args.acknowledge_local_view_risk
         ),
         valid_labels={str(value).zfill(4) for value in idx_to_class.values()},
+        space_after_comma=bool(config["data"].get("dataset_manifest")),
         extra_manifest={
             "corrupt_images": corrupt_count,
             "tta_fusion": (

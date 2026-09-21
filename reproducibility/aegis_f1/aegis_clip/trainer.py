@@ -114,6 +114,11 @@ def train(
     init_checkpoint: str | None = None,
     overwrite: bool = False,
 ) -> Path:
+    if config.get("data", {}).get("dataset_manifest"):
+        from aegis_clip.rematch_assets import validate_training
+        validate_training(config, resume=resume, init_checkpoint=init_checkpoint)
+        if not torch.cuda.is_available() and config["train"].get("device") == "cuda":
+            raise RuntimeError("Rematch CUDA requested but unavailable; refusing CPU fallback")
     project = config["project"]
     data_config = config["data"]
     feature_config = config["features"]
@@ -437,7 +442,8 @@ def train(
         logger.info("Initialised weights from %s (epoch=%s)", source, state.get("epoch"))
 
     # --- Epoch-0 baseline evaluation ---
-    if not resume and (init_checkpoint or train_config.get("init_checkpoint")):
+    if (not resume and (init_checkpoint or train_config.get("init_checkpoint"))
+            and evaluation_config.get("evaluate_initial_checkpoint", True)):
         epoch0_metrics = evaluate(
             model,
             val_loader,
@@ -551,6 +557,11 @@ def train(
             len(cyclic_filter_mask),
         )
 
+    best_micro = -math.inf
+    if (checkpoint_dir / "best.pt").exists():
+        selected = torch.load(checkpoint_dir / "best.pt", map_location="cpu", weights_only=False)
+        best_micro = float(selected["metrics"].get("raw_micro", -math.inf))
+        del selected
     for epoch in range(start_epoch, epochs + 1):
         supervision_ledger = None
         diagnostic_config = config.get('diagnostics', {}).get('longtail', {})
@@ -1360,6 +1371,18 @@ def train(
             "train_cyclic_delta": float(cyclic_delta),
             "train_cyclic_reintroduction": int(reintroduction_epoch),
         }
+        interval = int(evaluation_config.get("interval_epochs", 1))
+        if epoch % interval and epoch != epochs:
+            atomic_json_dump(train_metrics, log_dir / f"train_epoch_{epoch}.json")
+            save_checkpoint(checkpoint_dir / "last.pt", model=model, optimizer=optimizer,
+                scheduler=scheduler, scaler=scaler, epoch=epoch, global_step=global_step,
+                best_selector=best_selector, config=config, metrics=train_metrics,
+                adaptive_cap_state=adaptive_cap.state_dict() if adaptive_cap else None,
+                data_generator_state=generator.get_state(),
+                elr_state_dict=elr_regularizer.state_dict() if elr_regularizer else None,
+                training_aux_state=training_auxiliary.state_dict() if training_auxiliary else None)
+            logger.info("Epoch %d training complete; next validation at interval %d", epoch, interval)
+            continue
         val_metrics = evaluate(
             model,
             val_loader,
@@ -1380,6 +1403,7 @@ def train(
             ),
         )
         metrics = {**train_metrics, **val_metrics}
+        atomic_json_dump(metrics, log_dir / f"evaluation_epoch_{epoch}.json")
         if epoch0_saved is not None:
             metrics["delta_vs_epoch0_selector"] = (
                 float(val_metrics["selector"]) - float(epoch0_saved["selector"])
@@ -1421,7 +1445,12 @@ def train(
             selector=selector,
             best_selector=best_selector,
         )
+        if (selection_policy == "best_selector"
+                and evaluation_config.get("tiebreak_metric") == "raw_micro"
+                and selector == best_selector):
+            improved = float(val_metrics["raw_micro"]) > best_micro
         if improved:
+            best_micro = float(val_metrics["raw_micro"])
             best_selector = (
                 selector if selection_policy == "best_selector" else float(epoch)
             )
@@ -1450,7 +1479,8 @@ def train(
             ),
         )
         save_checkpoint(checkpoint_dir / "last.pt", **common)
-        save_checkpoint(checkpoint_dir / f"epoch_{epoch}.pt", **common)
+        if train_config.get("save_epoch_checkpoints", True):
+            save_checkpoint(checkpoint_dir / f"epoch_{epoch}.pt", **common)
         if improved:
             save_checkpoint(checkpoint_dir / "best.pt", **common)
             logger.info(
@@ -1464,7 +1494,7 @@ def train(
             break
 
     best_path = checkpoint_dir / "best.pt"
-    best = torch.load(best_path, map_location=device, weights_only=False)
+    best = torch.load(best_path, map_location="cpu", weights_only=False)
     model.load_state_dict(best["model_state_dict"], strict=True)
     final_metrics = evaluate(
         model,

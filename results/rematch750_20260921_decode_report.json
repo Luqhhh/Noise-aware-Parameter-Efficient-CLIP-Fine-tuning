@@ -1,0 +1,10 @@
+{
+  "failures": [],
+  "grouping": "decoded RGB pixels and dimensions; train only",
+  "placeholder_images_allowed": false,
+  "status": "passed",
+  "test_checked": 37444,
+  "test_usage": "integrity_only",
+  "train_checked": 148695,
+  "truncated_images_allowed": false
+}

@@ -179,6 +179,7 @@ def evaluate(
         0.0, mean_drift - drift_budget
     )
     if class_counts is not None:
+        metrics.update(support_metrics(prediction, noisy, class_counts))
         metrics.update(
             longtail_segment_metrics(
                 prediction,
@@ -190,6 +191,25 @@ def evaluate(
     metrics["selector_metric"] = selector_metric
     metrics["selector"] = selector
     return metrics
+
+
+def support_metrics(prediction, target, class_counts):
+    """Macro over covered classes only; fixed training-count segment boundaries."""
+    prediction, target = prediction.cpu(), target.cpu()
+    counts = torch.as_tensor(class_counts).long().cpu()
+    support = torch.bincount(target, minlength=len(counts))
+    correct = torch.bincount(target[prediction == target], minlength=len(counts))
+    rows = [dict(label=c, train_samples=int(counts[c]), val_samples=int(support[c]),
+                 correct=int(correct[c]), recall=float(correct[c]/support[c]) if support[c] else None)
+            for c in range(len(counts))]
+    result = dict(validation_covered_classes=int((support>0).sum()), per_class=rows)
+    for name, mask in [('tail', counts<20), ('middle', (counts>=20)&(counts<100)), ('head', counts>=100)]:
+        covered = mask & (support>0)
+        result[f'support_{name}'] = dict(total_classes=int(mask.sum()), covered_classes=int(covered.sum()),
+            val_samples=int(support[mask].sum()),
+            macro=float((correct[covered]/support[covered]).mean()) if covered.any() else None,
+            micro=float(correct[mask].sum()/support[mask].sum()) if support[mask].sum() else None)
+    return result
 
 
 def longtail_segment_metrics(
@@ -298,4 +318,5 @@ def format_metrics(metrics: dict[str, Any]) -> str:
     return " | ".join(
         f"{key}={value:.6f}" if isinstance(value, float) else f"{key}={value}"
         for key, value in metrics.items()
+        if not isinstance(value, (dict, list))
     )

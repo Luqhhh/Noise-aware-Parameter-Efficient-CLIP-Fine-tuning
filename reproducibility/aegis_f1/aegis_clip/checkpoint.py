@@ -57,6 +57,16 @@ def save_checkpoint(
         },
     }
     _atomic_torch_save(payload, path)
+    if config.get("data", {}).get("dataset_manifest"):
+        from aegis_clip.rematch_assets import checkpoint_binding
+        from aegis_clip.runtime import atomic_json_dump, sha256_file
+        atomic_json_dump({
+            "checkpoint_sha256": sha256_file(path),
+            "training_config_sha256": sha256_file(config["_config_path"]),
+            "binding": checkpoint_binding(config),
+            "experiment_id": config["project"]["experiment_id"],
+            "epoch": int(epoch),
+        }, Path(path).with_suffix(".binding.json"))
 
 
 def load_initial_weights(
