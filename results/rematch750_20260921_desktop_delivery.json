@@ -1,0 +1,20 @@
+[
+  {
+    "candidate": "RM_LP",
+    "source": "outputs/rematch750/RM_LP/seed42/submission/submission.zip",
+    "destination": "/mnt/c/Users/lqh22/Desktop/submission/RM_LP_20260921.zip",
+    "sha256": "db30ff7a5f309630a585907a3d976e8dae0cc43e0ff2806037be8e8fc5ef8b59"
+  },
+  {
+    "candidate": "RM_FT",
+    "source": "outputs/rematch750/RM_FT/seed42/submission/submission.zip",
+    "destination": "/mnt/c/Users/lqh22/Desktop/submission/RM_FT_20260921.zip",
+    "sha256": "0f3ec4e4383ac22fea3e16adbb4aa4c34e21795d8d7cf4014cd7a4c833ff68bf"
+  },
+  {
+    "candidate": "RM_LT",
+    "source": "outputs/rematch750/RM_LT/seed42/submission/submission.zip",
+    "destination": "/mnt/c/Users/lqh22/Desktop/submission/RM_LT_20260921.zip",
+    "sha256": "3882812c12d9ad3561fb831c2974be597f2421273506f99faa12721fa55567c4"
+  }
+]

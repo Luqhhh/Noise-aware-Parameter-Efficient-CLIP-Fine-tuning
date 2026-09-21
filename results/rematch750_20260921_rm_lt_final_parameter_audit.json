@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "selected_epoch": 8,
+  "global_step": 33456,
+  "optimizer_step_values": [
+    33456
+  ],
+  "scheduler_steps": 33456,
+  "amp_scale": 128,
+  "all_tensors_finite": true,
+  "frozen_tensors_equal": [
+    "visual.conv1.weight",
+    "visual.positional_embedding"
+  ],
+  "changed_visual_tensors": 150,
+  "checkpoint_sha256": "088f6464564e82c15a268e35e2aaef3b82699f2a0ca57c24a9013bb28bbd778e",
+  "actual_training_exposures": 1070520,
+  "validation_correct": 10817
+}

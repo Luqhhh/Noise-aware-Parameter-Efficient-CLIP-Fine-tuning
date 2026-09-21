@@ -137,3 +137,25 @@ FT/LT 同步设置 `amp_initial_scale=128`、`amp_growth_interval=1000000000`（
 精确命令、配置、代码版本、指标和哈希见 [RM-FT 最终记录](../results/rematch750_20260921_rm_ft_final.json)；逐类支持、独立组数、训练曝光与召回见 [逐类报告](../results/rematch750_20260921_rm_ft_selected_per_class.csv)。训练/推理源码快照逐文件一致，25 项数值修正定向测试通过。
 
 本段完成 RM-FT 的训练和提交就绪闭环，按仓库协作约定提交推送后暂停。**RM-LT 尚未训练，RM-FULL 尚未定版**；下一段从原 RM-LP（不是 RM-FT）初始化 RM-LT。
+
+
+## RM-LT 实测交付与桌面副本（2026-09-21）
+
+使用 `configs/rematch750_lt.yaml`，按上文 train / infer 命令完成 8 轮，选中 epoch 8，保留 8 轮 cosine horizon。从与 FT 相同的 RM-LP checkpoint 独立初始化；配置比对除实验名称与平方根采样外完全一致。训练代码 commit 为 `a63f7ad6d61c52400da963a819bfde564fb54dc8`，训练/推理代码逐文件哈希一致。每十分钟监控，无非有限梯度中断；33,456 次优化器更新与调度器步数一致，AMP scale 128，conv1/位置嵌入保持冻结，150 个视觉张量发生更新且全部模型张量有限。
+
+| 候选 | 选中轮次 | 750 类 macro | micro | 正确 / 验证图片 |
+|---|---:|---:|---:|---:|
+| RM-FT | 8 | 71.836197% | 72.903228% | 10,848 / 14,880 |
+| RM-LT | 8 | 71.865541% | 72.694892% | 10,817 / 14,880 |
+
+LT macro 比 FT 高 0.029343 个百分点，micro 低 0.208336 个百分点；本地 noisy validation 差距很小，不等同于平台胜负。LT 少样本段 macro 0%（2 类 / 2 张），中等段 23.101853%（12 类 / 74 张），多样本段 72.855908%（736 类 / 14,804 张）。FT 对应中等段 15.324074%，多样本段 72.952801%；尾类样本过少，不能据此宣称已经解决长尾噪声问题。逐类报告记录了 1,070,520 次实际训练曝光。
+
+LT 提交为 `outputs/rematch750/RM_LT/seed42/submission/submission.zip`，含恰好 37,444 条预测，覆盖与标签映射合法、四位编号和逗号空格格式正确，ZIP 内外 CSV 字节一致，坏图或占位图预测为 0。模型、配置、映射及 CSV/ZIP 哈希绑定见 [LT 最终记录](../results/rematch750_20260921_rm_lt_final.json)；逐类结果见 [LT 逐类报告](../results/rematch750_20260921_rm_lt_selected_per_class.csv)。本段没有修改训练代码，因此不重复既有工程测试，以实际完整训练、参数审计和全量提交校验作为验证证据。
+
+应用户要求，以下文件已复制到 `C:\Users\lqh22\Desktop\submission`，源与目标 SHA-256 均一致，目录原有文件保留：
+
+- `RM_LP_20260921.zip`：回退候选，可跳过平台提交。
+- `RM_FT_20260921.zip`：普通采样 baseline。
+- `RM_LT_20260921.zip`：平方根采样对照。
+
+[桌面交付记录](../results/rematch750_20260921_desktop_delivery.json)保存源、目标与哈希。三个候选登记仍为 `ready`，尚无平台回执。由用户上传并回传成绩；本段交付后等待 FT/LT 平台比较，RM-FULL 尚未启动。

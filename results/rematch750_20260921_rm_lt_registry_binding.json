@@ -1,0 +1,20 @@
+{
+  "candidate": "RM_LT",
+  "checkpoint_sha256": "088f6464564e82c15a268e35e2aaef3b82699f2a0ca57c24a9013bb28bbd778e",
+  "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+  "code_commit": "a63f7ad6d61c52400da963a819bfde564fb54dc8",
+  "config_sha256": "eca2d42a49ea8b366f98603b5b9a8acd65668b48bf47877f0701b20681c33386",
+  "csv_sha256": "9b1023129a95f918c55ac01560605a8a2cc36a30fa683fe02574285ed407dc5f",
+  "data_version": "20260921",
+  "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+  "inference_config": "global_224_center_crop;tta=none;prior=none;single_checkpoint",
+  "is_highest_score": "false",
+  "platform_period": "",
+  "platform_score": "",
+  "platform_submission_id": "",
+  "stage": "repechage",
+  "status": "ready",
+  "submission_path": "outputs/rematch750/RM_LT/seed42/submission",
+  "submitted_at": "",
+  "zip_sha256": "3882812c12d9ad3561fb831c2974be597f2421273506f99faa12721fa55567c4"
+}
