@@ -33,6 +33,7 @@ test/
 /artifacts/
 /outputs/rematch750/
 /outputs/rematch750_npu/
+/outputs/npu_tuning/
 
 # Locally pasted dataset copies (must never be committed)
 /初赛数据集/

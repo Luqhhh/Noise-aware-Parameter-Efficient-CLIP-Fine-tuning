@@ -1,5 +1,6 @@
 """Opt-in real-device checkpoint/AMP check: AEGIS_TEST_NPU=1 pytest this file."""
 import os
+import copy
 from pathlib import Path
 
 import pytest
@@ -8,20 +9,68 @@ import torch
 pytestmark = pytest.mark.skipif(os.environ.get("AEGIS_TEST_NPU") != "1", reason="requires explicit NPU allocation")
 
 
-def test_cpu_loader_workers_after_npu_initialization():
+@pytest.mark.parametrize("implementation", ["foreach", "npu_fused_adamw"])
+def test_optimized_adamw_matches_reference_and_resumes(implementation):
+    from aegis_clip.device import resolve_device
+    from aegis_clip.optim import build_adamw
+    device = resolve_device("npu:0")
+    generator = torch.Generator().manual_seed(418)
+    initial = [torch.randn(31, 67, generator=generator), torch.randn(67, generator=generator)]
+    reference = [torch.nn.Parameter(x.to(device)) for x in initial]
+    candidate = [torch.nn.Parameter(x.to(device).clone()) for x in initial]
+
+    def make(parameters, mode):
+        return build_adamw([dict(params=[parameters[0]], lr=3e-6, weight_decay=1e-4),
+                            dict(params=[parameters[1]], lr=1e-4, weight_decay=1e-4)], device, mode)
+
+    baseline = make(reference, "default")
+    optimized = make(candidate, implementation)
+
+    def update(parameters, optimizer, grads):
+        optimizer.zero_grad(set_to_none=not getattr(optimizer, "is_fused_optimizer", False))
+        for p, g in zip(parameters, grads):
+            if p.grad is None:
+                p.grad = g.clone()
+            else:
+                p.grad.copy_(g)
+        torch.nn.utils.clip_grad_norm_(parameters, 1.0)
+        optimizer.step()
+
+    for _ in range(12):
+        grads = [torch.randn(x.shape, generator=generator).to(device) for x in initial]
+        update(reference, baseline, grads)
+        update(candidate, optimized, grads)
+    for ref, actual in zip(reference, candidate):
+        torch.testing.assert_close(actual, ref, rtol=1e-6, atol=1e-6)
+    restored = [torch.nn.Parameter(p.detach().clone()) for p in candidate]
+    restored_optimizer = make(restored, implementation)
+    restored_optimizer.load_state_dict(copy.deepcopy(optimized.state_dict()))
+    grads = [torch.randn(x.shape, generator=generator).to(device) for x in initial]
+    update(candidate, optimized, grads)
+    update(restored, restored_optimizer, grads)
+    for actual, expected in zip(restored, candidate):
+        torch.testing.assert_close(actual, expected, rtol=0, atol=0)
+    assert {int(s["step"]) for s in restored_optimizer.state.values()} == {13}
+
+
+@pytest.mark.parametrize("pinned", [False, True])
+def test_cpu_loader_workers_after_npu_initialization(pinned):
     from aegis_clip.device import resolve_device
     from aegis_clip.runtime import set_seed, seed_worker
     device = resolve_device("npu:0")
     set_seed(42)
     dataset = torch.utils.data.TensorDataset(torch.arange(16).reshape(4, 4))
     loader = torch.utils.data.DataLoader(dataset, batch_size=4, num_workers=4,
-                                       worker_init_fn=seed_worker, pin_memory=False)
+                                       worker_init_fn=seed_worker, pin_memory=pinned,
+                                       pin_memory_device="npu" if pinned else "")
     (batch,) = next(iter(loader))
+    assert batch.is_pinned() == pinned
     torch.testing.assert_close(batch.to(device).cpu(), dataset.tensors[0])
 
 
-@pytest.mark.parametrize("recipe", ["ft_npu", "lora"])
-def test_official_clip_amp_checkpoint_and_rng_roundtrip(tmp_path, recipe):
+@pytest.mark.parametrize("recipe,implementation", [("ft_npu", "default"), ("lora", "default"),
+                                                     ("ft_npu", "npu_fused_adamw")])
+def test_official_clip_amp_checkpoint_and_rng_roundtrip(tmp_path, recipe, implementation):
     from aegis_clip.device import resolve_device
     from aegis_clip.config import load_config
     from aegis_clip.model import build_model
@@ -37,7 +86,8 @@ def test_official_clip_amp_checkpoint_and_rng_roundtrip(tmp_path, recipe):
     model, _ = build_model(config, device)
     model.train()
     parameters = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.AdamW(parameters, lr=3e-6, foreach=False)
+    from aegis_clip.optim import build_adamw
+    optimizer = build_adamw([dict(params=parameters, lr=3e-6)], device, implementation)
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda _: 1.0)
     scaler = torch.amp.GradScaler("npu", init_scale=128)
     generator = torch.Generator().manual_seed(42)

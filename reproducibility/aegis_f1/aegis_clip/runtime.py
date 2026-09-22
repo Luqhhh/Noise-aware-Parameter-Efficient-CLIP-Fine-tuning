@@ -106,5 +106,8 @@ def environment_manifest() -> dict[str, Any]:
                         npu_conv_allow_hf32=torch.npu.conv.allow_hf32,
                         npu_matmul_allow_hf32=torch.npu.matmul.allow_hf32,
                         ascend_home=os.environ.get("ASCEND_HOME_PATH"),
-                        ascend_visible_devices=os.environ.get("ASCEND_RT_VISIBLE_DEVICES"))
+                        ascend_visible_devices=os.environ.get("ASCEND_RT_VISIBLE_DEVICES"),
+                        torch_num_threads=torch.get_num_threads(),
+                        omp_num_threads=os.environ.get("OMP_NUM_THREADS"),
+                        cpu_affinity=sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None)
     return manifest

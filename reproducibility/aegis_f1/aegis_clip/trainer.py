@@ -294,11 +294,14 @@ def train(
     timeout = int(train_config.get("loader_timeout", 120 if workers else 0))
     loader_options = {
         "num_workers": workers,
-        "pin_memory": bool(train_config.get("pin_memory", True)) and device.type != "npu",
+        "pin_memory": bool(train_config.get("pin_memory", True)) and (
+            device.type != "npu" or bool(train_config.get("npu_pin_memory", False))),
         "timeout": timeout,
         "worker_init_fn": seed_worker,
         "persistent_workers": workers > 0,
     }
+    if device.type == "npu" and loader_options["pin_memory"]:
+        loader_options["pin_memory_device"] = "npu"
     if workers > 0:
         loader_options["prefetch_factor"] = int(
             train_config.get("prefetch_factor", 1)
@@ -370,7 +373,8 @@ def train(
                 "weight_decay": float(snscl_config.get("module_weight_decay", 1.0e-4)),
             }
         )
-    optimizer = torch.optim.AdamW(groups, **({"foreach": False} if device.type == "npu" else {}))
+    from aegis_clip.optim import build_adamw
+    optimizer = build_adamw(groups, device, train_config.get("optimizer_impl", "default"))
     epochs = int(train_config["epochs"])
     schedule_epochs = int(train_config.get("schedule_epochs", epochs))
     total_steps = schedule_epochs * len(train_loader)
@@ -778,7 +782,7 @@ def train(
                 if not first_step_audited
                 else None
             )
-            optimizer.zero_grad(set_to_none=True)
+            optimizer.zero_grad(set_to_none=not getattr(optimizer, "is_fused_optimizer", False))
             snscl_projected = None
             snscl_hard_labels = None
             snscl_admission_probabilities = None
@@ -1145,9 +1149,10 @@ def train(
             else:
                 scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
-            head_grad = _gradient_norm(model.classifier.parameters())
-            adapter_grad = _gradient_norm(model.feature_adapter.parameters())
-            visual_grad = _gradient_norm(model.visual.parameters())
+            norm_impl = train_config.get("gradient_norm_impl", "sum_squares")
+            head_grad = _gradient_norm(model.classifier.parameters(), implementation=norm_impl)
+            adapter_grad = _gradient_norm(model.feature_adapter.parameters(), implementation=norm_impl)
+            visual_grad = _gradient_norm(model.visual.parameters(), implementation=norm_impl)
             if train_config.get("require_finite_gradients", False):
                 if not all(math.isfinite(value) for value in
                            (float(loss.detach()), head_grad, adapter_grad, visual_grad)):
@@ -1819,15 +1824,9 @@ def _warmup_cosine(step: int, warmup_steps: int, total_steps: int) -> float:
     return 0.01 + 0.99 * 0.5 * (1.0 + math.cos(math.pi * progress))
 
 
-def _gradient_norm(parameters: Any) -> float:
-    values = [
-        parameter.grad.detach().float().pow(2).sum()
-        for parameter in parameters
-        if parameter.grad is not None
-    ]
-    if not values:
-        return 0.0
-    return float(torch.stack(values).sum().sqrt())
+def _gradient_norm(parameters: Any, implementation: str = "sum_squares") -> float:
+    from aegis_clip.optim import gradient_norm
+    return gradient_norm(parameters, implementation)
 
 
 def _snapshot_trainable(model: AegisCLIP) -> dict[str, torch.Tensor]:

@@ -160,7 +160,7 @@ def test_interval_training_writes_only_selected_and_last(tmp_path,monkeypatch,in
     monkeypatch.setattr(trainer,'build_model',lambda c,d:(AegisCLIP(visual=torch.nn.Linear(4,4),num_classes=3,feature_dim=4,peft_mode='frozen'),None))
     if inject_nonfinite:
         cfg['train']['require_finite_gradients']=True
-        monkeypatch.setattr(trainer,'_gradient_norm',lambda params:float('inf'))
+        monkeypatch.setattr(trainer,'_gradient_norm',lambda params, **kwargs:float('inf'))
         def forbidden_step(*args,**kwargs):
             raise AssertionError('Optimizer must not run with nonfinite gradients')
         monkeypatch.setattr(torch.optim.AdamW,'step',forbidden_step)

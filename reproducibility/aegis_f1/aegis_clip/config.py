@@ -376,6 +376,13 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("train.schedule_epochs must be at least train.epochs")
     if int(train.get("batch_size", 0)) <= 0:
         raise ConfigError("train.batch_size must be positive")
+    if train.get("optimizer_impl", "default") not in {"default", "foreach", "npu_fused_adamw"}:
+        raise ConfigError("Unsupported train.optimizer_impl")
+    if (train.get("optimizer_impl") == "npu_fused_adamw"
+            and str(train.get("device", "cuda")).split(":", 1)[0] != "npu"):
+        raise ConfigError("npu_fused_adamw requires train.device=npu")
+    if train.get("gradient_norm_impl", "sum_squares") not in {"sum_squares", "vector", "foreach"}:
+        raise ConfigError("Unsupported train.gradient_norm_impl")
     if float(train.get("amp_initial_scale", 65536.0)) <= 0.0:
         raise ConfigError("train.amp_initial_scale must be positive")
     selector_metric = evaluation.get("selector_metric", "proxy_macro")
