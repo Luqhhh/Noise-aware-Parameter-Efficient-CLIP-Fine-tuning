@@ -1,0 +1,108 @@
+{
+  "status": "running",
+  "stages": [
+    {
+      "action": "prepare",
+      "candidate": "lp",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "prepare",
+        "--config",
+        "configs/rematch750_lp_npu.yaml"
+      ],
+      "status": "passed",
+      "seconds": 588.4038954849821,
+      "returncode": 0
+    },
+    {
+      "action": "verify",
+      "candidate": "lp",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "verify",
+        "--config",
+        "configs/rematch750_lp_npu.yaml"
+      ],
+      "status": "passed",
+      "seconds": 8.562770237913355,
+      "returncode": 0
+    },
+    {
+      "action": "cache",
+      "candidate": "lp",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "cache",
+        "--config",
+        "configs/rematch750_lp_npu.yaml"
+      ],
+      "status": "passed",
+      "seconds": 959.7728593319189,
+      "returncode": 0
+    },
+    {
+      "action": "train",
+      "candidate": "lp",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "train",
+        "--config",
+        "configs/rematch750_lp_npu.yaml"
+      ],
+      "status": "passed",
+      "seconds": 272.712332961848,
+      "returncode": 0
+    },
+    {
+      "action": "train",
+      "candidate": "ft",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "train",
+        "--config",
+        "configs/rematch750_ft_npu.yaml"
+      ],
+      "status": "running"
+    }
+  ],
+  "platform_submitted": false,
+  "dataset_parity": {
+    "compared_keys": [
+      "conflicting_content_groups",
+      "data_version",
+      "external_data",
+      "files",
+      "format_version",
+      "independent_groups",
+      "num_classes",
+      "seed",
+      "split_policy",
+      "stage",
+      "test_fingerprint",
+      "test_samples",
+      "test_usage",
+      "train_dev_samples",
+      "train_fingerprint",
+      "train_samples",
+      "val_dev_samples",
+      "validation_covered_classes",
+      "validation_overlap_with_training"
+    ],
+    "mismatches": []
+  }
+}

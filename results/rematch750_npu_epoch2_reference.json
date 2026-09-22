@@ -1,0 +1,9 @@
+{
+  "candidate": "RM_FT",
+  "epoch": 2,
+  "schedule_epochs": 8,
+  "source_path": "outputs/rematch750/RM_FT/seed42/logs/evaluation_epoch_2.json",
+  "source_sha256": "141278aaaf3b0a7fdd18d6de22a8d18bc6c4fc514b41294526efcd62ae8e2828",
+  "raw_macro": 0.6825563907623291,
+  "raw_micro": 0.6934812068939209
+}

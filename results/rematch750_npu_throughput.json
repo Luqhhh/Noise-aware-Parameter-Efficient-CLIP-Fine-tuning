@@ -1,0 +1,24 @@
+{
+  "npu": {
+    "batch_size": 32,
+    "epochs_compared": 2,
+    "median_seconds_per_step": 0.226485,
+    "mean_seconds_per_step": 0.22623974358974358,
+    "interval_count": 39,
+    "first_step_to_epoch2_saved_seconds": 1994.281,
+    "first_step_time_log_timezone_unspecified": "2026-09-22 12:43:11.895000",
+    "epoch2_saved_time_log_timezone_unspecified": "2026-09-22 13:16:26.176000"
+  },
+  "gpu": {
+    "batch_size": 32,
+    "epochs_compared": 2,
+    "median_seconds_per_step": 0.12656499999999998,
+    "mean_seconds_per_step": 0.12667333333333333,
+    "interval_count": 39,
+    "first_step_to_epoch2_saved_seconds": 1111.408,
+    "first_step_time_log_timezone_unspecified": "2026-09-21 14:29:32.532000",
+    "epoch2_saved_time_log_timezone_unspecified": "2026-09-21 14:48:03.940000"
+  },
+  "npu_to_gpu_step_time_ratio": 1.78947576344171,
+  "note": "Same recipe and two epochs; different machine/backend/software and independently rebuilt LP. Intervals exclude epoch boundaries and initialization; total span includes validation/checkpoint save."
+}

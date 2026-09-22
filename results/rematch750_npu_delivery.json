@@ -1,0 +1,45 @@
+{
+  "status": "passed_two_epoch_acceptance",
+  "candidate": "RM_FT_NPU",
+  "platform_submitted": false,
+  "completed_ft_epochs": 2,
+  "configured_schedule_epochs": 8,
+  "checkpoint_backups": {
+    "RM_LP": {
+      "local_checkpoint": "/home/lux1/noise/outputs/rematch750_npu/RM_LP/seed42/checkpoints/best.pt",
+      "remote_checkpoint": "/workspace/noise/outputs/rematch750_npu/RM_LP/seed42/checkpoints/best.pt",
+      "sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+      "epoch": 20
+    },
+    "RM_FT_NPU": {
+      "local_checkpoint": "/home/lux1/noise/outputs/rematch750_npu/RM_FT_NPU/seed42/checkpoints/best.pt",
+      "remote_checkpoint": "/workspace/noise/outputs/rematch750_npu/RM_FT_NPU/seed42/checkpoints/best.pt",
+      "sha256": "235d39ac2c740514cacafc2577893828f0122cab44632763b2f497b42a1dd371",
+      "epoch": 2
+    }
+  },
+  "source_commit": "cb6483877bf4faa06d6af0e1087e7ce4bb7a4bc4",
+  "remote_snapshot_commit": "1a33bd1f7129198c1449c2d257e220afd16304df",
+  "runtime_source_hashes_matched": 177,
+  "submission": {
+    "local_directory": "/home/lux1/noise/outputs/rematch750_npu/RM_FT_NPU/seed42/submission",
+    "remote_directory": "/workspace/noise/outputs/rematch750_npu/RM_FT_NPU/seed42/submission",
+    "prediction_count": 37444,
+    "csv_sha256": "42e7ae65de4366758c62a27c075cd516edd01763702af554848aec9614a97634",
+    "zip_sha256": "9493d5ec7b11ed9c2a98a26fa5cb8ce53c82bfb3ceba4f8b75f36307a65701a2",
+    "remote_validation": "passed",
+    "local_validation": "passed",
+    "inference_amp": false,
+    "inference_batch_size": 128
+  },
+  "validation_command": "python3 scripts/check_submission.py --test_dir test --class-mapping artifacts/stages/repechage/20260921/class_to_idx.json --csv outputs/rematch750_npu/RM_FT_NPU/seed42/submission/pred_results.csv --zip outputs/rematch750_npu/RM_FT_NPU/seed42/submission/submission.zip",
+  "execution_report": "results/rematch750_npu_migration_execution.json",
+  "throughput_report": "results/rematch750_npu_throughput.json",
+  "finishing_controller_sha256": "f0160dade7305d2b32876cbf3bb238e290d7e502d668b1832fd6ea02ae77bd81",
+  "finishing_controller_remote_hash_matched": true,
+  "final_local_regression": {
+    "passed": 23,
+    "seconds": 6.47,
+    "command": "PYTHONPATH=reproducibility/aegis_f1 python3 -m pytest reproducibility/aegis_f1/tests/test_device.py reproducibility/aegis_f1/tests/test_rematch750.py -q"
+  }
+}

@@ -8,6 +8,18 @@ import torch
 pytestmark = pytest.mark.skipif(os.environ.get("AEGIS_TEST_NPU") != "1", reason="requires explicit NPU allocation")
 
 
+def test_cpu_loader_workers_after_npu_initialization():
+    from aegis_clip.device import resolve_device
+    from aegis_clip.runtime import set_seed, seed_worker
+    device = resolve_device("npu:0")
+    set_seed(42)
+    dataset = torch.utils.data.TensorDataset(torch.arange(16).reshape(4, 4))
+    loader = torch.utils.data.DataLoader(dataset, batch_size=4, num_workers=4,
+                                       worker_init_fn=seed_worker, pin_memory=False)
+    (batch,) = next(iter(loader))
+    torch.testing.assert_close(batch.to(device).cpu(), dataset.tensors[0])
+
+
 @pytest.mark.parametrize("recipe", ["ft_npu", "lora"])
 def test_official_clip_amp_checkpoint_and_rng_roundtrip(tmp_path, recipe):
     from aegis_clip.device import resolve_device

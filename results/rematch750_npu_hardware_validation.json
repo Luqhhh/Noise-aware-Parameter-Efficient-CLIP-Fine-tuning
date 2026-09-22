@@ -1,0 +1,48 @@
+{
+  "source_commit": "cb6483877bf4faa06d6af0e1087e7ce4bb7a4bc4",
+  "remote_snapshot_commit": "1a33bd1f7129198c1449c2d257e220afd16304df",
+  "source_file_manifest": "results/rematch750_npu_source_manifest.json",
+  "device": "Ascend 910B2, physical card 0",
+  "hardware_tests": [
+    {
+      "cases": "FT and LoRA AMP/checkpoint/RNG tests before loader case was added",
+      "passed": 2,
+      "seconds": 37.03,
+      "remote_log": "/workspace/noise-npu-probe/hardware_test_final.log",
+      "replay_command": "AEGIS_TEST_NPU=1 /workspace/noise-npu-venv/bin/python -m pytest reproducibility/aegis_f1/tests/test_npu_hardware.py -q -k official_clip"
+    },
+    {
+      "cases": "4 CPU workers after NPU initialization",
+      "passed": 1,
+      "deselected": 2,
+      "seconds": 15.82,
+      "remote_log": "/workspace/noise-npu-probe/loader_hardware_test.log",
+      "replay_command": "AEGIS_TEST_NPU=1 /workspace/noise-npu-venv/bin/python -m pytest reproducibility/aegis_f1/tests/test_npu_hardware.py -q -k cpu_loader"
+    }
+  ],
+  "remote_device_rematch_regression": {
+    "passed": 23,
+    "seconds": 11.04,
+    "remote_log": "/workspace/noise-npu-probe/migration_tests_final.log"
+  },
+  "local_regression": {
+    "passed": 654,
+    "skipped": 2,
+    "failed": 2,
+    "failure_note": "Known historical scope assets unavailable; both failures in test_scope_protocol.py. Before loader hardware case was added."
+  },
+  "data_transfer": {
+    "train_files": 148695,
+    "test_files": 37444,
+    "final_archive_sha256": "ce5e8eaad430a2adf06d2c4f904ba7cb46f849e421dd645f78a102497ae226d9",
+    "final_archive_digest_matched": true
+  },
+  "formal_run_report": "results/rematch750_npu_migration_execution.json",
+  "platform_submitted": false,
+  "cache_observation": {
+    "sample_batch": 298,
+    "total_batches": 1162,
+    "elapsed_seconds": 233,
+    "note": "Four loader processes used approximately 88\u201396% of one CPU core each; one NPU utilization snapshot was idle. Suggests input processing bottleneck; not a formal utilization profile."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "ascend_home": "/usr/local/Ascend/cann-9.0.0",
+  "ascend_visible_devices": "0",
+  "clip_module": "/workspace/noise-npu-venv/lib/python3.11/site-packages/clip/__init__.py",
+  "cuda_available": false,
+  "cuda_runtime": null,
+  "cudnn": null,
+  "gpu": null,
+  "npu": "Ascend910B2",
+  "npu_available": true,
+  "npu_conv_allow_hf32": true,
+  "npu_device": 0,
+  "npu_matmul_allow_hf32": false,
+  "python": "3.11.6 (main, May  6 2026, 18:36:02) [GCC 12.3.1 (openEuler 12.3.1-109.oe2403sp3)]",
+  "torch": "2.7.1+cpu",
+  "torch_npu": "2.7.1.post4"
+}

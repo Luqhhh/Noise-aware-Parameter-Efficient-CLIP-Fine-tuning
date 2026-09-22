@@ -1,0 +1,185 @@
+{
+  "status": "passed_two_epoch_acceptance",
+  "stages": [
+    {
+      "action": "prepare",
+      "candidate": "lp",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "prepare",
+        "--config",
+        "configs/rematch750_lp_npu.yaml"
+      ],
+      "status": "passed",
+      "seconds": 588.4038954849821,
+      "returncode": 0
+    },
+    {
+      "action": "verify",
+      "candidate": "lp",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "verify",
+        "--config",
+        "configs/rematch750_lp_npu.yaml"
+      ],
+      "status": "passed",
+      "seconds": 8.562770237913355,
+      "returncode": 0
+    },
+    {
+      "action": "cache",
+      "candidate": "lp",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "cache",
+        "--config",
+        "configs/rematch750_lp_npu.yaml"
+      ],
+      "status": "passed",
+      "seconds": 959.7728593319189,
+      "returncode": 0
+    },
+    {
+      "action": "train",
+      "candidate": "lp",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "train",
+        "--config",
+        "configs/rematch750_lp_npu.yaml"
+      ],
+      "status": "passed",
+      "seconds": 272.712332961848,
+      "returncode": 0
+    },
+    {
+      "action": "train",
+      "candidate": "ft",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "train",
+        "--config",
+        "configs/rematch750_ft_npu.yaml"
+      ],
+      "status": "stopped_at_user_requested_checkpoint",
+      "completed_epochs": 2,
+      "termination_signal": "SIGTERM",
+      "full_eight_epochs_completed": false
+    },
+    {
+      "action": "infer",
+      "candidate": "ft",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "infer",
+        "--config",
+        "/workspace/noise/configs/rematch750_ft_npu.yaml"
+      ],
+      "status": "passed",
+      "returncode": 0,
+      "seconds": 115.85962152085267
+    }
+  ],
+  "platform_submitted": false,
+  "dataset_parity": {
+    "compared_keys": [
+      "conflicting_content_groups",
+      "data_version",
+      "external_data",
+      "files",
+      "format_version",
+      "independent_groups",
+      "num_classes",
+      "seed",
+      "split_policy",
+      "stage",
+      "test_fingerprint",
+      "test_samples",
+      "test_usage",
+      "train_dev_samples",
+      "train_fingerprint",
+      "train_samples",
+      "val_dev_samples",
+      "validation_covered_classes",
+      "validation_overlap_with_training"
+    ],
+    "mismatches": []
+  },
+  "scope_change": {
+    "reason": "User explicitly chose two-epoch migration acceptance",
+    "completed_ft_epochs": 2,
+    "configured_schedule_epochs": 8,
+    "full_eight_epoch_comparison": false,
+    "command": [
+      "/workspace/noise-npu-venv/bin/python",
+      "scripts/finish_rematch_npu_acceptance.py",
+      "--supervisor-pid",
+      "928002",
+      "--trainer-pid",
+      "938229"
+    ],
+    "trainer_pid": 938229
+  },
+  "checkpoint_audit": {
+    "best": {
+      "epoch": 2,
+      "global_step": 8364,
+      "scheduler_steps": 8364,
+      "optimizer_step_values": [
+        8364
+      ],
+      "all_tensors_finite": true,
+      "frozen_unchanged": true,
+      "npu_rng_saved": true,
+      "raw_macro": 0.6818368434906006,
+      "raw_micro": 0.6927419304847717
+    },
+    "last": {
+      "epoch": 2,
+      "global_step": 8364,
+      "scheduler_steps": 8364,
+      "optimizer_step_values": [
+        8364
+      ],
+      "all_tensors_finite": true,
+      "frozen_unchanged": true,
+      "npu_rng_saved": true,
+      "raw_macro": 0.6818368434906006,
+      "raw_micro": 0.6927419304847717
+    },
+    "gpu_same_epoch_reference": {
+      "candidate": "RM_FT",
+      "epoch": 2,
+      "schedule_epochs": 8,
+      "source_path": "outputs/rematch750/RM_FT/seed42/logs/evaluation_epoch_2.json",
+      "source_sha256": "141278aaaf3b0a7fdd18d6de22a8d18bc6c4fc514b41294526efcd62ae8e2828",
+      "raw_macro": 0.6825563907623291,
+      "raw_micro": 0.6934812068939209
+    },
+    "macro_delta_vs_gpu_same_epoch_pp": -0.07195472717285156
+  },
+  "checkpoint_reload_evaluation": {
+    "raw_macro": 0.6818368434906006,
+    "raw_micro": 0.6927419304847717,
+    "samples": 14880
+  }
+}
