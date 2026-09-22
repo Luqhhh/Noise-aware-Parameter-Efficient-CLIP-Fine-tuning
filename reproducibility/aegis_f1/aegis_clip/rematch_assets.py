@@ -104,22 +104,7 @@ def validate_checkpoint(path, config, *, parent=False):
     path=Path(path)
     meta=json.loads(path.with_suffix('.binding.json').read_text())
     require(meta['checkpoint_sha256']==sha256_file(path),'checkpoint hash mismatch')
-    expected=checkpoint_binding(config)
-    actual=meta['binding']
-    if actual!=expected:
-        require(parent,'checkpoint data lineage mismatch')
-        # Dataset manifests contain absolute roots and feature manifests contain
-        # runtime-specific cache metadata, so their file hashes are intentionally
-        # machine-local.  A transported parent remains valid when every portable
-        # identity field is unchanged; validate_training() has already verified
-        # the complete local dataset and feature cache independently.
-        portable_keys=(
-            'stage','data_version','class_mapping_sha256','train_csv_sha256',
-            'official_checkpoint_sha256',
-        )
-        mismatched=[key for key in portable_keys if actual.get(key)!=expected.get(key)]
-        require(not mismatched,
-                'portable checkpoint data lineage mismatch: '+','.join(mismatched))
+    require(meta['binding']==checkpoint_binding(config),'checkpoint data lineage mismatch')
     if not parent:
         require(meta['training_config_sha256']==sha256_file(config['_config_path']),'checkpoint training config mismatch')
     if parent:
