@@ -616,6 +616,7 @@ def _resolve_paths(config: dict[str, Any], base: Path) -> None:
         ("features", "manifest_path"),
         ("trust", "bundle_path"),
         ("trust", "groups_path"),
+        ("trust", "sample_weight_path"),
         ("train", "init_checkpoint"),
         ("lineage", "parent_train_csv"),
         ("lineage", "parent_val_csv"),

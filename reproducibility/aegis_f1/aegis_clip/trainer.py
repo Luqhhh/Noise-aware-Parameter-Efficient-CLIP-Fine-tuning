@@ -63,6 +63,7 @@ from aegis_clip.runtime import (
     set_seed,
     sha256_file,
 )
+from aegis_clip.sample_weights import load_sample_weights
 from aegis_clip.snscl import (
     StatefulSNSCL,
     classwise_queue_contrastive_loss,
@@ -256,6 +257,20 @@ def train(
         effective_number_beta=longtail_config["effective_number_beta"],
         normalize=True,
     ).to(device)
+    sample_weight_path = config.get("trust", {}).get("sample_weight_path")
+    sample_weight = None
+    if sample_weight_path:
+        sample_weight = load_sample_weights(
+            sample_weight_path, train_dataset.paths
+        ).to(device)
+        logger.info(
+            "OOF sample weights active | n=%d mean=%.6f min=%.6f max=%.6f source=%s",
+            sample_weight.numel(),
+            float(sample_weight.mean()),
+            float(sample_weight.min()),
+            float(sample_weight.max()),
+            sample_weight_path,
+        )
     train_clean_scores = None
     if trust_bundle is not None:
         train_clean_scores = torch.stack(
@@ -691,6 +706,8 @@ def train(
             else:
                 weights = torch.ones_like(clean)
             weights = weights * loss_reweight[batch_indices]
+            if sample_weight is not None:
+                weights = weights * sample_weight[batch_indices]
             conflict_config = config["trust"].get("consensus_conflict", {})
             conflict_mode = str(conflict_config.get("mode", "keep"))
             if conflict_mode not in {"keep", "drop"}:
