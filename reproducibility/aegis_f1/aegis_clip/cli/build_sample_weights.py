@@ -57,6 +57,12 @@ KNN_AGREEMENT_COEFFICIENT = 0.25 / 0.85
 WEIGHT_FLOOR = 0.3
 WEIGHT_SPAN = 0.7
 KNN_NEIGHBOURS = 10
+# Below this support a class cannot be cross-fitted into usable signals: with
+# ``folds`` folds the training partition holds only ~80% of an already tiny
+# class, so its percentile ranks are noise. The primary criterion is a macro
+# average over the smallest classes, so acting on that noise would confound the
+# verdict rather than test the method.
+MIN_CLASS_SUPPORT = 10
 
 
 def _feature_labels(full_train_csv: Path, feature_paths: Path) -> list[int]:
@@ -144,6 +150,47 @@ def _fold_geometry(
     }
 
 
+def build_fold_assignments(
+    train_csv: Path,
+    num_folds: int,
+    seed: int,
+    num_classes: int,
+) -> tuple[pd.DataFrame, dict[str, int]]:
+    """Assign content-group-intact, class-stratified OOF folds to ``train_dev``.
+
+    Fails closed if any content group straddles folds or if any fold's training
+    partition would be missing a class, since either would make the cross-fitted
+    signals unusable for that class.
+    """
+    frame = pd.read_csv(
+        train_csv, dtype={"image_path": str, "label": int, "content_group": str}
+    )
+    frame = frame.sort_values("image_path").reset_index(drop=True)
+    frame["sample_id"] = frame["image_path"].map(canonical_sample_path)
+    frame["sha256"] = frame["content_group"]
+    if not frame["sample_id"].is_unique:
+        raise ValueError("train_dev.csv yields duplicate canonical sample paths")
+
+    labelled = assign_group_stratified_folds(frame, n_splits=num_folds, seed=seed)
+    if labelled.groupby("sha256")["fold"].nunique().max() != 1:
+        raise ValueError("a content group was split across OOF folds")
+
+    for fold in range(num_folds):
+        train_labels = labelled.loc[labelled["fold"] != fold, "label"]
+        absent = sorted(set(range(num_classes)) - set(train_labels.tolist()))
+        if absent:
+            raise ValueError(
+                f"fold {fold} training partition misses {len(absent)} classes: "
+                f"{absent[:5]}"
+            )
+
+    fold_counts = {
+        str(fold): int((labelled["fold"] == fold).sum())
+        for fold in range(num_folds)
+    }
+    return labelled, fold_counts
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--train-csv", required=True)
@@ -162,6 +209,15 @@ def main() -> None:
     parser.add_argument("--warmup-epochs", type=int, default=2)
     parser.add_argument("--q", type=float, default=0.5)
     parser.add_argument("--knn", type=int, default=KNN_NEIGHBOURS)
+    parser.add_argument(
+        "--min-class-support",
+        type=int,
+        default=MIN_CLASS_SUPPORT,
+        help=(
+            "classes with fewer train_dev samples than this keep weight 1.0; "
+            "their cross-fitted signals are not estimable"
+        ),
+    )
     parser.add_argument("--device", default="cuda")
     args = parser.parse_args()
 
@@ -172,30 +228,10 @@ def main() -> None:
     output.mkdir(parents=True, exist_ok=True)
 
     train_csv = Path(args.train_csv)
-    frame = pd.read_csv(
-        train_csv, dtype={"image_path": str, "label": int, "content_group": str}
+    labelled, fold_counts = build_fold_assignments(
+        train_csv, args.folds, args.seed, args.num_classes
     )
-    frame = frame.sort_values("image_path").reset_index(drop=True)
-    frame["sample_id"] = frame["image_path"].map(canonical_sample_path)
-    frame["sha256"] = frame["content_group"]
-    if not frame["sample_id"].is_unique:
-        raise ValueError("train_dev.csv yields duplicate canonical sample paths")
-
-    labelled = assign_group_stratified_folds(frame, n_splits=args.folds, seed=args.seed)
-    fold_counts = {
-        str(fold): int((labelled["fold"] == fold).sum())
-        for fold in range(args.folds)
-    }
     folds = labelled["fold"].to_numpy()
-    for fold in range(args.folds):
-        train_labels = labelled.loc[labelled["fold"] != fold, "label"]
-        absent = sorted(set(range(args.num_classes)) - set(train_labels.tolist()))
-        if absent:
-            raise ValueError(
-                f"fold {fold} training partition misses {len(absent)} classes: {absent[:5]}"
-            )
-    if labelled.groupby("sha256")["fold"].nunique().max() != 1:
-        raise ValueError("a content group was split across OOF folds")
 
     assignments_path = output / "oof_folds.csv"
     labelled[["sample_id", "image_path", "label", "fold"]].to_csv(
@@ -272,6 +308,25 @@ def main() -> None:
         WEIGHT_FLOOR, 1.0
     )
 
+    # Reliability floor: a class too small to cross-fit keeps its weight at 1.0
+    # rather than being down-weighted on non-estimable signals.
+    class_support = quality.groupby("original_label")["weight"].transform("size")
+    quality["class_support"] = class_support.astype(int)
+    below_floor = class_support < args.min_class_support
+    quality.loc[below_floor, "weight"] = 1.0
+    exempt_classes = sorted(
+        int(label) for label in quality.loc[below_floor, "original_label"].unique()
+    )
+
+    support_rank = (
+        quality.groupby("original_label")["class_support"]
+        .first()
+        .sort_values(kind="stable")
+        .index
+    )
+    tail_classes = set(support_rank[:75].tolist())
+    in_tail = quality["original_label"].isin(tail_classes)
+
     sidecar = output / "sample_weights.csv"
     quality[["image_path", "weight"]].to_csv(sidecar, index=False)
 
@@ -318,6 +373,13 @@ def main() -> None:
             "duplicate_conflict_samples": int(
                 quality["duplicate_conflict_flag"].sum()
             ),
+            "min_class_support": args.min_class_support,
+            "classes_exempt_below_support_floor": exempt_classes,
+            "samples_exempt_below_support_floor": int(below_floor.sum()),
+            "weight_mean_in_train_dev_tail_75": float(
+                quality.loc[in_tail, "weight"].mean()
+            ),
+            "weight_mean_outside_tail": float(quality.loc[~in_tail, "weight"].mean()),
         },
         "inputs": {
             "train_csv": str(train_csv),
