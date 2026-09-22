@@ -51,3 +51,5 @@ audit/*.zip
 audit/*.patch
 task0_5_final_acceptance.zip
 task0_5_final_acceptance/
+
+/outputs/codex/rematch750_v3_tradeoff/
