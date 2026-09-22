@@ -1,0 +1,38 @@
+{
+  "record_id": "REMATCH750_RM_FT_RM_LT_PLATFORM_20260922",
+  "recorded_date": "2026-09-22",
+  "source": "user_reported_platform_scores",
+  "test_samples": 37444,
+  "receipt_completeness": "scores_only_submission_ids_timestamps_and_period_not_supplied",
+  "candidates": [
+    {
+      "candidate": "RM_FT",
+      "strategy": "full_finetune_uniform_shuffle_baseline",
+      "platform_score_percent": 60.96570879179575,
+      "platform_score_fraction": 0.6096570879179575,
+      "correct_predictions": 22828,
+      "submission_zip_sha256": "0f3ec4e4383ac22fea3e16adbb4aa4c34e21795d8d7cf4014cd7a4c833ff68bf",
+      "platform_submission_id": null,
+      "submitted_at": null,
+      "platform_period": null
+    },
+    {
+      "candidate": "RM_LT",
+      "strategy": "full_finetune_inverse_sqrt_class_sampling_control",
+      "platform_score_percent": 60.885589146458706,
+      "platform_score_fraction": 0.6088558914645871,
+      "correct_predictions": 22798,
+      "submission_zip_sha256": "3882812c12d9ad3561fb831c2974be597f2421273506f99faa12721fa55567c4",
+      "platform_submission_id": null,
+      "submitted_at": null,
+      "platform_period": null
+    }
+  ],
+  "paired_comparison": {
+    "winner": "RM_FT",
+    "rm_ft_minus_rm_lt_percentage_points": 0.0801196453370423,
+    "rm_ft_minus_rm_lt_correct_predictions": 30
+  },
+  "formal_registry_status": "receipt_pending",
+  "notes": "Exact scores were supplied by the user. No platform submission IDs, timezone-aware upload timestamps, or reset-period identifier were supplied, so the strict rematch receipt registry was intentionally not fabricated."
+}
