@@ -1,6 +1,6 @@
 # Noise-Aware Parameter-Efficient CLIP Fine-Tuning
 
-面向噪声标签数据的细粒度图像识别。初赛数据为 500 类、约 103K 训练图；2026-09-21 已将本地数据替换为复赛数据：**750 类、148,695 张训练图、37,444 张测试图**。数据来源、路径、完整性校验和使用前准备见[复赛数据集元信息](docs/rematch_dataset_20260921.md)。复赛数据准备、RM-LP、RM-FT 与 RM-LT 已完成；独立验证 FT macro **71.8362%** / micro **72.9032%**，LT macro **71.8655%** / micro **72.6949%**。提交包已校验并复制到 Windows 桌面 submission 目录；当前以策略选择为主，RM-FT 为正式 baseline、RM-LT 为采样对照；RM-FULL 已取消；见[当前复赛执行记录](docs/rematch750_execution_20260921.md)。下文既有实验结果属于历史数据阶段。 2026-09-22 本地比较材料补导出见[FT/LT 比较材料](docs/rematch750_local_comparison_20260922.md)，包含 best checkpoint / split 哈希、逐样本验证记录、val/test logits 与 bottom-10% 口径；平台成绩尚未回填。
+面向噪声标签数据的细粒度图像识别。初赛数据为 500 类、约 103K 训练图；2026-09-21 已将本地数据替换为复赛数据：**750 类、148,695 张训练图、37,444 张测试图**。数据来源、路径、完整性校验和使用前准备见[复赛数据集元信息](docs/rematch_dataset_20260921.md)。复赛数据准备、RM-LP、RM-FT 与 RM-LT 已完成；独立验证 FT macro **71.8362%** / micro **72.9032%**，LT macro **71.8655%** / micro **72.6949%**。提交包已校验并复制到 Windows 桌面 submission 目录；当前以策略选择为主，RM-FT 为正式 baseline、RM-LT 为采样对照；RM-FULL 已取消；见[当前复赛执行记录](docs/rematch750_execution_20260921.md)。下文既有实验结果属于历史数据阶段。 2026-09-22 本地比较材料补导出见[FT/LT 比较材料](docs/rematch750_local_comparison_20260922.md)，包含 best checkpoint / split 哈希、逐样本验证记录、val/test logits 与 bottom-10% 口径；平台成绩尚未回填。2026-09-22 训练侧 OOF 连续降权（RM-OOFW）完成本地配对裁决：以本机独立复现的 RM-FT 为对照（macro 71.8054%，与登记值 71.8362% 差 0.03pp），**主判据固定训练尾部 75 类 macro +0.0113pp 未过 +0.20pp 晋级门（t=+0.04），整体 macro −0.1311pp**，止损未触发；本轮据此关闭、不派生参数扫描、**无提交包**，详见[策略文档与结果](docs/rematch750_strategy_oof_downweight_20260921.md)。
 
 ## 当前状态
 

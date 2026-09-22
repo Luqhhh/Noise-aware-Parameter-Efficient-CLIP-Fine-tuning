@@ -1,6 +1,6 @@
 # REMATCH750 策略思路：训练侧 OOF 连续降权
 
-> **状态：实现已落地并推送（`ae54a8c`），训练未跑。** 权重侧车生成中，尚无本地指标、无提交包。
+> **状态：本轮已关闭（2026-09-22）。主判据未通过 —— 固定训练尾部 75 类 macro +0.0113pp（门 +0.20pp，t=+0.04），整体 macro −0.1311pp。不出提交包，不派生参数扫描。** 结果、分辨力分析与三点说明见文末「结果」。
 > 登记：clairvoyanttt，2026-09-21。本文件用于防止重复劳动 —— 开工前请先读这里确认边界。
 > 2026-09-22：开工。下方「方法概要」的两处事实错误已就地更正，判据已修订，实现细节见文末「实现记录」。
 
@@ -141,10 +141,55 @@
 - 全量套件 **2 failed / 632 passed**，与改动前基线**完全一致**（两个失败均为 `test_scope_protocol.py` 因上一阶段冻结资产被删而失败，属已知项）
 - 尚未跑训练，**无任何指标**。不得在结果产出前声称有效。
 
+## 结果（2026-09-22）：主判据未通过，本轮关闭
+
+**裁决命令**（可重放）
+
+```bash
+PYTHONPATH=reproducibility/aegis_f1 .venv/bin/python -m aegis_clip.cli.compare_runs \
+  --baseline outputs/rematch750/RM_FT/seed42/checkpoints/best_evaluation.json \
+  --variant  outputs/rematch750/RM_OOFW/seed42/checkpoints/best_evaluation.json \
+  --json-out results/rematch750_oofw_verdict_20260922.json
+```
+
+机器可读结果：[results/rematch750_oofw_verdict_20260922.json](../results/rematch750_oofw_verdict_20260922.json)
+
+| 指标 | RM_FT | RM_OOFW | Δ | 判据 |
+|---|---:|---:|---:|---|
+| 整体 macro | 71.8054% | 71.6743% | −0.1311pp | 次判据，容差 −0.30pp → **PASS** |
+| 整体 micro | 72.8696% | 72.7487% | −0.1210pp | — |
+| 固定训练尾部 75 类 macro | 55.5827% | 55.5938% | +0.0111pp | — |
+| 同上，不含 class 183 | 56.3338% | 56.3450% | **+0.0113pp** | **主判据，门 +0.20pp → FAIL** |
+| bottom-10% macro | 22.4988% | 22.9385% | +0.4397pp | 事后观察，**非判据** |
+
+配对分辨力（同批类、同批验证图，逐类差值）：
+
+| 口径 | n | Δ | 配对 SE | t |
+|---|---:|---:|---:|---:|
+| 尾部 macro（含 183） | 75 | +0.0111pp | 0.2795pp | **+0.04** |
+| 尾部 macro（不含 183） | 74 | +0.0113pp | 0.2833pp | **+0.04** |
+| 整体 macro | 750 | −0.1311pp | 0.0925pp | −1.42 |
+
+止损（−2pp）未触发。
+
+**单变量归因已核对**：两次 run 的 `resolved_config.json` 共 71 个叶子键，仅 2 个不同 —— `project.experiment_id`（纯标签）与 `trust.sample_weight_path`（处理项）。训练从同一 `RM_LP/seed42/checkpoints/best.pt`（epoch=20）初始化，两者 best 均选中 epoch 8。
+
+**结论与必须如实说明的三点**
+
+1. **主判据 FAIL，且不是「差一点」**：+0.011pp、t=+0.04，实质为零。按预注册关闭本轮，**不派生参数扫描**（项目门槛规则）。
+
+2. **不能反读成「降权方法无效」。** 本设计的配对分辨力是 0.28pp，只能排除约 0.56pp（2 SE）以上的尾部效应。而 +0.20pp 这个晋级门本身只相当于 **0.71 个配对 SE** —— 门就设在分辨力边缘。也就是说：一个 0.20pp 量级的真实效应，本实验在设计上就分辨不出来。这是判据的局限，实验前已存在，现在被实测确认。下一轮若仍用尾部 macro 当主判据，必须同时扩大验证样本或改用配对更强的设计。
+
+3. **bottom-10% 的 +0.44pp 是事后观察，不是判据。** 它和队友 FT/LT 配对的 bottom-10% +0.96pp 同向，提示方法在「召回最差的那批类」上可能有信号。但本轮**不据此晋级** —— 拿一个看到结果后才挑中的口径来宣布成功，正是预注册要防的事。它可以作为**下一轮事先登记**的假设，不能作为本轮的结论。
+
+**可靠性下限达到了设计目的**：排除 class 183 前后主判据值几乎不变（+0.0111 → +0.0113），说明结论不依赖那个 4 样本类，混淆项被成功隔离。
+
 ## 状态
 
-实现已推送（`ae54a8c`），sidecar 生成与配对训练待跑。下一步：
+**本轮已关闭（2026-09-22）。主判据未通过，不派生参数扫描、不出提交包。**
 
-1. 生成 sidecar：`python -m aegis_clip.cli.build_sample_weights`（参数见 `cli/build_sample_weights.py` 的 `--help`）
-2. 训练 `configs/rematch750_oofw.yaml`，与 `RM_FT` 配对比较
-3. 按上文修订后的判据（**尾部 macro 为主**）裁决
+- 实现：`ae54a8c`（trainer/config/loader/测试）、`0fe9b3e`（可靠性下限 + 折划分重构）、`b49f973` + `85adcaa`（裁决工具）
+- 产物：sidecar `outputs/rematch750/oof_downweight/seed42/`（sidecar 本身按 500 类以外的本阶段数据生成，不可跨阶段复用）；裁决 `results/rematch750_oofw_verdict_20260922.json`
+- 权重与 checkpoint 为二进制，不入库
+
+**若继续这条线，下一轮必须先登记的事**：主判据换成 bottom-10% macro（并说明为何不是尾部 macro），或维持尾部 macro 但把验证样本量补到能分辨 0.20pp。
