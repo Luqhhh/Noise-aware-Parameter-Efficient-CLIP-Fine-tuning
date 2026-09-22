@@ -1,0 +1,183 @@
+{
+  "status": "passed",
+  "source_commit": "248e741cdbfb65a9a066de0edafb2241734a3ae3",
+  "remote_snapshot_commit": "1642427f786e59c6eecf3875bf234954bf240361",
+  "probe_count": 39,
+  "passed_probes": 38,
+  "failed_probes": [
+    "b32_w16_fused"
+  ],
+  "recipe_preserving_config": "configs/rematch750_ft_npu_tuned.yaml",
+  "throughput_only_config": "configs/rematch750_ft_npu_throughput.yaml",
+  "selection": {
+    "status": "passed",
+    "winner": {
+      "name": "pin2048_w40",
+      "batch": 2048,
+      "workers": 40,
+      "prefetch": 2,
+      "steps": 40,
+      "warmup": 15,
+      "optimizer": "fused",
+      "norm": "foreach",
+      "profile": false,
+      "threads": 4,
+      "production": true,
+      "pin_memory": true,
+      "loss_phase": "ce"
+    },
+    "repeat_case": "repeat_pin2048_w40",
+    "mean_images_per_second_two_runs": 1870.3428240751427,
+    "gce_images_per_second": 1867.0892046591416,
+    "gce_status": "passed",
+    "comparison": [
+      [
+        1870.3428240751427,
+        "pin2048_w40",
+        "repeat_pin2048_w40"
+      ],
+      [
+        1832.0528435381812,
+        "pin1024_w40",
+        "repeat_pin1024_w40"
+      ]
+    ],
+    "user_selected": {
+      "name": "pin1024_w40",
+      "batch": 1024,
+      "workers": 40,
+      "prefetch": 4,
+      "steps": 100,
+      "warmup": 20,
+      "optimizer": "fused",
+      "norm": "foreach",
+      "profile": false,
+      "threads": 4,
+      "production": true,
+      "pin_memory": true,
+      "loss_phase": "ce"
+    },
+    "user_selection_reason": "Explicit user choice: batch 1024; near-maximum throughput with lower memory use.",
+    "user_selected_mean_images_per_second": 1832.0528435381812,
+    "user_selected_gce_images_per_second": 1802.706966385369,
+    "user_selected_gce_status": "passed"
+  },
+  "formal_timing": {
+    "batch_size": 32,
+    "interval_count": 39,
+    "median_seconds_per_step": 0.079585,
+    "mean_seconds_per_step": 0.07965538461538461,
+    "first_step_to_epoch2_saved_seconds": 706.523
+  },
+  "original_npu_to_tuned_speedup": 2.845825218320035,
+  "original_gpu_to_tuned_speedup": 1.5903122447697429,
+  "acceptance": {
+    "status": "passed",
+    "candidate": "RM_FT_NPU_TUNED_E2",
+    "stages": [
+      {
+        "action": "train",
+        "command": [
+          "/workspace/noise-npu-venv/bin/python",
+          "-u",
+          "-m",
+          "aegis_clip.cli.rematch",
+          "train",
+          "--config",
+          "configs/rematch750_ft_npu_tuned_acceptance.yaml"
+        ],
+        "status": "passed",
+        "seconds": 768.8496481231414,
+        "returncode": 0
+      },
+      {
+        "action": "infer",
+        "command": [
+          "/workspace/noise-npu-venv/bin/python",
+          "-u",
+          "-m",
+          "aegis_clip.cli.rematch",
+          "infer",
+          "--config",
+          "configs/rematch750_ft_npu_tuned_acceptance.yaml"
+        ],
+        "status": "passed",
+        "seconds": 65.68912831810303,
+        "returncode": 0
+      }
+    ],
+    "platform_submitted": false,
+    "completed_epochs": 2,
+    "schedule_epochs": 8,
+    "source_manifest": "results/rematch750_npu_tuning_source_manifest.json",
+    "runner_sha256": "120a2965baa2836c9d315bdb1a84225cac59974b55a688c2a8ee3f2900f8ae0a",
+    "checkpoint_audit": {
+      "best": {
+        "epoch": 2,
+        "global_step": 8364,
+        "scheduler_steps": 8364,
+        "optimizer_step_values": [
+          8364
+        ],
+        "all_tensors_finite": true,
+        "frozen_unchanged": true,
+        "npu_rng_saved": true,
+        "raw_macro": 0.683530867099762,
+        "raw_micro": 0.6938171982765198
+      },
+      "last": {
+        "epoch": 2,
+        "global_step": 8364,
+        "scheduler_steps": 8364,
+        "optimizer_step_values": [
+          8364
+        ],
+        "all_tensors_finite": true,
+        "frozen_unchanged": true,
+        "npu_rng_saved": true,
+        "raw_macro": 0.683530867099762,
+        "raw_micro": 0.6938171982765198
+      },
+      "reload_metrics_exact": true,
+      "reference_npu_epoch2_macro": 0.6818368434906006,
+      "macro_delta_vs_original_npu_pp": 0.1694023609161377
+    }
+  },
+  "submission": {
+    "candidate": "RM_FT_NPU_TUNED_E2",
+    "checkpoint_sha256": "4529397d174b44f131b180e42b3202f59ccfb67061d9bd3ecbf408e10c56f2e7",
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "code_commit": "1642427f786e59c6eecf3875bf234954bf240361",
+    "config_sha256": "90a8df41be7ced929e04827a018afe9bab2d7b5259565a718dd7b64864792f8a",
+    "csv_sha256": "d788d458676b14aa8d04e985ad5018971a5398fc5fe0fc9419a69a134b929c79",
+    "data_version": "20260921",
+    "dataset_manifest_sha256": "af62cc3ae9c9fe3fdba9da125f15ef71b969f54c4a4a41e866de28682ce2efde",
+    "inference_config": "global_224_center_crop;tta=none;prior=none;single_checkpoint",
+    "is_highest_score": "false",
+    "platform_period": "",
+    "platform_score": "",
+    "platform_submission_id": "",
+    "stage": "repechage",
+    "status": "ready",
+    "submission_path": "outputs/npu_tuning/RM_FT_NPU_TUNED_E2/seed42/submission",
+    "submitted_at": "",
+    "zip_sha256": "a078286c4a27d4cd38dafdd694287051b48e977be1a6a7b2f2d84438d0deab11"
+  },
+  "local_submission_validation": "outputs/npu_tuning/local_submission_check.log",
+  "hardware_validation": {
+    "optimizer_clip_amp_restore": "6 passed in 50.99s",
+    "loader_pinned_and_unpinned": "2 passed in 9.21s; overlaps one earlier case"
+  },
+  "local_tests": {
+    "passed": 662,
+    "skipped_hardware": 7,
+    "known_scope_asset_failures": 2
+  },
+  "limitations": [
+    "Single machine/device, bounded empirical search; not a global optimum.",
+    "Large batch changes updates per epoch; no convergence or accuracy claim.",
+    "Formal acceptance covers two CE epochs; GCE has bounded throughput/update checks only.",
+    "No platform upload or score; full eight-epoch accuracy not reproduced.",
+    "Hardware/CPU placement differs from local GPU; this is a measured system comparison."
+  ]
+}

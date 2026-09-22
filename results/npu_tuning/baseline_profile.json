@@ -1,0 +1,70 @@
+{
+  "arguments": {
+    "name": "baseline_profile",
+    "batch": 32,
+    "workers": 4,
+    "prefetch": 1,
+    "steps": 15,
+    "warmup": 10,
+    "optimizer": "adamw",
+    "norm": "original",
+    "profile": true,
+    "threads": 8
+  },
+  "status": "passed",
+  "training_source": "/workspace/noise/artifacts/stages/repechage/20260921_npu/train_dev.csv",
+  "test_data_used": false,
+  "config_path": "/workspace/noise/configs/npu_probe_baseline_profile.local.yaml",
+  "optimizer_step_values": [
+    25
+  ],
+  "mean_step_seconds": 0.23105990332551302,
+  "median_step_seconds": 0.11989925988018513,
+  "images_per_second": 138.4922244813674,
+  "mean_loader_wait_seconds": 0.11728820187660555,
+  "peak_allocated_gib": 1.8665971755981445,
+  "peak_reserved_gib": 2.029296875,
+  "sections_seconds_per_step": {
+    "forward": 0.019087319991861782,
+    "loss": 0.00026477184146642683,
+    "backward": 0.026310338530068596,
+    "gradient_norm": 0.009303590018923084,
+    "clip_grad_norm": 0.003370190660158793,
+    "optimizer": 0.031119643524289132
+  },
+  "step_seconds": [
+    0.11488284007646143,
+    0.11342636309564114,
+    0.11989925988018513,
+    0.5311284819617867,
+    0.11366668692789972,
+    0.12420781189575791,
+    0.11949470592662692,
+    0.1573288741055876,
+    0.11541356798261404,
+    1.0012859660200775,
+    0.11409884202294052,
+    0.12025019503198564,
+    0.11211302899755538,
+    0.19097892381250858,
+    0.41772300214506686
+  ],
+  "loader_wait_seconds": [
+    0.00019509205594658852,
+    0.0002417729701846838,
+    0.000198072986677289,
+    0.41967726103030145,
+    0.00017961207777261734,
+    0.004484222969040275,
+    0.003930327016860247,
+    0.043247892055660486,
+    0.0045284738298505545,
+    0.8904114421457052,
+    0.00017414218746125698,
+    0.005405063973739743,
+    0.00023248186334967613,
+    0.07918825885280967,
+    0.3072289121337235
+  ],
+  "total_wall_seconds": 21.213384634815156
+}

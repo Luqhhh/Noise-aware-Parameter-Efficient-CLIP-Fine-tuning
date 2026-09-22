@@ -1,0 +1,72 @@
+{
+  "status": "passed",
+  "candidate": "RM_FT_NPU_TUNED_E2",
+  "stages": [
+    {
+      "action": "train",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "train",
+        "--config",
+        "configs/rematch750_ft_npu_tuned_acceptance.yaml"
+      ],
+      "status": "passed",
+      "seconds": 768.8496481231414,
+      "returncode": 0
+    },
+    {
+      "action": "infer",
+      "command": [
+        "/workspace/noise-npu-venv/bin/python",
+        "-u",
+        "-m",
+        "aegis_clip.cli.rematch",
+        "infer",
+        "--config",
+        "configs/rematch750_ft_npu_tuned_acceptance.yaml"
+      ],
+      "status": "passed",
+      "seconds": 65.68912831810303,
+      "returncode": 0
+    }
+  ],
+  "platform_submitted": false,
+  "completed_epochs": 2,
+  "schedule_epochs": 8,
+  "source_manifest": "results/rematch750_npu_tuning_source_manifest.json",
+  "runner_sha256": "120a2965baa2836c9d315bdb1a84225cac59974b55a688c2a8ee3f2900f8ae0a",
+  "checkpoint_audit": {
+    "best": {
+      "epoch": 2,
+      "global_step": 8364,
+      "scheduler_steps": 8364,
+      "optimizer_step_values": [
+        8364
+      ],
+      "all_tensors_finite": true,
+      "frozen_unchanged": true,
+      "npu_rng_saved": true,
+      "raw_macro": 0.683530867099762,
+      "raw_micro": 0.6938171982765198
+    },
+    "last": {
+      "epoch": 2,
+      "global_step": 8364,
+      "scheduler_steps": 8364,
+      "optimizer_step_values": [
+        8364
+      ],
+      "all_tensors_finite": true,
+      "frozen_unchanged": true,
+      "npu_rng_saved": true,
+      "raw_macro": 0.683530867099762,
+      "raw_micro": 0.6938171982765198
+    },
+    "reload_metrics_exact": true,
+    "reference_npu_epoch2_macro": 0.6818368434906006,
+    "macro_delta_vs_original_npu_pp": 0.1694023609161377
+  }
+}

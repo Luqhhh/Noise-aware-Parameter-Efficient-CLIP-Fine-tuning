@@ -1,0 +1,20 @@
+{
+  "arguments": {
+    "name": "b32_w16_fused",
+    "batch": 32,
+    "workers": 16,
+    "prefetch": 2,
+    "steps": 100,
+    "warmup": 20,
+    "optimizer": "fused",
+    "norm": "original",
+    "profile": false,
+    "threads": 8
+  },
+  "status": "failed",
+  "training_source": "/workspace/noise/artifacts/stages/repechage/20260921_npu/train_dev.csv",
+  "test_data_used": false,
+  "config_path": "/workspace/noise/configs/npu_probe_b32_w16_fused.local.yaml",
+  "error": "ValueError: set_to_none is not supported in fused optimizers\n[ERROR] 2026-09-22-13:32:02 (PID:947082, Device:0, RankID:-1) ERR00003 PTA invalid value",
+  "total_wall_seconds": 13.277719764970243
+}

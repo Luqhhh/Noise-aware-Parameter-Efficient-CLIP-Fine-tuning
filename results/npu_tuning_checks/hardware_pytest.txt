@@ -1,0 +1,12 @@
+......                                                                   [100%]
+=============================== warnings summary ===============================
+tests/test_npu_hardware.py::test_optimized_adamw_matches_reference_and_resumes[foreach]
+  /workspace/noise-npu-venv/lib64/python3.11/site-packages/torch/optim/adam.py:176: UserWarning: Cannot create tensor with interal format while allow_internel_format=False, tensor will be created with base format. (Triggered internally at ../torch_npu/csrc/aten/common/TensorFactories.cpp:340.)
+    state["exp_avg"] = torch.zeros_like(
+
+tests/test_npu_hardware.py::test_optimized_adamw_matches_reference_and_resumes[foreach]
+  /workspace/noise-npu-venv/lib64/python3.11/site-packages/torch_npu/utils/storage.py:102: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+    if self.device.type != 'cpu':
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+6 passed, 2 warnings in 50.99s

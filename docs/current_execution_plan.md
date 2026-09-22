@@ -14,7 +14,7 @@ baseline 定位：RM-FT 是本阶段正式视觉微调 baseline；RM-LP 是冻�
 
 NPU 两轮迁移验收已通过：910B2 单卡完成全量数据一致性检查、缓存、20 轮 LP、用户授权缩短的 2 轮 FT、checkpoint 重载与 37,444 行提交校验。FT macro 68.1837%、micro 69.2742%，比 GPU 同为第 2 轮的 macro 低 0.072pp；8,364 次更新无跳步。LP batch 256 / FT batch 32；NPU 实测 0.2265 秒/步，本机 GPU 0.1266 秒/步，当前 NPU 耗时为 1.79 倍，性能尚待优化。保留原 8 轮学习率计划，但未完成 8 轮精度复现；验收包未上传平台，不替代正式 RM_FT。见 [迁移记录](rematch750_npu_migration_20260922.md)。
 
-NPU 性能调优在途：用户要求找出最优配置，按真实训练吞吐测试加载进程、优化器实现与 batch；不以测试集选配置，保留 batch 32 配方对照。见 [调优记录](rematch750_npu_tuning_20260922.md)。
+NPU 性能调优的 batch 32 两轮验收通过：workers 16 / prefetch 2 / NPU 锁页内存 / fused AdamW / foreach norm / OMP 4，实测 **0.079585 秒/步**，比原 NPU 快 **2.85 倍**、比本机 GPU 快 **1.59 倍**；macro **68.3531%**、micro **69.3817%**，8,364 次更新和重载审计通过，37,444 行 CSV/ZIP 远端与本机校验通过，未上传平台。用户最终选用 **batch 1024 / workers 40 / prefetch 4**（两次均约 **1,832 张/秒**，张量显存 **23.52 GiB**），大 batch 收敛尚未验收，不能视作精度等价配置；见 [调优记录](rematch750_npu_tuning_20260922.md)。
 
 **在途策略登记**（防止重复劳动，开工前请先读对应文件确认边界）：
 

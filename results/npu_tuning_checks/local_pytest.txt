@@ -1,0 +1,90 @@
+........................................................................ [ 10%]
+........................................................................ [ 21%]
+........................................................................ [ 32%]
+..............................................sssssss................... [ 42%]
+........................................................................ [ 53%]
+........................................................................ [ 64%]
+........................................................................ [ 75%]
+........................................................................ [ 85%]
+............FF.......................................................... [ 96%]
+.......................                                                  [100%]
+=================================== FAILURES ===================================
+______________ test_scope_asset_gate_verifies_every_frozen_asset _______________
+
+    def test_scope_asset_gate_verifies_every_frozen_asset() -> None:
+        protocol = load_scope_protocol(CONFIG)
+
+>       audit = verify_scope_assets(protocol)
+
+reproducibility/aegis_f1/tests/test_scope_protocol.py:62:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+protocol = ScopeProtocol(protocol_id='scope_k2_fullft_dual_pa090_v1', config_path=PosixPath('/home/lux1/noise/reproducibility/aeg...ows': 103218, 'expected_unique_groups': 101980, 'expected_duplicate_extras': 1238, 'expected_cross_split_overlap': 0}})
+
+    def verify_scope_assets(protocol: ScopeProtocol) -> ScopePreflightAudit:
+        checks = (
+            ("spec", protocol.spec_path, protocol.spec_sha256),
+            ("train_csv", protocol.assets.train_csv, protocol.assets.train_csv_sha256),
+            ("val_csv", protocol.assets.val_csv, protocol.assets.val_csv_sha256),
+            ("class_to_idx", protocol.assets.class_to_idx, protocol.assets.class_to_idx_sha256),
+            ("idx_to_class", protocol.assets.idx_to_class, protocol.assets.idx_to_class_sha256),
+            ("split_manifest", protocol.assets.split_manifest, protocol.assets.split_manifest_sha256),
+            ("checkpoint", protocol.assets.checkpoint, protocol.assets.checkpoint_sha256),
+            ("trust_bundle", protocol.assets.trust_bundle, protocol.assets.trust_bundle_sha256),
+            ("group_artifact", protocol.assets.group_artifact, protocol.assets.group_artifact_sha256),
+            ("fallback_csv", protocol.assets.fallback_csv, protocol.assets.fallback_csv_sha256),
+            ("fallback_zip", protocol.assets.fallback_zip, protocol.assets.fallback_zip_sha256),
+            ("fallback_manifest", protocol.assets.fallback_manifest, protocol.assets.fallback_manifest_sha256),
+        )
+        for name, path, expected in checks:
+            if not path.is_file():
+>               raise ScopePreflightError(f"{name} is missing: {path}")
+E               aegis_clip.scope_protocol.ScopePreflightError: checkpoint is missing: /home/lux1/noise/reproducibility/aegis_f1/artifacts/external/scope_k2/fullft_dual_pa090/best.pt
+
+reproducibility/aegis_f1/aegis_clip/scope_protocol.py:278: ScopePreflightError
+____________ test_scope_asset_gate_fails_closed_on_digest_mismatch _____________
+
+    def test_scope_asset_gate_fails_closed_on_digest_mismatch() -> None:
+        protocol = load_scope_protocol(CONFIG)
+        bad_assets = replace(protocol.assets, checkpoint_sha256="0" * 64)
+
+>       with pytest.raises(ScopePreflightError, match="checkpoint SHA-256 mismatch"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'checkpoint SHA-256 mismatch'
+E         Actual message: 'checkpoint is missing: /home/lux1/noise/reproducibility/aegis_f1/artifacts/external/scope_k2/fullft_dual_pa090/best.pt'
+
+reproducibility/aegis_f1/tests/test_scope_protocol.py:74: AssertionError
+=============================== warnings summary ===============================
+tests/test_cvrg_crossfit.py::test_nested_cross_fit_is_deterministic_and_has_oof_for_every_image
+tests/test_cvrg_crossfit.py::test_nested_cross_fit_is_deterministic_and_has_oof_for_every_image
+tests/test_cvrg_crossfit.py::test_nested_cross_fit_is_deterministic_and_has_oof_for_every_image
+tests/test_cvrg_crossfit.py::test_nested_cross_fit_is_deterministic_and_has_oof_for_every_image
+  /home/lux1/.local/lib/python3.10/site-packages/sklearn/model_selection/_split.py:1035: UserWarning: The least populated class in y has only 1 members, which is less than n_splits=3.
+    warnings.warn(
+
+tests/test_cvrg_crossfit.py::test_nested_cross_fit_is_deterministic_and_has_oof_for_every_image
+tests/test_cvrg_crossfit.py::test_nested_cross_fit_is_deterministic_and_has_oof_for_every_image
+tests/test_cvrg_crossfit.py::test_one_class_target_fails_closed
+  /home/lux1/.local/lib/python3.10/site-packages/sklearn/model_selection/_split.py:1035: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+    warnings.warn(
+
+tests/test_cvrg_crossfit.py::test_one_class_target_fails_closed
+  /home/lux1/.local/lib/python3.10/site-packages/sklearn/model_selection/_split.py:1035: UserWarning: The least populated class in y has only 4 members, which is less than n_splits=5.
+    warnings.warn(
+
+tests/test_prelim75_v7.py::test_build_fresh_scheduler_uses_candidate_horizon_and_floor
+  /home/lux1/noise/reproducibility/aegis_f1/tests/test_prelim75_v7.py:71: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
+    scheduler.step()
+
+tests/test_prelim75_v7.py::test_build_fresh_scheduler_uses_candidate_horizon_and_floor
+  /home/lux1/noise/reproducibility/aegis_f1/tests/test_prelim75_v7.py:81: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
+    scheduler0.step()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [2] reproducibility/aegis_f1/tests/test_npu_hardware.py:12: requires explicit NPU allocation
+SKIPPED [2] reproducibility/aegis_f1/tests/test_npu_hardware.py:56: requires explicit NPU allocation
+SKIPPED [3] reproducibility/aegis_f1/tests/test_npu_hardware.py:71: requires explicit NPU allocation
+FAILED reproducibility/aegis_f1/tests/test_scope_protocol.py::test_scope_asset_gate_verifies_every_frozen_asset
+FAILED reproducibility/aegis_f1/tests/test_scope_protocol.py::test_scope_asset_gate_fails_closed_on_digest_mismatch
+2 failed, 662 passed, 7 skipped, 10 warnings in 14.91s

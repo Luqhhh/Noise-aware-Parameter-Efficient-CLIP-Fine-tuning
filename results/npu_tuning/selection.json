@@ -1,0 +1,53 @@
+{
+  "status": "passed",
+  "winner": {
+    "name": "pin2048_w40",
+    "batch": 2048,
+    "workers": 40,
+    "prefetch": 2,
+    "steps": 40,
+    "warmup": 15,
+    "optimizer": "fused",
+    "norm": "foreach",
+    "profile": false,
+    "threads": 4,
+    "production": true,
+    "pin_memory": true,
+    "loss_phase": "ce"
+  },
+  "repeat_case": "repeat_pin2048_w40",
+  "mean_images_per_second_two_runs": 1870.3428240751427,
+  "gce_images_per_second": 1867.0892046591416,
+  "gce_status": "passed",
+  "comparison": [
+    [
+      1870.3428240751427,
+      "pin2048_w40",
+      "repeat_pin2048_w40"
+    ],
+    [
+      1832.0528435381812,
+      "pin1024_w40",
+      "repeat_pin1024_w40"
+    ]
+  ],
+  "user_selected": {
+    "name": "pin1024_w40",
+    "batch": 1024,
+    "workers": 40,
+    "prefetch": 4,
+    "steps": 100,
+    "warmup": 20,
+    "optimizer": "fused",
+    "norm": "foreach",
+    "profile": false,
+    "threads": 4,
+    "production": true,
+    "pin_memory": true,
+    "loss_phase": "ce"
+  },
+  "user_selection_reason": "Explicit user choice: batch 1024; near-maximum throughput with lower memory use.",
+  "user_selected_mean_images_per_second": 1832.0528435381812,
+  "user_selected_gce_images_per_second": 1802.706966385369,
+  "user_selected_gce_status": "passed"
+}
