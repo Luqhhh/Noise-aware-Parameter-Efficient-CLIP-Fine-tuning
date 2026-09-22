@@ -1,0 +1,87 @@
+{
+  "stage": "repechage",
+  "data_version": "20260921",
+  "date": "2026-09-22",
+  "author": "clairvoyanttt",
+  "kind": "closing measurement round; no candidate, no submission package",
+  "baseline": {
+    "candidate": "RM_FT",
+    "checkpoint": "outputs/rematch750/RM_FT/seed42/checkpoints/best.pt",
+    "local_val_macro": 0.7180540561676025,
+    "local_val_micro": 0.7286962270736694,
+    "local_val_correct": 10843,
+    "local_val_samples": 14880,
+    "platform_overall_accuracy": 0.6096570879179575,
+    "platform_correct": 22828,
+    "platform_samples": 37444,
+    "local_minus_platform_pp": 11.9039
+  },
+  "probe_1_flip_tta": {
+    "tool": "reproducibility/aegis_f1/aegis_clip/cli/sweep_flip_tta_online.py",
+    "raw_output": "outputs/rematch750/RM_FT/seed42/tta_sweep.json",
+    "anchor": "fusion=none reproduces the recorded raw_macro and raw_micro to <1e-6",
+    "flip_top1_agreement": 0.904503,
+    "images_whose_decision_the_flip_changes": 1421,
+    "fusion_rules_tested": 9,
+    "rules_with_positive_micro_delta": 9,
+    "micro_delta_pp_range": [0.1546, 0.2419],
+    "macro_delta_pp_range": [0.1491, 0.2124],
+    "paired_se_pp_approx": 0.127,
+    "paired_t_range": [1.19, 1.68],
+    "code_default_mean_logits": {
+      "raw_micro": 0.730712,
+      "micro_delta_pp": 0.2016,
+      "raw_macro": 0.719813,
+      "macro_delta_pp": 0.1759,
+      "paired_t": 1.37
+    },
+    "val_argmax_rule_not_selected": {
+      "rule": "entropy_weighted_probabilities",
+      "temperature": 2.0,
+      "micro_delta_pp": 0.2419,
+      "macro_delta_pp": 0.2124,
+      "paired_t": 1.68,
+      "why_not_chosen": "choosing the rule by local val is the local promotion gate that docs/lessons_learned.md bans"
+    },
+    "equal_thirds_segments_best_rule_micro_delta_pp": {
+      "head": 0.3075,
+      "medium": 0.3393,
+      "tail": 0.0249
+    },
+    "equal_thirds_tail_macro_delta_pp": -0.0196,
+    "conclusion": "inference-side ceiling is small and is zero on the tail; quantifies the existing qualitative decision that the inference side is not the answer"
+  },
+  "probe_2_input_geometry": {
+    "tool": "reproducibility/aegis_f1/aegis_clip/cli/simulate_input_geometry.py",
+    "raw_output": "outputs/rematch750/RM_FT/seed42/geometry_sweep.json",
+    "anchor_note": "control is 10843/14880 = 0.7286962365591397; the recorded 0.7286962270736694 is float32-accumulated, and recorded*14880 = 10842.99986, i.e. the same 10843 images",
+    "observed_image_geometry": {
+      "train_dev": {"samples": 133815, "distinct_shapes": 33631, "long_side_range": "800-1390+", "top_aspect_ratio": 1.33},
+      "val_dev": {"samples": 14880, "distinct_shapes": 6406, "long_side_range": "800-1390+", "top_aspect_ratio": 1.33},
+      "test": {"samples": 37444, "distinct_shapes": 807, "max_dimension": 500, "top_shape": "375x500", "top_shape_share": 0.376, "top_aspect_ratio": 0.75}
+    },
+    "validation_rescaled_to_long_side": {
+      "original": {"correct": 10843, "micro": 0.728696},
+      "800": {"correct": 10817, "micro": 0.726949, "delta_pp": -0.1747},
+      "640": {"correct": 10808, "micro": 0.726344, "delta_pp": -0.2352},
+      "500": {"correct": 10816, "micro": 0.726882, "delta_pp": -0.1815},
+      "400": {"correct": 10797, "micro": 0.725605, "delta_pp": -0.3091}
+    },
+    "conclusion": "REFUTED: matching the test set's geometry costs 0.17-0.31pp, not 11.90pp; the local/platform gap is not an input-geometry artifact and cannot be closed by inference-side preprocessing"
+  },
+  "compliance": {
+    "flip_tta_ruling": "compliant; committee answered favourably (COMPETITION_RULES_AGENT.md:804, docs/repechage_prep_20260831.md:19)",
+    "why_no_tta_submission": "aegis_clip/cli/infer.py:231-233 refuses TTA under a rematch config ('Rematch first-round inference is global only, without prior'); this is a stage policy, not a compliance block, and it was NOT bypassed",
+    "test_set_touched": "size statistics only (width/height from the dataset manifest); no test image, label or prediction was read"
+  },
+  "process_findings": [
+    "The inference side was already closed by the project before this round (docs/rematch750_strategy_oof_downweight_20260921.md:13 and :23). This round quantifies that decision rather than revisiting it.",
+    "The RM-OOFW round pre-registered a LOCAL promotion gate (+0.20pp on local tail macro), which docs/lessons_learned.md section 1 forbids ('no local promotion gate'). That round could not have been adjudicated on local data either way."
+  ],
+  "gates": {
+    "investment_return_pp": 0.30,
+    "local_stop_loss_pp": 2.00,
+    "promotion_pp": 0.20,
+    "note": "the +0.30pp investment-return gate is applied to local effect sizes; flip TTA measures +0.155 to +0.242pp local, i.e. below it"
+  }
+}
