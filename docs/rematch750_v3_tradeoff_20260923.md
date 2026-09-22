@@ -24,7 +24,7 @@ B64每轮2091步、八轮16728步；B128每轮1046步、十六轮16736步。各�
 
 本机worktree `/home/lux1/noise-worktrees/rematch750_v3_tradeoff`，分支 `codex/rematch750_v3_tradeoff`；远端拟用独立源码目录 `/workspace/noise-worktrees/rematch750_v3_tradeoff`（尚未创建）。原始数据/特征通过只读使用的路径共享，init路径显式指向同哈希NPU LP；输出 `outputs/codex/rematch750_v3_tradeoff/{RM_V3_B64,RM_V3_B128_E16}/seed42/`。
 
-配置草案暂以 `train.device: cpu` 表示未绑定执行设备，`aegis_clip.cli.rematch` 会拒绝CPU训练，避免草案默认指向NPU0。这不是拟议的CPU实验；其余超参数供审阅。恢复执行前必须明确设置非0号空闲NPU及其CPU绑定，当前不提供可直接启动NPU0的命令。
+配置草案暂以 `train.device: npu:UNASSIGNED` 表示未绑定执行设备，该占位符不是可用的设备标识，避免草案默认指向NPU0。这不是可直接运行的配置；其余超参数供审阅。恢复执行前必须明确设置非0号空闲NPU及其CPU绑定，当前不提供可直接启动NPU0的命令。
 
 恢复执行前还需适配审计：既有 `scripts/audit_rematch750_v2.py` 写死8轮及2/4/6/8验证，不能直接用于16轮配置；需按配置epochs生成完整验证点与成功更新数，重载核对保持原标准。这里只记录实施事项，暂不修改训练/审计逻辑。
 

@@ -1,4 +1,4 @@
-# PLAN ONLY: no training authorized. CPU placeholder is rejected by rematch CLI.
+# PLAN ONLY: no training authorized. Device is intentionally unassigned and cannot be used for execution.
 # Before execution, bind an explicitly approved idle NPU other than device 0.
 data:
   class_mapping: ../artifacts/stages/repechage/20260921_npu/class_to_idx.json
@@ -65,7 +65,7 @@ train:
   backbone_weight_decay: 0.0001
   batch_size: 128
   deterministic: true
-  device: cpu
+  device: npu:UNASSIGNED
   early_stop_patience: 0
   epochs: 16
   head_lr: 0.0001
