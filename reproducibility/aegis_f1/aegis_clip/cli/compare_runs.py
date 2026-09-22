@@ -20,14 +20,24 @@ The criteria, and why they are these three:
 Two of the 75 tail classes cannot be judged on a single validation image, so
 every tail number is reported both with and without them (``--exclude-class``,
 default 183, which has 4 training and 1 validation sample). One validation
-image flipping moves the tail macro by ~0.75pp, several times the 0.20pp gate,
-so the exclusion is what makes the primary criterion readable.
+image flipping moves the tail macro by ~0.75pp, nearly 4x the 0.20pp promotion
+gate, so the exclusion is what makes the primary criterion readable.
+
+The tail is a macro over only 75 classes holding ~1,000 validation images, so
+the gate needs a resolution check before it can be read as a pass. Bootstrapping
+classes shows the *level* of the tail macro has an SE of ~3.3pp -- but both runs
+score the same classes on the same images, so that spread is shared and cancels
+in the difference. What the delta rests on is the spread of the *per-class
+difference*, which this tool reports as a paired SE and a t. A delta that clears
+0.20pp while sitting inside one paired SE is reported as INCONCLUSIVE rather
+than PASS; that rule was added before any variant result existed.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import math
 import statistics
 from pathlib import Path
 
@@ -104,6 +114,35 @@ def _summarise(path: Path, exclude: set[int], tail_count: int) -> dict:
         "fixed_train_tail_val_samples": sum(r["val_samples"] for r in tail),
         "bottom_10pct_macro": _macro(_worst_recall(per_class, tail_count)),
         "tail_labels": sorted(record["label"] for record in tail),
+        "recall_by_label": {record["label"]: record["recall"] for record in per_class},
+    }
+
+
+def _paired(control: dict, variant: dict, labels: list[int], unit: str) -> dict:
+    """Statistics of the per-class difference, which is what the delta rests on.
+
+    Both runs see the same classes and the same validation images, so the
+    class-to-class spread in *level* is shared and cancels; what remains is the
+    spread in the per-class *difference*. Resampling classes is therefore the
+    right unit here, and it is far tighter than the unpaired spread of the
+    metric itself.
+    """
+    differences = [
+        variant["recall_by_label"][label] - control["recall_by_label"][label]
+        for label in labels
+    ]
+    n = len(differences)
+    mean = statistics.fmean(differences)
+    if n < 2:
+        return {"unit": unit, "n": n, "mean_pp": mean * 100, "se_pp": None, "t": None}
+    se = statistics.stdev(differences) / math.sqrt(n)
+    return {
+        "unit": unit,
+        "n": n,
+        "mean_pp": mean * 100,
+        "sd_pp": statistics.stdev(differences) * 100,
+        "se_pp": se * 100,
+        "t": (mean / se) if se > 0 else None,
     }
 
 
@@ -175,10 +214,43 @@ def main() -> None:
         print(f"{label:38s} {c * 100:10.4f}% {v * 100:10.4f}% {_pp(v - c):>12s}")
     print()
 
+    tail_labels_kept = [label for label in control["tail_labels"] if label not in exclude]
+    paired = [
+        _paired(control, variant, control["tail_labels"], "fixed train tail macro (incl.)"),
+        _paired(control, variant, tail_labels_kept, "fixed train tail macro (excl.)"),
+        _paired(control, variant, sorted(control["recall_by_label"]), "overall macro"),
+    ]
+    print("resolution (paired over classes; both runs see the same split)")
+    for stats in paired:
+        if stats["se_pp"] is None:
+            print(f"  {stats['unit']:34s} n={stats['n']:3d}  SE unavailable")
+            continue
+        t_text = f"{stats['t']:+.2f}" if stats["t"] is not None else "n/a (zero spread)"
+        print(
+            f"  {stats['unit']:34s} n={stats['n']:3d}  "
+            f"delta={stats['mean_pp']:+.4f}pp  SE={stats['se_pp']:.4f}pp  "
+            f"t={t_text}"
+        )
+    tail_se = paired[1]["se_pp"]
+    if tail_se:
+        print(
+            f"  the +{PROMOTION_GATE_PP:.2f}pp gate is "
+            f"{PROMOTION_GATE_PP / tail_se:.2f} SE of the paired tail difference"
+        )
+    print()
+
+    above_gate = tail_delta_excl * 100 >= PROMOTION_GATE_PP
+    resolvable = paired[1]["t"] is not None and paired[1]["t"] >= 1.0
+    if not above_gate:
+        primary = "FAIL"
+    elif resolvable:
+        primary = "PASS"
+    else:
+        primary = "INCONCLUSIVE (clears the gate but sits inside one SE)"
+
     print("verdict")
     print(f"  primary   fixed train tail macro (excl.) {_pp(tail_delta_excl)}"
-          f"  vs gate +{PROMOTION_GATE_PP:.2f}pp  ->  "
-          f"{'PASS' if tail_delta_excl * 100 >= PROMOTION_GATE_PP else 'FAIL'}")
+          f"  vs gate +{PROMOTION_GATE_PP:.2f}pp  ->  {primary}")
     print(f"  primary   fixed train tail macro (incl.) {_pp(tail_delta)}")
     print(f"  secondary overall macro {_pp(overall_delta)}"
           f"  vs tolerance -{OVERALL_TOLERANCE_PP:.2f}pp  ->  "
@@ -202,13 +274,16 @@ def main() -> None:
                     variant["bottom_10pct_macro"] - control["bottom_10pct_macro"]
                 ) * 100,
             },
+            "paired": paired,
             "gates": {
                 "promotion_pp": PROMOTION_GATE_PP,
                 "stop_loss_pp": STOP_LOSS_PP,
                 "overall_tolerance_pp": OVERALL_TOLERANCE_PP,
             },
             "verdict": {
-                "primary_pass": tail_delta_excl * 100 >= PROMOTION_GATE_PP,
+                "primary": primary,
+                "primary_above_gate": above_gate,
+                "primary_resolvable": resolvable,
                 "secondary_pass": overall_delta * 100 >= -OVERALL_TOLERANCE_PP,
                 "stop_loss_triggered": overall_delta * 100 <= -STOP_LOSS_PP,
             },
