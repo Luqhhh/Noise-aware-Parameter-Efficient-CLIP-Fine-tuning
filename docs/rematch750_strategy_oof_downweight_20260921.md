@@ -1,7 +1,8 @@
 # REMATCH750 策略思路：训练侧 OOF 连续降权
 
-> **状态：占位，未开工。** 已登记方向，未写代码、未跑训练、无提交包。
+> **状态：实现已落地并推送（`ae54a8c`），训练未跑。** 权重侧车生成中，尚无本地指标、无提交包。
 > 登记：clairvoyanttt，2026-09-21。本文件用于防止重复劳动 —— 开工前请先读这里确认边界。
+> 2026-09-22：开工。下方「方法概要」的两处事实错误已就地更正，判据已修订，实现细节见文末「实现记录」。
 
 ## 一句话
 
@@ -35,7 +36,7 @@
    soft_weight = clip(0.3 + 0.7 · quality, 0.3, 1.0)
    ```
 
-3. **注入训练**：按规范路径对齐成 `[N_train]` 权重向量，乘进现有的逐样本损失链（新框架已有该链，无需改数据加载）。
+3. **注入训练**：按规范路径对齐成 `[N_train]` 权重向量，乘进现有的逐样本损失链。~~新框架已有该链，无需改数据加载~~ —— 更正（2026-09-22）：该链存在，但 rematch 首轮闸门禁止启用它（详见下方「需要新写」）。
 4. **明确不做**：不硬删样本、不改标签、不启用伪标签 / prior / TTA / 多尺度、不改推理路径。
 
 ## 复用清单
@@ -49,8 +50,13 @@
 **需要新写 / 有意修订**
 
 - 复赛版折划分（内容组分层，seed 42，与现有 train_dev/val_dev 划分互不干扰）
-- 权重注入的配置入口：**新增顶层 section**，并**有意修订** `aegis_clip/rematch_assets.py::validate_dataset` 的首轮闸门（该闸门目前 fail-closed 地禁止 rematch 配置出现 trust / loss dict 机制 / clean_routing）。修正是预期内的，但必须在提交信息与执行记录里留痕。
-- flip 一致性需要**第二份特征缓存**（`aegis_clip/cli/cache_features.py` 支持 `--augmentation horizontal_flip`）：148,695 张的额外一遍编码，成本要在预注册里写清。若成本不可接受，退化方案是去掉该 0.15 项并重新归一化权重。
+- ~~权重注入的配置入口：**新增顶层 section**，并**有意修订** `aegis_clip/rematch_assets.py::validate_dataset` 的首轮闸门~~
+  **更正（2026-09-22，实测）：两处判断都错了。**
+  1. 闸门确实存在，但在 [rematch_assets.py:52](../reproducibility/aegis_f1/aegis_clip/rematch_assets.py#L52)：`require(not trust.enabled and not trust.bundle_path, 'trust disabled in first round')`。它禁的是**启用 trust**，不是「trust 段里出现新键」。
+  2. 因此**不需要改闸门，也不需要新增顶层 section**。最终做法是 `trust` 段下新增一个 `trust.sample_weight_path`（默认不设），闸门第 55-56 行只检查 `bundle_path` / `groups_path`，放行。
+  3. 也**没有**复用现成的 `trust.enabled` + `bundle_path` 通道：那条路能少改 trainer 一行（`0.3 + 0.7*clean` 恰好等于 `soft_weight`），但该 bundle 被 `a2_gate.py` 等下游按 `cross_fitted_visual_trust_v1` 语义读，塞别的量会污染共享产物。
+- ~~flip 一致性需要**第二份特征缓存**（`aegis_clip/cli/cache_features.py` 支持 `--augmentation horizontal_flip`）~~
+  **更正（2026-09-22，实测）：这条路不通。** `cache_features.py` 在 rematch 分支直接 `raise ValueError("Rematch uses only its bound canonical feature cache")`，非 `augmentation=none` 一律拒绝。故取退化方案：**去掉 0.15 项，其余三项按 /0.85 重新归一化**（0.411765 / 0.294118 / 0.294118）。
 
 ### ⚠️ 不可复用（合规红线）
 
@@ -65,19 +71,71 @@
 
 ## 预注册判据
 
-- **晋级门**：本地 noisy raw macro 相对 RM-FT baseline **≥ +0.20pp** 才值得占一次提交额度
-- **分辨力参考**：RM-FT vs RM-LT 仅差 0.03pp macro（14,880 张里差 31 张）—— 低于此量级的差异不可解释，不要据此宣称有效
-- **止损**：本地 −2pp 立即关闭，不派生参数扫描
+**修订（2026-09-22，在任何 RM_OOFW 结果产生之前）**：主判据从「整体 macro」改为「尾部 macro」。
+
+依据是队友已推的配对 FT/LT 数据（[rematch750_local_comparison_20260922.md](rematch750_local_comparison_20260922.md)，与本实验无关的第三方轮次）：
+
+| 指标 | RM_FT | RM_LT | 差 |
+|---|---|---|---|
+| 整体 macro | 71.8362% | 71.8655% | **+0.03pp** |
+| bottom-10% macro | 22.5567% | 23.5166% | **+0.96pp** |
+| 固定训练尾部 10% macro | 55.5827% | 58.1485% | **+2.57pp** |
+
+整体 macro 在 14,880 张上的分辨力只有 ~0.03pp 量级 —— 拿它当主判据会把真实效应淹没在噪声里。降权的**作用机制本来就是改善尾部**（压低疑似错标样本的权重），应在上表后两行上验证。
+
+- **主判据（晋级）**：**固定训练尾部 10% macro** 相对 RM-FT **≥ +0.20pp**（沿用项目晋级门，只是换到尾部口径）
+- **次判据（佐证）**：bottom-10% macro 同向、且整体 macro 不低于 RM-FT −0.30pp（允许整体略降换取尾部收益，但不得倒退到止损线）
+- **止损**：本地 **−2pp** 立即关闭，不派生参数扫描
 - **提交额度**：平台每日 2 次
-- **单变量**：除权重外其余配方与 RM-FT 保持一致（同初始化、同采样、同损失调度、同增强），否则无法归因
+- **单变量**：除 `trust.sample_weight_path` 外其余字段与 `configs/rematch750_ft.yaml` **逐字段一致**（同初始化 RM-LP best.pt、同采样 none、同 loss gce q=0.5 / ce_warmup 2 / distill 2.0、同增强 weak_rrc_flip、同 8 epoch），否则无法归因
 - 本地 noisy validation 不等于干净测试准确率，本地胜负不等同于平台胜负
 
-## 开工前置条件（本机，待确认）
+## 开工前置条件（2026-09-22 已全部满足）
 
-- `artifacts/stages/repechage/20260921/` **不存在** → 需先跑 `prepare → verify → cache`
-- 配置中 `data.train_root: ../train` 相对 `configs/` 解析为 `<repo>/train`，本机**不存在**；数据实际在 `复赛数据集/{train,test}`（37,444 张测试图已核对一致）。**不要改共享配置的路径** —— 那会改变 config SHA-256，与提交登记表和 checkpoint 绑定冲突；应把数据放到配置期望的位置。
-- CUDA 必需，禁止静默回落 CPU
+- ~~`artifacts/stages/repechage/20260921/` **不存在**~~ → 已在本地重建（`prepare` 9m41s → `verify` 通过 → `cache` 148,695 条）。9 份资产与队友登记的 manifest **逐字节一致**；只有 `train_root` / `test_root` 是机器相关字段，这正是 `dataset_manifest.json` 的 SHA 跨机器不同的原因，也是特征缓存不可跨机器复用的原因。
+- ~~配置中 `data.train_root: ../train` 本机不存在~~ → 已用符号链接把 `train` / `test` 指向 `复赛数据集/{train,test}`，**未改任何共享配置**（改路径会改 config SHA-256，与提交登记表和 checkpoint 绑定冲突）。符号链接已加入 `.git/info/exclude`（本地生效，不入库）。
+- CUDA 必需，禁止静默回落 CPU —— 本机 8G 显存，单卡。
+
+## 实现记录（2026-09-22）
+
+**改动文件**（commit `ae54a8c`，已推 `origin/main`）
+
+| 文件 | 性质 | 说明 |
+|---|---|---|
+| `aegis_clip/sample_weights.py` | 新增 | sidecar 加载器，按规范路径对齐，重复/缺失/越界一律抛错 |
+| `aegis_clip/cli/build_sample_weights.py` | 新增 | 折划分 → OOF logits → 折内几何 → 复合分 → sidecar |
+| `aegis_clip/trainer.py` | +15 行 | 守卫分支注入；不设该键的配置走逐位相同路径 |
+| `aegis_clip/config.py` | +1 行 | 登记新路径键 |
+| `tests/test_sample_weights.py` | 新增 | 8 条回归测试 |
+| `configs/rematch750_oofw.yaml` | 新增 | 与 `rematch750_ft.yaml` 只差 `trust.sample_weight_path` |
+
+**复用而非重写**（这是刻意的）
+
+- 折划分：`analysis/oof/build_folds.py::assign_group_stratified_folds`（sklearn `StratifiedGroupKFold`，group 键用 `content_group`）。已经它自己的断言验证「无内容组跨折」。
+- 质量分：`analysis/oof/quality.py::build_sample_quality` + `add_quality_weights`，只覆盖复合系数。
+- OOF logits：`aegis_clip/oof_rebuild.py`（`--num-classes` 已参数化，无需改）。
+- 几何：`common/diagnostic_metrics.py` 的原型 / kNN 原语，k=10，与仓库既有 `compute_knn_top1_agreement.py` 同口径。
+
+**偏离预注册之处（全部有意，逐条记录）**
+
+1. **flip 项去掉**（原因见上「更正」），三项重新归一化。
+2. **权重不做均值 1 归一化**。原计划写「归一化到均值 1」，但 trainer 的逐样本损失是 `(per_sample * w).sum() / w.sum()` —— **加权平均**，权重整体缩放对梯度精确无影响（分子分母同比例）。归一化不但无收益，还会把权重推过 1.0 而被加载器拒绝。故保留 `0.3 + 0.7·q ∈ [0.3, 1.0]` 原样。
+3. **折数 5 折**，而仓库历史 OOF 用 3 折。理由：每折线性头只看 80% 而非 67% 的样本，OOF 信号更准；成本可忽略。
+
+**未改动（有意保留稀释，需在结果里如实说明）**
+
+- `trainer.py` 的 2.0 倍特征蒸馏项 `loss + distill_weight * drift.mean()` **不受逐样本权重影响**。理由：该损失项不含标签、是纯特征空间正则，标签噪声权重对它没有语义基础。**后果**：降权对总梯度的实际影响被稀释，测出的效应是下界。这是有意接受的，不是疏漏。
+
+**验证状态**
+
+- 新增 8 条测试全通过
+- 全量套件 **2 failed / 632 passed**，与改动前基线**完全一致**（两个失败均为 `test_scope_protocol.py` 因上一阶段冻结资产被删而失败，属已知项）
+- 尚未跑训练，**无任何指标**。不得在结果产出前声称有效。
 
 ## 状态
 
-占位。下一步待与队友 FT/LT 的平台成绩合并后再细化实现方案。
+实现已推送（`ae54a8c`），sidecar 生成与配对训练待跑。下一步：
+
+1. 生成 sidecar：`python -m aegis_clip.cli.build_sample_weights`（参数见 `cli/build_sample_weights.py` 的 `--help`）
+2. 训练 `configs/rematch750_oofw.yaml`，与 `RM_FT` 配对比较
+3. 按上文修订后的判据（**尾部 macro 为主**）裁决

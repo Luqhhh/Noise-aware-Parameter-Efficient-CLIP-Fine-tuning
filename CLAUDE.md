@@ -66,7 +66,9 @@ python3 scripts/check_submission.py \
 PYTHONPATH=reproducibility/aegis_f1 python3 -m pytest reproducibility/aegis_f1/tests -q
 ```
 
-**已知失败**：`test_scope_protocol.py::test_scope_asset_gate_verifies_every_frozen_asset` 因上一阶段的 train/test 图像根目录已被删除而抛 `ScopePreflightError: train/test image root is missing`（2026-09-21 实测 1 failed / 4 passed）。判定"是否通过"时先确认失败项是否为这一类。
+**已知失败**：`test_scope_protocol.py` 中依赖上一阶段冻结资产的用例会抛 `ScopePreflightError`（如 `train/test image root is missing`、资产摘要不匹配）。那些资产在上一阶段结束时已从磁盘移除，且部分从未入库（`artifacts/` 在 `reproducibility/aegis_f1/.gitignore` 内），因此**在全新 clone 上必然失败且无法修复**。
+
+判定「是否通过」时**不要数失败条数** —— 条数随本机残留资产的多寡而变。只要求：失败项全部落在 `test_scope_protocol.py` 且报错为 `ScopePreflightError`，其余用例全绿。2026-09-22 本机实测 **2 failed / 632 passed**（两个失败均在该文件内；CLAUDE.md 早前记的「1 failed / 4 passed」是只跑了该文件时的旧测量，口径不同）。
 
 ### 早期骨架（历史，仅在需要读旧代码时使用）
 
