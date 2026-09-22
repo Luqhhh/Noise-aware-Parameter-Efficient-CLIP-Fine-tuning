@@ -18,10 +18,13 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 每个实验段都必须遵守：
 
 - **动手前**：确认分支、工作区状态、`origin/main` 是否最新；检查本地与远端全部分支及近期 main 历史，若已有重叠的实验名 / 算法 / 配置 / 结果报告 / 在途工作，先比对、协调或关闭，**不要重复实现**。
-- **收尾时**：立刻提交并推送已验证的改动到 `origin/main`，报告实验标识、确切命令/配置、结果指标、改动文件、commit SHA、push 状态，**并在该检查点暂停**，让协作者能复用结论或做淘汰比较。
+- **收尾时**：立刻提交并推送已验证的改动到方案分支，随后在 main 集成目录同步、合并、重新校验并推送到 `origin/main`；报告实验标识、确切命令/配置、结果指标、改动文件、分支名、commit SHA、push 与合并状态，**并在该检查点暂停**，让协作者能复用结论或做淘汰比较。
 - 报告必须可复现，并区分「实现改动」与「实测结果」；没有验证输出前不得声称该段完成。
 - 暂停前必须交付到可提交产物（预测 CSV/ZIP + 提交校验 + 路径记录）。只有代码或只有单测的段不算完成。
-- 直接在 `main` 上工作，不开 feature 分支；**禁止 `git push --force`**；已验证的推送不得推迟到后续实验段。
-- Git 工作流两种模式不可混用，下指令时必须说明是哪种：
+- **不许占卡，只能选用当时空闲 NPU**，不设用卡认领流程。
+- **每个队员的每个方案都开新分支，并使用独立工作目录**，分支命名为 `成员名/方案名`，推荐 `git worktree`；禁止在他人使用的目录切换分支或修改代码。`main` 用于集成已验证方案及维护公共文档。
+- **输出、日志、checkpoint 使用各自独立目录**，禁止覆盖他人产物；原始数据共享只读，共享 Python 环境的依赖变更先协调，特殊依赖使用独立环境。
+- 未推送的方案分支可 rebase 到最新 `origin/main`；已推送的方案分支通过 merge 同步 `origin/main`。方案推送使用 `git push -u origin <成员名/方案名>`。**禁止 `git push --force`**；已验证的推送不得推迟到后续实验段。
+- 以下 Git 同步流程用于 **main 集成目录**，两种模式不可混用，下指令时必须说明是哪种；方案合并及校验须在 pull 之后、push 之前完成：
   - 手动：`git stash push -u -m "..."` → `git pull --rebase origin main` → `git push origin main` → `git stash pop`
   - 自动：`git pull --rebase --autostash origin main`（Git 自动恢复临时 stash，**不要再执行一次 `git stash pop`**）
