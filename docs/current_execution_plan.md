@@ -6,6 +6,8 @@
 
 当前检查点：RM-FT / RM-LT 均完成 8 轮并选中 epoch 8。独立验证 FT macro 71.8362%、micro 72.9032%；LT macro 71.8655%、micro 72.6949%。两包均含 37,444 条预测且校验通过，已复制到 `C:\Users\lqh22\Desktop\submission`（`RM_FT_20260921.zip`、`RM_LT_20260921.zip`）；RM-LP 回退包也已复制。优化器/调度器 33,456 次更新对齐，冻结参数审计通过。本段提交推送后暂停，等待用户上传并回传 FT/LT 平台成绩，用于策略比较与后续方向选择；按用户最新要求取消 RM-FULL，不自动生成配置或启动全量训练；不根据微小本地差距提前宣布平台胜者。
 
+本地比较材料：见 [RM_FT / RM_LT 严格本地比较](rematch750_local_comparison_20260922.md)；仅对既有 best checkpoint 导出 val/test logits 与逐样本验证预测，不改变训练或选模。
+
 baseline 定位：RM-FT 是本阶段正式视觉微调 baseline；RM-LP 是冻结特征参考基线与共享初始化；RM-LT 是只改变采样的对照候选。平台最高分包与 baseline 身份分开管理。
 
 **在途策略登记**（防止重复劳动，开工前请先读对应文件确认边界）：
