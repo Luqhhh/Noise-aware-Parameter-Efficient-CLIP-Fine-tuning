@@ -1,0 +1,9 @@
+{
+  "fixed_epochs": 50,
+  "fold": 3,
+  "holdout_accuracy": 0.6564286351203918,
+  "holdout_count": 26763,
+  "holdout_used_for_epoch_selection": false,
+  "seed": 45,
+  "train_count": 107052
+}

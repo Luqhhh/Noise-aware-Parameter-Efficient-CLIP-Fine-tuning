@@ -12,7 +12,7 @@ baseline 定位：RM-FT 是本阶段正式视觉微调 baseline；RM-LP 是冻�
 
 **在途策略登记**（防止重复劳动，开工前请先读对应文件确认边界）：
 
-- [训练侧 OOF 连续降权](rematch750_strategy_oof_downweight_20260921.md) —— clairvoyanttt，2026-09-21 占位，**未开工**。用交叉拟合预测给每张训练图打连续质量分并按分降权，不删样本、不改标签、不动推理。与 RM-FT / RM-LT 的采样维度不重叠。
+- [训练侧 OOF 连续降权](rematch750_strategy_oof_downweight_20260921.md) —— clairvoyanttt，2026-09-21 占位；**5 折 sidecar 已生成并通过零 GPU 审计，配对训练待跑**。用交叉拟合预测给每张训练图打连续质量分并按分降权，不删样本、不改标签、不动推理。与 RM-FT / RM-LT 的采样维度不重叠。
 
 以下内容保留为历史记录。
 

@@ -139,12 +139,21 @@
 
 - 新增 8 条测试全通过
 - 全量套件 **2 failed / 632 passed**，与改动前基线**完全一致**（两个失败均为 `test_scope_protocol.py` 因上一阶段冻结资产被删而失败，属已知项）
-- 尚未跑训练，**无任何指标**。不得在结果产出前声称有效。
+- OOF manifest 折数元数据由历史硬编码改为按实际折数生成，并补充回归测试；OOF / sample-weight 定向测试 **14 passed**。
+- 尚未跑配对训练，**无 RM_OOFW 验证指标**。不得在训练结果产出前声称有效。
 
 ## 状态
 
-实现已推送（`ae54a8c`），sidecar 生成与配对训练待跑。下一步：
+实现已推送（`ae54a8c`）。2026-09-22 已在 `main@b49f973` 生成 5 折 sidecar，并完成零 GPU 审计：
 
-1. 生成 sidecar：`python -m aegis_clip.cli.build_sample_weights`（参数见 `cli/build_sample_weights.py` 的 `--help`）
-2. 训练 `configs/rematch750_oofw.yaml`，与 `RM_FT` 配对比较
-3. 按上文修订后的判据（**尾部 macro 为主**）裁决
+- `sample_weights.csv`：133,815 行，路径与 `train_dev.csv` 完整且同序；SHA-256 `7e1cbe05aac1f997c1ffb456ebf6a52c758b23a6df9cb390b8f4841333df744b`
+- 5 折行数：26,763 / 26,764 / 26,763 / 26,763 / 26,762；所有内容组只属于一个折，每个训练分区都覆盖 750 类
+- OOF top-1 与原噪声标签一致率 65.6332%；五折 holdout accuracy 为 65.3626% / 65.3565% / 65.8932% / 65.6429% / 65.9218%
+- 权重范围 `[0.302216, 1.0]`，均值 0.628463；OOF 同意 / 不同意原标签时均值分别为 0.705820 / 0.480729
+- 固定训练尾部 75 类权重均值 0.612259，其余类别 0.629635；class 183 的 4 个样本按支持度下限全部保持 1.0
+- `test_data_used=false`、`val_dev_used=false`、全部 OOF logits 有限且每个样本恰填充一次
+
+下一步：
+
+1. 训练 `configs/rematch750_oofw.yaml`，与 `RM_FT` 配对比较
+2. 按上文修订后的判据（**尾部 macro 为主**）裁决

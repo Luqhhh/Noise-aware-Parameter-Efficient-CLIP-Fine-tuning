@@ -1,0 +1,151 @@
+{
+  "cross_fitting": {
+    "folds": 5,
+    "group_key": "content_group (decoded rgb sha256)",
+    "knn_neighbours": 10,
+    "references_restricted_to_training_folds": true
+  },
+  "diagnostics": {
+    "classes_exempt_below_support_floor": [
+      183
+    ],
+    "duplicate_conflict_samples": 3527,
+    "fold_counts": {
+      "0": 26763,
+      "1": 26764,
+      "2": 26763,
+      "3": 26763,
+      "4": 26762
+    },
+    "min_class_support": 10,
+    "oof_top1_matches_noisy_label_rate": 0.6563315024474088,
+    "samples_exempt_below_support_floor": 4,
+    "weight_max": 1.0,
+    "weight_mean": 0.6284630893418566,
+    "weight_mean_in_train_dev_tail_75": 0.6122590847365267,
+    "weight_mean_outside_tail": 0.6296349872628686,
+    "weight_mean_when_oof_agrees": 0.7058195818773474,
+    "weight_mean_when_oof_differs": 0.48072914418410767,
+    "weight_min": 0.3022157742020575,
+    "weight_std": 0.16662404382350884
+  },
+  "environment": {
+    "clip_module": "/home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/.venv/lib/python3.12/site-packages/clip/__init__.py",
+    "cuda_available": true,
+    "cuda_runtime": "13.0",
+    "cudnn": 92000,
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "python": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]",
+    "torch": "2.13.0+cu130"
+  },
+  "external_data": false,
+  "formula": {
+    "flip_consistency_reason": "rematch forbids a second feature cache, so no flipped features exist",
+    "flip_consistency_term": "dropped; renormalised over 0.35/0.25/0.25/0.15",
+    "quality_downweight": "0.411765 * p_original_classwise_percentile + 0.294118 * prototype_margin_classwise_percentile + 0.294118 * knn_agreement",
+    "scale_invariance": "the trainer optimises a weight-normalised mean, so the global scale of the weight vector has no effect on the gradient",
+    "weight": "clip(0.3 + 0.7 * quality, 0.3, 1.0)"
+  },
+  "inputs": {
+    "feature_tensor": "artifacts/stages/repechage/20260921/features/features.pt",
+    "feature_tensor_sha256": "ed7000c5bd36ace6ac4efd454c6b89287d87abbd35087c737ddd45e6447d1ae3",
+    "sample_weights_csv": "outputs/rematch750/oof_downweight/seed42/sample_weights.csv",
+    "sample_weights_sha256": "7e1cbe05aac1f997c1ffb456ebf6a52c758b23a6df9cb390b8f4841333df744b",
+    "train_csv": "artifacts/stages/repechage/20260921/train_dev.csv",
+    "train_csv_sha256": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6"
+  },
+  "oof": {
+    "audit": {
+      "all_logits_finite": true,
+      "all_samples_filled_once": true,
+      "fold_metrics": [
+        {
+          "fixed_epochs": 50,
+          "fold": 0,
+          "holdout_accuracy": 0.6536262631416321,
+          "holdout_count": 26763,
+          "holdout_used_for_epoch_selection": false,
+          "seed": 42,
+          "train_count": 107052
+        },
+        {
+          "fixed_epochs": 50,
+          "fold": 1,
+          "holdout_accuracy": 0.6535645127296448,
+          "holdout_count": 26764,
+          "holdout_used_for_epoch_selection": false,
+          "seed": 43,
+          "train_count": 107051
+        },
+        {
+          "fixed_epochs": 50,
+          "fold": 2,
+          "holdout_accuracy": 0.658932089805603,
+          "holdout_count": 26763,
+          "holdout_used_for_epoch_selection": false,
+          "seed": 44,
+          "train_count": 107052
+        },
+        {
+          "fixed_epochs": 50,
+          "fold": 3,
+          "holdout_accuracy": 0.6564286351203918,
+          "holdout_count": 26763,
+          "holdout_used_for_epoch_selection": false,
+          "seed": 45,
+          "train_count": 107052
+        },
+        {
+          "fixed_epochs": 50,
+          "fold": 4,
+          "holdout_accuracy": 0.6592183113098145,
+          "holdout_count": 26762,
+          "holdout_used_for_epoch_selection": false,
+          "seed": 46,
+          "train_count": 107053
+        }
+      ],
+      "holdout_used_for_epoch_selection": false,
+      "sample_count": 133815
+    },
+    "manifest": {
+      "environment": {
+        "clip_module": "/home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/.venv/lib/python3.12/site-packages/clip/__init__.py",
+        "cuda_available": true,
+        "cuda_runtime": "13.0",
+        "cudnn": 92000,
+        "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+        "python": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]",
+        "torch": "2.13.0+cu130"
+      },
+      "external_data": false,
+      "holdout_used_for_epoch_selection": false,
+      "input_hashes": {
+        "assignments_sha256": "b365197057ec193e86f64322e2f1a2a53b1f012e6199d4386f316b753b3f78b5",
+        "feature_labels_sha256": "c5702ea14d5f6e39164d82daf858cb0db5d42dc573ae72ba3a2ceeb3145cc63a",
+        "feature_paths_sha256": "fcb7de523e06342c7ecad36d94b4f360ccd4f87cb402527897b7de4fef43d168",
+        "feature_tensor_sha256": "ed7000c5bd36ace6ac4efd454c6b89287d87abbd35087c737ddd45e6447d1ae3"
+      },
+      "oof_logits_sha256": "d28846ab88ef20803f542efbf7fab9c75f2527684fdf0ee13a99633470deabec",
+      "original_validation_used": false,
+      "parameters": {
+        "batch_size": 128,
+        "epochs": 50,
+        "folds": 5,
+        "infer_batch_size": 1024,
+        "lr": 0.005,
+        "num_classes": 750,
+        "q": 0.5,
+        "seed": 42,
+        "warmup_epochs": 2,
+        "weight_decay": 0.0001
+      },
+      "protocol": "fixed 5-fold GCE full-logit reconstruction",
+      "reproducibility_audit_sha256": "b72f879dec639f7aff075d792ed423003ecaa4cab984206152655b66e3227582",
+      "test_data_used": false
+    }
+  },
+  "protocol": "rematch-first-round-oof-continuous-downweighting-v1",
+  "test_data_used": false,
+  "val_dev_used": false
+}
