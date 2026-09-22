@@ -4,6 +4,24 @@
   "date": "2026-09-22",
   "author": "clairvoyanttt",
   "kind": "pre-registration; two-arm packages rebuilt and verified; submission slot scheduled 2026-09-23 for RM_LP",
+  "package_nature": {
+    "both_packages_are_complete_and_valid": "single checkpoint + deterministic inference + tta=none + prior=none + global 224 center crop; both passed check_submission.py 9/9; either one uploaded on its own is a legitimate, self-contained submission with no missing step",
+    "neither_is_a_stub_or_placeholder": true,
+    "tomorrows_role_is_probe_not_challenger": "neither package is expected to beat 60.9657%: RM_FT is a same-lineage reproduction of the current best, and RM_LP is 9.23pp lower locally. The slot buys information, not score.",
+    "the_score_that_judges_strategy_is_the_RATIO_not_the_raw_accuracy": [
+      {"RM_LP_platform": 0.550, "transfer_ratio": 0.8644, "vs_FT_0.8366": "higher", "reading": "frozen features transfer better, even though the absolute score is lower"},
+      {"RM_LP_platform": 0.600, "transfer_ratio": 0.9428, "vs_FT_0.8366": "higher", "reading": "same, and nearly caught up"}
+    ],
+    "only_the_top_band_is_a_direct_verdict": "only RM_LP >= 60% lets the raw score decide the strategy directly, and in that band it is also a genuine improvement that can become the new baseline; the other two bands are diagnostic readings and the delivery falls back to RM_FT",
+    "why_RM_LP_and_not_RM_FT": "RM_LP strictly dominates RM_FT on slot usage: same downside (both fall back to RM_FT if below 60.97%), strictly larger upside (RM_FT is a reproduction with almost no upside; RM_LP carries information plus a small chance of being a genuine improvement)",
+    "why_not_spend_a_second_slot_on_the_FT_anchor": "pairing both arms on the same lineage would remove the lineage confound, but costs a second slot to sharpen an anchor that is already accurate to 0.03pp (local rebuild vs registry value); not worth it"
+  },
+  "noise_caveat": {
+    "single_seed_variation_pp_preliminary": 0.90,
+    "evidence": "61.21% vs 60.31%, docs/lessons_learned.md section 1.2",
+    "consequence": "differences below ~1pp should not be over-read; the bands (53.3 / 60) are deliberately wide to stay outside the noise region, but cases near a boundary remain ambiguous",
+    "do_not_confuse": "the 0.08pp FT-vs-LT platform difference is MODEL variation (different sampling strategies), not run-to-run repeatability, and says nothing about how reproducible the platform score is"
+  },
   "lineage": {
     "note": "both arms rebuilt locally on this machine; NOT the /home/lux1/noise/ packages described by results/rematch_submission_registry.csv",
     "local_dataset_manifest_sha256": "a6aeb2618ddc08d62b3a9ca3f767be089a76652b325004bf21d039f7692a1380",
