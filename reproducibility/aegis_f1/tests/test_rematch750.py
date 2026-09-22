@@ -86,6 +86,52 @@ def test_foreign_checkpoint_metadata_is_rejected_before_loading_weights(tmp_path
         assets.validate_checkpoint(p,{},parent=True)
 
 
+def test_parent_checkpoint_allows_only_machine_local_binding_differences(
+    tmp_path, monkeypatch
+):
+    import json
+    import aegis_clip.rematch_assets as assets
+
+    p=tmp_path/'parent.pt';p.write_bytes(b'parent checkpoint')
+    portable=dict(
+        stage='repechage',data_version='20260921',
+        class_mapping_sha256='classes',train_csv_sha256='train',
+        official_checkpoint_sha256='clip',
+    )
+    actual=dict(portable,dataset_manifest_sha256='remote-dataset',
+                feature_manifest_sha256='remote-features')
+    expected=dict(portable,dataset_manifest_sha256='local-dataset',
+                  feature_manifest_sha256='local-features')
+    p.with_suffix('.binding.json').write_text(json.dumps(dict(
+        checkpoint_sha256=hashlib.sha256(p.read_bytes()).hexdigest(),
+        binding=actual,experiment_id='RM_LP',
+    )))
+    monkeypatch.setattr(assets,'checkpoint_binding',lambda c: expected)
+
+    assets.validate_checkpoint(p,{},parent=True)
+
+    expected['train_csv_sha256']='different-split'
+    with pytest.raises(ValueError,match='train_csv_sha256'):
+        assets.validate_checkpoint(p,{},parent=True)
+
+
+def test_non_parent_checkpoint_keeps_exact_machine_binding(tmp_path, monkeypatch):
+    import json
+    import aegis_clip.rematch_assets as assets
+
+    p=tmp_path/'resume.pt';p.write_bytes(b'resume checkpoint')
+    actual=dict(stage='repechage',dataset_manifest_sha256='remote-dataset')
+    expected=dict(stage='repechage',dataset_manifest_sha256='local-dataset')
+    p.with_suffix('.binding.json').write_text(json.dumps(dict(
+        checkpoint_sha256=hashlib.sha256(p.read_bytes()).hexdigest(),
+        binding=actual,experiment_id='RM_OOFW',training_config_sha256='unused',
+    )))
+    monkeypatch.setattr(assets,'checkpoint_binding',lambda c: expected)
+
+    with pytest.raises(ValueError,match='checkpoint data lineage mismatch'):
+        assets.validate_checkpoint(p,{},parent=False)
+
+
 def test_cache_rejects_same_shape_wrong_dataset_fingerprint(tmp_path, monkeypatch):
     import json
     import aegis_clip.rematch_assets as assets
