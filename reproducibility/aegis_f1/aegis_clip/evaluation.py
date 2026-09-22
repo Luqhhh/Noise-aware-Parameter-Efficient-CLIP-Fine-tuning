@@ -59,7 +59,7 @@ def evaluate(
                 "features": batch["features"].to(device, non_blocking=True)
             }
         with torch.autocast(
-            device_type=device.type, enabled=use_amp and device.type == "cuda"
+            device_type=device.type, enabled=use_amp and device.type in {"cuda", "npu"}
         ):
             logits, encoded = model(**model_arguments, return_features=True)
             if multiprototype_head is not None:

@@ -18,6 +18,7 @@ from aegis_clip.checkpoint import (
     resume_checkpoint,
     save_checkpoint,
 )
+from aegis_clip.device import resolve_device, amp_enabled
 from aegis_clip.config import public_config
 from aegis_clip.data import (
     CachedFeatureDataset,
@@ -129,12 +130,11 @@ def train(
     output_config = config["output"]
 
     seed = int(project.get("seed", 42))
-    set_seed(seed, deterministic=bool(train_config.get("deterministic", True)))
-    device = torch.device(
-        train_config.get("device", "cuda")
-        if torch.cuda.is_available()
-        else "cpu"
+    device = resolve_device(
+        train_config.get("device", "cuda"),
+        allow_cuda_fallback=not bool(data_config.get("dataset_manifest")),
     )
+    set_seed(seed, deterministic=bool(train_config.get("deterministic", True)))
     run_dir = (
         Path(output_config["root"])
         / str(project["experiment_id"])
@@ -294,7 +294,7 @@ def train(
     timeout = int(train_config.get("loader_timeout", 120 if workers else 0))
     loader_options = {
         "num_workers": workers,
-        "pin_memory": bool(train_config.get("pin_memory", True)),
+        "pin_memory": bool(train_config.get("pin_memory", True)) and device.type != "npu",
         "timeout": timeout,
         "worker_init_fn": seed_worker,
         "persistent_workers": workers > 0,
@@ -370,7 +370,7 @@ def train(
                 "weight_decay": float(snscl_config.get("module_weight_decay", 1.0e-4)),
             }
         )
-    optimizer = torch.optim.AdamW(groups)
+    optimizer = torch.optim.AdamW(groups, **({"foreach": False} if device.type == "npu" else {}))
     epochs = int(train_config["epochs"])
     schedule_epochs = int(train_config.get("schedule_epochs", epochs))
     total_steps = schedule_epochs * len(train_loader)
@@ -379,7 +379,7 @@ def train(
         optimizer,
         lr_lambda=lambda step: _warmup_cosine(step, warmup_steps, total_steps),
     )
-    use_amp = bool(train_config.get("amp", True)) and device.type == "cuda"
+    use_amp = amp_enabled(device, train_config.get("amp", True))
     scaler = torch.amp.GradScaler(
         device=device.type,
         enabled=use_amp,

@@ -12,6 +12,7 @@ from typing import Any
 import numpy as np
 import torch
 
+from aegis_clip.device import npu_initialized
 from aegis_clip.config import public_config
 from aegis_clip.model import AegisCLIP, build_model, interpolate_visual_positional_embedding
 
@@ -56,6 +57,8 @@ def save_checkpoint(
             "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
         },
     }
+    if npu_initialized():
+        payload["rng_state"]["npu"] = torch.npu.get_rng_state_all()
     _atomic_torch_save(payload, path)
     if config.get("data", {}).get("dataset_manifest"):
         from aegis_clip.rematch_assets import checkpoint_binding
@@ -343,6 +346,10 @@ def _restore_rng(state: dict[str, Any]) -> None:
     random.setstate(state["python"])
     np.random.set_state(state["numpy"])
     torch.set_rng_state(state["torch"].cpu())
+    if state.get("npu") is not None:
+        if not npu_initialized():
+            raise RuntimeError("Restoring NPU training RNG requires an initialized NPU")
+        torch.npu.set_rng_state_all([value.cpu() for value in state["npu"]])
     if torch.cuda.is_available() and state.get("cuda") is not None:
         torch.cuda.set_rng_state_all([value.cpu() for value in state["cuda"]])
 

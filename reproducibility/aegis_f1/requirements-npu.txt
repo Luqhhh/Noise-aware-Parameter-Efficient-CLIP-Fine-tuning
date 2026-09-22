@@ -1,0 +1,25 @@
+# ARM64; Python 3.11; installed CANN 9.0.0. Do not install CUDA pyproject pins.
+# Official matrix: https://github.com/Ascend/pytorch/blob/master/COMPATIBILITY.en.md
+torch==2.7.1
+torch-npu==2.7.1.post4
+torchvision==0.22.1
+numpy==2.4.6
+pandas==2.2.3
+scikit-learn==1.7.2
+Pillow==12.3.0
+PyYAML==6.0.3
+tqdm==4.70.1
+ftfy==6.3.1
+regex==2026.9.10
+packaging==26.3
+pytest==9.0.2
+# CANN runtime compiler dependencies
+attrs==26.1.0
+decorator==5.3.1
+cloudpickle==3.1.2
+ml-dtypes==0.6.0
+psutil==7.2.2
+scipy==1.17.1
+tornado==6.5.10
+absl-py==2.5.0
+clip @ https://codeload.github.com/openai/CLIP/zip/d05afc436d78f1c48dc0dbf8e5980a9d471f35f6

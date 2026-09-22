@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 
 import torch
+
+from aegis_clip.device import resolve_device, amp_enabled
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -106,7 +108,7 @@ def main() -> None:
     )
     parser.add_argument("--acknowledge-balanced-test-prior", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
-    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--device", help="Defaults to config train.device, or cuda without a config")
     parser.add_argument(
         "--input-resize-mode",
         choices=["clip_center_crop", "clip_letterbox"],
@@ -220,10 +222,11 @@ def main() -> None:
         raise ValueError(
             "--prior-config and --prior-alignment-strength are mutually exclusive"
         )
-    device = torch.device(
-        args.device if args.device != "cuda" or torch.cuda.is_available() else "cpu"
-    )
     config = load_config(args.config) if args.config else None
+    requested_device = args.device or (config or {}).get("train", {}).get("device", "cuda")
+    device = resolve_device(requested_device, allow_cuda_fallback=not bool(
+        config and config["data"].get("dataset_manifest")
+    ))
     if config and config["data"].get("dataset_manifest"):
         from aegis_clip.rematch_assets import validate_dataset, validate_checkpoint
         validate_dataset(config)
@@ -343,7 +346,7 @@ def main() -> None:
         raise ValueError(
             "Local-global TTA has not been validated with a multiprototype head"
         )
-    use_amp = bool(config["train"].get("amp", True)) and device.type == "cuda"
+    use_amp = amp_enabled(device, config["train"].get("amp", True))
     logit_batches: list[torch.Tensor] = []
     global_logit_batches: list[torch.Tensor] = []
     flipped_global_logit_batches: list[torch.Tensor] = []

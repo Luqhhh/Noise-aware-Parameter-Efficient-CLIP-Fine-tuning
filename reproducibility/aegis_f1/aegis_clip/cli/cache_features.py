@@ -10,6 +10,8 @@ import json
 from pathlib import Path
 
 import torch
+
+from aegis_clip.device import resolve_device
 import torch.nn.functional as F
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
@@ -188,7 +190,7 @@ def cache_stage_features(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
-    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--device", help="Defaults to config train.device")
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument(
@@ -203,9 +205,8 @@ def main() -> None:
     if args.augmentation != "none" and not args.output_dir:
         raise ValueError("augmented feature caches require --output-dir")
     config = load_config(args.config)
-    device = torch.device(
-        args.device if args.device != "cuda" or torch.cuda.is_available() else "cpu"
-    )
+    device = resolve_device(args.device or config["train"].get("device", "cuda"),
+                            allow_cuda_fallback=not bool(config["data"].get("dataset_manifest")))
     manifest = cache_stage_features(
         config,
         device=device,

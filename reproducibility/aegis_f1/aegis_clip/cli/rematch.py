@@ -10,6 +10,7 @@ import sys
 
 import torch
 
+from aegis_clip.device import resolve_device
 from aegis_clip.config import load_config
 from aegis_clip.rematch_assets import validate_dataset, validate_cache, validate_checkpoint
 from aegis_clip.rematch_data import prepare, write_csv
@@ -92,10 +93,11 @@ def execute(action, config_path):
     if action=='verify':
         validate_dataset(config)
         return print('Current-stage dataset bindings verified')
-    if not torch.cuda.is_available():raise RuntimeError('CUDA required; run with GPU access')
+    device=resolve_device(config['train'].get('device','cuda'))
+    if device.type=='cpu':raise RuntimeError('Rematch requires an accelerator')
     if action=='cache':
         from aegis_clip.cli.cache_features import cache_stage_features
-        return cache_stage_features(config,device=torch.device('cuda'),batch_size=128,workers=4)
+        return cache_stage_features(config,device=device,batch_size=128,workers=4)
     if action=='train':
         from aegis_clip.trainer import train
         code_files=sorted((ROOT/'reproducibility/aegis_f1/aegis_clip').rglob('*.py'))
@@ -112,13 +114,15 @@ def execute(action, config_path):
         validate_checkpoint(checkpoint,config)
         submission=run/'submission'
         subprocess.run([sys.executable,'-m','aegis_clip.cli.infer','--checkpoint',str(checkpoint),
-                        '--config',str(config_path),'--output-dir',str(submission),'--tta','none'],check=True,cwd=ROOT)
+                        '--config',str(config_path),'--device',str(device),'--output-dir',str(submission),'--tta','none'],check=True,cwd=ROOT)
         subprocess.run([sys.executable,'scripts/check_submission.py','--test_dir',config['data']['test_root'],
                         '--num-classes',str(config['model']['num_classes']),'--class-mapping',config['data']['class_mapping'],
                         '--csv',str(submission/'pred_results.csv'),'--zip',str(submission/'submission.zip')],check=True,cwd=ROOT)
         register(config,checkpoint,submission)
         return submission
     if action=='run':
+        if device.type=='npu':
+            raise ValueError('Use explicit NPU train/infer configs; run is the legacy CUDA LP/FT/LT queue')
         for candidate in ('lp','ft','lt'):
             p=ROOT/f'configs/rematch750_{candidate}.yaml'
             execute('train',p)

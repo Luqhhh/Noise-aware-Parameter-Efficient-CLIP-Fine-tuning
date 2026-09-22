@@ -14,6 +14,8 @@ from typing import Any, Iterable
 import numpy as np
 import torch
 
+from aegis_clip.device import npu_initialized
+
 
 def set_seed(seed: int, deterministic: bool = True) -> None:
     random.seed(seed)
@@ -21,6 +23,9 @@ def set_seed(seed: int, deterministic: bool = True) -> None:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
+    if npu_initialized():
+        torch.npu.manual_seed_all(seed)
+        torch.use_deterministic_algorithms(deterministic)
     os.environ["PYTHONHASHSEED"] = str(seed)
     torch.backends.cudnn.deterministic = deterministic
     torch.backends.cudnn.benchmark = not deterministic
@@ -84,7 +89,7 @@ def environment_manifest() -> dict[str, Any]:
         clip_path = str(Path(clip.__file__).resolve())
     except Exception:
         clip_path = None
-    return {
+    manifest = {
         "python": os.sys.version,
         "torch": torch.__version__,
         "cuda_runtime": torch.version.cuda,
@@ -93,3 +98,13 @@ def environment_manifest() -> dict[str, Any]:
         "cuda_available": torch.cuda.is_available(),
         "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
     }
+
+    if npu_initialized():
+        import torch_npu
+        manifest.update(torch_npu=torch_npu.__version__, npu=torch.npu.get_device_name(),
+                        npu_device=torch.npu.current_device(), npu_available=True,
+                        npu_conv_allow_hf32=torch.npu.conv.allow_hf32,
+                        npu_matmul_allow_hf32=torch.npu.matmul.allow_hf32,
+                        ascend_home=os.environ.get("ASCEND_HOME_PATH"),
+                        ascend_visible_devices=os.environ.get("ASCEND_RT_VISIBLE_DEVICES"))
+    return manifest
