@@ -5,6 +5,7 @@ import pytest
 import torch
 import torch.nn.functional as F
 
+from aegis_clip import oof_rebuild
 from aegis_clip.oof_rebuild import (
     audit_against_historical_quality,
     generalized_cross_entropy,
@@ -114,3 +115,39 @@ def test_historical_audit_is_exact_for_matching_logits(tmp_path) -> None:
     )
     assert audit["top1_agreement"] == 1.0
     assert audit["p_original_max_absolute_error"] < 1.0e-7
+
+
+def test_rebuild_manifest_reports_actual_fold_count(tmp_path, monkeypatch) -> None:
+    assignments_path, feature_path, paths_path, labels_path = _write_cache(tmp_path)
+    inputs = load_oof_inputs(assignments_path, feature_path, paths_path, labels_path)
+
+    def fake_train_linear_head(features, labels, **kwargs):
+        del features, labels, kwargs
+        return torch.nn.Linear(2, 2), []
+
+    def fake_infer_logits(head, features, **kwargs):
+        del head, kwargs
+        return torch.zeros(len(features), 2)
+
+    monkeypatch.setattr(oof_rebuild, "train_linear_head", fake_train_linear_head)
+    monkeypatch.setattr(oof_rebuild, "infer_logits", fake_infer_logits)
+    result = oof_rebuild.rebuild_oof_logits(
+        inputs,
+        tmp_path / "output",
+        num_classes=2,
+        epochs=1,
+        batch_size=2,
+        infer_batch_size=2,
+        lr=0.01,
+        weight_decay=0.0,
+        warmup_epochs=0,
+        q=0.5,
+        seed=42,
+        device=torch.device("cpu"),
+        input_hashes={},
+    )
+
+    assert result["manifest"]["protocol"] == (
+        "fixed 2-fold GCE full-logit reconstruction"
+    )
+    assert result["manifest"]["parameters"]["folds"] == 2
