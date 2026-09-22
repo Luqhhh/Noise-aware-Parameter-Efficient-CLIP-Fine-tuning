@@ -1,5 +1,7 @@
 # 当前执行入口：REMATCH750_V2（2026-09-22）
 
+**待执行方案（不运行）**：[REMATCH750_V3 精度/耗时权衡](rematch750_v3_tradeoff_20260923.md)。用户要求仅写方案、暂不运行、不占NPU0。精度目标为同NPU B32基准下降≤0.1pp；拟比较B64×8与B128×16，另有有条件的单点LR补偿。无新训练/吞吐测试/推理或后台队列，V2实测结论仍有效。
+
 本轮执行入口：[大 batch 训练验证＋LoRA 收尾](rematch750_v2_execution_20260922.md)。**2026-09-23 已完成**：batch1024八轮macro67.3704%、micro68.4207%，执行审计通过但精度退化，关闭；条件触发的同LP NPU batch32八轮macro71.9047%、micro72.9839%，保留效率配置但未达+0.20pp晋级门；LoRA八轮完成、选epoch6，macro64.1064%、micro65.1478%，关闭。无新提交包、无平台上传；原RM-FT包37,444行及ZIP字节一致性复核通过，平台基准不变。
 
 复赛主线为：严格解码和内容隔离划分 → RM-LP → RM-FT / RM-LT → 平台比较 → 策略选择（RM-FULL 已取消）。配置为 `configs/rematch750_{lp,ft,lt}.yaml`；入口为 `PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch`。详细方案及实际状态见 [复赛执行记录](rematch750_execution_20260921.md)。
