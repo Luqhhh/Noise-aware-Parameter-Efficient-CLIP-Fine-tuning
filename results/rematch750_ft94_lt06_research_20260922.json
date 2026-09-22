@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-22",
+  "experiment_id": "REMATCH750_FT94_LT06_BLEND_RESEARCH",
+  "status": "closed_rule_ineligible_not_uploaded",
+  "strategy": {
+    "type": "two_model_logit_blend",
+    "formula": "0.94 * RM_FT_logits + 0.06 * RM_LT_logits",
+    "prediction": "argmax",
+    "retrained": false,
+    "checkpoint_reselected": false,
+    "test_distribution_used_for_alpha": false
+  },
+  "lineage": {
+    "rm_ft_checkpoint_sha256": "94a361e8672a0db67f43e1e35e91f22715964124ab59ee5157fd3d86c67be305",
+    "rm_lt_checkpoint_sha256": "088f6464564e82c15a268e35e2aaef3b82699f2a0ca57c24a9013bb28bbd778e",
+    "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "rm_ft_val_logits_sha256": "aa0875adf6e3fec36192673eb5e2c1dc209f3657f1fc559ba2789adb56a073cf",
+    "rm_lt_val_logits_sha256": "860f6ade95158ff7bef203953283249e477d6c50aa1bd9146f66cd3e28327c51",
+    "rm_ft_test_logits_sha256": "12efeb847e1066dcfe05f513769b8a2c390c19a602dea70c2b890d498b7b3896",
+    "rm_lt_test_logits_sha256": "d50ffb3dc4ba064d504218e2c3cbff52125339c5dab7f734ffa6276392eaad51"
+  },
+  "validation": {
+    "samples": 14880,
+    "rm_ft": {
+      "correct": 10848,
+      "micro": 0.7290322580645161,
+      "macro": 0.7183619695057472
+    },
+    "rm_lt": {
+      "correct": 10817,
+      "micro": 0.7269489247311828,
+      "macro": 0.7186554928769668
+    },
+    "rm_ft94_lt06": {
+      "correct": 10860,
+      "micro": 0.7298387096774194,
+      "macro": 0.7192485978156328
+    },
+    "delta_vs_rm_ft": {
+      "correct": 12,
+      "micro_pp": 0.08064516129032695,
+      "macro_pp": 0.0886628319885574,
+      "changed_predictions": 75,
+      "rm_ft_correct_blend_wrong": 9,
+      "rm_ft_wrong_blend_correct": 21,
+      "mcnemar_exact_p_unadjusted": 0.04277394525706768
+    },
+    "nested_5fold_repeat_delta_correct": [1, 6, 6, 7, 8],
+    "nested_5fold_repeat_mean_delta_correct": 5.6,
+    "selection_caveat": "The McNemar p-value is unadjusted for validation-set alpha selection."
+  },
+  "test_diagnostics": {
+    "samples": 37444,
+    "changed_predictions_vs_rm_ft": 269,
+    "changed_fraction_vs_rm_ft": 0.007184061531887618
+  },
+  "local_package": {
+    "path_windows": "D:\\2863949663\\SUBMIT_2_RM_FT94_LT06_BLEND_20260922.zip",
+    "sha256": "d876f333083503709406926f24a0616e42251d9057c5bee232b2587f72076c38",
+    "member": "pred_results.csv",
+    "rows": 37444,
+    "unique_names": 37444,
+    "columns": 2,
+    "label_min": "0000",
+    "label_max": "0749",
+    "crc_ok": true,
+    "tracked_in_git": false
+  },
+  "platform": {
+    "uploaded": false,
+    "score": null,
+    "actual_second_upload": "RM_LT",
+    "daily_slot_consumed_by_this_candidate": false
+  },
+  "decision": {
+    "rule": "COMPETITION_RULES_AGENT.md RULE-05 forbids multi-model logit/probability weighting",
+    "internal_roi_gate_pp": 0.3,
+    "observed_local_gain_pp": 0.08064516129032695,
+    "rule_eligible": false,
+    "advance": false,
+    "reason": "Explicitly prohibited ensemble and gain below the internal investment threshold."
+  },
+  "delivery_audit": {
+    "scope": [
+      "central validation metrics",
+      "paired transitions",
+      "McNemar exact p-value",
+      "test prediction change count",
+      "input and package SHA-256",
+      "ZIP member, CRC, row, uniqueness, column and label-range checks"
+    ],
+    "result": "passed"
+  }
+}

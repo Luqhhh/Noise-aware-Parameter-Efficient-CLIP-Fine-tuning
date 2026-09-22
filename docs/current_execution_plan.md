@@ -8,6 +8,8 @@
 
 本地比较材料：见 [RM_FT / RM_LT 严格本地比较](rematch750_local_comparison_20260922.md)；仅对既有 best checkpoint 导出 val/test logits 与逐样本验证预测，不改变训练或选模。
 
+用户基于上述 logits 完成过一个自有探索候选 `RM_FT94_LT06`：`0.94 × RM_FT logits + 0.06 × RM_LT logits`。本地验证相对 RM_FT 多正确 12 / 14,880（+0.0806pp），5 次重复嵌套 5-fold 的净正确数均为正但平均仅 +5.6；该候选没有上传平台，实际第二次上传仍是原始 RM_LT。由于它属于 RULE-05 明确禁止的多模型 logits 加权，且增益低于 +0.30pp 内部门槛，现已按 `closed_rule_ineligible_not_uploaded` 关闭，只保留[本地研究与止损记录](rematch750_ft_lt_blend_research_20260922.md)，不得补传或继续扫融合比例。
+
 baseline 定位：RM-FT 是本阶段正式视觉微调 baseline；RM-LP 是冻结特征参考基线与共享初始化；RM-LT 是只改变采样的对照候选。平台最高分包与 baseline 身份分开管理。
 
 **在途策略登记**（防止重复劳动，开工前请先读对应文件确认边界）：

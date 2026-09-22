@@ -1,6 +1,6 @@
 # 文档索引与状态约定
 
-**核对时间**：2026-09-21
+**核对时间**：2026-09-22
 
 ## 当前权威文档
 
@@ -11,6 +11,9 @@
 | [current_execution_plan.md](current_execution_plan.md) | **当前状态唯一权威入口**：当前阶段、执行入口、下一步 + 历史记录 |
 | [rematch750_execution_20260921.md](rematch750_execution_20260921.md) | 当轮复赛划分、三阶段配置、提交登记与全量重训命令 |
 | [rematch_dataset_20260921.md](rematch_dataset_20260921.md) | 当轮数据集元信息：规模、路径、SHA-256 与迁移状态 |
+| [rematch750_local_comparison_20260922.md](rematch750_local_comparison_20260922.md) | RM_FT / RM_LT 的严格本地成对比较与 logits 血缘 |
+| [rematch750_platform_results_20260922.md](rematch750_platform_results_20260922.md) | RM_FT / RM_LT 两次真实平台分数与策略映射 |
+| [rematch750_ft_lt_blend_research_20260922.md](rematch750_ft_lt_blend_research_20260922.md) | 用户自有 FT94/LT06 融合研究；因禁止集成与收益门槛关闭，未上传 |
 | [lessons_learned.md](lessons_learned.md) | 可迁移经验与方法论教训（**开新实验前建议先读**） |
 | `../README.md` | 项目入口、快速上手、文档地图 |
 | `../CLAUDE.md` | 面向 agent 的工作指引（含协作约定） |
