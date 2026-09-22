@@ -1,6 +1,9 @@
 # REMATCH750 NPU throughput tuning (2026-09-22)
 
 Status: completed. User selected batch 1024 after repeated measurements.
+
+Follow-up (2026-09-23): [REMATCH750_V2](rematch750_v2_execution_20260922.md) completed the fixed eight-epoch batch-1024 recipe: macro 67.3704%, micro 68.4207%, 1,048 successful updates, exact reload. It failed the accuracy gate. The conditional batch-32 eight-epoch control recovered macro 71.9047% / micro 72.9839% with 33,456 successful updates; retain `rematch750_ft_npu_tuned.yaml` as the NPU efficiency configuration. Neither run generated a new submission or platform score. The selection below is the historical throughput choice, not the current accuracy recommendation.
+
 Batch-32 two-epoch correctness acceptance and validated submission are complete;
 large-batch convergence remains unvalidated.
 

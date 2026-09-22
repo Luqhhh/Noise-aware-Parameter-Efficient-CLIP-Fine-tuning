@@ -1,0 +1,15 @@
+{
+  "candidate": "RM_FT",
+  "role": "retained_platform_baseline",
+  "rows": 37444,
+  "csv": "/home/lux1/noise/outputs/rematch750/RM_FT/seed42/submission/pred_results.csv",
+  "zip": "/home/lux1/noise/outputs/rematch750/RM_FT/seed42/submission/submission.zip",
+  "csv_sha256": "4490ff27c2374b93206b827fb86571f0f7a755aece17319a22dfca8c4ab6f282",
+  "zip_sha256": "0f3ec4e4383ac22fea3e16adbb4aa4c34e21795d8d7cf4014cd7a4c833ff68bf",
+  "csv_zip_bytes_equal": true,
+  "submission_check_exit_code": 0,
+  "command": "python3 scripts/check_submission.py --test_dir test --class-mapping artifacts/stages/repechage/20260921/class_to_idx.json --csv outputs/rematch750/RM_FT/seed42/submission/pred_results.csv --zip outputs/rematch750/RM_FT/seed42/submission/submission.zip",
+  "platform_score": 60.96570879179575,
+  "platform_correct": 22828,
+  "new_platform_upload": false
+}

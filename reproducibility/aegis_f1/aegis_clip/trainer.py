@@ -6,6 +6,7 @@ import csv
 import json
 import math
 import shutil
+import time
 from pathlib import Path
 from typing import Any
 
@@ -582,7 +583,18 @@ def train(
         selected = torch.load(checkpoint_dir / "best.pt", map_location="cpu", weights_only=False)
         best_micro = float(selected["metrics"].get("raw_micro", -math.inf))
         del selected
+    # Count executed optimizer calls, not attempted AMP steps. A skipped scaler
+    # step never invokes this hook. Cross-check against checkpoint optimizer state.
+    successful_updates = max(
+        (int(v["step"]) for v in optimizer.state.values() if "step" in v), default=0
+    )
+    def count_optimizer_update(_optimizer, _args, _kwargs):
+        nonlocal successful_updates
+        successful_updates += 1
+    update_hook = optimizer.register_step_post_hook(count_optimizer_update)
+    training_seconds = 0.0
     for epoch in range(start_epoch, epochs + 1):
+        epoch_training_start = time.monotonic()
         supervision_ledger = None
         diagnostic_config = config.get('diagnostics', {}).get('longtail', {})
         if diagnostic_config.get('enabled', False):
@@ -1042,13 +1054,16 @@ def train(
                 drift = 1.0 - F.cosine_similarity(
                     encoded.float(), F.normalize(mixed_reference, dim=1), dim=1
                 )
+                feature_anchor_loss = logits.new_zeros(())
                 if distill_weight > 0.0:
                     if mixed_gate is not None:
                         gate_sum = mixed_gate.sum().clamp_min(1.0)
                         gated_drift = (drift * mixed_gate).sum() / gate_sum
-                        loss = loss + distill_weight * gated_drift
+                        feature_anchor_loss = distill_weight * gated_drift
+                        loss = loss + feature_anchor_loss
                     else:
-                        loss = loss + distill_weight * drift.mean()
+                        feature_anchor_loss = distill_weight * drift.mean()
+                        loss = loss + feature_anchor_loss
 
                 proto_loss = encoded.new_zeros(())
                 if proto_enabled and epoch >= proto_start_epoch:
@@ -1216,7 +1231,11 @@ def train(
             parameters_to_clip = list(model.parameters())
             if snscl_state is not None:
                 parameters_to_clip.extend(snscl_state.parameters())
-            torch.nn.utils.clip_grad_norm_(parameters_to_clip, max_grad_norm)
+            gradient_norm = torch.nn.utils.clip_grad_norm_(parameters_to_clip, max_grad_norm)
+            step_learning_rates = {
+                group.get("name", f"group{i}"): group["lr"]
+                for i, group in enumerate(optimizer.param_groups)
+            }
             scaler.step(optimizer)
             scaler.update()
             scheduler.step()
@@ -1294,15 +1313,32 @@ def train(
                     denominator=mixed_weights.sum().clamp_min(1.0e-8).detach())
             global_step += 1
             log_every = int(train_config.get("log_every_steps", 0))
-            if log_every and global_step % log_every == 0:
-                logger.info("Progress epoch=%d/%d step=%d/%d examples=%d/%d loss=%.6f amp_scale=%.1f",
-                            epoch, epochs, global_step, epochs * len(train_loader),
-                            totals["examples"], len(train_dataset),
-                            totals["loss"] / totals["examples"], scaler.get_scale())
+            if log_every and (global_step % log_every == 0 or totals["examples"] == len(train_dataset)):
+                progress = dict(
+                    epoch=epoch, global_step=global_step,
+                    loss_phase=("CE" if epoch <= int(config["loss"].get("ce_warmup_epochs", 0))
+                                else str(config["loss"]["name"]).upper()),
+                    classification_loss=float(classification_loss.detach()),
+                    feature_anchor_loss=float(feature_anchor_loss.detach()),
+                    head_lr=step_learning_rates.get("head"),
+                    visual_lr=step_learning_rates.get("visual"),
+                    gradient_norm=float(gradient_norm), amp_scale=scaler.get_scale(),
+                    successful_optimizer_updates=successful_updates,
+                    attempted_optimizer_updates=global_step,
+                    cumulative_training_seconds=training_seconds + time.monotonic() - epoch_training_start,
+                )
+                with (log_dir / "progress.jsonl").open("a", encoding="utf-8") as handle:
+                    handle.write(json.dumps(progress) + "\n")
+                logger.info("Progress %s", json.dumps(progress))
+
+        training_seconds += time.monotonic() - epoch_training_start
 
         if supervision_ledger is not None:
             atomic_json_dump(supervision_ledger.report(), log_dir / f'longtail_epoch_{epoch}.json')
         train_metrics = {
+            "successful_optimizer_updates": successful_updates,
+            "attempted_optimizer_updates": global_step,
+            "cumulative_training_seconds": training_seconds,
             "train_loss": totals["loss"] / totals["examples"],
             "train_accuracy": totals["correct"] / totals["examples"],
             "train_feature_drift": totals["feature_drift"] / totals["examples"],

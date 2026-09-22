@@ -1,0 +1,22 @@
+{
+  "experiment": "REMATCH750_V2",
+  "source_base_commit": "843c3f62456e3c0502e7ae62a2ccfae8f7fd3bc3",
+  "runtime_trainer_sha256": "5b2d3b6a1c4b0efd30385ee49444fc127ace6dd2d07dd14f1822679beccc6c96",
+  "recipe_change_checks": {
+    "configs/rematch750_ft_npu_throughput.yaml": "only log_every_steps 200->20",
+    "configs/rematch750_lora.yaml": "comments only; all parsed fields unchanged"
+  },
+  "tests": {
+    "command": "PYTHONPATH=reproducibility/aegis_f1 python3 -m pytest reproducibility/aegis_f1/tests -q",
+    "passed": 662,
+    "skipped": 7,
+    "known_historical_scope_asset_failures": 2,
+    "unexpected_failures": 0
+  },
+  "trainer_tests": {
+    "local_passed": 7,
+    "npu_passed": 7
+  },
+  "platform_uploads": 0,
+  "git_workflow": "automatic: git pull --rebase --autostash origin main; no manual stash pop"
+}

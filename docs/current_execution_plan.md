@@ -1,4 +1,6 @@
-# 当前执行入口：REMATCH750（2026-09-21）
+# 当前执行入口：REMATCH750_V2（2026-09-22）
+
+本轮执行入口：[大 batch 训练验证＋LoRA 收尾](rematch750_v2_execution_20260922.md)。**2026-09-23 已完成**：batch1024八轮macro67.3704%、micro68.4207%，执行审计通过但精度退化，关闭；条件触发的同LP NPU batch32八轮macro71.9047%、micro72.9839%，保留效率配置但未达+0.20pp晋级门；LoRA八轮完成、选epoch6，macro64.1064%、micro65.1478%，关闭。无新提交包、无平台上传；原RM-FT包37,444行及ZIP字节一致性复核通过，平台基准不变。
 
 复赛主线为：严格解码和内容隔离划分 → RM-LP → RM-FT / RM-LT → 平台比较 → 策略选择（RM-FULL 已取消）。配置为 `configs/rematch750_{lp,ft,lt}.yaml`；入口为 `PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch`。详细方案及实际状态见 [复赛执行记录](rematch750_execution_20260921.md)。
 
@@ -14,14 +16,14 @@ baseline 定位：RM-FT 是本阶段正式视觉微调 baseline；RM-LP 是冻�
 
 NPU 两轮迁移验收已通过：910B2 单卡完成全量数据一致性检查、缓存、20 轮 LP、用户授权缩短的 2 轮 FT、checkpoint 重载与 37,444 行提交校验。FT macro 68.1837%、micro 69.2742%，比 GPU 同为第 2 轮的 macro 低 0.072pp；8,364 次更新无跳步。LP batch 256 / FT batch 32；NPU 实测 0.2265 秒/步，本机 GPU 0.1266 秒/步，当前 NPU 耗时为 1.79 倍，性能尚待优化。保留原 8 轮学习率计划，但未完成 8 轮精度复现；验收包未上传平台，不替代正式 RM_FT。见 [迁移记录](rematch750_npu_migration_20260922.md)。
 
-NPU 性能调优的 batch 32 两轮验收通过：workers 16 / prefetch 2 / NPU 锁页内存 / fused AdamW / foreach norm / OMP 4，实测 **0.079585 秒/步**，比原 NPU 快 **2.85 倍**、比本机 GPU 快 **1.59 倍**；macro **68.3531%**、micro **69.3817%**，8,364 次更新和重载审计通过，37,444 行 CSV/ZIP 远端与本机校验通过，未上传平台。用户最终选用 **batch 1024 / workers 40 / prefetch 4**（两次均约 **1,832 张/秒**，张量显存 **23.52 GiB**），大 batch 收敛尚未验收，不能视作精度等价配置；见 [调优记录](rematch750_npu_tuning_20260922.md)。
+NPU 性能调优的 batch 32 两轮验收通过：workers 16 / prefetch 2 / NPU 锁页内存 / fused AdamW / foreach norm / OMP 4，实测 **0.079585 秒/步**，比原 NPU 快 **2.85 倍**、比本机 GPU 快 **1.59 倍**；macro **68.3531%**、micro **69.3817%**，8,364 次更新和重载审计通过，37,444 行 CSV/ZIP 远端与本机校验通过，未上传平台。用户最终选用 **batch 1024 / workers 40 / prefetch 4**（两次均约 **1,832 张/秒**，张量显存 **23.52 GiB**），当时仅验证吞吐；随后V2完整八轮精度明显落后，现不推广该固定大batch配方；见 [调优记录](rematch750_npu_tuning_20260922.md)。
 
 **在途策略登记**（防止重复劳动，开工前请先读对应文件确认边界）：
 
 - [训练侧 OOF 连续降权](rematch750_strategy_oof_downweight_20260921.md) —— clairvoyanttt，2026-09-21 占位，**已关闭（2026-09-22）**：本地主判据未过门、无提交包、不派生扫描。用交叉拟合预测给每张训练图打连续质量分并按分降权，不删样本、不改标签、不动推理。与 RM-FT / RM-LT 的采样维度不重叠。
 - [推理侧探针](rematch750_inference_side_probe_20260922.md) —— clairvoyanttt，2026-09-22，**已关闭、无候选、无提交包**。量化 flip TTA 本地天花板（+0.155~+0.242pp，尾部 ≈0）并证伪「本地/平台 11.90pp 差来自输入几何」的假设。**结论支持既有的「推理侧不是答案」与首轮推理协议边界，请勿重复这两项测量**；若确需改推理协议，先改 `cli/infer.py` 的首轮闸门并登记，不要绕过。
 - [特征漂移分析](rematch750_feature_drift_20260922.md) —— clairvoyanttt，2026-09-22，**测量轮：已关闭、不改判据、不派生候选、无提交包**，测试集未触碰。逐类算 `drift = 1 − cos(FT, 冻结 OpenAI)` 与 `Δrecall` 配对（两处锚点逐位通过）。结论：`drift ⊥ train_samples`（+0.033）但 `drift vs LP_recall` 强负（−0.603）→ 否掉「池内域适配」读法、支持「真实表征改善」，**FT 的增益更可能迁移**；据此**收回**当日的反向口头判断。工具 `cli/analyze_feature_drift.py` + 单测 6 项已入库，可复用于任何 checkpoint，**不必重测**。
-- RM_LORA（`configs/rematch750_lora.yaml`）—— clairvoyanttt，2026-09-22，**在途**。适应阶梯上 LP 与 full-FT 之间的一个中间档，只取后 4/12 层 LoRA（r=8, α=16）一个原则性点位，**不做参数扫描**。**不是与 RM-FT 的单变量对照**（LoRA 参数与 `visual` 共用 `backbone_lr`，故 LR 用了仓库已验证的 LoRA 值 2.0e-05 而非 FT 的 3.0e-06，config 头部已写明）。8 轮、init 自 RM-LP epoch 20。开工前先读该 config 头部确认边界。
+- RM_LORA（`configs/rematch750_lora.yaml`）—— **已关闭（2026-09-23）**。原登记未找到运行进程/目录，用户授权按原配方重启；八轮完成，按raw_macro选epoch6，macro64.1064%、micro65.1478%，未晋级、无提交包。后4层/r8/alpha16固定点位，未扫描；与FT还差visual LR（2e-5 vs3e-6）及warmup（1 vs0），不能归因于低秩约束本身。完整证据见[V2执行记录](rematch750_v2_execution_20260922.md)。
 
 以下内容保留为历史记录。
 

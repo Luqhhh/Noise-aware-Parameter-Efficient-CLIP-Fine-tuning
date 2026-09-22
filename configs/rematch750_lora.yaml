@@ -8,8 +8,9 @@
 # 【重要】这不是与 RM-FT 的单变量对照。LoRA 参数与 visual 共用 backbone_lr
 # （model.py:857-868），而 LoRA 需要自己的学习率区间，故 backbone_lr 用仓库
 # 已验证的 LoRA 值 2.0e-05（configs/a2_lora_*.yaml），而非 FT 的 3.0e-06。
-# 除以下三项外，全部与 rematch750_ft.yaml 一致，以保持阶梯可比：
-#   model.peft_mode / 新增 lora_* 键 / train.backbone_lr
+# 除以下四项外，全部与 rematch750_ft.yaml 一致，以保持阶梯可比：
+#   model.peft_mode / 新增 lora_* 键 / train.backbone_lr / train.lr_warmup_epochs
+# warmup：LoRA 为 1 epoch，FT 为 0；既有任务保持该调度，不作低秩约束的单变量归因。
 #
 # 只取一个原则性点位（后 4/12 层），不做参数扫描。
 project:

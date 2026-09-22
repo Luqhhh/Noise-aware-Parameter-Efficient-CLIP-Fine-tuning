@@ -73,7 +73,7 @@ train:
   head_weight_decay: 0.0001
   init_checkpoint: ../outputs/rematch750_npu/RM_LP/seed42/checkpoints/best.pt
   loader_timeout: 120
-  log_every_steps: 200
+  log_every_steps: 20
   lr_warmup_epochs: 0
   max_grad_norm: 1.0
   num_workers: 40
