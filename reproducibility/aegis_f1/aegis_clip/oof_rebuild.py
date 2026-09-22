@@ -432,12 +432,13 @@ def rebuild_oof_logits(
         )
     atomic_json_dump(audit, output / "reproducibility_audit.json")
     manifest = {
-        "protocol": "fixed three-fold GCE full-logit reconstruction",
+        "protocol": f"fixed {len(folds)}-fold GCE full-logit reconstruction",
         "external_data": False,
         "test_data_used": False,
         "original_validation_used": False,
         "holdout_used_for_epoch_selection": False,
         "parameters": {
+            "folds": len(folds),
             "num_classes": num_classes,
             "epochs": epochs,
             "batch_size": batch_size,
