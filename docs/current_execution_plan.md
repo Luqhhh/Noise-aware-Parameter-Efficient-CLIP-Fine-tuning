@@ -16,6 +16,8 @@ baseline 定位：RM-FT 是本阶段正式视觉微调 baseline；RM-LP 是冻�
 
 - [训练侧 OOF 连续降权](rematch750_strategy_oof_downweight_20260921.md) —— clairvoyanttt，2026-09-21 占位，**已关闭（2026-09-22）**：本地主判据未过门、无提交包、不派生扫描。用交叉拟合预测给每张训练图打连续质量分并按分降权，不删样本、不改标签、不动推理。与 RM-FT / RM-LT 的采样维度不重叠。
 - [推理侧探针](rematch750_inference_side_probe_20260922.md) —— clairvoyanttt，2026-09-22，**已关闭、无候选、无提交包**。量化 flip TTA 本地天花板（+0.155~+0.242pp，尾部 ≈0）并证伪「本地/平台 11.90pp 差来自输入几何」的假设。**结论支持既有的「推理侧不是答案」与首轮推理协议边界，请勿重复这两项测量**；若确需改推理协议，先改 `cli/infer.py` 的首轮闸门并登记，不要绕过。
+- [特征漂移分析](rematch750_feature_drift_20260922.md) —— clairvoyanttt，2026-09-22，**测量轮：已关闭、不改判据、不派生候选、无提交包**，测试集未触碰。逐类算 `drift = 1 − cos(FT, 冻结 OpenAI)` 与 `Δrecall` 配对（两处锚点逐位通过）。结论：`drift ⊥ train_samples`（+0.033）但 `drift vs LP_recall` 强负（−0.603）→ 否掉「池内域适配」读法、支持「真实表征改善」，**FT 的增益更可能迁移**；据此**收回**当日的反向口头判断。工具 `cli/analyze_feature_drift.py` + 单测 6 项已入库，可复用于任何 checkpoint，**不必重测**。
+- RM_LORA（`configs/rematch750_lora.yaml`）—— clairvoyanttt，2026-09-22，**在途**。适应阶梯上 LP 与 full-FT 之间的一个中间档，只取后 4/12 层 LoRA（r=8, α=16）一个原则性点位，**不做参数扫描**。**不是与 RM-FT 的单变量对照**（LoRA 参数与 `visual` 共用 `backbone_lr`，故 LR 用了仓库已验证的 LoRA 值 2.0e-05 而非 FT 的 3.0e-06，config 头部已写明）。8 轮、init 自 RM-LP epoch 20。开工前先读该 config 头部确认边界。
 
 以下内容保留为历史记录。
 

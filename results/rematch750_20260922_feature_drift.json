@@ -1,0 +1,132 @@
+{
+  "anchors": {
+    "first_attempt_failed": "batch_size defaulted to 64 instead of evaluation.batch_size: 128 -> micro 0.7285618185997009, 2 images of 14880 flipped (autocast plus a different batch shape -> cuDNN picks other kernels). Fixed by reading evaluation.batch_size from the config, NOT by loosening the tolerance.",
+    "match": "exact",
+    "mean_feature_drift_in_trainer_log": 0.037974774837493896,
+    "mean_feature_drift_this_run": 0.037974752485752106,
+    "note": "the two drift definitions agree to 7 significant figures, which independently confirms the trainer computes 1 - cos(FT, OpenAI) the same way this tool does",
+    "val_micro_recorded": 0.7286962270736694,
+    "val_micro_this_forward": 0.7286962270736694
+  },
+  "caveat": "Weak, anticipatory evidence. It cannot adjudicate transfer: val is a faithful iid sample of the training pool, so no metric computed on val carries information about the platform.",
+  "command": "PYTHONPATH=reproducibility/aegis_f1 .venv/bin/python -m aegis_clip.cli.analyze_feature_drift --checkpoint outputs/rematch750/RM_FT/seed42/checkpoints/best.pt --config configs/rematch750_ft.yaml --ft-evaluation outputs/rematch750/RM_FT/seed42/logs/evaluation_epoch_8.json --lp-evaluation outputs/rematch750/RM_LP/seed42/logs/evaluation_epoch_20.json --output outputs/rematch750/RM_FT/seed42/feature_drift.json --anchor-micro 0.7286962270736694",
+  "date": "2026-09-22",
+  "discriminating_checks": {
+    "delta_recall_vs_lp_recall": {
+      "pearson": -0.4483,
+      "spearman": -0.4847
+    },
+    "delta_recall_vs_train_samples": {
+      "pearson": 0.0119,
+      "spearman": 0.0036
+    },
+    "drift_vs_ft_recall": {
+      "pearson": -0.4513,
+      "spearman": -0.5213
+    },
+    "drift_vs_lp_recall": {
+      "pearson": -0.5667,
+      "spearman": -0.6027
+    },
+    "drift_vs_train_samples": {
+      "pearson": 0.0318,
+      "spearman": 0.0332
+    }
+  },
+  "does_not_change": [
+    "the preregistered transfer-ratio criterion (docs/rematch750_lp_ft_transfer_prereg_20260922.md section 4)",
+    "tomorrow's package choice (RM-LP, on strict dominance)"
+  ],
+  "drift_by_support_quintile": [
+    {
+      "classes": 150,
+      "delta_micro": 0.09066547636526127,
+      "mean_drift": 0.038032320843266666,
+      "mean_train_samples": 134.42,
+      "quintile": 1
+    },
+    {
+      "classes": 150,
+      "delta_micro": 0.10214655525093266,
+      "mean_drift": 0.03760197669266667,
+      "mean_train_samples": 162.14666666666668,
+      "quintile": 2
+    },
+    {
+      "classes": 150,
+      "delta_micro": 0.07937039159625921,
+      "mean_drift": 0.03717492966646667,
+      "mean_train_samples": 178.50666666666666,
+      "quintile": 3
+    },
+    {
+      "classes": 150,
+      "delta_micro": 0.09007134519636444,
+      "mean_drift": 0.03818099112573334,
+      "mean_train_samples": 201.42666666666668,
+      "quintile": 4
+    },
+    {
+      "classes": 150,
+      "delta_micro": 0.09891334488943995,
+      "mean_drift": 0.03868849995213333,
+      "mean_train_samples": 215.6,
+      "quintile": 5
+    }
+  ],
+  "experiment_id": "RM_FT_feature_drift",
+  "per_class_source": "results/rematch750_20260922_feature_drift_per_class.csv",
+  "primary": {
+    "classes": 750,
+    "drift_quintiles": [
+      {
+        "classes": 150,
+        "delta_micro": 0.05045105044185777,
+        "mean_delta_recall": 0.05087005354464054,
+        "mean_drift": 0.024984117864320674,
+        "quintile": 1,
+        "val_samples": 2993
+      },
+      {
+        "classes": 150,
+        "delta_micro": 0.058538272330401306,
+        "mean_delta_recall": 0.06119124395151933,
+        "mean_drift": 0.033018339065214,
+        "quintile": 2,
+        "val_samples": 2887
+      },
+      {
+        "classes": 150,
+        "delta_micro": 0.08899999817088246,
+        "mean_delta_recall": 0.08713995675245921,
+        "mean_drift": 0.038609751984477046,
+        "quintile": 3,
+        "val_samples": 3000
+      },
+      {
+        "classes": 150,
+        "delta_micro": 0.11144378133172682,
+        "mean_delta_recall": 0.11244164044658343,
+        "mean_drift": 0.04331026452283065,
+        "quintile": 4,
+        "val_samples": 3006
+      },
+      {
+        "classes": 150,
+        "delta_micro": 0.15096860248831884,
+        "mean_delta_recall": 0.1470323260873556,
+        "mean_drift": 0.04975624484320482,
+        "quintile": 5,
+        "val_samples": 2994
+      }
+    ],
+    "pearson": 0.0199,
+    "spearman": 0.4013
+  },
+  "question": "Is RM-FT's +9.23pp over RM-LP a better representation (which should transfer) or a more thorough fit of the pool domain (which should not)?",
+  "raw_output": "outputs/rematch750/RM_FT/seed42/feature_drift.json (gitignored)",
+  "reading": "drift is flat across support quintiles but strongly negative against LP recall -> the 'domain adaptation' reading (which would concentrate on high-support classes, where there is more to fit) is refuted; the 'genuine learning' reading (which concentrates where frozen CLIP was weakest) matches. FT's gain therefore more likely transfers.",
+  "retraction": "An earlier verbal claim that this positive relation predicts RM-LP's platform score HIGH was wrong: it assumed 'moved features = domain adaptation', which the discriminating check refutes. The current evidence points the other way -- FT's advantage likely transfers, so RM-LP more likely lands in the low band (<53.30%). Tomorrow's decision is unchanged; only the expected reading changes.",
+  "test_set_touched": false,
+  "tool": "reproducibility/aegis_f1/aegis_clip/cli/analyze_feature_drift.py"
+}

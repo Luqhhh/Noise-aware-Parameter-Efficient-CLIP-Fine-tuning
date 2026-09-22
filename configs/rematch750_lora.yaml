@@ -1,0 +1,101 @@
+# RM_LORA：LP 与 full-FT 之间的中间适应点（视觉编码器 LoRA）。
+#
+# 动机：RM-FT 的 +9.23pp 池内增益与潜在的特征扭曲共生于「解冻」这一个动作
+# （FT 在第 2 个 epoch 就到 69.29%，然后饱和）。LoRA 把更新约束在低秩子空间，
+# 既放开一部分适应能力，又给特征扭曲设上界。这是阶梯 LP(0 层) → LoRA → FT(12 层)
+# 的中间点。
+#
+# 【重要】这不是与 RM-FT 的单变量对照。LoRA 参数与 visual 共用 backbone_lr
+# （model.py:857-868），而 LoRA 需要自己的学习率区间，故 backbone_lr 用仓库
+# 已验证的 LoRA 值 2.0e-05（configs/a2_lora_*.yaml），而非 FT 的 3.0e-06。
+# 除以下三项外，全部与 rematch750_ft.yaml 一致，以保持阶梯可比：
+#   model.peft_mode / 新增 lora_* 键 / train.backbone_lr
+#
+# 只取一个原则性点位（后 4/12 层），不做参数扫描。
+project:
+  experiment_id: RM_LORA
+  stage: repechage
+  seed: 42
+  data_version: '20260921'
+data:
+  train_root: ../train
+  test_root: ../test
+  train_csv: ../artifacts/stages/repechage/20260921/train_dev.csv
+  val_csv: ../artifacts/stages/repechage/20260921/val_dev.csv
+  class_mapping: ../artifacts/stages/repechage/20260921/class_to_idx.json
+  dataset_manifest: ../artifacts/stages/repechage/20260921/dataset_manifest.json
+  train_augmentation: weak_rrc_flip
+  expected_official_train_samples: 148695
+  expected_test_samples: 37444
+  validation_overlap_with_training: false
+  external_data: false
+  test_usage: inference_only
+features:
+  tensor_path: ../artifacts/stages/repechage/20260921/features/features.pt
+  paths_path: ../artifacts/stages/repechage/20260921/features/image_paths.json
+  manifest_path: ../artifacts/stages/repechage/20260921/features/manifest.json
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  num_classes: 750
+  feature_dim: 512
+  peft_mode: visual_lora
+  use_cached_training: false
+  official_checkpoint: ~/.cache/clip/ViT-B-32.pt
+  lora_last_n_blocks: 4
+  lora_rank: 8
+  lora_alpha: 16.0
+  lora_adapt_qv: true
+  lora_adapt_out: true
+trust:
+  enabled: false
+longtail:
+  sampler_mode: none
+  loss_reweighting: none
+  balanced_softmax_tau: 0.0
+loss:
+  name: gce
+  gce_q: 0.5
+  ce_warmup_epochs: 2
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  feature_distillation_weight: 2.0
+train:
+  device: cuda
+  deterministic: true
+  amp: true
+  epochs: 8
+  schedule_epochs: 8
+  batch_size: 32
+  num_workers: 4
+  loader_timeout: 120
+  pin_memory: true
+  head_lr: 0.0001
+  head_weight_decay: 0.0001
+  backbone_lr: 0.00002
+  backbone_weight_decay: 0.0001
+  lr_warmup_epochs: 1
+  max_grad_norm: 1.0
+  early_stop_patience: 0
+  save_epoch_checkpoints: false
+  init_checkpoint: ../outputs/rematch750/RM_LP/seed42/checkpoints/best.pt
+  amp_initial_scale: 128.0
+  amp_growth_interval: 1000000000
+  require_finite_gradients: true
+  log_every_steps: 200
+evaluation:
+  batch_size: 128
+  inference_batch_size: 128
+  selector_metric: raw_macro
+  selection_policy: best_selector
+  interval_epochs: 2
+  tiebreak_metric: raw_micro
+  drift_penalty: 0.0
+  measure_flip_consistency: false
+  record_initial: false
+  evaluate_initial_checkpoint: false
+output:
+  root: ../outputs/rematch750
+diagnostics:
+  longtail:
+    enabled: true
