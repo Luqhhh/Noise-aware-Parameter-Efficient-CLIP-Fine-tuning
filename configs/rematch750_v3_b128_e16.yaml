@@ -1,4 +1,4 @@
-# V3 accuracy/time tradeoff: original LR/loss/schedule; same NPU LP SHA.
+# V3: compensate batch 128 with 16 epochs and cosine horizon 16.
 data:
   class_mapping: ../artifacts/stages/repechage/20260921_npu/class_to_idx.json
   dataset_manifest: ../artifacts/stages/repechage/20260921_npu/dataset_manifest.json
@@ -53,7 +53,7 @@ output:
   root: ../outputs/codex/rematch750_v3_tradeoff
 project:
   data_version: '20260921'
-  experiment_id: RM_V3_B128
+  experiment_id: RM_V3_B128_E16
   seed: 42
   stage: repechage
 train:
@@ -66,7 +66,7 @@ train:
   deterministic: true
   device: npu:0
   early_stop_patience: 0
-  epochs: 8
+  epochs: 16
   head_lr: 0.0001
   head_weight_decay: 0.0001
   init_checkpoint: /workspace/noise/outputs/rematch750_npu/RM_LP/seed42/checkpoints/best.pt
@@ -78,7 +78,7 @@ train:
   pin_memory: true
   require_finite_gradients: true
   save_epoch_checkpoints: false
-  schedule_epochs: 8
+  schedule_epochs: 16
   prefetch_factor: 2
   npu_pin_memory: true
   optimizer_impl: npu_fused_adamw
