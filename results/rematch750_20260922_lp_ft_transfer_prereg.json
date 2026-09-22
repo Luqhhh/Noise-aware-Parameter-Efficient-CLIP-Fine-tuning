@@ -1,0 +1,118 @@
+{
+  "stage": "repechage",
+  "data_version": "20260921",
+  "date": "2026-09-22",
+  "author": "clairvoyanttt",
+  "kind": "pre-registration; two-arm packages rebuilt and verified; submission slot scheduled 2026-09-23 for RM_LP",
+  "lineage": {
+    "note": "both arms rebuilt locally on this machine; NOT the /home/lux1/noise/ packages described by results/rematch_submission_registry.csv",
+    "local_dataset_manifest_sha256": "a6aeb2618ddc08d62b3a9ca3f767be089a76652b325004bf21d039f7692a1380",
+    "registry_dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0"
+  },
+  "existing_platform_scores": {
+    "RM_FT": {
+      "platform_overall_accuracy": 0.6096570879179575,
+      "correct": 22828,
+      "samples": 37444,
+      "local_macro": 0.7180540561676025,
+      "local_micro": 0.7286962270736694,
+      "transfer_ratio": 0.8366
+    },
+    "RM_LT": {
+      "platform_overall_accuracy": 0.60885589146458706,
+      "correct": 22798,
+      "samples": 37444,
+      "local_macro": 0.718655,
+      "local_micro": 0.726949,
+      "transfer_ratio": 0.8375
+    },
+    "FT_minus_LT_platform_pp": 0.0801,
+    "FT_minus_LT_platform_images": 30,
+    "note": "two distinct full-FT variants land within 0.08pp on the platform; locally LT has the HIGHER macro (71.8655 vs 71.8054), so the local ordering is again reversed on the platform"
+  },
+  "finding_1_val_is_iid_sample_of_train_pool": {
+    "method": "width/height columns already present in train_dev.csv and val_dev.csv; no image was read",
+    "shape_share_train_vs_val_pct": {
+      "1300x956": [2.53, 2.39],
+      "800x600": [1.74, 1.77],
+      "640x480": [1.80, 1.59],
+      "866x1390": [1.10, 1.06],
+      "900x600": [0.82, 0.87],
+      "1024x768": [0.79, 0.87]
+    },
+    "maxside_le_500_pct": {"train_dev": 33.44, "val_dev": 33.16},
+    "test_like_slice_maxside_le_500_and_portrait": {
+      "train_dev": {"pct": 8.50, "n": 11370, "classes": 731, "top_class_share_pct": 0.9},
+      "val_dev": {"pct": 8.58, "n": 1276, "classes": 520, "top_class_share_pct": 1.1}
+    },
+    "conclusion": "val is a faithful iid sample of the training pool at every slice, including the test-like geometry slice; therefore NO local re-slicing can build a cross-source proxy, and the 11.90pp local/platform gap is structurally invisible to any metric computed on val",
+    "consequences": [
+      "refutes the leave-one-source-out proposal on the rematch data: there is only one source pool, so there is no source to leave out",
+      "closes the line of work that tries to explain the 11.90pp gap locally"
+    ]
+  },
+  "finding_2_two_arms_are_genuinely_different": {
+    "method": "per-image comparison of the two pred_results.csv over 37444 test images",
+    "agreement": 26689,
+    "agreement_pct": 71.28,
+    "disagreement": 10755,
+    "disagreement_pct": 28.72,
+    "classes_used": {"RM_LP": 740, "RM_FT": 741},
+    "conclusion": "the experiment is well powered; the two arms give different answers on 28.72% of test images, so the platform scores can differ by several pp"
+  },
+  "finding_3_FT_gain_is_uniform_not_head_concentrated": {
+    "method": "per_class blocks of logs/evaluation_epoch_20.json (RM_LP) and logs/evaluation_epoch_8.json (RM_FT); no inference was run",
+    "overall": {
+      "RM_LP": {"raw_micro": 0.6363575458526611, "raw_macro": 0.6263191103935242, "epoch": 20},
+      "RM_FT": {"raw_micro": 0.7286962270736694, "raw_macro": 0.7180540561676025, "epoch": 8},
+      "delta_micro_pp": 9.2339
+    },
+    "by_train_samples_quintile": [
+      {"quintile": 1, "train_samples_range": [4, 154], "classes": 150, "lp_micro": 0.5913, "ft_micro": 0.6847, "delta_pp": 9.33},
+      {"quintile": 2, "train_samples_range": [154, 169], "classes": 150, "lp_micro": 0.6277, "ft_micro": 0.7276, "delta_pp": 9.99},
+      {"quintile": 3, "train_samples_range": [169, 194], "classes": 150, "lp_micro": 0.6620, "ft_micro": 0.7417, "delta_pp": 7.97},
+      {"quintile": 4, "train_samples_range": [194, 208], "classes": 150, "lp_micro": 0.6479, "ft_micro": 0.7368, "delta_pp": 8.89},
+      {"quintile": 5, "train_samples_range": [208, 223], "classes": 150, "lp_micro": 0.6388, "ft_micro": 0.7385, "delta_pp": 9.97}
+    ],
+    "per_class_outcome": {"better": 560, "same": 162, "worse": 28},
+    "conclusion": "FT's in-pool gain is uniform across the support spectrum, so the hypothesis 'FT only fits head-class pool idiosyncrasies' is REFUTED; however a uniform in-pool gain is still ambiguous between 'better representation (transfers)' and 'more thorough fit of the same source domain (does not transfer)', which local data cannot separate"
+  },
+  "preregistered_criterion": {
+    "statistic": "transfer ratio = platform accuracy / local val micro; this controls for RM_LP's in-pool ceiling being 9.23pp below RM_FT's",
+    "threshold_platform_accuracy": 0.5330,
+    "threshold_derivation": "LP local micro 0.6363575458526611 x 0.8375 (the higher of the two FT-family transfer ratios)",
+    "bands": [
+      {"lp_platform_ge": 0.60, "verdict": "FT's in-pool advantage does not transfer at all; the test ceiling is set by the source", "action": "spend the remaining 2-3 weeks entirely on domain robustness; stop producing FT variants"},
+      {"lp_platform_range": [0.5330, 0.60], "verdict": "frozen features transfer BETTER; part of FT's gain is pool-specific", "action": "consider freezing more of the backbone (partial fine-tuning)"},
+      {"lp_platform_lt": 0.5330, "verdict": "FT's advantage transfers proportionally; the FT family remains correct", "action": "look for robustness levers on top of FT"}
+    ],
+    "reference_point": "if the absolute 11.90pp gap applied unchanged, RM_LP would land at 51.73% (third band)"
+  },
+  "artifacts": {
+    "RM_LP": {
+      "dir": "outputs/rematch750/RM_LP/seed42/submission/",
+      "pred_results_csv_sha256": "5d564b6d96cf038cbc750114674c9bb204c12c361fba55cff143c34176f43dc2",
+      "submission_zip_sha256": "ae654d8f8e1d828c813b45cfbad03debd2a4537109fb452664dbe420fc0d671a",
+      "check_submission": "9/9 passed",
+      "note": "byte-identical to the package built in the previous session"
+    },
+    "RM_FT": {
+      "dir": "outputs/rematch750/RM_FT/seed42/submission/",
+      "pred_results_csv_sha256": "7e390c533883fea6e66453751216cb22ca608bf34f50f7b79d2d59d13c7ca12e",
+      "submission_zip_sha256": "8d395cbff94d7835830eb8ba643d5a840ce9e93ac3c1763e786166379b7d3470",
+      "check_submission": "9/9 passed"
+    },
+    "gitignored": "outputs/rematch750/ is gitignored, so neither package can be committed; only their hashes are recorded here"
+  },
+  "register_guard": {
+    "error": "ValueError: Candidate ID already registered with different predictions",
+    "location": "reproducibility/aegis_f1/aegis_clip/cli/rematch.py:41",
+    "meaning": "by design, not a failure: inference and the 9/9 check both completed and the package was written; only the registry is not auto-rewritten",
+    "bookkeeping_decision_pending": "the registry RM_LP row carries zip_sha256 db30ff7a5f30... from another machine; recording tomorrow's platform score against that row requires a team decision (amend the row = lineage change, or open a new candidate ID). Does not block the upload."
+  },
+  "compliance": {
+    "test_set_touched": "size statistics only, read from the dataset manifest as in the previous probe; no test image, label or prediction was used for any training or selection decision",
+    "selection": "no local promotion gate; the criterion is entirely on platform measurement",
+    "submission_form": "single checkpoint + deterministic inference, tta=none, prior=none, global 224 center crop"
+  }
+}
