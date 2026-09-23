@@ -25,6 +25,11 @@ QUEUE_DIR = ROOT / "outputs/rematch750_search_v4/queue"
 
 # First wave from the approved plan, restricted to mechanisms that are already
 # implemented and fail-closed by the V4 protocol.
+V3_MACRO = 0.7234723567962646
+V3_MICRO = 0.7341398000717163
+SIGNIFICANT_MACRO_PP = 2.0
+SIGNIFICANT_MICRO_PP = 1.0
+
 DEFAULT_TRIALS = [
     "A01", "A02", "A04", "A07",
     "B02", "B08",
@@ -111,14 +116,54 @@ def archive_failure(run_dir: Path, trial_id: str, log_path: Path) -> None:
         shutil.rmtree(run_dir, ignore_errors=True)
 
 
-def cleanup_success(run_dir: Path) -> None:
-    """Remove redundant large artifacts after the selected report is durable."""
-    for path in (run_dir / "checkpoints").glob("last.pt"):
+def significant(metrics: dict) -> bool:
+    macro = metrics.get("raw_macro")
+    micro = metrics.get("raw_micro")
+    if macro is None or micro is None:
+        return False
+    return (
+        (float(macro) - V3_MACRO) * 100.0 >= SIGNIFICANT_MACRO_PP
+        and (float(micro) - V3_MICRO) * 100.0 >= SIGNIFICANT_MICRO_PP
+    )
+
+
+def cleanup_success(run_dir: Path, metrics: dict, trial_id: str) -> None:
+    """Keep best.pt only for a significant local gain; keep small evidence always."""
+    checkpoints = run_dir / "checkpoints"
+    for path in checkpoints.glob("last.pt"):
         path.unlink(missing_ok=True)
-    for path in (run_dir / "checkpoints").glob("last.binding.json"):
+    for path in checkpoints.glob("last.binding.json"):
         path.unlink(missing_ok=True)
-    for path in (run_dir / "checkpoints").glob("epoch_*.pt"):
+    for path in checkpoints.glob("epoch_*.pt"):
         path.unlink(missing_ok=True)
+    if significant(metrics):
+        return
+    removed = []
+    for path in sorted(checkpoints.glob("*.pt")):
+        path.unlink(missing_ok=True)
+        removed.append(str(path.relative_to(run_dir)))
+    for name in ("best.binding.json",):
+        path = checkpoints / name
+        if path.exists():
+            path.unlink(missing_ok=True)
+            removed.append(str(path.relative_to(run_dir)))
+    (checkpoints / "PRUNED_NOT_SIGNIFICANT.json").write_text(
+        json.dumps(
+            {
+                "trial_id": trial_id,
+                "reason": "below_v4_local_significance_threshold",
+                "macro_delta_pp": (float(metrics["raw_macro"]) - V3_MACRO) * 100.0,
+                "micro_delta_pp": (float(metrics["raw_micro"]) - V3_MICRO) * 100.0,
+                "required_macro_delta_pp": SIGNIFICANT_MACRO_PP,
+                "required_micro_delta_pp": SIGNIFICANT_MICRO_PP,
+                "removed": removed,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def execute_trial(trial_id: str) -> int:
@@ -134,7 +179,7 @@ def execute_trial(trial_id: str) -> int:
     if selected.is_file():
         metrics = read_selected_metrics(run_dir)
         append_result(trial_id, "already_complete", metrics, queue_log)
-        cleanup_success(run_dir)
+        cleanup_success(run_dir, metrics, trial_id)
         print(f"SKIP {trial_id}: selected report exists", flush=True)
         return 0
 
@@ -170,7 +215,7 @@ def execute_trial(trial_id: str) -> int:
     if return_code == 0 and selected.is_file():
         metrics = read_selected_metrics(run_dir)
         append_result(trial_id, "passed_training", metrics, queue_log)
-        cleanup_success(run_dir)
+        cleanup_success(run_dir, metrics, trial_id)
         return 0
     append_result(trial_id, f"failed_rc_{return_code}", None, queue_log)
     archive_failure(run_dir, trial_id, queue_log)
