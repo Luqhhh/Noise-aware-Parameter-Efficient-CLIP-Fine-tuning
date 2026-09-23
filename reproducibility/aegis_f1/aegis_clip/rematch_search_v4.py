@@ -203,8 +203,24 @@ def expected_feature_binding(config: dict[str, Any], manifest: dict[str, Any]) -
     return binding
 
 
-def _legacy_binding(config: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
-    """Binding used by RM-LP/V3 checkpoints already on disk."""
+def _legacy_feature_binding(config: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
+    """Feature-cache binding used by RM-LP and V3 assets already on disk."""
+    return {
+        "stage": "repechage",
+        "data_version": manifest["data_version"],
+        "dataset_manifest_sha256": sha256_file(config["data"]["dataset_manifest"]),
+        "dataset_fingerprint": manifest["train_fingerprint"],
+        "class_mapping_sha256": sha256_file(config["data"]["class_mapping"]),
+        "official_checkpoint_sha256": official_weight_hash(config),
+        "preprocessing": "OpenAI CLIP 224 bicubic resize/center crop/RGB/CLIP normalization",
+        "encoder_precision": "float32",
+        "feature_precision": "float32",
+        "autocast": False,
+    }
+
+
+def _legacy_checkpoint_binding(config: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
+    """Checkpoint binding used by RM-LP/V3 checkpoints already on disk."""
     return {
         "stage": "repechage",
         "data_version": manifest["data_version"],
@@ -231,7 +247,7 @@ def validate_cache(config: dict[str, Any], manifest: dict[str, Any] | None = Non
             f"foreign feature {key}",
         )
     feature_manifest = json.loads((base / "manifest.json").read_text(encoding="utf-8"))
-    expected_legacy = _legacy_binding(config, manifest)
+    expected_legacy = _legacy_feature_binding(config, manifest)
     expected_v4 = expected_feature_binding(config, manifest)
     require(
         feature_manifest.get("rematch_binding") in (expected_legacy, expected_v4),
@@ -278,7 +294,7 @@ def validate_checkpoint(
     manifest = validate_dataset(config)
 
     if parent:
-        expected_legacy = _legacy_binding(config, manifest)
+        expected_legacy = _legacy_checkpoint_binding(config, manifest)
         expected_v4 = expected_binding(config, manifest)
         require(
             meta.get("binding") in (expected_legacy, expected_v4),
