@@ -28,6 +28,8 @@ B64每轮2091步、八轮16728步；B128每轮1046步、十六轮16736步；B102
 
 `scripts/audit_rematch750_v2.py` 已改为按配置epochs和interval生成验证点与成功更新数；保留checkpoint有限性、optimizer步数、重载精确一致等审计标准。
 
+正式B64已在物理NPU0启动，PID `989345`，环境 `ASCEND_RT_VISIBLE_DEVICES=0 OMP_NUM_THREADS=4 PYTHONPATH=reproducibility/aegis_f1`，CPU `taskset -c 144-191`，命令为 `/workspace/noise-npu-venv/bin/python -u -m aegis_clip.cli.rematch train --config configs/rematch750_v3_b64.npu0.local.yaml`。启动前空闲显存65,068,498,944字节，同哈希NPU LP与数据校验通过。首个第2轮验证macro 67.6493%、micro 68.6828%；这只是中途记录。顺序运行器 `scripts/run_rematch750_v3_scan.py --wait-for-b64-pid 989345` 会等待B64完成并审计，再逐个运行B128、B1024，按预设条件决定是否运行B64_LR2；每次启动前检查≥50GiB空闲显存，状态写入 `results/rematch750_v3/scan_status.json`。任何训练或审计失败即停止，不做平台上传。完整结果仍待全部轮次与审计结束后报告。
+
 训练不串接平台上传。阶段结束推送方案分支，再在main集成目录以自动模式 `git pull --rebase --autostash origin main` 同步、合并、重新校验、推送；不执行手动stash pop。
 
 修订原则：不同epoch可以胜出；按真实完整耗时评价，不要求相同样本遍历预算。B64×8与B128×16的预期更新数接近（16728 vs16736），但后者图像遍历翻倍、CE/GCE更新分配不同，不能称优化过程等价。
