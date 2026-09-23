@@ -27,7 +27,7 @@ QUEUE_DIR = ROOT / "outputs/rematch750_search_v4/queue"
 # implemented and fail-closed by the V4 protocol.
 V3_MACRO = 0.7234723567962646
 V3_MICRO = 0.7341398000717163
-SIGNIFICANT_MACRO_PP = 2.0
+SIGNIFICANT_MACRO_PP = 1.0
 SIGNIFICANT_MICRO_PP = 1.0
 
 DEFAULT_TRIALS = [

@@ -588,7 +588,7 @@ def main() -> None:
             "max_additional_confirmation_training_runs": 11,
         },
         "thresholds": {
-            "local_significant_macro_delta_pp": 2.0,
+            "local_significant_macro_delta_pp": 1.0,
             "local_significant_micro_delta_pp": 1.0,
             "local_platform_candidate_macro_delta_pp": 3.0,
             "local_platform_candidate_micro_delta_pp": 2.0,

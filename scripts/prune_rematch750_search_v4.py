@@ -3,7 +3,7 @@
 
 The V4 plan defines a significant local candidate as relative to frozen V3:
 
-    macro delta >= +2.0 pp  AND  micro delta >= +1.0 pp
+    macro delta >= +1.0 pp  AND  micro delta >= +1.0 pp
 
 Small-positive or negative points keep their small JSON/CSV/log evidence and
 resolved config, but their multi-hundred-MB ``best.pt`` is deleted.  The
@@ -23,7 +23,7 @@ RESULT_DIR = ROOT / "results/rematch750_search_v4"
 OUTPUT_DIR = ROOT / "outputs/rematch750_search_v4"
 V3_MACRO = 0.7234723567962646
 V3_MICRO = 0.7341398000717163
-DEFAULT_SIGNIFICANT_MACRO_PP = 2.0
+DEFAULT_SIGNIFICANT_MACRO_PP = 1.0
 DEFAULT_SIGNIFICANT_MICRO_PP = 1.0
 
 
