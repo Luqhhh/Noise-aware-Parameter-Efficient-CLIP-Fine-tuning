@@ -30,6 +30,8 @@ B64每轮2091步、八轮16728步；B128每轮1046步、十六轮16736步；B102
 
 正式B64在物理NPU0完成，PID `989345`，环境 `ASCEND_RT_VISIBLE_DEVICES=0 OMP_NUM_THREADS=4 PYTHONPATH=reproducibility/aegis_f1`，CPU `taskset -c 144-191`，命令为 `/workspace/noise-npu-venv/bin/python -u -m aegis_clip.cli.rematch train --config configs/rematch750_v3_b64.npu0.local.yaml`。启动前空闲显存65,068,498,944字节，同哈希NPU LP与数据校验通过。8轮16,728次更新全部成功，按macro选epoch8；macro **70.8299%**、micro **71.8683%**，比B32 macro低1.0748pp，未达精度下界71.8047%。纯训练1752.747秒，完整CLI1946.714秒；checkpoint、optimizer有限性和重载审计通过，记录在 `results/rematch750_v3/RM_V3_B64.json`，无候选提交包。顺序运行器 `scripts/run_rematch750_v3_scan.py --wait-for-b64-pid 989345` 已接续B128，后续运行B1024，并按预设条件决定是否运行B64_LR2；每次启动前检查≥50GiB空闲显存，状态写入 `results/rematch750_v3/scan_status.json`。任何训练或审计失败即停止，不做平台上传。完整扫描结果仍待全部轮次与审计结束后报告。
 
+B128×16也已完成且审计通过：16,736次更新、选epoch16，macro **71.9320%**、micro **72.9906%**，比B32 macro高0.0272pp，达到71.8047%精度下界；纯训练3317.859秒、完整CLI3663.711秒，比B32多792.839秒，不是效率胜者。记录在 `results/rematch750_v3/RM_V3_B128_E16.json`，无新提交包。由于B128达线，条件B64_LR2按预设规则跳过；顺序运行器已接续B1024补偿点。
+
 训练不串接平台上传。阶段结束推送方案分支，再在main集成目录以自动模式 `git pull --rebase --autostash origin main` 同步、合并、重新校验、推送；不执行手动stash pop。
 
 修订原则：不同epoch可以胜出；按真实完整耗时评价，不要求相同样本遍历预算。B64×8与B128×16的预期更新数接近（16728 vs16736），但后者图像遍历翻倍、CE/GCE更新分配不同，不能称优化过程等价。
