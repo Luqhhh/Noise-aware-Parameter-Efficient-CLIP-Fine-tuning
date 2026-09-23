@@ -1,18 +1,18 @@
 # REMATCH750_V3：精度优先的耗时权衡
 
-状态：**仅方案、暂停执行（用户2026-09-23明确要求）**。不启动训练、吞吐测试、推理或后台队列，**不使用、不预留NPU 0**。用户选择macro下降≤0.1pp。需用户后续明确恢复执行后，才选择获准且当时空闲的设备并核对CPU拓扑；不能自行恢复。
+状态：**用户已于2026-09-23明确要求加入batch 1024并开始实施扫描**；先前的暂停执行指令已解除。精度目标仍为同NPU B32基准macro下降≤0.1pp；仍不使用NPU 0，只选当时空闲的设备。实施分支 `codex/rematch750_v3_scan`，独立目录 `/home/lux1/noise/worktrees/rematch750_v3_scan`。
 
-实际进度：已完成既有结果/分支/设备状态的只读核对、本地独立worktree、两份配置草案与文档；未启动任何V3训练或基准测试。远端只传过临时源码归档，未创建实验运行目录或启动进程。以下全部为待执行方案，不是实测结果。
+实施进度：方案已增加batch1024补偿点、16轮动态审计和设备/数据绑定脚本。NPU1显存仅余约12.6/65.45GB，未选用；NPU2/6/7在一次只读探针中各余约65.07GB。正式训练和结果须以运行日志及审计为准；下表中的新增点位不是实测结果。
 
 参考为V2同后端NPU batch32八轮：macro0.7190471887588501、micro0.7298387289047241、纯训练2670.459578s、完整CLI2870.871812s。精度可接受下界raw_macro=0.7180471887588501（71.80471887588501%）。一次达界只表示本次独立验证满足约束，不代表统计等价。
 
 ## 有界比较
 
-用户明确指出epoch也应参与权衡；在新训练尚未启动时修订：拟在恢复执行后完整运行 `configs/rematch750_v3_b64.yaml`（8/8轮）和 `configs/rematch750_v3_b128_e16.yaml`（16/16轮）。原B128八轮计划已被此修订替代，未执行。只有当两者均未达精度约束时，最多补一次B64_LR2：batch64、head LR2e-4、visual LR6e-6，其余不变。该点是实测假设，不把LR线性缩放当作保证。最多三次完整训练，不重跑B32/B1024、不扫描workers/prefetch，不恢复LoRA或关闭路线。
+完整运行 `configs/rematch750_v3_b64.yaml`（8/8轮）、`configs/rematch750_v3_b128_e16.yaml`（16/16轮）和新增 `configs/rematch750_v3_b1024_e16_lr4.yaml`（16/16轮）。B1024相对已完成的八轮点延长到16轮，同时head/visual LR各乘4（4e-4 / 1.2e-5）；这只是有界精度补偿假设，不保证收敛或精度等价。旧B1024八轮结果只作参照，不重跑。只有B64与B128均未达精度约束时，最多补一次B64_LR2：batch64、head LR2e-4、visual LR6e-6，其余不变。最多四次新完整训练；不扫描workers/prefetch，不恢复LoRA或关闭路线。
 
-共同设置：910B2单卡、恢复执行后只选择获准且空闲的非0号设备；workers16、prefetch2、pinned、fused AdamW、foreach norm、OMP4。CPU绑定须按所选卡实际拓扑确定，不沿用NPU0的144–191编号。同NPU LP SHA `d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b`，133815/14880同内容组划分；B64为8 epochs/cosine horizon8，B128为16/16；原head1e-4/visual3e-6（仅条件点LR2例外）、CE2轮后GCE q=.5（B64六轮，B128十四轮）、anchor2.0、shuffle、无LR warmup。每20步及轮末记录成功更新，每两轮验证（B64：2/4/6/8；B128：2/4/6/8/10/12/14/16），raw_macro主选模、同值raw_micro。
+共同设置：910B2单卡、只选择当时空闲的非0号设备；workers16、prefetch2、pinned、fused AdamW、foreach norm、OMP4。CPU绑定须按所选卡实际拓扑确定，不沿用NPU0的144–191编号。同NPU LP SHA `d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b`，133815/14880同内容组划分；B64为8 epochs/cosine horizon8，B128与B1024补偿点为16/16；原head1e-4/visual3e-6（补偿点例外）、CE2轮后GCE q=.5（B64六轮，16轮点十四轮）、anchor2.0、shuffle、无LR warmup。每20步及轮末记录成功更新，每两轮验证（B64：2/4/6/8；16轮点：2/4/6/8/10/12/14/16），raw_macro主选模、同值raw_micro。
 
-B64每轮2091步、八轮16728步；B128每轮1046步、十六轮16736步。各自完整跑满预先确定的轮数，不能只用CE段或重建optimizer续训冒充。各自独立目录，共享训练/验证数据、特征和初始化只读，Python依赖不修改。
+B64每轮2091步、八轮16728步；B128每轮1046步、十六轮16736步；B1024每轮131步、十六轮2096步。各自完整跑满预先确定的轮数，不能只用CE段或重建optimizer续训冒充。B1024仍只有B32成功更新数的1/16；它以较高学习率和更多轮数测试能否弥补，不把更新预算称为等价。各自独立目录，共享训练/验证数据、特征和初始化只读，Python依赖不修改。
 
 ## 选择与交付
 
@@ -22,11 +22,11 @@ B64每轮2091步、八轮16728步；B128每轮1046步、十六轮16736步。各�
 
 ## 隔离与重放
 
-本机worktree `/home/lux1/noise-worktrees/rematch750_v3_tradeoff`，分支 `codex/rematch750_v3_tradeoff`；远端拟用独立源码目录 `/workspace/noise-worktrees/rematch750_v3_tradeoff`（尚未创建）。原始数据/特征通过只读使用的路径共享，init路径显式指向同哈希NPU LP；输出 `outputs/codex/rematch750_v3_tradeoff/{RM_V3_B64,RM_V3_B128_E16}/seed42/`。
+本机方案worktree `/home/lux1/noise-worktrees/rematch750_v3_tradeoff` 与实施worktree `/home/lux1/noise/worktrees/rematch750_v3_scan` 分开；远端实施源码目录 `/workspace/noise-worktrees/rematch750_v3_scan`。绑定脚本 `scripts/bind_rematch750_v3.py` 将本阶段原始数据/特征绝对路径指向 `/workspace/noise` 并校验同哈希NPU LP；输出在实施目录的 `outputs/codex/rematch750_v3_tradeoff/<candidate>/seed42/`，不覆盖原运行。
 
-配置草案暂以 `train.device: npu:UNASSIGNED` 表示未绑定执行设备，该占位符不是可用的设备标识，避免草案默认指向NPU0。这不是可直接运行的配置；其余超参数供审阅。恢复执行前必须明确设置非0号空闲NPU及其CPU绑定，当前不提供可直接启动NPU0的命令。
+模板仍以 `train.device: npu:UNASSIGNED` 表示未绑定设备，不能直接运行。选定空闲物理卡后，单卡可见环境使用 `ASCEND_RT_VISIBLE_DEVICES=<物理卡号>`、配置内逻辑 `npu:0`；绑定脚本拒绝物理0号和错误的可见设备环境变量。执行前还须复核CPU拓扑和设备空闲状态。
 
-恢复执行前还需适配审计：既有 `scripts/audit_rematch750_v2.py` 写死8轮及2/4/6/8验证，不能直接用于16轮配置；需按配置epochs生成完整验证点与成功更新数，重载核对保持原标准。这里只记录实施事项，暂不修改训练/审计逻辑。
+`scripts/audit_rematch750_v2.py` 已改为按配置epochs和interval生成验证点与成功更新数；保留checkpoint有限性、optimizer步数、重载精确一致等审计标准。
 
 训练不串接平台上传。阶段结束推送方案分支，再在main集成目录以自动模式 `git pull --rebase --autostash origin main` 同步、合并、重新校验、推送；不执行手动stash pop。
 
@@ -39,8 +39,9 @@ B64每轮2091步、八轮16728步；B128每轮1046步、十六轮16736步。各�
 | 既有B32 | 32 | 8 / 8 | 1e-4 / 3e-6 | 2 / 6 | 33456 | 已测基准，不重跑 |
 | B64 | 64 | 8 / 8 | 1e-4 / 3e-6 | 2 / 6 | 16728 | 中间batch参照 |
 | B128_E16 | 128 | 16 / 16 | 1e-4 / 3e-6 | 2 / 14 | 16736 | 用更多epoch补偿较大batch |
+| B1024_E16_LR4 | 1024 | 16 / 16 | 4e-4 / 1.2e-5 | 2 / 14 | 2096 | 大batch延长训练并提高LR的补偿点 |
 | 条件B64_LR2 | 64 | 8 / 8 | 2e-4 / 6e-6 | 2 / 6 | 16728 | 仅前两点均精度不达标时的一个补偿点 |
 
-后续可研究的“大batch前期、小batch收尾”暂不纳入本轮：它需要新增调度与恢复逻辑，也会扩大比较范围。当前不安排NPU1024延长训练；它已测八轮差距较大，先检查64/128附近的折中点。
+后续可研究的“大batch前期、小batch收尾”暂不纳入本轮：它需要新增调度与恢复逻辑，也会扩大比较范围。本轮1024只测一个预先固定的延长训练与LR补偿点。
 
-本次交付只有方案与配置草案：没有新精度、耗时或预测包，不把配置解析通过写成实验通过。用户“只写方案”的最新指令优先于实验段必须产出CSV/ZIP的一般约定；不为满足该约定而启动计算任务。
+本轮已获执行授权。只有完整训练、审计、推理及提交校验完成后，才报告新增点位的实测精度与效率；配置解析通过不等于实验通过。

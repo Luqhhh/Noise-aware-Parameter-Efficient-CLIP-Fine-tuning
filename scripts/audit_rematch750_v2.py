@@ -1,4 +1,4 @@
-"""Audit a completed fixed eight-epoch REMATCH750_V2 run; never train or upload."""
+"""Audit a completed REMATCH750 training run; never train or upload."""
 import argparse
 import csv
 import json
@@ -18,9 +18,15 @@ def audit(config_path):
         count = sum(1 for _ in csv.DictReader(f))
     batch = config['train']['batch_size']
     steps = (count + batch - 1) // batch
-    assert config['train']['epochs'] == config['train']['schedule_epochs'] == 8
+    epochs = int(config['train']['epochs'])
+    assert epochs == int(config['train']['schedule_epochs'])
+    interval = int(config['evaluation']['interval_epochs'])
+    assert epochs > 0 and interval > 0
+    evaluation_epochs = list(range(interval, epochs + 1, interval))
+    if not evaluation_epochs or evaluation_epochs[-1] != epochs:
+        evaluation_epochs.append(epochs)
     curves = []
-    for epoch in (2, 4, 6, 8):
+    for epoch in evaluation_epochs:
         m = json.loads((run / f'logs/evaluation_epoch_{epoch}.json').read_text())
         assert m['successful_optimizer_updates'] == m['attempted_optimizer_updates'] == epoch * steps
         curves.append(dict(epoch=epoch, raw_macro=m['raw_macro'], raw_micro=m['raw_micro'],
@@ -43,7 +49,7 @@ def audit(config_path):
                    for v in state.values() if isinstance(v, torch.Tensor))
         if name == 'best':
             selected_per_class = ckpt['metrics']['per_class']
-        assert epoch == (selected['epoch'] if name == 'best' else 8)
+        assert epoch == (selected['epoch'] if name == 'best' else epochs)
         records[name] = dict(epoch=epoch, global_step=ckpt['global_step'], optimizer_steps=states,
                              sha256=sha256_file(path), raw_macro=ckpt['metrics']['raw_macro'],
                              raw_micro=ckpt['metrics']['raw_micro'])
@@ -64,7 +70,7 @@ def audit(config_path):
                   curves=curves, checkpoints=records, reload_metrics_exact=True, reload_per_class_exact=True, optimizer_tensors_finite=True,
                   selected_epoch=selected['epoch'], raw_macro=reloaded['raw_macro'], raw_micro=reloaded['raw_micro'],
                   fixed_tail75_macro=macro(tail), rest675_macro=macro([r for r in per_class if r['label'] not in tail_ids]),
-                  fixed_tail75_class_ids=sorted(tail_ids), successful_optimizer_updates=8*steps,
+                  fixed_tail75_class_ids=sorted(tail_ids), successful_optimizer_updates=epochs*steps,
                   training_seconds=curves[-1]['cumulative_training_seconds'],
                   # Same-host file times bracket CLI source snapshot through final
                   # re-evaluation/per-class export, including validation and saves.
