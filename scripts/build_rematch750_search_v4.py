@@ -311,8 +311,12 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
                 training_overrides(
                     loss={"name": "gce", "gce_q": 0.5, "ce_warmup_epochs": 2,
                           "mixup_alpha": 0.0, "mixup_probability": 0.0},
-                    trust={"enabled": True, "bundle_path": "../outputs/rematch750_search_v4/assets/quality_asset/trust_bundle.pt",
-                           "selection_threshold": gate, "minimum_sample_weight": 1.0},
+                    trust={
+                        "enabled": True,
+                        "bundle_path": f"../outputs/rematch750_search_v4/assets/quality_asset/{trial_id}.pt",
+                        "selection_threshold": gate,
+                        "minimum_sample_weight": 1.0,
+                    },
                     train={"quality_asset_mode": "soft_repair", "repair_rho": rho,
                            "repair_confidence_gate": gate, "max_relabel_fraction": 0.2},
                 ),
@@ -328,8 +332,12 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
                 training_overrides(
                     loss={"name": "gce", "gce_q": 0.5, "ce_warmup_epochs": 2,
                           "mixup_alpha": 0.0, "mixup_probability": 0.0},
-                    trust={"enabled": True, "bundle_path": "../outputs/rematch750_search_v4/assets/quality_asset/trust_bundle.pt",
-                           "selection_threshold": gate, "minimum_sample_weight": 1.0},
+                    trust={
+                        "enabled": True,
+                        "bundle_path": f"../outputs/rematch750_search_v4/assets/quality_asset/{trial_id}.pt",
+                        "selection_threshold": gate,
+                        "minimum_sample_weight": 1.0,
+                    },
                     train={"quality_asset_mode": "hard_relabel", "repair_confidence_gate": gate,
                            "max_relabel_fraction": fraction},
                 ),
@@ -345,8 +353,12 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
                 training_overrides(
                     loss={"name": "gce", "gce_q": 0.5, "ce_warmup_epochs": 2,
                           "mixup_alpha": 0.0, "mixup_probability": 0.0},
-                    trust={"enabled": True, "bundle_path": "../outputs/rematch750_search_v4/assets/quality_asset/trust_bundle.pt",
-                           "selection_threshold": 0.9, "minimum_sample_weight": 1.0},
+                    trust={
+                        "enabled": True,
+                        "bundle_path": f"../outputs/rematch750_search_v4/assets/quality_asset/{trial_id}.pt",
+                        "selection_threshold": 0.9,
+                        "minimum_sample_weight": 0.0,
+                    },
                     train={"quality_asset_mode": "unlabel_consistency",
                            "max_relabel_fraction": fraction,
                            "consistency_weight": consistency,

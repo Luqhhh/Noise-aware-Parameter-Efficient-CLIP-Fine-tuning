@@ -54,6 +54,14 @@ class TrustBundle:
         self.correction_alpha = _checked_vector(
             payload["correction_alpha"], size, torch.float32, "correction_alpha"
         ).clamp(0.0, 1.0)
+        self.pseudo_soft = None
+        if "pseudo_soft" in payload:
+            soft = torch.as_tensor(payload["pseudo_soft"])
+            if soft.ndim != 2 or soft.shape[0] != size:
+                raise ValueError("pseudo_soft must have shape [N, num_classes]")
+            if not torch.isfinite(soft).all() or (soft < 0).any():
+                raise ValueError("pseudo_soft must be finite and non-negative")
+            self.pseudo_soft = soft.to(dtype=torch.float32)
 
     def __len__(self) -> int:
         return len(self.paths)
@@ -66,12 +74,15 @@ class TrustBundle:
         pseudo = int(self.pseudo_label[index])
         if pseudo < 0:
             pseudo = int(noisy_label)
-        return {
+        result = {
             "clean_probability": self.clean_probability[index],
             "pseudo_label": torch.tensor(pseudo, dtype=torch.long),
             "pseudo_confidence": self.pseudo_confidence[index],
             "correction_alpha": self.correction_alpha[index],
         }
+        if self.pseudo_soft is not None:
+            result["pseudo_soft"] = self.pseudo_soft[index]
+        return result
 
     def verify_coverage(self, paths: list[str]) -> None:
         missing = [

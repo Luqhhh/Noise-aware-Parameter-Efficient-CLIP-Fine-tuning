@@ -288,3 +288,15 @@ def test_standard_sam_step_restores_parameters_and_updates():
         not torch.equal(old, new.detach())
         for old, new in zip(before, model.parameters())
     )
+
+
+def test_corrected_targets_accepts_soft_pseudo_distribution():
+    from aegis_clip.losses import corrected_targets
+
+    noisy = torch.tensor([0, 1])
+    pseudo = torch.tensor([2, 0])
+    alpha = torch.tensor([0.25, 1.0])
+    soft = torch.tensor([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0]])
+    targets = corrected_targets(noisy, pseudo, alpha, 3, pseudo_soft=soft)
+    expected = torch.tensor([[0.75, 0.0, 0.25], [1.0, 0.0, 0.0]])
+    assert torch.allclose(targets, expected)

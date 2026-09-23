@@ -797,10 +797,15 @@ def train(
             pseudo = batch["pseudo_label"].to(device).long()
             pseudo_confidence = batch["pseudo_confidence"].to(device).float()
             correction_evidence = batch["correction_alpha"].to(device).float()
+            pseudo_soft = batch.get("pseudo_soft")
+            if pseudo_soft is not None:
+                pseudo_soft = pseudo_soft.to(device).float()
             correction = correction_evidence
             if epoch <= int(config["trust"].get("correction_start_epoch", 0)):
                 correction = torch.zeros_like(correction)
-            targets = corrected_targets(labels, pseudo, correction, num_classes)
+            targets = corrected_targets(
+                labels, pseudo, correction, num_classes, pseudo_soft=pseudo_soft
+            )
             minimum_weight = float(config["trust"].get("minimum_sample_weight", 0.25))
             if config.get("trust", {}).get("enabled", False) and epoch >= int(
                 config["trust"].get("weighting_start_epoch", 1)

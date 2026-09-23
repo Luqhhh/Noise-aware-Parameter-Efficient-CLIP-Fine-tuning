@@ -96,6 +96,6 @@ train:
   max_relabel_fraction: 0.05
 trust:
   enabled: true
-  bundle_path: ../../outputs/rematch750_search_v4/assets/quality_asset/trust_bundle.pt
+  bundle_path: ../../outputs/rematch750_search_v4/assets/quality_asset/C05.pt
   selection_threshold: 0.9
   minimum_sample_weight: 1.0

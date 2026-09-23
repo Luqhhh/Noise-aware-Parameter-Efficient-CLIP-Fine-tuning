@@ -129,14 +129,25 @@ def corrected_targets(
     pseudo_labels: torch.Tensor,
     correction_alpha: torch.Tensor,
     num_classes: int,
+    *,
+    pseudo_soft: torch.Tensor | None = None,
 ) -> torch.Tensor:
     noisy = F.one_hot(noisy_labels.long(), num_classes=num_classes).float()
-    safe_pseudo = torch.where(
-        (pseudo_labels >= 0) & (pseudo_labels < num_classes),
-        pseudo_labels,
-        noisy_labels,
-    )
-    pseudo = F.one_hot(safe_pseudo.long(), num_classes=num_classes).float()
+    if pseudo_soft is not None:
+        pseudo = pseudo_soft.float()
+        if pseudo.shape != noisy.shape:
+            raise ValueError("pseudo_soft must have shape [N, num_classes]")
+        if not torch.isfinite(pseudo).all() or (pseudo < 0).any():
+            raise ValueError("pseudo_soft must be finite and non-negative")
+        normalizer = pseudo.sum(dim=1, keepdim=True).clamp_min(1.0e-8)
+        pseudo = pseudo / normalizer
+    else:
+        safe_pseudo = torch.where(
+            (pseudo_labels >= 0) & (pseudo_labels < num_classes),
+            pseudo_labels,
+            noisy_labels,
+        )
+        pseudo = F.one_hot(safe_pseudo.long(), num_classes=num_classes).float()
     alpha = correction_alpha.float().clamp(0.0, 1.0).unsqueeze(1)
     return noisy * (1.0 - alpha) + pseudo * alpha
 
