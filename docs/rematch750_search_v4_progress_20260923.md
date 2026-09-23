@@ -47,7 +47,20 @@ V3 基线：macro 0.7234723568 / micro 0.7341398001。
 - 提交包 SHA256：
   `ba9b9c974f612b2050b13707a8da66b507bd426eaa82babbf834af144ac3a2f5`
 - 桌面副本：`C:\Users\lqh22\Desktop\submission\F03_submission.zip`。
-- 该包未上传平台，平台分数未知。
+- 平台结果：64.41352419613288%（24,119 / 37,444）。
+
+## F03 平台结果
+
+用户回报：**F03_submission.zip = 64.41352419613288%**，对应 **24,119 / 37,444**。
+
+- 候选：RM_V4_F03
+- 平台包 SHA256：
+  `ba9b9c974f612b2050b13707a8da66b507bd426eaa82babbf834af144ac3a2f5`
+- checkpoint SHA256：
+  `c34e7c9ac1947cbcab3007255b4e83f2e62a87cada47f7f55450aeb2944434bf`
+- 用户未提供 platform submission ID、带时区提交时间和 reset-period，
+  因此正式 registry 不伪造 `valid` 回执；分数-only 记录见
+  `results/rematch750_f03_platform_20260923.json`。
 
 ## FULL01_submission.zip 平台分
 

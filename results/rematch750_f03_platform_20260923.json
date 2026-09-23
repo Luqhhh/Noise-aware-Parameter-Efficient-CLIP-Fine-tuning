@@ -1,0 +1,27 @@
+{
+  "record_id": "REMATCH750_F03_PLATFORM_20260923",
+  "recorded_date": "2026-09-23",
+  "source": "user_reported_platform_scores",
+  "test_samples": 37444,
+  "receipt_completeness": "scores_only_submission_ids_timestamps_and_period_not_supplied",
+  "candidates": [
+    {
+      "candidate": "RM_V4_F03",
+      "package_label": "F03_submission.zip",
+      "strategy": "REMATCH750_SEARCH_V4 F03 288px weak_rrc_flip GCE full fine-tune; 224-equivalent V4 inference protocol",
+      "local_macro": 0.7406703233718872,
+      "local_micro": 0.7508736848831177,
+      "platform_score_percent": 64.41352419613288,
+      "platform_score_fraction": 0.6441352419613288,
+      "correct_predictions": 24119,
+      "submission_zip_sha256": "ba9b9c974f612b2050b13707a8da66b507bd426eaa82babbf834af144ac3a2f5",
+      "checkpoint_sha256": "c34e7c9ac1947cbcab3007255b4e83f2e62a87cada47f7f55450aeb2944434bf",
+      "submission_path": "outputs/rematch750_search_v4/F03_retrain_infer_submission",
+      "platform_submission_id": null,
+      "submitted_at": null,
+      "platform_period": null
+    }
+  ],
+  "formal_registry_status": "receipt_pending",
+  "notes": "Exact score was supplied by the user and corresponds to 24119/37444. No platform submission ID, timezone-aware upload timestamp, or reset-period identifier was supplied, so no valid receipt was fabricated."
+}
