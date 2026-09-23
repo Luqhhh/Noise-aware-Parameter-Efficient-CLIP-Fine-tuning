@@ -16,6 +16,14 @@
 
 在 V3 胜者 `RM_V3_B1024_E16_LR4` 上登记 AdamW 参数组 weight-decay 的 2×2 因子实验：同次控制 `WD00=(backbone 1e-4, head 1e-4)`，以及 `WD01=(0,1e-4)`、`WD02=(1e-4,0)`、`WD03=(0,0)`。四点只改变两组 weight decay 和实验身份/输出，固定 RM-LP parent、split、seed、batch 1024、16 epochs、LR、GCE、feature anchor、调度器与选模协议。方案已完成配置、运行器、机器可读 manifest 与定向测试，**未训练、未生成提交包、未触碰平台名额**；NPU 执行与验收见 [预注册及交接](rematch750_wd_relax_prereg_20260923.md)。
 
+## 在途方案：REMATCH750_FULL_DATA_CONTROL（clairvoyanttt，ready for NPU）
+
+用户 2026-09-23 解禁全量训练后，把「V3 获胜配方跑全部 **148,695** 张（含原 val 的 14,880 张）」做成可直接执行的交付包。分支 `clairvoyanttt/rematch750-full-ft`，配置 `configs/rematch750_full_ft/{FULL00,FULL01}.yaml`，运行器 `scripts/run_rematch750_full_ft.py`，定向测试 7 项。**未训练、未生成提交包、未触碰平台名额。**
+
+**按代码核对修正了方案口径：这一步是 2 次训练，不是 1 次。** `rematch_assets.checkpoint_binding()` 把 `train_csv_sha256` 写进 checkpoint 血缘，故 dev RM-LP 不能作为全量 FT 的父；必须先产出全量 LP `RM_FULL_LP`（该 experiment_id 同时被 `validate_checkpoint(parent=True)` 硬性限定为 `RM_LP`/`RM_FULL_LP`）。FULL00 是冻结特征上的线性探针，算力分钟级，总时长仍由 `RM_FULL` 的 16 轮（≈34 分钟）主导。已机器验证：同一个真实 RM-LP checkpoint 在 dev 口径下通过 `validate_checkpoint(parent=True)`、在全量口径下抛 `checkpoint data lineage mismatch`。
+
+判据只有一条：`RM_FULL` 的平台分相对 RM-FT **60.96570879179575%** 的差。**本轮本地不存在可信读数**（val ⊂ train，流程会把 `validation_status` 标为 `overlapping diagnosis`），且**预期落在 ±0.20pp 空档** —— 它关的是「数据量」这条轴（复赛唯一未喂给模型的 11%），不是期待涨分。因此它要花一个平台名额买信息，机会成本需用户裁决。NPU 执行与验收见[预注册](rematch750_full_ft_prereg_20260923.md)。
+
 ## 分工落实
 
 | 角色 | 机器 | 职责 |
