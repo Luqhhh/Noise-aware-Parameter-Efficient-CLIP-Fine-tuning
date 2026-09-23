@@ -2161,7 +2161,9 @@ def _sam_optimizer_step(
     trainable = [parameter for parameter in model.parameters() if parameter.requires_grad]
     if not trainable:
         raise RuntimeError("SAM requires at least one trainable parameter")
-    optimizer.zero_grad(set_to_none=True)
+    optimizer.zero_grad(
+        set_to_none=not getattr(optimizer, "is_fused_optimizer", False)
+    )
     first_loss.backward()
     norm_squared = 0.0
     for parameter in trainable:
@@ -2178,7 +2180,9 @@ def _sam_optimizer_step(
             backups.append(parameter.detach().clone())
             if parameter.grad is not None:
                 parameter.add_(parameter.grad, alpha=float(rho) / (first_norm + float(epsilon)))
-    optimizer.zero_grad(set_to_none=True)
+    optimizer.zero_grad(
+        set_to_none=not getattr(optimizer, "is_fused_optimizer", False)
+    )
     second_loss = second_pass()
     if not math.isfinite(float(second_loss.detach())):
         with torch.no_grad():
