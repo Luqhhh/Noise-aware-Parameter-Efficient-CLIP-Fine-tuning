@@ -236,7 +236,7 @@ def validate_cache(config: dict[str, Any], manifest: dict[str, Any] | None = Non
     """Validate the frozen feature cache declared as the V4 reference anchor."""
     manifest = manifest or validate_dataset(config)
     features = config["features"]
-    base = Path(config["data"]["dataset_manifest"]).parent / "features"
+    base = Path(features["manifest_path"]).resolve().parent
     for key, name in (
         ("tensor_path", "features.pt"),
         ("paths_path", "image_paths.json"),
@@ -261,7 +261,8 @@ def validate_cache(config: dict[str, Any], manifest: dict[str, Any] | None = Non
         sha256_file(base / "image_paths.json") == feature_manifest["paths_file_sha256"],
         "feature paths changed",
     )
-    with (base.parent / "full_train.csv").open(encoding="utf-8") as handle:
+    dataset_root = Path(config["data"]["dataset_manifest"]).resolve().parent
+    with (dataset_root / "full_train.csv").open(encoding="utf-8") as handle:
         paths = [row["image_path"].removeprefix("train/") for row in csv.DictReader(handle)]
     require(
         json.loads((base / "image_paths.json").read_text(encoding="utf-8")) == paths,
