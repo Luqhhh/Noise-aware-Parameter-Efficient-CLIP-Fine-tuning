@@ -60,10 +60,10 @@ project:
   family: G
   mechanism: SAM_rho0.025_gce
   parent_kind: shared_lp
-  implementation_status: pending_sam_integration
+  implementation_status: implemented
   search: {}
 train:
-  amp: true
+  amp: false
   amp_growth_interval: 1000000000
   amp_initial_scale: 128.0
   backbone_lr: 1.2e-05

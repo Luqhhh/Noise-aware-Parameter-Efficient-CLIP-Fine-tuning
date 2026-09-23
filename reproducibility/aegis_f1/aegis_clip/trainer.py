@@ -470,6 +470,9 @@ def train(
             raise ValueError(
                 "gradient accumulation is not wired for: " + ", ".join(unsupported)
             )
+    sam_config = train_config.get("sam", {}) or {}
+    sam_enabled = bool(sam_config.get("enabled", False))
+    sam_rho = float(sam_config.get("rho", 0.05))
     cap_config = config["loss"].get("adaptive_cap", {})
     adaptive_cap = (
         AdaptiveLossCap(
@@ -931,6 +934,13 @@ def train(
             snscl_hard_labels = None
             snscl_admission_probabilities = None
             snscl_usable_anchors = 0
+            sam_update = None
+            gradient_norm = 0.0
+            step_learning_rates: dict[str, float] = {}
+            snscl_admitted = 0
+            head_grad = 0.0
+            adapter_grad = 0.0
+            visual_grad = 0.0
             with torch.autocast(device_type=device.type, enabled=use_amp):
                 arguments: dict[str, torch.Tensor] = {forward_key: forward_inputs}
                 if mixed_gate is not None and forward_key == "images":
@@ -1197,21 +1207,75 @@ def train(
                         feature_anchor_loss = distill_weight * drift.mean()
                         loss = loss + feature_anchor_loss
 
+                sam_update = None
+                if sam_enabled:
+                    if use_amp:
+                        raise NotImplementedError(
+                            "SAM is currently wired only with train.amp=false"
+                        )
+                    unsupported_sam = [
+                        name
+                        for name, enabled in (
+                            ("prototype_contrastive", proto_enabled),
+                            ("active_forgetting", active_forgetting_enabled),
+                            ("attention_local_training", attention_local_enabled),
+                            ("snscl", snscl_state is not None),
+                            ("elr", elr_regularizer is not None),
+                            ("trust_subspace", trust_subspace is not None),
+                        )
+                        if enabled
+                    ]
+                    if unsupported_sam:
+                        raise ValueError(
+                            "SAM is not wired with: " + ", ".join(unsupported_sam)
+                        )
+                    first_sam_loss = loss
+
+                    def sam_second_pass():
+                        return _sam_second_pass_loss(
+                            model,
+                            device=device,
+                            use_amp=use_amp,
+                            forward_key=forward_key,
+                            forward_inputs=forward_inputs,
+                            mixed_gate=mixed_gate,
+                            mixed_reference=mixed_reference,
+                            mixed_targets=mixed_targets,
+                            mixed_weights=mixed_weights,
+                            class_counts=class_counts,
+                            prior_tau=prior_tau,
+                            loss_config=config["loss"],
+                            epoch=epoch,
+                            batch_suspicious=batch_suspicious,
+                            distill_weight=distill_weight,
+                        )
+
+                    sam_update = _sam_optimizer_step(
+                        model,
+                        optimizer,
+                        first_loss=first_sam_loss,
+                        second_pass=sam_second_pass,
+                        rho=sam_rho,
+                        clip_norm=float(train_config.get("max_grad_norm", 1.0)),
+                    )
+                    gradient_norm = float(sam_update["preclip_gradient_norm"])
+                    step_learning_rates = {
+                        group.get("name", f"group{i}"): float(group["lr"])
+                        for i, group in enumerate(optimizer.param_groups)
+                    }
+                    first_step_audited = True
+
                 proto_loss = encoded.new_zeros(())
                 if proto_enabled and epoch >= proto_start_epoch:
                     prototype_bank.update(encoded, labels, clean)
                     proto_loss = prototype_bank.loss(encoded, labels, clean)
                     loss = loss + proto_weight * proto_loss
 
-            gradient_norm = 0.0
-            step_learning_rates: dict[str, float] = {}
-            snscl_admitted = 0
-            head_grad = 0.0
-            adapter_grad = 0.0
-            visual_grad = 0.0
             subspace_step = None
             subspace_uncertain_value = logits.new_zeros(())
-            if trust_subspace is not None:
+            if sam_update is not None:
+                pass
+            elif trust_subspace is not None:
                 trusted_mask = clean >= float(
                     subspace_config["trusted_threshold"]
                 )
@@ -1301,11 +1365,11 @@ def train(
                 totals["trust_subspace_uncertain_loss"] += float(
                     subspace_uncertain_value.detach()
                 ) * labels.numel()
-            else:
+            elif sam_update is None:
                 scaler.scale(
                     loss * (labels.numel() / max(cycle_samples, 1))
                 ).backward()
-            if is_update_step:
+            if is_update_step and sam_update is None:
                 scaler.unscale_(optimizer)
                 norm_impl = train_config.get("gradient_norm_impl", "sum_squares")
                 head_grad = _gradient_norm(model.classifier.parameters(), implementation=norm_impl)
@@ -2027,6 +2091,118 @@ def _per_sample_loss(
         q=float(loss_config.get("gce_q", 0.5)),
         epsilon=float(loss_config.get("epsilon", 1.0e-7)),
     )
+
+
+def _sam_second_pass_loss(
+    model,
+    *,
+    device,
+    use_amp: bool,
+    forward_key: str,
+    forward_inputs,
+    mixed_gate,
+    mixed_reference,
+    mixed_targets,
+    mixed_weights,
+    class_counts,
+    prior_tau: float,
+    loss_config,
+    epoch: int,
+    batch_suspicious,
+    distill_weight: float,
+):
+    arguments = {forward_key: forward_inputs}
+    if mixed_gate is not None and forward_key == "images":
+        arguments["gate"] = mixed_gate
+        arguments["reference_features"] = mixed_reference
+    with torch.autocast(device_type=device.type, enabled=use_amp):
+        logits, encoded = model(**arguments, return_features=True)
+        training_logits = class_prior_adjusted_logits(
+            logits, class_counts, prior_tau
+        )
+        per_sample = _per_sample_loss(
+            training_logits,
+            mixed_targets,
+            loss_config,
+            epoch,
+            batch_suspicious,
+        )
+        loss = (
+            per_sample * mixed_weights
+        ).sum() / mixed_weights.sum().clamp_min(1.0e-8)
+        if distill_weight > 0.0:
+            drift = 1.0 - F.cosine_similarity(
+                encoded.float(), F.normalize(mixed_reference, dim=1), dim=1
+            )
+            loss = loss + distill_weight * drift.mean()
+    return loss
+
+
+def _sam_optimizer_step(
+    model,
+    optimizer,
+    *,
+    first_loss,
+    second_pass,
+    rho: float,
+    epsilon: float = 1.0e-12,
+    clip_norm: float = 1.0,
+):
+    """One standard non-adaptive SAM update at FP32, requiring AMP disabled."""
+    if not math.isfinite(float(first_loss.detach())):
+        raise FloatingPointError("SAM first-pass loss is non-finite")
+    if not 0.0 < float(rho) < 1.0:
+        raise ValueError("SAM rho must be in (0,1)")
+    trainable = [parameter for parameter in model.parameters() if parameter.requires_grad]
+    if not trainable:
+        raise RuntimeError("SAM requires at least one trainable parameter")
+    optimizer.zero_grad(set_to_none=True)
+    first_loss.backward()
+    norm_squared = 0.0
+    for parameter in trainable:
+        if parameter.grad is not None:
+            if not torch.isfinite(parameter.grad).all():
+                raise FloatingPointError("SAM first-pass gradient is non-finite")
+            norm_squared += float(parameter.grad.detach().float().pow(2).sum())
+    first_norm = math.sqrt(norm_squared)
+    if not math.isfinite(first_norm) or first_norm <= 0.0:
+        raise ValueError("SAM first-pass global gradient norm must be positive")
+    backups = []
+    with torch.no_grad():
+        for parameter in trainable:
+            backups.append(parameter.detach().clone())
+            if parameter.grad is not None:
+                parameter.add_(parameter.grad, alpha=float(rho) / (first_norm + float(epsilon)))
+    optimizer.zero_grad(set_to_none=True)
+    second_loss = second_pass()
+    if not math.isfinite(float(second_loss.detach())):
+        with torch.no_grad():
+            for parameter, backup in zip(trainable, backups):
+                parameter.copy_(backup)
+        raise FloatingPointError("SAM second-pass loss is non-finite")
+    second_loss.backward()
+    with torch.no_grad():
+        for parameter, backup in zip(trainable, backups):
+            parameter.copy_(backup)
+    norm_squared = 0.0
+    for parameter in trainable:
+        if parameter.grad is not None:
+            if not torch.isfinite(parameter.grad).all():
+                raise FloatingPointError("SAM second-pass gradient is non-finite")
+            norm_squared += float(parameter.grad.detach().float().pow(2).sum())
+    second_norm = math.sqrt(norm_squared)
+    clipped_norm = float(
+        torch.nn.utils.clip_grad_norm_(trainable, float(clip_norm), error_if_nonfinite=True)
+    )
+    optimizer.step()
+    return {
+        "first_loss": float(first_loss.detach()),
+        "second_loss": float(second_loss.detach()),
+        "first_gradient_norm": first_norm,
+        "second_gradient_norm": second_norm,
+        "preclip_gradient_norm": clipped_norm,
+        "actual_radius": float(rho),
+    }
 
 
 def _warmup_cosine(step: int, warmup_steps: int, total_steps: int) -> float:

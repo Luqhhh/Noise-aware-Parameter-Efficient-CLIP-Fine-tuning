@@ -44,7 +44,7 @@ def test_search_manifest_has_expected_trial_coverage():
     assert by_id["A01"]["implementation_status"] == "implemented"
     assert by_id["C01"]["implementation_status"] == "pending_quality_asset"
     assert by_id["F01"]["implementation_status"] == "implemented"
-    assert by_id["G01"]["implementation_status"] == "pending_sam_integration"
+    assert by_id["G01"]["implementation_status"] == "implemented"
     assert by_id["H01"]["implementation_status"] == "pending_v3_feature_cache"
 
 
@@ -259,3 +259,32 @@ def test_gradient_accumulation_counts_only_effective_batch_updates(tmp_path, mon
     state = torch.load(checkpoint, map_location="cpu", weights_only=False)
     # 9 train samples / (2 microbatch * 2 accumulation) => 2 full updates + 1 last-batch update
     assert state["global_step"] == 3
+
+
+def test_standard_sam_step_restores_parameters_and_updates():
+    from aegis_clip.trainer import _sam_optimizer_step
+
+    model = nn.Linear(4, 3)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+    features = torch.randn(8, 4)
+    labels = torch.randint(0, 3, (8,))
+
+    def first_pass():
+        return torch.nn.functional.cross_entropy(model(features), labels)
+
+    before = [parameter.detach().clone() for parameter in model.parameters()]
+    update = _sam_optimizer_step(
+        model,
+        optimizer,
+        first_loss=first_pass(),
+        second_pass=first_pass,
+        rho=0.05,
+        clip_norm=1.0,
+    )
+    assert update["actual_radius"] == pytest.approx(0.05)
+    assert update["first_gradient_norm"] > 0.0
+    assert update["second_gradient_norm"] > 0.0
+    assert any(
+        not torch.equal(old, new.detach())
+        for old, new in zip(before, model.parameters())
+    )

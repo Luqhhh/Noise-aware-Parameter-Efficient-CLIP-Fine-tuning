@@ -479,12 +479,15 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
             loss={"name": loss_name, "gce_q": 0.5, "ce_warmup_epochs": 2,
                   "mixup_alpha": 0.0, "mixup_probability": 0.0,
                   "feature_distillation_weight": 2.0},
-            train={"sam": {"enabled": True, "mode": "standard_global_l2", "rho": rho}},
+            train={
+                "sam": {"enabled": True, "mode": "standard_global_l2", "rho": rho},
+                "amp": False,
+            },
         )
         dependencies = ["A_best"] if recipe == "A_best" else []
         trials.append(normalize_trial(
             trial_id, "G", f"SAM_rho{rho:g}_{recipe}", overrides,
-            implementation_status="pending_sam_integration",
+            implementation_status="implemented",
             dependencies=dependencies,
         ))
 
