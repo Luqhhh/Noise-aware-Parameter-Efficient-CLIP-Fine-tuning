@@ -1,0 +1,96 @@
+# RM_FULL_LP: full-data (148,695) frozen linear probe.
+#
+# Why this run is mandatory rather than a convenience: rematch_assets.checkpoint_binding()
+# binds train_csv_sha256, so a full-data FT cannot initialize from the dev-data RM-LP.
+# validate_checkpoint(parent=True) additionally requires the parent's experiment_id to be
+# exactly RM_FULL_LP.  Without this probe there is no legal parent for FULL01.
+#
+# Recipe is the accepted dev LP (configs/rematch750_lp_npu.yaml) with the NPU numeric
+# block from the V3 winner; the only substantive change is that train_csv now spans all
+# 148,695 official training images.  Frozen + cached features keep this run cheap.
+#
+# Bind an idle physical NPU before execution; this template is not executable.
+project:
+  experiment_id: RM_FULL_LP
+  stage: repechage
+  seed: 42
+  data_version: '20260921'
+  full_training: true
+data:
+  train_root: ../../train
+  test_root: ../../test
+  train_csv: ../../artifacts/stages/repechage/20260921_npu/full_train.csv
+  val_csv: ../../artifacts/stages/repechage/20260921_npu/val_dev.csv
+  class_mapping: ../../artifacts/stages/repechage/20260921_npu/class_to_idx.json
+  dataset_manifest: ../../artifacts/stages/repechage/20260921_npu/dataset_manifest.json
+  train_augmentation: clip_center_crop
+  expected_official_train_samples: 148695
+  expected_test_samples: 37444
+  validation_overlap_with_training: true
+  external_data: false
+  test_usage: inference_only
+features:
+  tensor_path: ../../artifacts/stages/repechage/20260921_npu/features/features.pt
+  paths_path: ../../artifacts/stages/repechage/20260921_npu/features/image_paths.json
+  manifest_path: ../../artifacts/stages/repechage/20260921_npu/features/manifest.json
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  num_classes: 750
+  feature_dim: 512
+  peft_mode: frozen
+  use_cached_training: true
+  official_checkpoint: ~/.cache/clip/ViT-B-32.pt
+trust:
+  enabled: false
+longtail:
+  sampler_mode: none
+  loss_reweighting: none
+  balanced_softmax_tau: 0.0
+loss:
+  name: cross_entropy
+  gce_q: 0.5
+  ce_warmup_epochs: 0
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  feature_distillation_weight: 0.0
+train:
+  device: npu:UNASSIGNED
+  deterministic: true
+  amp: true
+  amp_initial_scale: 128.0
+  amp_growth_interval: 1000000000
+  epochs: 20
+  schedule_epochs: 20
+  batch_size: 256
+  num_workers: 4
+  loader_timeout: 120
+  pin_memory: true
+  npu_pin_memory: true
+  head_lr: 0.005
+  head_weight_decay: 0.0001
+  backbone_lr: 0.0
+  backbone_weight_decay: 0.0001
+  lr_warmup_epochs: 0
+  max_grad_norm: 1.0
+  early_stop_patience: 0
+  save_epoch_checkpoints: false
+  optimizer_impl: npu_fused_adamw
+  gradient_norm_impl: foreach
+  require_finite_gradients: true
+evaluation:
+  batch_size: 256
+  inference_batch_size: 128
+  selector_metric: raw_macro
+  selection_policy: last_epoch
+  interval_epochs: 2
+  tiebreak_metric: null
+  drift_penalty: 0.0
+  measure_flip_consistency: false
+  record_initial: false
+  evaluate_initial_checkpoint: false
+output:
+  root: ../../outputs/clairvoyanttt/rematch750_full_ft
+diagnostics:
+  longtail:
+    enabled: true
