@@ -108,7 +108,13 @@ def scan_once(macro_pp: float, micro_pp: float) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--watch", action="store_true")
-    parser.add_argument("--until-pid", type=int, default=None)
+    parser.add_argument(
+        "--until-pid",
+        type=int,
+        action="append",
+        default=[],
+        help="Stop when every listed PID has exited; may be repeated.",
+    )
     parser.add_argument("--interval-seconds", type=float, default=60.0)
     parser.add_argument("--macro-pp", type=float, default=DEFAULT_SIGNIFICANT_MACRO_PP)
     parser.add_argument("--micro-pp", type=float, default=DEFAULT_SIGNIFICANT_MICRO_PP)
@@ -120,8 +126,8 @@ def main() -> int:
             print(f"pruned {removed} non-significant checkpoint(s)", flush=True)
         if not args.watch:
             return 0
-        if args.until_pid is not None and not pid_alive(int(args.until_pid)):
-            # One final scan after the queue exits, then stop.
+        if args.until_pid and not any(pid_alive(int(pid)) for pid in args.until_pid):
+            # One final scan after every queue exits, then stop.
             removed = scan_once(args.macro_pp, args.micro_pp)
             if removed:
                 print(f"pruned {removed} non-significant checkpoint(s)", flush=True)
