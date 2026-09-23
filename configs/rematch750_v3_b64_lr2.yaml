@@ -1,4 +1,5 @@
-# V3 scan template. Bind an idle physical NPU before execution.
+# Conditional V3 point: run only if B64 and B128_E16 both miss the macro floor.
+# Bind an idle physical NPU before execution.
 data:
   class_mapping: ../artifacts/stages/repechage/20260921_npu/class_to_idx.json
   dataset_manifest: ../artifacts/stages/repechage/20260921_npu/dataset_manifest.json
@@ -53,21 +54,21 @@ output:
   root: ../outputs/codex/rematch750_v3_tradeoff
 project:
   data_version: '20260921'
-  experiment_id: RM_V3_B128_E16
+  experiment_id: RM_V3_B64_LR2
   seed: 42
   stage: repechage
 train:
   amp: true
   amp_growth_interval: 1000000000
   amp_initial_scale: 128.0
-  backbone_lr: 3.0e-06
+  backbone_lr: 6.0e-06
   backbone_weight_decay: 0.0001
-  batch_size: 128
+  batch_size: 64
   deterministic: true
   device: npu:UNASSIGNED
   early_stop_patience: 0
-  epochs: 16
-  head_lr: 0.0001
+  epochs: 8
+  head_lr: 0.0002
   head_weight_decay: 0.0001
   init_checkpoint: /workspace/noise/outputs/rematch750_npu/RM_LP/seed42/checkpoints/best.pt
   loader_timeout: 120
@@ -78,7 +79,7 @@ train:
   pin_memory: true
   require_finite_gradients: true
   save_epoch_checkpoints: false
-  schedule_epochs: 16
+  schedule_epochs: 8
   prefetch_factor: 2
   npu_pin_memory: true
   optimizer_impl: npu_fused_adamw

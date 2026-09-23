@@ -1,4 +1,5 @@
-# V3 scan template. Bind an idle physical NPU before execution.
+# V3 compensated large-batch trial: longer cosine horizon and 4x head/visual LR.
+# Bind an idle physical NPU before execution; this template is not executable.
 data:
   class_mapping: ../artifacts/stages/repechage/20260921_npu/class_to_idx.json
   dataset_manifest: ../artifacts/stages/repechage/20260921_npu/dataset_manifest.json
@@ -53,33 +54,33 @@ output:
   root: ../outputs/codex/rematch750_v3_tradeoff
 project:
   data_version: '20260921'
-  experiment_id: RM_V3_B128_E16
+  experiment_id: RM_V3_B1024_E16_LR4
   seed: 42
   stage: repechage
 train:
   amp: true
   amp_growth_interval: 1000000000
   amp_initial_scale: 128.0
-  backbone_lr: 3.0e-06
+  backbone_lr: 1.2e-05
   backbone_weight_decay: 0.0001
-  batch_size: 128
+  batch_size: 1024
   deterministic: true
   device: npu:UNASSIGNED
   early_stop_patience: 0
   epochs: 16
-  head_lr: 0.0001
+  head_lr: 0.0004
   head_weight_decay: 0.0001
   init_checkpoint: /workspace/noise/outputs/rematch750_npu/RM_LP/seed42/checkpoints/best.pt
   loader_timeout: 120
   log_every_steps: 20
   lr_warmup_epochs: 0
   max_grad_norm: 1.0
-  num_workers: 16
+  num_workers: 40
   pin_memory: true
   require_finite_gradients: true
   save_epoch_checkpoints: false
   schedule_epochs: 16
-  prefetch_factor: 2
+  prefetch_factor: 4
   npu_pin_memory: true
   optimizer_impl: npu_fused_adamw
   gradient_norm_impl: foreach

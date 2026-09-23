@@ -1,0 +1,15 @@
+{
+  "candidate": "RM_V3_B1024_E16_LR4",
+  "status": "passed",
+  "host": "vllm-lqh-86",
+  "remote_root": "/workspace/noise-worktrees/rematch750_v3_scan",
+  "submission_dir": "/workspace/noise-worktrees/rematch750_v3_scan/outputs/codex/rematch750_v3_tradeoff/RM_V3_B1024_E16_LR4/seed42/submission",
+  "checkpoint_sha256": "a8de990eb0fd347e52dd5387d6cd986a30268ed316111dce6ce8d9e4c42c2f27",
+  "prediction_count": 37444,
+  "prediction_csv_sha256": "175c5be75eb9b18a291c34d7a20c035576269b5732695eea321d9bf83ad430bb",
+  "submission_zip_sha256": "5c58f2cda01a7d9eeb7d2e31d5e46504371b2c8780dae52e9e43d6537ffe63bd",
+  "zip_contains_only_pred_results_csv": true,
+  "zip_csv_matches_standalone_bytes": true,
+  "independent_submission_check": "9/9 passed",
+  "platform_score": null
+}

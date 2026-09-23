@@ -1,0 +1,65 @@
+{
+  "accuracy_floor": 0.7180471887588501,
+  "baseline": "RM_FT_NPU_TUNED",
+  "winner": "RM_V3_B1024_E16_LR4",
+  "decision": "new_efficiency_candidate",
+  "rows": [
+    {
+      "candidate": "RM_FT_NPU_TUNED",
+      "selected_epoch": 8,
+      "raw_macro": 0.7190471887588501,
+      "raw_micro": 0.7298387289047241,
+      "macro_delta_pp_vs_b32": 0.0,
+      "fixed_tail75_macro": 0.5607286457220714,
+      "rest675_macro": 0.7366381135086219,
+      "successful_optimizer_updates": 33456,
+      "training_seconds": 2670.4595781341195,
+      "train_cli_seconds": 2870.8718118667603,
+      "speedup_vs_b32": 1.0,
+      "meets_accuracy_floor": true
+    },
+    {
+      "candidate": "RM_V3_B64",
+      "selected_epoch": 8,
+      "raw_macro": 0.7082993388175964,
+      "raw_micro": 0.7186827659606934,
+      "macro_delta_pp_vs_b32": -1.0747849941253662,
+      "fixed_tail75_macro": 0.5487155727545421,
+      "rest675_macro": 0.7260309388902453,
+      "successful_optimizer_updates": 16728,
+      "training_seconds": 1752.7472654010635,
+      "train_cli_seconds": 1946.7138068675995,
+      "speedup_vs_b32": 1.4747272052722513,
+      "meets_accuracy_floor": false
+    },
+    {
+      "candidate": "RM_V3_B128_E16",
+      "selected_epoch": 16,
+      "raw_macro": 0.7193195223808289,
+      "raw_micro": 0.729905903339386,
+      "macro_delta_pp_vs_b32": 0.027233362197875977,
+      "fixed_tail75_macro": 0.5595475055774053,
+      "rest675_macro": 0.7370719405401636,
+      "successful_optimizer_updates": 16736,
+      "training_seconds": 3317.8591969632544,
+      "train_cli_seconds": 3663.71112203598,
+      "speedup_vs_b32": 0.783596663666914,
+      "meets_accuracy_floor": true
+    },
+    {
+      "candidate": "RM_V3_B1024_E16_LR4",
+      "selected_epoch": 16,
+      "raw_macro": 0.7234723567962646,
+      "raw_micro": 0.7341398000717163,
+      "macro_delta_pp_vs_b32": 0.4425168037414551,
+      "fixed_tail75_macro": 0.5595885888735453,
+      "rest675_macro": 0.7416816796859106,
+      "successful_optimizer_updates": 2096,
+      "training_seconds": 1816.8818150449079,
+      "train_cli_seconds": 2055.272439956665,
+      "speedup_vs_b32": 1.3968327293520717,
+      "meets_accuracy_floor": true
+    }
+  ],
+  "platform_score": null
+}

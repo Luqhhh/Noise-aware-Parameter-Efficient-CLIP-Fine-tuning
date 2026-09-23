@@ -1,5 +1,4 @@
-# PLAN ONLY: no training authorized. Device is intentionally unassigned and cannot be used for execution.
-# Before execution, bind an explicitly approved idle NPU other than device 0.
+# V3 scan template. Bind an idle physical NPU before execution.
 data:
   class_mapping: ../artifacts/stages/repechage/20260921_npu/class_to_idx.json
   dataset_manifest: ../artifacts/stages/repechage/20260921_npu/dataset_manifest.json
