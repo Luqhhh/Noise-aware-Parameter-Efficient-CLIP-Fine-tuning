@@ -50,19 +50,69 @@ B 轴的 16 轮伴随 `schedule_epochs` 8→16（余弦 horizon 同步），head
 
 | 包 | 本地 micro / macro | 22:00 前是否可用 |
 |---|---|---|
-| `SEARCH_A1_MIXUP_A02` | 待测 | 是 |
-| `SEARCH_A2_MIXUP_A04` | 待测 | 是 |
-| `SEARCH_B1_ANCHOR05_LR1E5` | 待测 | 是 |
-| `SEARCH_B2_ANCHOR00_LR3E6` | 待测 | 否（约 22:00 才训完，赶不上） |
+| `SEARCH_A1_MIXUP_A02` | **72.5000 / 71.4466**（−0.37pp） | 是 |
+| `SEARCH_A2_MIXUP_A04` | **71.9288 / 70.8878**（−0.94pp） | 是 |
+| `SEARCH_B1_ANCHOR05_LR1E5` | **无 —— 训练崩溃，见 §1.4** | 否 |
+| `SEARCH_B2_ANCHOR00_LR3E6` | 待测 | **是**（实测速率下约 19:30 结束，不是 22:00） |
 
-**选择规则（22:00 执行）**：在三个包里选本地 micro 最优、且 macro 不与之矛盾者。若三者与基线的差异全部落在单种子 0.90pp 变异之内（即都不显著超过 72.8696%），**则优先方案提名的 A2 与 B1 之一**，并如实记录「本批暂未显示本地跃升」。
-**A1 不是默认选项** —— 它只是同轴的较低强度点，方案提名的是 A2 与 B1。
+**选择规则（22:00 执行）**：在可用包里选本地 micro 最优、且 macro 不与之矛盾者。若与基线的差异均落在单种子 0.90pp 变异之内（即都不显著超过 72.8696%），如实记录「本批暂未显示本地跃升」。
+**A1/A2 现均有实测值且均低于基线**（见 §1.4），原先「优先方案提名的 A2 与 B1」已不成立 —— A2 有实测的 −0.94pp，B1 没有结果。
 
 三个包**全部预先产出**（推理约 10 分钟/个，不占提交额度），因为额度只有一个，而预先出包使 22:00 的决策不受训练进度制约。
 
 出包由 `infer` 子命令一次完成：推理 → `scripts/check_submission.py`（`check=True`，校验不过即失败）→ `register()`。包落在 `outputs/search_20260923/<EXP_ID>/seed42/submission/`；登记表写入**工作树自己的** `results/rematch_submission_registry.csv`，不碰主仓库。
 
 **上传前必须核对**：`selected_report.json` 里的被选轮次应等于总轮数（`last_epoch` 语义），否则包不是预定终点的模型。
+
+### 1.4 执行结果（截至 2026-09-23 15:20）
+
+基线 `RM_FT` 已核实 `selected_epoch: 8` = `schedule_epochs: 8`，即 `best_selector` 选中的就是最后一个 epoch —— **`last_epoch` 与 `best_selector` 在本例重合**，逐 epoch 对比是干净的 apples-to-apples。
+
+| epoch | 基线 (α=0) micro | A1 (α=0.2) | Δ | A2 (α=0.4) | Δ |
+|---:|---:|---:|---:|---:|---:|
+| 2 | 69.2944 | 69.1129 | −0.18 | 68.2728 | −1.02 |
+| 4 | 71.6599 | 71.2097 | −0.45 | 70.6048 | −1.06 |
+| 6 | 72.7083 | 72.2782 | −0.43 | 71.6599 | −1.05 |
+| 8 | **72.8696** | 72.5000 | −0.37 | 71.9288 | −0.94 |
+
+macro 同向（ep8：基线 71.8054 / A1 71.4466 / A2 70.8878）。两点各 4 个检查点共 8 个，**全部为负**。
+
+**三个量随 α 单调，A 轴判死**：
+
+| ep8 | α=0 | α=0.2 | α=0.4 |
+|---|---:|---:|---:|
+| train_accuracy | 86.83% | 79.11% | 75.01% |
+| train→val 落差 | 13.96pp | 6.61pp | 3.08pp |
+| 相对锚点漂移 | 0.0585 | 0.0656 | 0.0689 |
+| **val micro** | **72.87** | **72.50** | **71.93** |
+
+过拟合压得越狠、val 越差，三点单调无例外 → **本任务这一档的瓶颈不是过拟合，把正则化调强是净损失。**
+
+**此结论对 B 轴是反向的有利证据，不要读反**：特征锚定（`feature_distillation_weight=2.0`）本身就是一种正则化，B1（降到 0.5）与 B2（归零）都是**减弱约束**。A 轴既然证明「约束越松 val 越好」，B 轴的先验应**上调**。注意 A1/A2 只改了 mixup、锚点固定 2.0，因此它们证明的是「在锚点 2.0 的前提下加正则有害」。
+
+#### B1 训练崩溃（rc=134）—— 结果不可用
+
+```
+TRAIN START search_b1_anchor05_lr1e5  14:49:09
+TRAIN END   search_b1_anchor05_lr1e5  rc=134  15:03:35   ← SIGABRT
+INFER END   search_b1_anchor05_lr1e5  rc=1    15:03:45
+PACKAGE MISSING SEARCH_B1_ANCHOR05_LR1E5
+```
+
+`torch.AcceleratorError: CUDA error: unknown error`（`cudaErrorUnknown`），抛出点在 `Py_FinalizeEx`，`terminate()` → SIGABRT。
+
+**判断：环境级故障，不是配置缺陷。** 依据：(a) 崩溃前最后一条 Progress（step 6000）完全健康 —— loss 0.949、grad_norm 33.7、`amp_scale 128` 稳定、无 NaN/inf；(b) `cudaErrorUnknown` 属运行时/驱动错误类，不是数值爆炸（那会表现为 inf/nan 被 grad scaler 跳过）；(c) 同期 `dmesg` 出现连续的 `WSL … Relay ERROR: UtilAcceptVsock: Waiting for abnormally long accept(11)`，WSL↔Windows 边界当时确有异常；(d) A1/A2 各跑满 8 轮无此问题。**未获证明**，判别性实验是重跑 B1 —— 若重跑正常即坐实环境说。
+
+#### 两处对早期估计的更正
+
+1. **速率**：实测 **0.117–0.125 s/step**，非我先前用的 0.169。据此 B1 应在约 17:05 训完、B2 约 19:30 结束、`BATCH1 DONE` 约 19:35 —— 不是 §1.2 写的「约 11 小时串行」。
+2. **B2 赶得上 22:00**（原先写「赶不上」）。因此由 `_package_b2.sh` 补出包步骤：编排脚本的最后一步只训练不出包，是依据错误估计写的；该脚本此刻在运行，bash 增量读取不能改，故另起等待进程补 infer，**不重启任何训练**。
+
+#### 看门程序曾漏报这次崩溃（已修）
+
+`_watch_batch1.sh` v1 在 15:11 报 OK，而 B1 已于 15:03 崩溃。根因：v1 只检查「当前活跃的 run」，B1 死后编排立刻转去 B2，活跃 run 是健康的 B2 —— B1 的日志与 `_driver.log` 里的 `rc=134` / `PACKAGE MISSING` **从未被读过**。
+
+v2 改为扫描 `_driver.log` 与全部 run 日志的异常行（非零 rc、PACKAGE MISSING、CUDA error、OOM、NaN、traceback），按「文件:行号」去重只报一次，并永久记入 `_INCIDENTS.log`（不因后续轮次健康而被覆盖）。上线首轮即复现并报出了本次漏掉的崩溃，共 7 条。
 
 ---
 
