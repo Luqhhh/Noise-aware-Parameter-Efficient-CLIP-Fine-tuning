@@ -300,3 +300,27 @@ def test_corrected_targets_accepts_soft_pseudo_distribution():
     targets = corrected_targets(noisy, pseudo, alpha, 3, pseudo_soft=soft)
     expected = torch.tensor([[0.75, 0.0, 0.25], [1.0, 0.0, 0.0]])
     assert torch.allclose(targets, expected)
+
+
+def test_linear_parent_can_initialize_cosine_head(tmp_path):
+    from aegis_clip.checkpoint import load_initial_weights
+
+    parent = AegisCLIP(
+        visual=_tiny_visual(2),
+        num_classes=2,
+        feature_dim=4,
+        peft_mode="full_finetune",
+    )
+    child = AegisCLIP(
+        visual=_tiny_visual(2),
+        num_classes=2,
+        feature_dim=4,
+        peft_mode="frozen",
+        classifier_mode="cosine",
+    )
+    checkpoint = tmp_path / "parent.pt"
+    torch.save({"model_state_dict": parent.state_dict()}, checkpoint)
+    load_initial_weights(child, checkpoint, torch.device("cpu"))
+    assert child.classifier_mode == "cosine"
+    assert torch.equal(child.classifier.weight, parent.classifier.weight)
+    assert child.classifier.scale.item() == pytest.approx(20.0)

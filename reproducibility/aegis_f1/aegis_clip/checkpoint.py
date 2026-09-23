@@ -82,6 +82,11 @@ def load_initial_weights(
     if state is None:
         raise ValueError("Checkpoint does not contain model weights")
     state = dict(state)
+    if getattr(model, "classifier_mode", None) == "cosine":
+        # A linear parent head has no cosine scale and carries a bias.
+        # Keep its weight as the derived cosine direction; the scale starts at
+        # the configured initialisation and the linear bias is inapplicable.
+        state.pop("classifier.bias", None)
     # Resolution-adaptive init: when the model runs at a different input
     # resolution than the checkpoint, bicubically interpolate the source
     # visual position embedding so the backbone patch grid matches the target.
@@ -147,6 +152,8 @@ def load_initial_weights(
         allowed_missing.update(
             {"classifier.residual_weight", "classifier.residual_bias"}
         )
+    if getattr(model, "classifier_mode", None) == "cosine":
+        allowed_missing.add("classifier.scale")
     if getattr(model, "peft_mode", None) in {
         "visual_lora",
         "visual_lora_last_mlp",
