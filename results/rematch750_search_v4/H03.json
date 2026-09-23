@@ -1,0 +1,14 @@
+{
+  "trial_id": "H03",
+  "family": "H",
+  "status": "passed_training",
+  "completed_at_unix": 1790155612,
+  "selected_epoch": 4,
+  "raw_macro": 0.3936749994754791,
+  "raw_micro": 0.43212366104125977,
+  "delta_macro_vs_v3_pp": -32.97973573207855,
+  "delta_micro_vs_v3_pp": -30.201613903045654,
+  "log_path": "outputs/rematch750_search_v4/queue/H03.log",
+  "schedule_epochs": 20,
+  "validation_covered_classes": 750
+}

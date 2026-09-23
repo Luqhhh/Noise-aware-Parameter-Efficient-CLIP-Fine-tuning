@@ -1,0 +1,14 @@
+{
+  "trial_id": "H08",
+  "family": "H",
+  "status": "passed_training",
+  "completed_at_unix": 1790156864,
+  "selected_epoch": 20,
+  "raw_macro": 0.7261666059494019,
+  "raw_micro": 0.7356182932853699,
+  "delta_macro_vs_v3_pp": 0.2694249153137207,
+  "delta_micro_vs_v3_pp": 0.14784932136535645,
+  "log_path": "outputs/rematch750_search_v4/queue/H08.log",
+  "schedule_epochs": 20,
+  "validation_covered_classes": 750
+}

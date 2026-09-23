@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "protocol": "REMATCH750_FULL_DATA_CONTROL",
+  "owner": "clairvoyanttt",
+  "status": "ready_for_npu",
+  "created_at": "2026-09-23",
+  "baseline": {
+    "recipe_experiment_id": "RM_V3_B1024_E16_LR4",
+    "recipe_raw_macro": 0.7234723568,
+    "recipe_raw_micro": 0.7341398001,
+    "platform_candidate": "RM_FT",
+    "platform_score": 0.6096570879179575,
+    "platform_correct": 22828,
+    "platform_total": 37444
+  },
+  "data_scope": {
+    "train_samples": 148695,
+    "dev_train_samples": 133815,
+    "former_val_absorbed": 14880,
+    "relative_data_increase": 0.1112,
+    "test_samples": 37444
+  },
+  "lineage": {
+    "train_csv_sha256": "142d255e86aadc2be4f4f1bee832948b30416c54bdc904159ff096ce8eb278ad",
+    "dev_train_csv_sha256": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "val_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "dev_stage_parent": "RM_LP",
+    "dev_stage_parent_checkpoint_sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+    "seed": 42,
+    "why_not_the_dev_lp": "checkpoint_binding() binds train_csv_sha256, so the dev RM-LP is rejected as a parent for a full-data fine-tune; RM_FULL_LP is a hard prerequisite"
+  },
+  "stages": [
+    {
+      "name": "FULL00",
+      "experiment_id": "RM_FULL_LP",
+      "config": "configs/rematch750_full_ft/FULL00.yaml",
+      "config_sha256": "ab5dc3a93813aaaa4c65bf7e627464ea27e63e5f0985891f937bf0ab0e2d7966",
+      "role": "full-data linear probe; the only legal parent for FULL01",
+      "peft_mode": "frozen",
+      "epochs": 20,
+      "schedule_epochs": 20,
+      "batch_size": 256,
+      "produces_submission": false
+    },
+    {
+      "name": "FULL01",
+      "experiment_id": "RM_FULL",
+      "config": "configs/rematch750_full_ft/FULL01.yaml",
+      "config_sha256": "73f968d1cbb998578aa7d8e57c22e2f562639f5b9de1049b0286433da29f19a7",
+      "role": "V3 winning recipe re-run on all 148,695 training images",
+      "peft_mode": "full_finetune",
+      "epochs": 16,
+      "schedule_epochs": 16,
+      "batch_size": 1024,
+      "init_checkpoint": "outputs/clairvoyanttt/rematch750_full_ft/RM_FULL_LP/seed42/checkpoints/best.pt",
+      "produces_submission": true
+    }
+  ],
+  "fixed_recipe_preserved": [
+    "loss: ce_warmup_2_then_gce_q0.5",
+    "feature_distillation_weight: 2.0",
+    "head_lr: 0.0004",
+    "backbone_lr: 1.2e-5",
+    "backbone_weight_decay / head_weight_decay: 1e-4",
+    "mixup disabled",
+    "train_augmentation: weak_rrc_flip",
+    "selector_metric: raw_macro"
+  ],
+  "decision": {
+    "criterion": "platform score of RM_FULL minus RM_FT 0.6096570879179575",
+    "local_readout": "none: val_dev is a subset of full_train, so every local metric is an overlapping diagnosis",
+    "promote_pp": 0.3,
+    "signal_pp": 0.2,
+    "null_band_pp": 0.2,
+    "regress_pp": -0.2,
+    "single_seed_noise_pp": 0.9,
+    "purpose": "close the data-quantity axis; expected outcome is the null band"
+  },
+  "runner": {
+    "path": "scripts/run_rematch750_full_ft.py",
+    "sha256": "6e01439e44de1785fb05031635556603a94e36fcccdbb65eaa2d5ce303fe6be9",
+    "sequence": ["train FULL00", "train FULL01", "infer FULL01"],
+    "preflight": "verifies every resolved input path and calls validate_dataset() before writing anything"
+  },
+  "tests": {
+    "path": "reproducibility/aegis_f1/tests/test_rematch750_full_ft.py",
+    "sha256": "7b2fb79dc2d48bc6357f59264f43b4f734b1b56d0740203edec6b05d9459e85a",
+    "case_count": 7
+  },
+  "prereg": "docs/rematch750_full_ft_prereg_20260923.md",
+  "platform_submission": true
+}

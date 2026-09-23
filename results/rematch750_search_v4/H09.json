@@ -1,0 +1,14 @@
+{
+  "trial_id": "H09",
+  "family": "H",
+  "status": "passed_training",
+  "completed_at_unix": 1790155175,
+  "selected_epoch": 18,
+  "raw_macro": 0.6394700407981873,
+  "raw_micro": 0.6469085812568665,
+  "delta_macro_vs_v3_pp": -8.40023159980774,
+  "delta_micro_vs_v3_pp": -8.723121881484985,
+  "log_path": "outputs/rematch750_search_v4/queue/H09.log",
+  "schedule_epochs": 20,
+  "validation_covered_classes": 750
+}

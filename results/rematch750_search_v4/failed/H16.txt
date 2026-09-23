@@ -1,0 +1,25 @@
+--- logs/train.log ---
+
+
+--- queue log tail ---
+/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/longtail.py:75: UserWarning: Cannot create tensor with interal format while allow_internel_format=False, tensor will be created with base format. (Triggered internally at ../torch_npu/csrc/aten/common/TensorFactories.cpp:340.)
+  weights = torch.ones_like(counts)
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/cli/rematch.py", line 170, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/cli/rematch.py", line 167, in main
+    execute(args.action,Path(args.config).resolve())
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/cli/rematch.py", line 108, in execute
+    checkpoint=train(config)
+               ^^^^^^^^^^^^^
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/trainer.py", line 543, in train
+    state = load_initial_weights(model, source, device)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/checkpoint.py", line 163, in load_initial_weights
+    allowed_missing.update(
+ValueError: Initial checkpoint is architecture-incompatible: missing=['classifier.scale'], unexpected=['classifier.bias']
+Warning: The current version of the file storing weights is old, and it is relanded due to internal bug of torch and compatibility issue. We will deprecate the loading support for this type of file in the future, please use newer torch to re-store the weight file.
+[ERROR] 2026-09-23-09:43:12 (PID:1035985, Device:0, RankID:-1) ERR99999 UNKNOWN applicaiton exception

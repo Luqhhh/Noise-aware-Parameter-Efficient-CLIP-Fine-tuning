@@ -6,11 +6,13 @@ data:
   external_data: false
   test_root: ../../test
   test_usage: inference_only
-  train_augmentation: weak_rrc_flip
+  train_augmentation: weak_rrc_flip_randaugment
   train_csv: ../../artifacts/stages/repechage/20260921_npu/train_dev.csv
   train_root: ../../train
   val_csv: ../../artifacts/stages/repechage/20260921_npu/val_dev.csv
   validation_overlap_with_training: false
+  randaugment_num_ops: 2
+  randaugment_magnitude: 5
 diagnostics:
   longtail:
     enabled: true
@@ -65,6 +67,10 @@ project:
   search: {}
   dependencies:
   - A_best
+  augmentation_source: A07
+  augmentation_source_metrics:
+    raw_macro: 0.7247904539108276
+    raw_micro: 0.7352822422981262
 train:
   amp: true
   amp_growth_interval: 1000000000

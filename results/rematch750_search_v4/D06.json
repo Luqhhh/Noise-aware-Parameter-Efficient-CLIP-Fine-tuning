@@ -1,0 +1,14 @@
+{
+  "trial_id": "D06",
+  "family": "D",
+  "status": "passed_training",
+  "completed_at_unix": 1790166268,
+  "selected_epoch": 14,
+  "raw_macro": 0.6780073046684265,
+  "raw_micro": 0.6881720423698425,
+  "delta_macro_vs_v3_pp": -4.5465052127838135,
+  "delta_micro_vs_v3_pp": -4.596775770187378,
+  "log_path": "outputs/rematch750_search_v4/queue/D06.log",
+  "schedule_epochs": 16,
+  "validation_covered_classes": 750
+}

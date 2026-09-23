@@ -1,0 +1,14 @@
+{
+  "trial_id": "G03",
+  "family": "G",
+  "status": "passed_training",
+  "completed_at_unix": 1790179355,
+  "selected_epoch": 16,
+  "raw_macro": 0.726610541343689,
+  "raw_micro": 0.7376344203948975,
+  "delta_macro_vs_v3_pp": 0.31381845474243164,
+  "delta_micro_vs_v3_pp": 0.34946203231811523,
+  "log_path": "outputs/rematch750_search_v4/queue/G03.log",
+  "schedule_epochs": 16,
+  "validation_covered_classes": 750
+}

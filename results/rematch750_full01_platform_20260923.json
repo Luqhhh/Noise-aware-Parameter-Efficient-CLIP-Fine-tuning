@@ -1,0 +1,24 @@
+{
+  "record_id": "REMATCH750_FULL01_PLATFORM_20260923",
+  "recorded_date": "2026-09-23",
+  "source": "user_reported_platform_scores",
+  "test_samples": 37444,
+  "receipt_completeness": "scores_only_submission_ids_timestamps_and_period_not_supplied",
+  "candidates": [
+    {
+      "candidate": "RM_FULL",
+      "package_label": "FULL01_submission.zip",
+      "strategy": "full_finetune_full_train_clip_center_crop_224_no_tta_no_prior",
+      "platform_score_percent": 61.6360,
+      "platform_score_fraction": 0.61636,
+      "submission_zip_sha256": "e6c39f299a69351d352dced314beddaff5cc6676d426db3fadd82804b5a70e1a",
+      "checkpoint_sha256": "255c967ffc9dcbc689343909013f12fafbf29393407565a85a55bae90ff16f75",
+      "submission_path": "outputs/clairvoyanttt/rematch750_full_ft/RM_FULL/seed42/submission",
+      "platform_submission_id": null,
+      "submitted_at": null,
+      "platform_period": null
+    }
+  ],
+  "formal_registry_status": "receipt_pending",
+  "notes": "Exact score was supplied by the user. No platform submission ID, timezone-aware upload timestamp, or reset-period identifier was supplied, so results/rematch_submission_registry.csv intentionally remains ready and no valid receipt was fabricated."
+}

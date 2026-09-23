@@ -1,0 +1,14 @@
+{
+  "trial_id": "B08",
+  "family": "B",
+  "status": "passed_training",
+  "completed_at_unix": 1790157569,
+  "selected_epoch": 14,
+  "raw_macro": 0.7214321494102478,
+  "raw_micro": 0.7323924899101257,
+  "delta_macro_vs_v3_pp": -0.20402073860168457,
+  "delta_micro_vs_v3_pp": -0.17473101615905762,
+  "log_path": "outputs/rematch750_search_v4/queue/B08.log",
+  "schedule_epochs": 16,
+  "validation_covered_classes": 750
+}

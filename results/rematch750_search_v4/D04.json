@@ -1,0 +1,14 @@
+{
+  "trial_id": "D04",
+  "family": "D",
+  "status": "passed_training",
+  "completed_at_unix": 1790161924,
+  "selected_epoch": 14,
+  "raw_macro": 0.7195419669151306,
+  "raw_micro": 0.7303091287612915,
+  "delta_macro_vs_v3_pp": -0.3930389881134033,
+  "delta_micro_vs_v3_pp": -0.38306713104248047,
+  "log_path": "outputs/rematch750_search_v4/queue/D04.log",
+  "schedule_epochs": 16,
+  "validation_covered_classes": 750
+}

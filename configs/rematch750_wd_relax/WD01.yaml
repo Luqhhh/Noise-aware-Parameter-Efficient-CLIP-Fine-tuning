@@ -1,3 +1,4 @@
+# Remove AdamW decay from the visual backbone only; all else matches WD00.
 data:
   class_mapping: ../../artifacts/stages/repechage/20260921_npu/class_to_idx.json
   dataset_manifest: ../../artifacts/stages/repechage/20260921_npu/dataset_manifest.json
@@ -6,13 +7,11 @@ data:
   external_data: false
   test_root: ../../test
   test_usage: inference_only
-  train_augmentation: weak_rrc_flip_randaugment
+  train_augmentation: weak_rrc_flip
   train_csv: ../../artifacts/stages/repechage/20260921_npu/train_dev.csv
   train_root: ../../train
   val_csv: ../../artifacts/stages/repechage/20260921_npu/val_dev.csv
   validation_overlap_with_training: false
-  randaugment_num_ops: 2
-  randaugment_magnitude: 5
 diagnostics:
   longtail:
     enabled: true
@@ -50,34 +49,20 @@ model:
   peft_mode: full_finetune
   pretrained: openai
   use_cached_training: false
-  input_resolution: 256
 output:
-  root: ../../outputs/rematch750_search_v4
+  root: ../../outputs/xjn/rematch750_wd_relax
 project:
   data_version: '20260921'
-  experiment_id: RM_V4_F02
+  experiment_id: RM_WD01_BACKBONE0
   seed: 42
   stage: repechage
-  protocol: rematch750_search_v4
-  trial_id: F02
-  family: F
-  mechanism: 256px_A_best
-  parent_kind: shared_lp
-  implementation_status: implemented
-  search: {}
-  dependencies:
-  - A_best
-  augmentation_source: A07
-  augmentation_source_metrics:
-    raw_macro: 0.7247904539108276
-    raw_micro: 0.7352822422981262
 train:
   amp: true
   amp_growth_interval: 1000000000
   amp_initial_scale: 128.0
   backbone_lr: 1.2e-05
-  backbone_weight_decay: 0.0001
-  batch_size: 512
+  backbone_weight_decay: 0.0
+  batch_size: 1024
   deterministic: true
   device: npu:UNASSIGNED
   early_stop_patience: 0
@@ -89,16 +74,14 @@ train:
   log_every_steps: 20
   lr_warmup_epochs: 0
   max_grad_norm: 1.0
+  npu_pin_memory: true
   num_workers: 40
+  optimizer_impl: npu_fused_adamw
   pin_memory: true
+  prefetch_factor: 4
   require_finite_gradients: true
   save_epoch_checkpoints: false
   schedule_epochs: 16
-  prefetch_factor: 4
-  npu_pin_memory: true
-  optimizer_impl: npu_fused_adamw
   gradient_norm_impl: foreach
-  grad_accum_steps: 2
-  effective_batch_size: 1024
 trust:
   enabled: false
