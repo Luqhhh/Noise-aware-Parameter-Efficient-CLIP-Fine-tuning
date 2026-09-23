@@ -75,12 +75,12 @@ train:
   log_every_steps: 20
   lr_warmup_epochs: 0
   max_grad_norm: 1.0
-  num_workers: 16
+  num_workers: 40
   pin_memory: true
   require_finite_gradients: true
   save_epoch_checkpoints: false
   schedule_epochs: 16
-  prefetch_factor: 2
+  prefetch_factor: 4
   npu_pin_memory: true
   optimizer_impl: npu_fused_adamw
   gradient_norm_impl: foreach
