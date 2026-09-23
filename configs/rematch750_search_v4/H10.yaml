@@ -64,7 +64,7 @@ project:
   mechanism: linear_class_bal_ce_parent
   parent_kind: frozen_backbone_head
   parent_experiment_id: RM_V3_B1024_E16_LR4
-  implementation_status: pending_v3_feature_cache
+  implementation_status: implemented
   search:
     reference_resolution: 224
 train:

@@ -152,7 +152,7 @@ def head_config(
         mechanism=mechanism,
         parent_kind=parent_kind,
         parent_experiment_id="RM_V3_B1024_E16_LR4",
-        implementation_status="pending_v3_feature_cache",
+        implementation_status="implemented",
         search={"reference_resolution": 224},
     )
     cfg["project"]["experiment_id"] = f"RM_V4_{trial_id}"
@@ -202,7 +202,7 @@ def head_config(
         "kind": "cached_head",
         "mechanism": mechanism,
         "parent_kind": parent_kind,
-        "implementation_status": "pending_v3_feature_cache",
+        "implementation_status": "implemented",
         "dependencies": ["V3_feature_cache"],
         "notes": "Frozen V3 encoder features; head-only 20-epoch refit.",
     }

@@ -45,7 +45,7 @@ def test_search_manifest_has_expected_trial_coverage():
     assert by_id["C01"]["implementation_status"] == "pending_quality_asset"
     assert by_id["F01"]["implementation_status"] == "implemented"
     assert by_id["G01"]["implementation_status"] == "implemented"
-    assert by_id["H01"]["implementation_status"] == "pending_v3_feature_cache"
+    assert by_id["H01"]["implementation_status"] == "implemented"
 
 
 def test_all_generated_configs_load_under_v4_protocol():
