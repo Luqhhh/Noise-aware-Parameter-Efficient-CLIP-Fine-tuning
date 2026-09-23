@@ -1,6 +1,9 @@
 # 复赛提分搜索 第一批（2026-09-23）
 
 **状态：已启动。** 第一批 4 个点在本机 GPU 上串行执行。
+
+> **2026-09-23 用户指令变更算力分工：本机只出策略，训练全部交给队友的 NPU。** 见 [当前执行入口](../docs/current_execution_plan.md) 与 [交接 brief](../docs/handover_brief_20260923.md) §0.1。
+> 对本批的后果：**B2 重跑（16:35 启动）是本批、也是本机最后一批长训练**；**B1 不在本机重跑**（它 15:03 崩溃后零数据），改为并入交给 NPU 的点位 —— 在 NPU 上跑一次约 34 分钟，比在本机赌 2.5 小时划算。见 §7。
 方案由 **GPT-6** 制定（四条轴、首轮 11 点、24 次训练总上限、+2pp 本地标记定义、平台提交编排、止损规则）。
 执行方：clairvoyanttt 本机 agent。分支 `clairvoyant/search-mixup-anchor`。
 
@@ -222,3 +225,28 @@ bash _run_search_batch.sh search_a1_mixup_a02 search_a2_mixup_a04 \
 - 四个配置均通过 `aegis_clip.config.load_config` 解析，`feature_distillation_weight: 0.0` 未被守卫拒绝。
 - MixUp 路径确认有效：`trainer.py:756` 无条件调用 `mixup(...)`，直接读 `loss.mixup_alpha` / `loss.mixup_probability`；且 `mixed_reference = λ·reference + (1−λ)·reference[perm]`，**参考特征按同一系数混合**，与特征蒸馏一致。
 - A1 首步审计通过；LP 初始化加载成功（epoch=20）；full_finetune 85,836,270 可训练参数；200/200 有效更新。
+
+---
+
+## 7. 本批收尾（2026-09-23 用户变更算力分工）
+
+用户当日指令：**本机只负责思考策略，长训练全部由队友的 NPU 执行**（队友实测 ≈34.3 分钟/点；本机 8 轮 ≈80 分钟、16 轮 ≈2.5 小时）。据此本批收尾如下。
+
+### 7.1 四个点的最终处置
+
+| # | 实验 ID | 本地实测 | 处置 |
+|---:|---|---|---|
+| 1 | `SEARCH_A1_MIXUP_A02` | micro 72.5000 / macro 71.4466（−0.37pp） | **已完成**，包有效（`selected_epoch 8 = schedule_epochs 8`）。A 轴本地判死（α 单调、8/8 检查点全负） |
+| 2 | `SEARCH_A2_MIXUP_A04` | micro 71.9288 / macro 70.8878（−0.94pp） | **已完成**，包有效 |
+| 3 | `SEARCH_B1_ANCHOR05_LR1E5` | **无** —— 15:03 崩溃于第 14 分钟，重跑 16:03:58 被残留 run_dir 挡死（`FileExistsError`，18 秒） | **不在本机重跑**，并入交给 NPU 的点位 |
+| 4 | `SEARCH_B2_ANCHOR00_LR3E6` | **无有效值** —— 16:00 崩溃于第 5 轮；中断前 ep2 68.6022 / ep4 71.4113（缺口 −0.69 → −0.25，但受 schedule 混淆，见 §1.4） | **16:35:13 启动重跑**，约 19:05 训完，是本机最后一批长训练 |
+
+B1/B2 两次崩溃签名相同（`trainer.py:1168` → `optim.py:25` → `cudaErrorUnknown`），机制**至今未定**；「16 轮档 2/2 崩、8 轮档 2/2 跑完」这一相关性样本只有 2，不作结论。**把这两个点交给 NPU 同时也是对「是否本机环境问题」的一次判别**：若 NPU 上同样配置跑通，环境说成立。
+
+### 7.2 交给队友的点位（待与 V4 编号对齐）
+
+本批 4 个点可能与队友 V4 搜索的 **A 轴（mixup）/ B 轴（anchor、特征蒸馏）重叠**。已请队友在 [brief](../docs/handover_brief_20260923.md) §0.1 确认是**并入 V4 编号**还是**关闭**，避免重复烧卡。在答复前不重复提交同一组变量。
+
+### 7.3 本机保留的能力
+
+工具与脚本保留可复用：`_package_run.sh`（严格出包，断言 `selected_report.json` 且 `selected_epoch == schedule_epochs`）、`_rerun_point.sh`（崩溃残留改名保全而非删除）、`_watch_rerun.sh`（盯单个 run、历史异常基线化）、`_watch_batch1.sh`、`_gpu_smoke.py`。这些与机器无关，NPU 侧出包若走 `aegis_clip` 同一 CLI，判据可照搬。
