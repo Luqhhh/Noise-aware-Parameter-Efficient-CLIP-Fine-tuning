@@ -12,7 +12,7 @@ import torch
 
 from aegis_clip.device import resolve_device
 from aegis_clip.config import load_config
-from aegis_clip.rematch_assets import validate_dataset, validate_cache, validate_checkpoint
+from aegis_clip.rematch_protocol import validate_dataset, validate_cache, validate_checkpoint
 from aegis_clip.rematch_data import prepare, write_csv
 from aegis_clip.runtime import atomic_json_dump, sha256_file
 

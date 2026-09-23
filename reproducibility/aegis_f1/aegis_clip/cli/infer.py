@@ -228,7 +228,7 @@ def main() -> None:
         config and config["data"].get("dataset_manifest")
     ))
     if config and config["data"].get("dataset_manifest"):
-        from aegis_clip.rematch_assets import validate_dataset, validate_checkpoint
+        from aegis_clip.rematch_protocol import validate_dataset, validate_checkpoint
         validate_dataset(config)
         validate_checkpoint(args.checkpoint, config)
         if (args.tta != "none" or args.local_view != "none" or args.prior_config

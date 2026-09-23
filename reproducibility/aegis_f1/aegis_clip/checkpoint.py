@@ -61,7 +61,7 @@ def save_checkpoint(
         payload["rng_state"]["npu"] = torch.npu.get_rng_state_all()
     _atomic_torch_save(payload, path)
     if config.get("data", {}).get("dataset_manifest"):
-        from aegis_clip.rematch_assets import checkpoint_binding
+        from aegis_clip.rematch_protocol import checkpoint_binding
         from aegis_clip.runtime import atomic_json_dump, sha256_file
         atomic_json_dump({
             "checkpoint_sha256": sha256_file(path),

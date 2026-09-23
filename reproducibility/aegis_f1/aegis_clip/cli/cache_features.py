@@ -96,9 +96,9 @@ def cache_stage_features(
     rematch_binding = None
     source = "ViT-B/32"
     if config["data"].get("dataset_manifest"):
-        from aegis_clip.rematch_assets import validate_dataset, expected_binding
+        from aegis_clip.rematch_protocol import validate_dataset, expected_feature_binding
         manifest = validate_dataset(config)
-        rematch_binding = expected_binding(config, manifest)
+        rematch_binding = expected_feature_binding(config, manifest)
         source = config["model"]["official_checkpoint"]
         if augmentation != "none" or output_dir:
             raise ValueError("Rematch uses only its bound canonical feature cache")

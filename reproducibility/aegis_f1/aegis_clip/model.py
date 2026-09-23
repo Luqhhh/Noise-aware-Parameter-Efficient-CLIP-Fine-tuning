@@ -399,6 +399,42 @@ def install_visual_mlp_adapters(
     return selected
 
 
+class CosineClassifier(nn.Module):
+    """Normalized cosine classifier with a learnable temperature/scale.
+
+    The output is ``scale * <normalize(features), normalize(weight)>``.  It is
+    useful for frozen-backbone head retraining where the scale controls how
+    sharply the validation macro objective is optimized.
+    """
+
+    def __init__(
+        self,
+        feature_dim: int,
+        num_classes: int,
+        *,
+        initial_scale: float = 20.0,
+        trainable_scale: bool = True,
+    ) -> None:
+        super().__init__()
+        if int(feature_dim) <= 0 or int(num_classes) <= 1:
+            raise ValueError("Cosine classifier dimensions must be positive")
+        if float(initial_scale) <= 0.0:
+            raise ValueError("cosine initial_scale must be positive")
+        self.weight = nn.Parameter(torch.empty(int(num_classes), int(feature_dim)))
+        nn.init.xavier_uniform_(self.weight)
+        scale = torch.tensor(float(initial_scale))
+        if trainable_scale:
+            self.scale = nn.Parameter(scale)
+        else:
+            self.register_buffer("scale", scale)
+        self.trainable_scale = bool(trainable_scale)
+
+    def forward(self, features: torch.Tensor) -> torch.Tensor:
+        normalized_features = F.normalize(features.float(), dim=-1)
+        normalized_weight = F.normalize(self.weight.float(), dim=-1)
+        return self.scale * (normalized_features @ normalized_weight.t())
+
+
 class AnchoredResidualClassifier(nn.Module):
     """Frozen robust base classifier plus a small trainable task residual.
 
@@ -465,7 +501,10 @@ class AegisCLIP(nn.Module):
         visual_prompt_dropout: float = 0.0,
         classifier_mode: str = "linear",
         classifier_residual_scale: float = 0.25,
+        cosine_scale_init: float = 20.0,
+        cosine_scale_trainable: bool = True,
         input_resolution: int = 224,
+        unfreeze_last_n_blocks: int = 0,
     ) -> None:
         super().__init__()
         if peft_mode not in {
@@ -516,11 +555,16 @@ class AegisCLIP(nn.Module):
         self.visual_prompt_num_tokens = int(visual_prompt_num_tokens)
         self.visual_prompt_dropout = float(visual_prompt_dropout)
         self.visual_prompt_block_indices: list[int] = []
-        if classifier_mode not in {"linear", "anchored_residual"}:
+        if classifier_mode not in {"linear", "anchored_residual", "cosine"}:
             raise ValueError(f"Unsupported classifier mode: {classifier_mode}")
         self.classifier_mode = str(classifier_mode)
         self.classifier_residual_scale = float(classifier_residual_scale)
+        self.cosine_scale_init = float(cosine_scale_init)
+        self.cosine_scale_trainable = bool(cosine_scale_trainable)
         self.input_resolution = int(input_resolution)
+        self.unfreeze_last_n_blocks = int(unfreeze_last_n_blocks)
+        if not 0 <= self.unfreeze_last_n_blocks <= 12:
+            raise ValueError("unfreeze_last_n_blocks must be in [0,12]")
         self.feature_adapter = (
             ResidualFeatureAdapter(
                 self.feature_dim,
@@ -535,6 +579,13 @@ class AegisCLIP(nn.Module):
                 feature_dim,
                 num_classes,
                 residual_scale=self.classifier_residual_scale,
+            )
+        elif self.classifier_mode == "cosine":
+            self.classifier = CosineClassifier(
+                feature_dim,
+                num_classes,
+                initial_scale=self.cosine_scale_init,
+                trainable_scale=self.cosine_scale_trainable,
             )
         else:
             self.classifier = nn.Linear(feature_dim, num_classes)
@@ -598,6 +649,8 @@ class AegisCLIP(nn.Module):
                 self.classifier_mode == "anchored_residual"
                 and name in {"weight", "bias"}
             )
+            if self.classifier_mode == "cosine" and name == "scale":
+                trainable = self.cosine_scale_trainable
             parameter.requires_grad_(trainable)
 
         if self.peft_mode == "visual_ln":
@@ -664,6 +717,20 @@ class AegisCLIP(nn.Module):
             if conv1_bias is not None:
                 conv1_bias.requires_grad_(False)
             self.visual.positional_embedding.requires_grad_(False)
+            if self.unfreeze_last_n_blocks > 0:
+                for parameter in self.visual.parameters():
+                    parameter.requires_grad_(False)
+                blocks = self.visual.transformer.resblocks
+                if self.unfreeze_last_n_blocks > len(blocks):
+                    raise ValueError(
+                        "unfreeze_last_n_blocks exceeds the number of visual blocks"
+                    )
+                for block in blocks[-self.unfreeze_last_n_blocks :]:
+                    for parameter in block.parameters():
+                        parameter.requires_grad_(True)
+                for parameter in self.visual.ln_post.parameters():
+                    parameter.requires_grad_(True)
+                self.visual.proj.requires_grad_(True)
 
     @property
     def visual_requires_grad(self) -> bool:
@@ -838,6 +905,7 @@ class AegisCLIP(nn.Module):
         head_weight_decay: float,
         backbone_lr: float,
         backbone_weight_decay: float,
+        visual_layer_decay: float = 1.0,
     ) -> list[dict[str, Any]]:
         groups: list[dict[str, Any]] = [
             {
@@ -858,14 +926,57 @@ class AegisCLIP(nn.Module):
             parameter for parameter in self.visual.parameters() if parameter.requires_grad
         ]
         if visual:
-            groups.append(
-                {
-                    "name": "visual",
-                    "params": visual,
-                    "lr": float(backbone_lr),
-                    "weight_decay": float(backbone_weight_decay),
-                }
-            )
+            if (
+                self.peft_mode == "full_finetune"
+                and float(visual_layer_decay) < 1.0
+            ):
+                block_parameters: list[list[torch.nn.Parameter]] = []
+                block_lrs: list[float] = []
+                blocks = self.visual.transformer.resblocks
+                for offset, block in enumerate(blocks):
+                    params = [
+                        parameter
+                        for parameter in block.parameters()
+                        if parameter.requires_grad
+                    ]
+                    if not params:
+                        continue
+                    depth_from_top = len(blocks) - 1 - offset
+                    block_parameters.append(params)
+                    block_lrs.append(
+                        float(backbone_lr) * float(visual_layer_decay) ** depth_from_top
+                    )
+                assigned = {id(parameter) for params in block_parameters for parameter in params}
+                for params, lr in zip(block_parameters, block_lrs):
+                    groups.append(
+                        {
+                            "name": "visual_layer",
+                            "params": params,
+                            "lr": lr,
+                            "weight_decay": float(backbone_weight_decay),
+                        }
+                    )
+                shared_visual = [
+                    parameter for parameter in visual if id(parameter) not in assigned
+                ]
+                if shared_visual:
+                    groups.append(
+                        {
+                            "name": "visual_top",
+                            "params": shared_visual,
+                            "lr": float(backbone_lr),
+                            "weight_decay": float(backbone_weight_decay),
+                        }
+                    )
+            else:
+                groups.append(
+                    {
+                        "name": "visual",
+                        "params": visual,
+                        "lr": float(backbone_lr),
+                        "weight_decay": float(backbone_weight_decay),
+                    }
+                )
         return groups
 
     def effective_spec(self) -> dict[str, Any]:
@@ -958,6 +1069,16 @@ class AegisCLIP(nn.Module):
             "classifier_residual_scale": (
                 self.classifier_residual_scale
                 if self.classifier_mode == "anchored_residual"
+                else None
+            ),
+            "cosine_scale_init": (
+                self.cosine_scale_init
+                if self.classifier_mode == "cosine"
+                else None
+            ),
+            "cosine_scale_trainable": (
+                self.cosine_scale_trainable
+                if self.classifier_mode == "cosine"
                 else None
             ),
             "visual_adapter_last_n_blocks": (
@@ -1140,6 +1261,15 @@ def build_model(
         classifier_residual_scale=float(
             model_config.get("classifier_residual_scale", 0.25)
         ),
+        cosine_scale_init=float(
+            model_config.get("cosine_scale_init", 20.0)
+        ),
+        cosine_scale_trainable=bool(
+            model_config.get("cosine_scale_trainable", True)
+        ),
         input_resolution=input_resolution,
+        unfreeze_last_n_blocks=int(
+            model_config.get("unfreeze_last_n_blocks", 0)
+        ),
     ).to(device)
     return model, preprocess

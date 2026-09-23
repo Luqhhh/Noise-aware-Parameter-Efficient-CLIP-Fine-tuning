@@ -175,6 +175,107 @@ def consensus_conflict_mask(
     )
 
 
+def label_smoothing_targets(
+    labels: torch.Tensor, num_classes: int, smoothing: float
+) -> torch.Tensor:
+    """Return one-hot labels smoothed uniformly by ``smoothing``."""
+    if not 0.0 <= float(smoothing) < 1.0:
+        raise ValueError("smoothing must be in [0,1)")
+    labels = torch.as_tensor(labels).long().flatten()
+    if labels.numel() and (
+        int(labels.min()) < 0 or int(labels.max()) >= int(num_classes)
+    ):
+        raise ValueError("labels contain an invalid class index")
+    targets = F.one_hot(labels, num_classes=int(num_classes)).to(dtype=torch.float32)
+    if smoothing > 0.0:
+        targets = targets * (1.0 - float(smoothing)) + float(smoothing) / int(num_classes)
+    return targets
+
+
+def symmetric_cross_entropy(
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    *,
+    ce_weight: float = 0.1,
+    rce_weight: float = 1.0,
+    minimum_probability: float = 1.0e-4,
+) -> torch.Tensor:
+    """Per-sample symmetric cross entropy for probability targets.
+
+    CE is the ordinary soft-label cross entropy.  RCE is the reversed
+    direction ``-sum_c target_c * log(1 - p_c)``.  ``minimum_probability``
+    clamps ``p`` before the log to keep the gradient finite.
+    """
+    if float(ce_weight) < 0.0 or float(rce_weight) <= 0.0:
+        raise ValueError("SCE weights must be non-negative with positive RCE")
+    if not 0.0 < float(minimum_probability) < 1.0:
+        raise ValueError("minimum_probability must be in (0,1)")
+    probabilities = F.softmax(logits.float(), dim=1)
+    targets = targets.float()
+    ce = -(targets * F.log_softmax(logits.float(), dim=1)).sum(dim=1)
+    safe = probabilities.clamp(
+        float(minimum_probability), 1.0 - float(minimum_probability)
+    )
+    rce = -(targets * torch.log1p(-safe)).sum(dim=1)
+    return float(ce_weight) * ce + float(rce_weight) * rce
+
+
+def _rand_bbox(
+    height: int,
+    width: int,
+    lam: float,
+    generator: torch.Generator | None,
+) -> tuple[int, int, int, int]:
+    cut_ratio = math.sqrt(1.0 - float(lam))
+    cut_height = int(height * cut_ratio)
+    cut_width = int(width * cut_ratio)
+    center_y = int(torch.randint(height, (), generator=generator).item())
+    center_x = int(torch.randint(width, (), generator=generator).item())
+    y1 = max(center_y - cut_height // 2, 0)
+    y2 = min(center_y + cut_height // 2, height)
+    x1 = max(center_x - cut_width // 2, 0)
+    x2 = min(center_x + cut_width // 2, width)
+    return y1, y2, x1, x2
+
+
+def cutmix(
+    inputs: torch.Tensor,
+    targets: torch.Tensor,
+    sample_weights: torch.Tensor,
+    alpha: float,
+    probability: float,
+    generator: torch.Generator | None = None,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, float, torch.Tensor]:
+    """Apply batch CutMix to NCHW image tensors and mix targets/weights.
+
+    The returned lambda is the exact retained image area (``1 - cut_area``), so
+    the feature anchor and target distribution see the same interpolation
+    coefficient as the pixels.
+    """
+    identity = torch.arange(inputs.shape[0], device=inputs.device)
+    if alpha <= 0.0 or probability <= 0.0:
+        return inputs, targets, sample_weights, 1.0, identity
+    if inputs.ndim != 4:
+        raise ValueError("CutMix requires NCHW image tensors")
+    random_value = torch.rand((), generator=generator).item()
+    if random_value > probability:
+        return inputs, targets, sample_weights, 1.0, identity
+    concentration = torch.tensor([float(alpha)], dtype=torch.float32)
+    first = torch._standard_gamma(concentration, generator=generator)
+    second = torch._standard_gamma(concentration, generator=generator)
+    lam = float((first / (first + second).clamp_min(1.0e-12)).item())
+    permutation = torch.randperm(inputs.shape[0], generator=generator).to(inputs.device)
+    height, width = int(inputs.shape[-2]), int(inputs.shape[-1])
+    y1, y2, x1, x2 = _rand_bbox(height, width, lam, generator)
+    mixed_inputs = inputs.clone()
+    mixed_inputs[:, :, y1:y2, x1:x2] = inputs[permutation, :, y1:y2, x1:x2]
+    area = float(max((y2 - y1) * (x2 - x1), 0))
+    lam = 1.0 - area / float(max(height * width, 1))
+    mixed_targets = lam * targets + (1.0 - lam) * targets[permutation]
+    mixed_weights = lam * sample_weights + (1.0 - lam) * sample_weights[permutation]
+    return mixed_inputs, mixed_targets, mixed_weights, float(lam), permutation
+
+
 def soft_cross_entropy(
     logits: torch.Tensor, targets: torch.Tensor
 ) -> torch.Tensor:

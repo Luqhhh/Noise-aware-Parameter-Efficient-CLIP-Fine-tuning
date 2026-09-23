@@ -39,12 +39,15 @@ from aegis_clip.losses import (
     class_prior_adjusted_logits,
     consensus_conflict_mask,
     corrected_targets,
+    cutmix,
     double_softmax_cross_entropy,
+    label_smoothing_targets,
     mixup,
     noise_tolerant_supervised_contrastive_loss,
     project_conflicting_gradients,
     soft_cross_entropy,
     soft_generalized_cross_entropy,
+    symmetric_cross_entropy,
     smoothstep_damped_loss,
 )
 from aegis_clip.local_inference import (
@@ -52,6 +55,7 @@ from aegis_clip.local_inference import (
     logits_with_last_block_attention,
 )
 from aegis_clip.longtail import (
+    EpochAwareSampler,
     build_sampler,
     per_sample_weights,
     resolve_longtail_config,
@@ -118,7 +122,7 @@ def train(
     overwrite: bool = False,
 ) -> Path:
     if config.get("data", {}).get("dataset_manifest"):
-        from aegis_clip.rematch_assets import validate_training
+        from aegis_clip.rematch_protocol import validate_training
         validate_training(config, resume=resume, init_checkpoint=init_checkpoint)
         if not torch.cuda.is_available() and config["train"].get("device") == "cuda":
             raise RuntimeError("Rematch CUDA requested but unavailable; refusing CPU fallback")
@@ -244,20 +248,74 @@ def train(
     longtail_config = resolve_longtail_config(config)
     generator = torch.Generator()
     generator.manual_seed(seed)
-    train_sampler = build_sampler(
-        train_dataset.labels,
-        class_counts,
-        longtail_config["sampler_mode"],
-        num_classes,
-        generator=generator,
-    )
+    longtail_section = config.get("longtail", {}) or {}
+    late_sampler_mode = str(longtail_section.get("late_sampler_mode", "none"))
+    if late_sampler_mode != "none":
+        train_sampler = EpochAwareSampler(
+            train_dataset.labels,
+            class_counts,
+            base_mode=longtail_config["sampler_mode"],
+            late_mode=late_sampler_mode,
+            late_start_epoch=int(
+                longtail_section.get("late_sampler_start_epoch", 13)
+            ),
+            class_power_alpha=float(
+                longtail_section.get(
+                    "late_sampler_alpha",
+                    longtail_config["class_power_alpha"],
+                )
+            ),
+            num_samples=int(
+                longtail_section.get(
+                    "late_sampler_num_samples", len(train_dataset)
+                )
+            ),
+            num_classes=num_classes,
+            generator=generator,
+        )
+    else:
+        train_sampler = build_sampler(
+            train_dataset.labels,
+            class_counts,
+            longtail_config["sampler_mode"],
+            num_classes,
+            generator=generator,
+            class_power_alpha=longtail_config["class_power_alpha"],
+            num_samples=longtail_section.get("sampler_num_samples"),
+        )
     loss_reweight = per_sample_weights(
         train_dataset.labels,
         class_counts,
         longtail_config["loss_reweighting"],
         effective_number_beta=longtail_config["effective_number_beta"],
         normalize=True,
+        class_power_alpha=longtail_config["class_power_alpha"],
+        clip_min=longtail_config["class_power_clip_min"],
+        clip_max=longtail_config["class_power_clip_max"],
     ).to(device)
+    late_reweight_mode = str(longtail_section.get("late_reweight_mode", "none"))
+    late_reweight = None
+    if late_reweight_mode != "none":
+        late_reweight = per_sample_weights(
+            train_dataset.labels,
+            class_counts,
+            late_reweight_mode,
+            normalize=True,
+            class_power_alpha=float(
+                longtail_section.get(
+                    "late_reweight_alpha",
+                    longtail_config["class_power_alpha"],
+                )
+            ),
+            clip_min=longtail_section.get(
+                "late_reweight_clip_min",
+                longtail_config["class_power_clip_min"],
+            ),
+            clip_max=longtail_section.get(
+                "late_reweight_clip_max",
+                longtail_config["class_power_clip_max"],
+            ),
+        ).to(device)
     sample_weight_path = config.get("trust", {}).get("sample_weight_path")
     sample_weight = None
     if sample_weight_path:
@@ -363,6 +421,9 @@ def train(
         backbone_lr=float(train_config.get("backbone_lr", 0.0)),
         backbone_weight_decay=float(
             train_config.get("backbone_weight_decay", 1.0e-4)
+        ),
+        visual_layer_decay=float(
+            train_config.get("visual_layer_decay", 1.0)
         ),
     )
     if snscl_state is not None:
@@ -594,6 +655,8 @@ def train(
     update_hook = optimizer.register_step_post_hook(count_optimizer_update)
     training_seconds = 0.0
     for epoch in range(start_epoch, epochs + 1):
+        if hasattr(train_sampler, "set_epoch"):
+            train_sampler.set_epoch(epoch)
         epoch_training_start = time.monotonic()
         supervision_ledger = None
         diagnostic_config = config.get('diagnostics', {}).get('longtail', {})
@@ -721,7 +784,15 @@ def train(
                     )
             else:
                 weights = torch.ones_like(clean)
-            weights = weights * loss_reweight[batch_indices]
+            if (
+                late_reweight is not None
+                and epoch >= int(
+                    longtail_section.get("late_reweight_start_epoch", 13)
+                )
+            ):
+                weights = weights * late_reweight[batch_indices]
+            else:
+                weights = weights * loss_reweight[batch_indices]
             if sample_weight is not None:
                 weights = weights * sample_weight[batch_indices]
             conflict_config = config["trust"].get("consensus_conflict", {})
@@ -753,14 +824,41 @@ def train(
 
             input_key = "features" if "features" in batch else "images"
             original_inputs = batch[input_key].to(device, non_blocking=True)
-            mixed_inputs, mixed_targets, mixed_weights, mix_lambda, mix_permutation = mixup(
-                original_inputs,
-                targets,
-                weights,
-                alpha=float(config["loss"].get("mixup_alpha", 0.0)),
-                probability=float(config["loss"].get("mixup_probability", 0.0)),
-                generator=generator,
+            cutmix_probability = float(
+                config["loss"].get("cutmix_probability", 0.0)
             )
+            if cutmix_probability > 0.0:
+                (
+                    mixed_inputs,
+                    mixed_targets,
+                    mixed_weights,
+                    mix_lambda,
+                    mix_permutation,
+                ) = cutmix(
+                    original_inputs,
+                    targets,
+                    weights,
+                    alpha=float(config["loss"].get("cutmix_alpha", 1.0)),
+                    probability=cutmix_probability,
+                    generator=generator,
+                )
+            else:
+                (
+                    mixed_inputs,
+                    mixed_targets,
+                    mixed_weights,
+                    mix_lambda,
+                    mix_permutation,
+                ) = mixup(
+                    original_inputs,
+                    targets,
+                    weights,
+                    alpha=float(config["loss"].get("mixup_alpha", 0.0)),
+                    probability=float(
+                        config["loss"].get("mixup_probability", 0.0)
+                    ),
+                    generator=generator,
+                )
             reference = batch["reference_features"].to(device).float()
             mixed_reference = (
                 mix_lambda * reference
@@ -1769,7 +1867,7 @@ def _training_preprocess(
     preset = str(data_config.get("train_augmentation", "clip_center_crop"))
     if preset == "clip_center_crop":
         return preprocess
-    if preset != "weak_rrc_flip":
+    if preset not in {"weak_rrc_flip", "weak_rrc_flip_randaugment"}:
         raise ValueError(f"Unsupported training augmentation: {preset}")
     try:
         from torchvision.transforms import (
@@ -1783,19 +1881,30 @@ def _training_preprocess(
     transforms = list(getattr(preprocess, "transforms", []))
     if len(transforms) < 2:
         raise ValueError("Cannot derive CLIP tensor conversion and normalization")
-    return Compose(
-        [
-            RandomResizedCrop(
-                int(input_resolution),
-                scale=(0.70, 1.0),
-                ratio=(0.85, 1.15),
+    augmentation_ops = [
+        RandomResizedCrop(
+            int(input_resolution),
+            scale=(0.70, 1.0),
+            ratio=(0.85, 1.15),
+            interpolation=InterpolationMode.BICUBIC,
+        ),
+        RandomHorizontalFlip(p=0.5),
+    ]
+    if preset == "weak_rrc_flip_randaugment":
+        try:
+            from torchvision.transforms import v2 as transforms_v2
+        except ImportError as exc:
+            raise ImportError(
+                "weak_rrc_flip_randaugment requires torchvision.transforms.v2"
+            ) from exc
+        augmentation_ops.append(
+            transforms_v2.RandAugment(
+                num_ops=int(data_config.get("randaugment_num_ops", 2)),
+                magnitude=int(data_config.get("randaugment_magnitude", 9)),
                 interpolation=InterpolationMode.BICUBIC,
-            ),
-            RandomHorizontalFlip(p=0.5),
-            transforms[-2],
-            transforms[-1],
-        ]
-    )
+            )
+        )
+    return Compose([*augmentation_ops, transforms[-2], transforms[-1]])
 
 
 def _select_training_forward(
@@ -1821,12 +1930,27 @@ def _per_sample_loss(
     epoch: int,
     suspicious_mask: torch.Tensor | None = None,
 ) -> torch.Tensor:
+    smoothing = float(loss_config.get("label_smoothing", 0.0))
+    if loss_config.get("name") == "label_smoothing":
+        smoothing = float(loss_config.get("epsilon", smoothing))
+    if smoothing > 0.0:
+        targets = targets * (1.0 - smoothing) + smoothing / logits.shape[1]
     if epoch <= int(loss_config.get("ce_warmup_epochs", 0)):
         return soft_cross_entropy(logits, targets)
-    if loss_config["name"] == "cross_entropy":
+    if loss_config["name"] in {"cross_entropy", "label_smoothing"}:
         return soft_cross_entropy(logits, targets)
     if loss_config["name"] == "double_softmax_cross_entropy":
         return double_softmax_cross_entropy(logits, targets)
+    if loss_config["name"] == "sce":
+        return symmetric_cross_entropy(
+            logits,
+            targets,
+            ce_weight=float(loss_config.get("sce_ce_weight", 0.1)),
+            rce_weight=float(loss_config.get("sce_rce_weight", 1.0)),
+            minimum_probability=float(
+                loss_config.get("sce_min_probability", 1.0e-4)
+            ),
+        )
     dual_gce = loss_config.get("dual_gce", {})
     if dual_gce.get("enabled", False):
         if suspicious_mask is None or suspicious_mask.numel() != logits.shape[0]:

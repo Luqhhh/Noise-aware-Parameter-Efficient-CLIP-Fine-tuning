@@ -1,0 +1,99 @@
+data:
+  class_mapping: ../artifacts/stages/repechage/20260921_npu/class_to_idx.json
+  dataset_manifest: ../artifacts/stages/repechage/20260921_npu/dataset_manifest.json
+  expected_official_train_samples: 148695
+  expected_test_samples: 37444
+  external_data: false
+  test_root: ../test
+  test_usage: inference_only
+  train_augmentation: weak_rrc_flip
+  train_csv: ../artifacts/stages/repechage/20260921_npu/train_dev.csv
+  train_root: ../train
+  val_csv: ../artifacts/stages/repechage/20260921_npu/val_dev.csv
+  validation_overlap_with_training: false
+diagnostics:
+  longtail:
+    enabled: true
+evaluation:
+  batch_size: 128
+  drift_penalty: 0.0
+  evaluate_initial_checkpoint: false
+  inference_batch_size: 128
+  interval_epochs: 2
+  measure_flip_consistency: false
+  record_initial: false
+  selection_policy: best_selector
+  selector_metric: raw_macro
+  tiebreak_metric: raw_micro
+features:
+  tensor_path: ../outputs/rematch750_search_v4/assets/RM_V3_B1024_E16_LR4_features/features.pt
+  paths_path: ../outputs/rematch750_search_v4/assets/RM_V3_B1024_E16_LR4_features/image_paths.json
+  manifest_path: ../outputs/rematch750_search_v4/assets/RM_V3_B1024_E16_LR4_features/manifest.json
+longtail:
+  balanced_softmax_tau: 0.0
+  loss_reweighting: none
+  sampler_mode: none
+loss:
+  ce_warmup_epochs: 0
+  feature_distillation_weight: 0.0
+  gce_q: 0.5
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  name: cross_entropy
+model:
+  backbone: ViT-B/32
+  feature_dim: 512
+  num_classes: 750
+  official_checkpoint: ~/.cache/clip/ViT-B-32.pt
+  peft_mode: frozen
+  pretrained: openai
+  use_cached_training: true
+  classifier_mode: cosine
+  cosine_scale_init: 20.0
+  cosine_scale_trainable: true
+output:
+  root: ../outputs/rematch750_search_v4
+project:
+  data_version: '20260921'
+  experiment_id: RM_V4_H14
+  seed: 42
+  stage: repechage
+  protocol: rematch750_search_v4
+  trial_id: H14
+  family: H
+  mechanism: cosine_natural_ce_parent
+  parent_kind: frozen_backbone_head
+  implementation_status: pending_v3_feature_cache
+  search:
+    reference_resolution: 224
+train:
+  amp: true
+  amp_growth_interval: 1000000000
+  amp_initial_scale: 128.0
+  backbone_lr: 0.0
+  backbone_weight_decay: 0.0001
+  batch_size: 1024
+  deterministic: true
+  device: npu:UNASSIGNED
+  early_stop_patience: 0
+  epochs: 20
+  head_lr: 0.0004
+  head_weight_decay: 0.0001
+  init_checkpoint: /workspace/noise-worktrees/rematch750_v3_scan/outputs/codex/rematch750_v3_tradeoff/RM_V3_B1024_E16_LR4/seed42/checkpoints/best.pt
+  loader_timeout: 120
+  log_every_steps: 20
+  lr_warmup_epochs: 0
+  max_grad_norm: 1.0
+  num_workers: 40
+  pin_memory: true
+  require_finite_gradients: true
+  save_epoch_checkpoints: false
+  schedule_epochs: 20
+  prefetch_factor: 4
+  npu_pin_memory: true
+  optimizer_impl: npu_fused_adamw
+  gradient_norm_impl: foreach
+  grad_accum_steps: 1
+  init_weights_mode: all
+trust:
+  enabled: false

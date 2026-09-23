@@ -30,12 +30,14 @@ SAMPLER_MODES = {
     "class_balanced",
     "sqrt_class_balanced",
     "balanced_oversample",
+    "class_power",
 }
 REWEIGHT_MODES = {
     "none",
     "inverse_frequency",
     "sqrt_inverse_frequency",
     "effective_number",
+    "class_power_clipped",
 }
 WEIGHT_MODES = REWEIGHT_MODES | {"class_balanced", "sqrt_class_balanced"}
 
@@ -59,6 +61,9 @@ def per_class_weights(
     *,
     effective_number_beta: float = 0.9999,
     normalize: bool = True,
+    class_power_alpha: float = 0.5,
+    clip_min: float | None = None,
+    clip_max: float | None = None,
 ) -> torch.Tensor:
     """Compute per-class weights for the requested long-tail mode."""
     counts = torch.as_tensor(counts, dtype=torch.float32).flatten()
@@ -79,6 +84,17 @@ def per_class_weights(
         # Same effective-number formula, without subtracting nearly equal
         # float32 values when beta is close to one.
         weights = (1.0 - beta) / -torch.expm1(counts * math.log(beta))
+    elif mode == "class_power_clipped":
+        if float(class_power_alpha) <= 0.0:
+            raise ValueError("class_power_alpha must be positive")
+        weights = counts.pow(-float(class_power_alpha))
+        if clip_min is not None or clip_max is not None:
+            lower = float(clip_min) if clip_min is not None else float("-inf")
+            upper = float(clip_max) if clip_max is not None else float("inf")
+            if not 0.0 < lower <= upper:
+                raise ValueError("class power clip bounds must satisfy 0 < min <= max")
+            weights = weights.clamp(lower, upper)
+        weights = weights / weights.mean().clamp_min(1.0e-12)
     else:
         raise ValueError(f"Unknown weighting mode: {mode!r}")
     if normalize:
@@ -93,6 +109,9 @@ def per_sample_weights(
     *,
     effective_number_beta: float = 0.9999,
     normalize: bool = False,
+    class_power_alpha: float = 0.5,
+    clip_min: float | None = None,
+    clip_max: float | None = None,
 ) -> torch.Tensor:
     """Expand per-class weights to one weight per training sample.
 
@@ -106,6 +125,9 @@ def per_sample_weights(
         mode,
         effective_number_beta=effective_number_beta,
         normalize=False,
+        class_power_alpha=class_power_alpha,
+        clip_min=clip_min,
+        clip_max=clip_max,
     )
     sample_weights = weights[labels_tensor]
     if normalize:
@@ -121,6 +143,9 @@ def build_sampler(
     mode: str,
     num_classes: int,
     generator: torch.Generator | None = None,
+    *,
+    class_power_alpha: float = 0.5,
+    num_samples: int | None = None,
 ) -> torch.utils.data.Sampler | None:
     """Build a long-tail training sampler, or ``None`` for plain shuffling."""
     if mode == "none":
@@ -140,6 +165,11 @@ def build_sampler(
     elif mode == "sqrt_class_balanced":
         weights = 1.0 / counts[labels_tensor].sqrt()
         num_samples = len(labels_tensor)
+    elif mode == "class_power":
+        if float(class_power_alpha) <= 0.0:
+            raise ValueError("class_power_alpha must be positive")
+        weights = counts.pow(-float(class_power_alpha))[labels_tensor]
+        num_samples = int(num_samples or len(labels_tensor))
     else:
         raise ValueError(f"Unknown sampler mode: {mode!r}")
     return WeightedRandomSampler(
@@ -148,6 +178,76 @@ def build_sampler(
         replacement=True,
         generator=generator,
     )
+
+
+
+class EpochAwareSampler(torch.utils.data.Sampler):
+    """A deterministic sampler whose mode can change at a fixed epoch.
+
+    The first part of training uses ``base_mode`` and the final part uses
+    ``late_mode``.  ``set_epoch`` is called by the trainer immediately before
+    the epoch's DataLoader is consumed.  A mode of ``none`` means a standard
+    random permutation over the existing split.
+    """
+
+    def __init__(
+        self,
+        labels: Sequence[int],
+        counts: torch.Tensor,
+        *,
+        base_mode: str = "none",
+        late_mode: str = "none",
+        late_start_epoch: int = 13,
+        class_power_alpha: float = 0.5,
+        num_samples: int | None = None,
+        num_classes: int,
+        generator: torch.Generator | None = None,
+    ) -> None:
+        self.labels = [int(label) for label in labels]
+        self.counts = torch.as_tensor(counts, dtype=torch.float32).flatten()
+        self.base_mode = str(base_mode)
+        self.late_mode = str(late_mode)
+        self.late_start_epoch = int(late_start_epoch)
+        self.class_power_alpha = float(class_power_alpha)
+        self.num_samples = int(num_samples or len(self.labels))
+        self.num_classes = int(num_classes)
+        self.generator = generator or torch.Generator()
+        self.epoch = 1
+        if self.base_mode not in SAMPLER_MODES or self.late_mode not in SAMPLER_MODES:
+            raise ValueError("EpochAwareSampler modes must be valid SAMPLER_MODES")
+        if self.late_start_epoch < 2:
+            raise ValueError("late_start_epoch must be at least 2")
+
+    def set_epoch(self, epoch: int) -> None:
+        self.epoch = int(epoch)
+
+    def _active_mode(self) -> str:
+        if self.epoch >= self.late_start_epoch:
+            return self.late_mode
+        return self.base_mode
+
+    def __iter__(self):
+        mode = self._active_mode()
+        if mode == "none":
+            return iter(
+                torch.randperm(len(self.labels), generator=self.generator).tolist()
+            )
+        sampler = build_sampler(
+            self.labels,
+            self.counts,
+            mode,
+            self.num_classes,
+            generator=self.generator,
+            class_power_alpha=self.class_power_alpha,
+            num_samples=self.num_samples,
+        )
+        assert sampler is not None
+        return iter(sampler)
+
+    def __len__(self) -> int:
+        if self._active_mode() == "none":
+            return len(self.labels)
+        return self.num_samples
 
 
 def resolve_longtail_config(config: dict[str, Any]) -> dict[str, Any]:
@@ -169,6 +269,15 @@ def resolve_longtail_config(config: dict[str, Any]) -> dict[str, Any]:
     beta = float(section.get("effective_number_beta", 0.9999))
     if not 0.0 < beta < 1.0:
         raise ValueError("longtail.effective_number_beta must be in (0,1)")
+    class_power_alpha = float(section.get("class_power_alpha", 0.5))
+    if class_power_alpha <= 0.0:
+        raise ValueError("longtail.class_power_alpha must be positive")
+    clip_min = section.get("class_power_clip_min")
+    clip_max = section.get("class_power_clip_max")
+    if clip_min is not None:
+        clip_min = float(clip_min)
+    if clip_max is not None:
+        clip_max = float(clip_max)
     tau = section.get("balanced_softmax_tau")
     if tau is None:
         tau = float(config["loss"].get("class_prior_adjustment_tau", 0.0))
@@ -180,4 +289,7 @@ def resolve_longtail_config(config: dict[str, Any]) -> dict[str, Any]:
         "loss_reweighting": reweight_mode,
         "effective_number_beta": beta,
         "balanced_softmax_tau": tau,
+        "class_power_alpha": class_power_alpha,
+        "class_power_clip_min": clip_min,
+        "class_power_clip_max": clip_max,
     }

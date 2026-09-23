@@ -59,8 +59,8 @@ PEFT_MODES = {
     "visual_prompt",
     "full_finetune",
 }
-CLASSIFIER_MODES = {"linear", "anchored_residual"}
-LOSS_NAMES = {"cross_entropy", "double_softmax_cross_entropy", "gce"}
+CLASSIFIER_MODES = {"linear", "anchored_residual", "cosine"}
+LOSS_NAMES = {"cross_entropy", "double_softmax_cross_entropy", "gce", "label_smoothing", "sce"}
 SELECTOR_METRICS = {
     "raw_micro",
     "raw_macro",
@@ -76,6 +76,9 @@ COMPETITION_STAGES = {"preliminary", "repechage", "semifinal"}
 # competition-compliance checks for data, backbone and test usage below.
 INTERNAL_EXPERIMENT_STAGES = {"p4_ablation"}
 PROJECT_STAGES = COMPETITION_STAGES | INTERNAL_EXPERIMENT_STAGES
+REMATCH750_SEARCH_V4 = "rematch750_search_v4"
+V4_TRAIN_AUGMENTATIONS = {"weak_rrc_flip_randaugment"}
+V4_PARENT_KINDS = {"shared_lp", "same_split_continue", "frozen_backbone_head", "official_clip_head"}
 
 
 def load_config(path: str | Path) -> dict[str, Any]:
@@ -125,6 +128,15 @@ def validate_config(config: dict[str, Any]) -> None:
     loss = config["loss"]
     train = config["train"]
     evaluation = config["evaluation"]
+    protocol = str(project.get("protocol", ""))
+    is_v4 = protocol == REMATCH750_SEARCH_V4
+    if protocol and not is_v4:
+        raise ConfigError(f"Unsupported project.protocol: {protocol!r}")
+    if is_v4:
+        if str(project.get("parent_kind", "")) not in V4_PARENT_KINDS:
+            raise ConfigError(
+                f"project.parent_kind must be one of {sorted(V4_PARENT_KINDS)}"
+            )
 
     if not str(project.get("experiment_id", "")).strip():
         raise ConfigError("project.experiment_id must be non-empty")
@@ -146,13 +158,19 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("Official rematch data requires a bound dataset_manifest")
     if int(evaluation.get("interval_epochs", 1)) < 1:
         raise ConfigError("evaluation.interval_epochs must be positive")
-    if data.get("train_augmentation", "clip_center_crop") not in {
-        "clip_center_crop",
-        "weak_rrc_flip",
-    }:
+    allowed_augmentations = {"clip_center_crop", "weak_rrc_flip"}
+    if is_v4:
+        allowed_augmentations |= V4_TRAIN_AUGMENTATIONS
+    if data.get("train_augmentation", "clip_center_crop") not in allowed_augmentations:
         raise ConfigError(
-            "data.train_augmentation must be clip_center_crop or weak_rrc_flip"
+            "data.train_augmentation must be one of "
+            + ", ".join(sorted(allowed_augmentations))
         )
+    if is_v4 and data.get("train_augmentation") == "weak_rrc_flip_randaugment":
+        if int(data.get("randaugment_num_ops", 0)) < 1:
+            raise ConfigError("randaugment_num_ops must be positive")
+        if not 0.0 <= float(data.get("randaugment_magnitude", -1.0)) <= 30.0:
+            raise ConfigError("randaugment_magnitude must be in [0,30]")
     if model.get("backbone") != "ViT-B/32":
         raise ConfigError("Only OpenAI CLIP ViT-B/32 is competition-compliant")
     if model.get("pretrained") != "openai":
@@ -164,6 +182,9 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError(
             f"model.classifier_mode must be one of {sorted(CLASSIFIER_MODES)}"
         )
+    if classifier_mode == "cosine":
+        if float(model.get("cosine_scale_init", 20.0)) <= 0.0:
+            raise ConfigError("model.cosine_scale_init must be positive")
     if classifier_mode == "anchored_residual":
         residual_scale = float(model.get("classifier_residual_scale", 0.25))
         if not 0.0 < residual_scale <= 1.0:
@@ -181,12 +202,39 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError(
             "model.input_resolution must be a multiple of 32 in [224,448]"
         )
+    if is_v4 and input_resolution not in {224, 256, 288, 320}:
+        raise ConfigError(
+            "V4 model.input_resolution must be one of 224, 256, 288, 320"
+        )
+    unfreeze_last_n = int(model.get("unfreeze_last_n_blocks", 0))
+    if not 0 <= unfreeze_last_n <= 12:
+        raise ConfigError("model.unfreeze_last_n_blocks must be in [0,12]")
 
     if loss.get("name") not in LOSS_NAMES:
         raise ConfigError(f"loss.name must be one of {sorted(LOSS_NAMES)}")
     q = float(loss.get("gce_q", 0.5))
     if loss.get("name") == "gce" and not 0.0 < q <= 1.0:
         raise ConfigError("loss.gce_q must be in (0, 1]")
+    if "label_smoothing" in loss:
+        smoothing = float(loss["label_smoothing"])
+        if not 0.0 <= smoothing < 1.0:
+            raise ConfigError("loss.label_smoothing must be in [0,1)")
+    if loss.get("name") == "label_smoothing":
+        smoothing = float(loss.get("epsilon", 0.0))
+        if not 0.0 <= smoothing < 1.0:
+            raise ConfigError("label_smoothing.epsilon must be in [0,1)")
+    if loss.get("name") == "sce":
+        ce_weight = float(loss.get("sce_ce_weight", 0.1))
+        rce_weight = float(loss.get("sce_rce_weight", 1.0))
+        if ce_weight < 0.0 or rce_weight <= 0.0:
+            raise ConfigError("SCE requires non-negative CE weight and positive RCE weight")
+        if not 0.0 < float(loss.get("sce_min_probability", 1.0e-4)) < 1.0:
+            raise ConfigError("loss.sce_min_probability must be in (0,1)")
+    for key in ("cutmix_alpha", "cutmix_probability"):
+        if key in loss and float(loss[key]) < 0.0:
+            raise ConfigError(f"loss.{key} must be non-negative")
+    if float(loss.get("cutmix_probability", 0.0)) > 0.0 and float(loss.get("cutmix_alpha", 0.0)) <= 0.0:
+        raise ConfigError("cutmix_probability requires positive cutmix_alpha")
     if float(loss.get("class_prior_adjustment_tau", 0.0)) < 0.0:
         raise ConfigError("loss.class_prior_adjustment_tau must be non-negative")
     active_forgetting = loss.get("active_forgetting", {})
@@ -376,6 +424,18 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("train.schedule_epochs must be at least train.epochs")
     if int(train.get("batch_size", 0)) <= 0:
         raise ConfigError("train.batch_size must be positive")
+    if int(train.get("grad_accum_steps", 1)) <= 0:
+        raise ConfigError("train.grad_accum_steps must be positive")
+    if float(train.get("visual_layer_decay", 1.0)) <= 0.0:
+        raise ConfigError("train.visual_layer_decay must be positive")
+    if is_v4 and "sam" in train:
+        sam = train["sam"]
+        if not isinstance(sam, dict):
+            raise ConfigError("train.sam must be a mapping")
+        if not 0.0 < float(sam.get("rho", 0.05)) < 1.0:
+            raise ConfigError("train.sam.rho must be in (0,1)")
+        if sam.get("mode", "standard_global_l2") != "standard_global_l2":
+            raise ConfigError("train.sam.mode must be standard_global_l2")
     if train.get("optimizer_impl", "default") not in {"default", "foreach", "npu_fused_adamw"}:
         raise ConfigError("Unsupported train.optimizer_impl")
     if (train.get("optimizer_impl") == "npu_fused_adamw"
