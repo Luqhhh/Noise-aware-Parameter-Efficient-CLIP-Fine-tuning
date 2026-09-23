@@ -81,8 +81,9 @@ def extract(config_path: str | Path, checkpoint: str | Path, output_dir: str | P
     del state
     model.float().eval()
     source_hashes = {}
+    full_train_csv = Path(config["data"]["dataset_manifest"]).parent / "full_train.csv"
     dataset = PoolDataset(
-        config["data"]["train_root"], config["data"]["train_csv"], preprocess
+        config["data"]["train_root"], full_train_csv, preprocess
     )
     loader = DataLoader(
         dataset,
