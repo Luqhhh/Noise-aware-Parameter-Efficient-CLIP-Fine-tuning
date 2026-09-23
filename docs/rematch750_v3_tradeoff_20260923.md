@@ -8,7 +8,7 @@
 
 ## 有界比较
 
-完整运行 `configs/rematch750_v3_b64.yaml`（8/8轮）、`configs/rematch750_v3_b128_e16.yaml`（16/16轮）和新增 `configs/rematch750_v3_b1024_e16_lr4.yaml`（16/16轮）。B1024相对已完成的八轮点延长到16轮，同时head/visual LR各乘4（4e-4 / 1.2e-5）；这只是有界精度补偿假设，不保证收敛或精度等价。旧B1024八轮结果只作参照，不重跑。只有B64与B128均未达精度约束时，最多补一次B64_LR2：batch64、head LR2e-4、visual LR6e-6，其余不变。最多四次新完整训练；不扫描workers/prefetch，不恢复LoRA或关闭路线。
+完整运行 `configs/rematch750_v3_b64.yaml`（8/8轮）、`configs/rematch750_v3_b128_e16.yaml`（16/16轮）和新增 `configs/rematch750_v3_b1024_e16_lr4.yaml`（16/16轮）。B1024相对已完成的八轮点延长到16轮，同时head/visual LR各乘4（4e-4 / 1.2e-5）；这只是有界精度补偿假设，不保证收敛或精度等价。旧B1024八轮结果只作参照，不重跑。只有B64与B128均未达精度约束时，最多补一次 `configs/rematch750_v3_b64_lr2.yaml`：batch64、head LR2e-4、visual LR6e-6，其余不变。最多四次新完整训练；不扫描workers/prefetch，不恢复LoRA或关闭路线。
 
 共同设置：910B2单卡、只选择当时空闲的非0号设备；workers16、prefetch2、pinned、fused AdamW、foreach norm、OMP4。CPU绑定须按所选卡实际拓扑确定，不沿用NPU0的144–191编号。同NPU LP SHA `d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b`，133815/14880同内容组划分；B64为8 epochs/cosine horizon8，B128与B1024补偿点为16/16；原head1e-4/visual3e-6（补偿点例外）、CE2轮后GCE q=.5（B64六轮，16轮点十四轮）、anchor2.0、shuffle、无LR warmup。每20步及轮末记录成功更新，每两轮验证（B64：2/4/6/8；16轮点：2/4/6/8/10/12/14/16），raw_macro主选模、同值raw_micro。
 

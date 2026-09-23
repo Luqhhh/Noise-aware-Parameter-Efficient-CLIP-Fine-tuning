@@ -36,7 +36,7 @@ def bind(template: Path, output: Path, shared_root: Path, physical_device: int) 
     if config["train"]["device"] != "npu:UNASSIGNED":
         raise ValueError("Expected an unbound V3 template")
     if config["project"]["experiment_id"] not in {
-        "RM_V3_B64", "RM_V3_B128_E16", "RM_V3_B1024_E16_LR4",
+        "RM_V3_B64", "RM_V3_B64_LR2", "RM_V3_B128_E16", "RM_V3_B1024_E16_LR4",
     }:
         raise ValueError("Unexpected V3 candidate")
     shared_root = shared_root.resolve()
