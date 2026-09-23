@@ -151,6 +151,7 @@ def head_config(
         family="H",
         mechanism=mechanism,
         parent_kind=parent_kind,
+        parent_experiment_id="RM_V3_B1024_E16_LR4",
         implementation_status="pending_v3_feature_cache",
         search={"reference_resolution": 224},
     )

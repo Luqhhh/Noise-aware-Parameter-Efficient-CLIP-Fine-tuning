@@ -63,6 +63,7 @@ project:
   family: H
   mechanism: linear_sqrt_bal_ce_reinit
   parent_kind: frozen_backbone_head
+  parent_experiment_id: RM_V3_B1024_E16_LR4
   implementation_status: pending_v3_feature_cache
   search:
     reference_resolution: 224

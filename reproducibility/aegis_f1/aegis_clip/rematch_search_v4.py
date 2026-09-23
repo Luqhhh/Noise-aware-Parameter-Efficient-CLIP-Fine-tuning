@@ -296,17 +296,37 @@ def validate_checkpoint(
     if parent:
         expected_legacy = _legacy_checkpoint_binding(config, manifest)
         expected_v4 = expected_binding(config, manifest)
-        require(
-            meta.get("binding") in (expected_legacy, expected_v4),
-            "parent checkpoint data lineage mismatch",
-        )
         kind = str(config["project"].get("parent_kind", ""))
+        if kind == "frozen_backbone_head":
+            # The child head refit uses a separately extracted V3 feature cache.
+            # Require the immutable split/data identity but allow the parent
+            # checkpoint to retain its historical feature-manifest binding.
+            shared_keys = (
+                "stage",
+                "data_version",
+                "dataset_manifest_sha256",
+                "class_mapping_sha256",
+                "train_csv_sha256",
+                "official_checkpoint_sha256",
+            )
+            current = meta.get("binding", {})
+            require(
+                all(current.get(key) == expected_legacy.get(key) for key in shared_keys),
+                "parent checkpoint data lineage mismatch",
+            )
+        else:
+            require(
+                meta.get("binding") in (expected_legacy, expected_v4),
+                "parent checkpoint data lineage mismatch",
+            )
         experiment_id = str(meta.get("experiment_id", ""))
         if kind == "shared_lp":
             require(experiment_id == "RM_LP", "parent_kind shared_lp requires RM_LP")
         elif kind in {"same_split_continue", "frozen_backbone_head"}:
+            declared = str(config["project"].get("parent_experiment_id", ""))
+            require(declared, "parent_experiment_id is required for this parent kind")
             require(
-                experiment_id == str(config["project"].get("parent_experiment_id", "")),
+                experiment_id == declared,
                 "parent experiment_id does not match declaration",
             )
         elif kind == "official_clip_head":
