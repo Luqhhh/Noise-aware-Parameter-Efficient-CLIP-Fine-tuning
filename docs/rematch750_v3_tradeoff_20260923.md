@@ -1,10 +1,22 @@
 # REMATCH750_V3：精度优先的耗时权衡
 
-状态：**2026-09-23 已完成扫描、审计和提交包校验**。用户要求加入 batch1024 精度补偿、允许使用当时空闲的 NPU0、每十分钟监控。精度目标为同 NPU B32 基准 macro 下降≤0.1pp。实施分支 `codex/rematch750_v3_scan`，独立目录 `/home/lux1/noise/worktrees/rematch750_v3_scan`。
+状态：**2026-09-23 已完成扫描、审计和提交包校验；用户同日冻结当前 winner，V3 后续搜索关闭**。用户要求加入 batch1024 精度补偿、允许使用当时空闲的 NPU0、每十分钟监控。精度目标为同 NPU B32 基准 macro 下降≤0.1pp。实施分支 `codex/rematch750_v3_scan`，独立目录 `/home/lux1/noise/worktrees/rematch750_v3_scan`。
 
 实施结果：物理 NPU0 经空闲检查后执行三次完整训练。B64、B128、B1024 均通过 16/8 轮动态审计、checkpoint/optimizer 有限性及逐类重载检查。条件 B64_LR2 因 B128 达线而跳过。下表为预注册点位，实测值见后文。
 
 参考为V2同后端NPU batch32八轮：macro0.7190471887588501、micro0.7298387289047241、纯训练2670.459578s、完整CLI2870.871812s。精度可接受下界raw_macro=0.7180471887588501（71.80471887588501%）。一次达界只表示本次独立验证满足约束，不代表统计等价。
+
+## 冻结决定（2026-09-23）
+
+用户指令：**冻结当前 winner**。本段据此关闭 V3 搜索，不再追加 LR、epoch、batch、worker/prefetch 或 loss 扫描；后续只有用户明确新指令才允许启动新实验。
+
+- 冻结候选：`RM_V3_B1024_E16_LR4`
+- 冻结配置：`configs/rematch750_v3_b1024_e16_lr4.yaml`，config SHA-256 `db802b635a908204bbb1c9e946a0e6e2648a4f24dc9a42a1a61ffd1c4ba3c0a5`
+- best checkpoint SHA-256：`a8de990eb0fd347e52dd5387d6cd986a30268ed316111dce6ce8d9e4c42c2f27`；last checkpoint SHA-256：`342058a6027a75ca164d6027a5a83090ca0c49083056703805eb6897be5978cf`
+- 提交包：`submission.zip` SHA-256 `5c58f2cda01a7d9eeb7d2e31d5e46504371b2c8780dae52e9e43d6537ffe63bd`；`pred_results.csv` SHA-256 `175c5be75eb9b18a291c34d7a20c035576269b5732695eea321d9bf83ad430bb`；37,444 行，9/9 独立提交检查通过；平台分数仍为 `null`。
+- 远端冻结标记：`/workspace/noise-worktrees/rematch750_v3_scan/outputs/codex/rematch750_v3_tradeoff/RM_V3_B1024_E16_LR4/seed42/FROZEN.json`；best/last checkpoint 与提交文件已设为只读（444）。
+- 冻结依据：本次受控验证 macro **72.3472%**、micro **73.4140%**，比同后端 NPU B32 基准高 **+0.4425pp / +0.4301pp**，完整 CLI 快 **1.397×**，达到 ≤0.1pp 精度约束；但单 seed、同验证集选模，固定尾部 75 类 macro 低 0.1140pp，平台迁移仍未验证。
+- 机器可读记录：`results/rematch750_v3/freeze.json`。
 
 ## 有界比较
 
