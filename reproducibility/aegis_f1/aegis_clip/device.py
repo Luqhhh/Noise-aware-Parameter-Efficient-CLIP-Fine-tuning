@@ -2,12 +2,16 @@
 from __future__ import annotations
 
 import importlib
+import os
 
 import torch
 
 
 def resolve_device(requested: str, *, allow_cuda_fallback: bool = False) -> torch.device:
-    if str(requested).split(":", 1)[0] == "npu":
+    requested = str(requested)
+    if requested == "npu:UNASSIGNED":
+        requested = os.environ.get("AEGIS_REMATCH_DEVICE", "npu:0")
+    if requested.split(":", 1)[0] == "npu":
         try:
             importlib.import_module("torch_npu")
         except ImportError as exc:
