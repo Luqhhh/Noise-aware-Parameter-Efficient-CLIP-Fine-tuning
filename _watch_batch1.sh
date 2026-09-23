@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # 第一批搜索批次的看门程序：每 30 分钟确认一次没有中断。
 #
+# 版本 3 —— 增加 newest_log()：B1 重跑写 .2 后缀日志，但重跑进程仍匹配同一个
+# config 路径；若只看 .log 会读到 15:03 的旧崩溃日志，把正在推进的重跑误报成
+# 「卡死」。stall/进度/异常扫描一律取该 run 最新的那份日志。
+#
 # 版本 2 —— 2026-09-23 15:03 B1 以 rc=134 (SIGABRT, CUDA error) 崩溃，
 # 版本 1 报了 OK。根因：版本 1 只检查「当前活跃的那个 run」，B1 死掉后
 # 编排立刻转去跑 B2，于是活跃 run 是健康的 B2，而 B1 的日志与
@@ -73,6 +77,13 @@ age_of_progress() {
 
 step_of() { grep Progress "$1" 2>/dev/null | tail -1 | grep -o '"epoch": [0-9]*, "global_step": [0-9]*'; }
 
+# 取某个 run 最新的日志文件（含重跑产生的 .2 后缀）。
+# B1 重跑时进程仍匹配同一个 config 路径，若只看 .log 会读到 15:03 的旧崩溃日志，
+# 从而把正在推进的重跑误报成「卡死」。
+newest_log() {
+    ls -t "$LOGDIR/$1.log" "$LOGDIR/$1.log".* 2>/dev/null | head -1
+}
+
 # 扫描一个文件的异常行，按「文件:行号」去重；新发现的记入 problems 与 _INCIDENTS.log
 scan_bad() {
     local f="$1" label="$2" m lineno line sig
@@ -120,22 +131,27 @@ check_once() {
 
         if [ "$training" = "1" ]; then
             active="$exp"; active_cfg="$cfg"; phase="训练中"
-            local pa; pa=$(age_of_progress "$LOGDIR/$cfg.log")
+            local pa; pa=$(age_of_progress "$(newest_log "$cfg")")
             [ "$pa" -gt "$STALL_MINUTES" ] && \
                 add "$exp 训练进程存活，但 Progress 已 $pa 分钟未推进（阈值 ${STALL_MINUTES}）"
         elif [ "$inferring" = "1" ]; then
             active="$exp"; active_cfg="$cfg"; phase="推理中"
-            local ia; ia=$(age_of_log "$LOGDIR/infer_$cfg.log")
+            local ia; ia=$(age_of_log "$(newest_log "infer_$cfg")")
             [ "$ia" -gt 40 ] && add "$exp 推理已 $ia 分钟未输出（阈值 40）"
         fi
     done
 
     # --- 3. 全量异常扫描（不限于活跃 run）---
     scan_bad "$DRIVER" "driver"
+    local f
     for entry in "${RUNS[@]}"; do
         IFS='|' read -r cfg exp <<<"$entry"
-        scan_bad "$LOGDIR/$cfg.log" "$exp"
-        scan_bad "$LOGDIR/infer_$cfg.log" "$exp(infer)"
+        for f in "$LOGDIR/$cfg.log" "$LOGDIR/$cfg.log".*; do
+            [ -f "$f" ] && scan_bad "$f" "$exp"
+        done
+        for f in "$LOGDIR/infer_$cfg.log" "$LOGDIR/infer_$cfg.log".*; do
+            [ -f "$f" ] && scan_bad "$f" "$exp(infer)"
+        done
     done
 
     # --- 6. 编排活着但无事可做 ---
@@ -170,7 +186,7 @@ check_once() {
     # --- 汇总 ---
     local p
     if [ ${#problems[@]} -eq 0 ]; then
-        note "OK phase=$phase active=${active:-无} pkgs=$pkgs/4 gpu=${gpu_mem:-?}MiB disk=${free_gb:-?}G $([ -n "$active_cfg" ] && step_of "$LOGDIR/$active_cfg.log" || echo "无进度")"
+        note "OK phase=$phase active=${active:-无} pkgs=$pkgs/4 gpu=${gpu_mem:-?}MiB disk=${free_gb:-?}G $([ -n "$active_cfg" ] && step_of "$(newest_log "$active_cfg")" || echo "无进度")"
         rm -f "$ALERT"
     else
         note "ALERT phase=$phase active=${active:-无} pkgs=$pkgs/4 :: ${problems[*]}"
@@ -184,7 +200,7 @@ check_once() {
     fi
 }
 
-note "=== 看门程序 v2 启动 pid=$$ 间隔=${INTERVAL}s ==="
+note "=== 看门程序 v3 启动 pid=$$ 间隔=${INTERVAL}s ==="
 
 while true; do
     check_once
