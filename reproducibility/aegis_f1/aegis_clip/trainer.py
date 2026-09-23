@@ -439,8 +439,12 @@ def train(
     optimizer = build_adamw(groups, device, train_config.get("optimizer_impl", "default"))
     epochs = int(train_config["epochs"])
     schedule_epochs = int(train_config.get("schedule_epochs", epochs))
-    total_steps = schedule_epochs * len(train_loader)
-    warmup_steps = int(train_config.get("lr_warmup_epochs", 0)) * len(train_loader)
+    accum_steps = int(train_config.get("grad_accum_steps", 1))
+    if accum_steps < 1:
+        raise ValueError("grad_accum_steps must be positive")
+    steps_per_epoch = math.ceil(len(train_loader) / accum_steps)
+    total_steps = schedule_epochs * steps_per_epoch
+    warmup_steps = int(train_config.get("lr_warmup_epochs", 0)) * steps_per_epoch
     scheduler = torch.optim.lr_scheduler.LambdaLR(
         optimizer,
         lr_lambda=lambda step: _warmup_cosine(step, warmup_steps, total_steps),
@@ -453,6 +457,19 @@ def train(
         growth_interval=int(train_config.get("amp_growth_interval", 2000)),
     )
 
+    if accum_steps > 1:
+        unsupported = []
+        if config.get("trust", {}).get("enabled", False):
+            unsupported.append("trust.enabled")
+        for section in ("clean_routing", "prototype_contrastive", "dynamic_trust"):
+            if config.get(section, {}).get("enabled", False):
+                unsupported.append(section)
+        if config["loss"].get("active_forgetting", {}).get("enabled", False):
+            unsupported.append("loss.active_forgetting")
+        if unsupported:
+            raise ValueError(
+                "gradient accumulation is not wired for: " + ", ".join(unsupported)
+            )
     cap_config = config["loss"].get("adaptive_cap", {})
     adaptive_cap = (
         AdaptiveLossCap(
@@ -658,6 +675,16 @@ def train(
         if hasattr(train_sampler, "set_epoch"):
             train_sampler.set_epoch(epoch)
         epoch_training_start = time.monotonic()
+        epoch_samples = (
+            len(train_loader.sampler)
+            if getattr(train_loader, "sampler", None) is not None
+            else len(train_dataset)
+        )
+        epoch_batch_size = int(train_loader.batch_size)
+        batch_sizes = [
+            min(epoch_batch_size, int(epoch_samples) - index * epoch_batch_size)
+            for index in range(len(train_loader))
+        ]
         supervision_ledger = None
         diagnostic_config = config.get('diagnostics', {}).get('longtail', {})
         if diagnostic_config.get('enabled', False):
@@ -749,7 +776,11 @@ def train(
             "trust_subspace_retained_norm_ratio": 0.0,
             "trust_subspace_uncertain_loss": 0.0,
         }
-        for batch in train_loader:
+        for batch_index, batch in enumerate(train_loader):
+            cycle_start = (batch_index // accum_steps) * accum_steps
+            cycle_end = min(cycle_start + accum_steps, len(batch_sizes))
+            cycle_samples = int(sum(batch_sizes[cycle_start:cycle_end]))
+            is_update_step = batch_index + 1 == cycle_end
             labels = batch["label"].to(device, non_blocking=True)
             batch_indices = batch["index"].to(device, non_blocking=True)
             batch_suspicious = (
@@ -892,7 +923,10 @@ def train(
                 if not first_step_audited
                 else None
             )
-            optimizer.zero_grad(set_to_none=not getattr(optimizer, "is_fused_optimizer", False))
+            if batch_index % accum_steps == 0:
+                optimizer.zero_grad(
+                    set_to_none=not getattr(optimizer, "is_fused_optimizer", False)
+                )
             snscl_projected = None
             snscl_hard_labels = None
             snscl_admission_probabilities = None
@@ -1169,6 +1203,12 @@ def train(
                     proto_loss = prototype_bank.loss(encoded, labels, clean)
                     loss = loss + proto_weight * proto_loss
 
+            gradient_norm = 0.0
+            step_learning_rates: dict[str, float] = {}
+            snscl_admitted = 0
+            head_grad = 0.0
+            adapter_grad = 0.0
+            visual_grad = 0.0
             subspace_step = None
             subspace_uncertain_value = logits.new_zeros(())
             if trust_subspace is not None:
@@ -1254,118 +1294,123 @@ def train(
                 else:
                     # Fail closed for the uncertain branch when a shuffled batch
                     # cannot construct a sufficiently supported trusted anchor.
-                    scaler.scale(shared_loss).backward()
+                    scaler.scale(
+                        shared_loss * (labels.numel() / max(cycle_samples, 1))
+                    ).backward()
                     totals["trust_subspace_skipped_steps"] += 1
                 totals["trust_subspace_uncertain_loss"] += float(
                     subspace_uncertain_value.detach()
                 ) * labels.numel()
             else:
-                scaler.scale(loss).backward()
-            scaler.unscale_(optimizer)
-            norm_impl = train_config.get("gradient_norm_impl", "sum_squares")
-            head_grad = _gradient_norm(model.classifier.parameters(), implementation=norm_impl)
-            adapter_grad = _gradient_norm(model.feature_adapter.parameters(), implementation=norm_impl)
-            visual_grad = _gradient_norm(model.visual.parameters(), implementation=norm_impl)
-            if train_config.get("require_finite_gradients", False):
-                if not all(math.isfinite(value) for value in
-                           (float(loss.detach()), head_grad, adapter_grad, visual_grad)):
-                    raise RuntimeError(
-                        "Nonfinite loss/gradient before optimizer and scheduler step; "
-                        f"epoch={epoch} step={global_step} AMP scale={scaler.get_scale()}"
-                    )
+                scaler.scale(
+                    loss * (labels.numel() / max(cycle_samples, 1))
+                ).backward()
+            if is_update_step:
+                scaler.unscale_(optimizer)
+                norm_impl = train_config.get("gradient_norm_impl", "sum_squares")
+                head_grad = _gradient_norm(model.classifier.parameters(), implementation=norm_impl)
+                adapter_grad = _gradient_norm(model.feature_adapter.parameters(), implementation=norm_impl)
+                visual_grad = _gradient_norm(model.visual.parameters(), implementation=norm_impl)
+                if train_config.get("require_finite_gradients", False):
+                    if not all(math.isfinite(value) for value in
+                               (float(loss.detach()), head_grad, adapter_grad, visual_grad)):
+                        raise RuntimeError(
+                            "Nonfinite loss/gradient before optimizer and scheduler step; "
+                            f"epoch={epoch} step={global_step} AMP scale={scaler.get_scale()}"
+                        )
 
-            projection_config = config["trust"].get("gradient_projection", {})
-            projection_interval = int(projection_config.get("interval", 0))
-            anchor_mask = clean >= float(
-                config["trust"].get("anchor_threshold", 0.80)
-            )
-            if (
-                projection_config.get("enabled", False)
-                and epoch >= int(projection_config.get("start_epoch", 1))
-                and projection_interval > 0
-                and global_step % projection_interval == 0
-                and int(anchor_mask.sum()) >= int(
-                    projection_config.get("minimum_anchor_samples", 4)
+                projection_config = config["trust"].get("gradient_projection", {})
+                projection_interval = int(projection_config.get("interval", 0))
+                anchor_mask = clean >= float(
+                    config["trust"].get("anchor_threshold", 0.80)
                 )
-            ):
-                anchor_parameters = [
-                    parameter for parameter in model.parameters() if parameter.requires_grad
-                ]
-                with torch.autocast(device_type=device.type, enabled=use_amp):
-                    anchor_arguments = {
-                        input_key: original_inputs[anchor_mask]
-                    }
-                    anchor_logits = model(**anchor_arguments)
-                    anchor_training_logits = class_prior_adjusted_logits(
-                        anchor_logits, class_counts, prior_tau
-                    )
-                    anchor_targets = F.one_hot(
-                        labels[anchor_mask], num_classes=num_classes
-                    ).float()
-                    anchor_loss = _per_sample_loss(
-                        anchor_training_logits,
-                        anchor_targets,
-                        config["loss"],
-                        epoch,
-                        (
-                            batch_suspicious[anchor_mask]
-                            if batch_suspicious is not None
-                            else None
-                        ),
-                    ).mean()
-                anchor_gradients = torch.autograd.grad(
-                    anchor_loss,
-                    anchor_parameters,
-                    allow_unused=True,
-                )
-                projection = project_conflicting_gradients(
-                    anchor_parameters, anchor_gradients
-                )
-                if projection["projected"]:
-                    totals["projection_count"] += 1
-                totals["projection_cosine"] += float(projection["cosine"])
-
-            max_grad_norm = float(train_config.get("max_grad_norm", 1.0))
-            parameters_to_clip = list(model.parameters())
-            if snscl_state is not None:
-                parameters_to_clip.extend(snscl_state.parameters())
-            gradient_norm = torch.nn.utils.clip_grad_norm_(parameters_to_clip, max_grad_norm)
-            step_learning_rates = {
-                group.get("name", f"group{i}"): group["lr"]
-                for i, group in enumerate(optimizer.param_groups)
-            }
-            scaler.step(optimizer)
-            scaler.update()
-            scheduler.step()
-            snscl_admitted = 0
-            if snscl_state is not None:
                 if (
-                    snscl_projected is None
-                    or snscl_hard_labels is None
-                    or snscl_admission_probabilities is None
+                    projection_config.get("enabled", False)
+                    and epoch >= int(projection_config.get("start_epoch", 1))
+                    and projection_interval > 0
+                    and global_step % projection_interval == 0
+                    and int(anchor_mask.sum()) >= int(
+                        projection_config.get("minimum_anchor_samples", 4)
+                    )
                 ):
-                    raise RuntimeError("SNSCL batch state was not constructed")
-                snscl_admitted = snscl_state.queue.enqueue(
-                    snscl_projected,
-                    snscl_hard_labels,
-                    snscl_admission_probabilities,
-                )
+                    anchor_parameters = [
+                        parameter for parameter in model.parameters() if parameter.requires_grad
+                    ]
+                    with torch.autocast(device_type=device.type, enabled=use_amp):
+                        anchor_arguments = {
+                            input_key: original_inputs[anchor_mask]
+                        }
+                        anchor_logits = model(**anchor_arguments)
+                        anchor_training_logits = class_prior_adjusted_logits(
+                            anchor_logits, class_counts, prior_tau
+                        )
+                        anchor_targets = F.one_hot(
+                            labels[anchor_mask], num_classes=num_classes
+                        ).float()
+                        anchor_loss = _per_sample_loss(
+                            anchor_training_logits,
+                            anchor_targets,
+                            config["loss"],
+                            epoch,
+                            (
+                                batch_suspicious[anchor_mask]
+                                if batch_suspicious is not None
+                                else None
+                            ),
+                        ).mean()
+                    anchor_gradients = torch.autograd.grad(
+                        anchor_loss,
+                        anchor_parameters,
+                        allow_unused=True,
+                    )
+                    projection = project_conflicting_gradients(
+                        anchor_parameters, anchor_gradients
+                    )
+                    if projection["projected"]:
+                        totals["projection_count"] += 1
+                    totals["projection_cosine"] += float(projection["cosine"])
 
-            if not first_step_audited:
-                _audit_first_step(
-                    model=model,
-                    before=before or {},
-                    head_grad=head_grad,
-                    adapter_grad=adapter_grad,
-                    visual_grad=visual_grad,
-                )
-                first_step_audited = True
-                logger.info(
-                    "First-step audit passed: head_grad=%.6f adapter_grad=%.6f visual_grad=%.6f",
-                    head_grad,
-                    adapter_grad,
-                    visual_grad,
-                )
+                max_grad_norm = float(train_config.get("max_grad_norm", 1.0))
+                parameters_to_clip = list(model.parameters())
+                if snscl_state is not None:
+                    parameters_to_clip.extend(snscl_state.parameters())
+                gradient_norm = torch.nn.utils.clip_grad_norm_(parameters_to_clip, max_grad_norm)
+                step_learning_rates = {
+                    group.get("name", f"group{i}"): group["lr"]
+                    for i, group in enumerate(optimizer.param_groups)
+                }
+                scaler.step(optimizer)
+                scaler.update()
+                scheduler.step()
+                snscl_admitted = 0
+                if snscl_state is not None:
+                    if (
+                        snscl_projected is None
+                        or snscl_hard_labels is None
+                        or snscl_admission_probabilities is None
+                    ):
+                        raise RuntimeError("SNSCL batch state was not constructed")
+                    snscl_admitted = snscl_state.queue.enqueue(
+                        snscl_projected,
+                        snscl_hard_labels,
+                        snscl_admission_probabilities,
+                    )
+
+                if not first_step_audited:
+                    _audit_first_step(
+                        model=model,
+                        before=before or {},
+                        head_grad=head_grad,
+                        adapter_grad=adapter_grad,
+                        visual_grad=visual_grad,
+                    )
+                    first_step_audited = True
+                    logger.info(
+                        "First-step audit passed: head_grad=%.6f adapter_grad=%.6f visual_grad=%.6f",
+                        head_grad,
+                        adapter_grad,
+                        visual_grad,
+                    )
 
             batch_size = labels.numel()
             totals["loss"] += float(loss.detach()) * batch_size
@@ -1409,9 +1454,17 @@ def train(
             if supervision_ledger is not None:
                 supervision_ledger.update(batch_indices, mixed_targets, mixed_weights,
                     denominator=mixed_weights.sum().clamp_min(1.0e-8).detach())
-            global_step += 1
+            if is_update_step:
+                global_step += 1
             log_every = int(train_config.get("log_every_steps", 0))
-            if log_every and (global_step % log_every == 0 or totals["examples"] == len(train_dataset)):
+            if (
+                log_every
+                and is_update_step
+                and (
+                    global_step % log_every == 0
+                    or totals["examples"] == len(train_dataset)
+                )
+            ):
                 progress = dict(
                     epoch=epoch, global_step=global_step,
                     loss_phase=("CE" if epoch <= int(config["loss"].get("ce_warmup_epochs", 0))

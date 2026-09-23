@@ -61,7 +61,7 @@ project:
   family: F
   mechanism: 288px_weak_rrc_flip
   parent_kind: shared_lp
-  implementation_status: pending_gradient_accumulation
+  implementation_status: implemented
   search: {}
 train:
   amp: true

@@ -461,11 +461,11 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
                   "feature_distillation_weight": 2.0},
         )
         dependencies = ["A_best"] if augmentation == "A_best" else []
-        impl = "pending_gradient_accumulation"
+        impl = "implemented"
         trials.append(normalize_trial(
             trial_id, "F", f"{resolution}px_{augmentation}", overrides,
             implementation_status=impl, dependencies=dependencies,
-            notes="A_best placeholder is replaced after A group is complete.",
+            notes="Gradient accumulation verified; A_best placeholder is replaced after A group is complete.",
         ))
 
     # G: standard non-adaptive SAM.

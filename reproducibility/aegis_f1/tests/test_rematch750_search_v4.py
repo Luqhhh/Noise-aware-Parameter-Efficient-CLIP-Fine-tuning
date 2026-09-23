@@ -43,7 +43,7 @@ def test_search_manifest_has_expected_trial_coverage():
     by_id = {trial["trial_id"]: trial for trial in manifest["trials"]}
     assert by_id["A01"]["implementation_status"] == "implemented"
     assert by_id["C01"]["implementation_status"] == "pending_quality_asset"
-    assert by_id["F01"]["implementation_status"] == "pending_gradient_accumulation"
+    assert by_id["F01"]["implementation_status"] == "implemented"
     assert by_id["G01"]["implementation_status"] == "pending_sam_integration"
     assert by_id["H01"]["implementation_status"] == "pending_v3_feature_cache"
 
@@ -201,3 +201,61 @@ def test_epoch_aware_sampler_switches_mode_at_declared_epoch():
     late = list(iter(sampler))
     assert len(late) == len(labels)
     assert all(0 <= index < len(labels) for index in late)
+
+
+def test_gradient_accumulation_counts_only_effective_batch_updates(tmp_path, monkeypatch):
+    import json
+    import pandas as pd
+    import aegis_clip.trainer as trainer
+    from aegis_clip.model import AegisCLIP
+
+    root = Path(__file__).resolve().parents[3]
+    cfg = load_config(root / "configs/rematch750_lp.yaml")
+    cfg["data"].pop("dataset_manifest")
+    cfg["model"].update(num_classes=3, feature_dim=4)
+    cfg["model"].pop("official_checkpoint")
+    cfg["train"].update(
+        device="cpu",
+        epochs=1,
+        schedule_epochs=1,
+        num_workers=0,
+        loader_timeout=0,
+        batch_size=2,
+        amp=False,
+        grad_accum_steps=2,
+        log_every_steps=1,
+    )
+    cfg["output"]["root"] = str(tmp_path / "out")
+    paths = [f"{c:04d}/{j}.jpg" for c in range(3) for j in range(4)]
+    labels = [c for c in range(3) for _ in range(4)]
+    frame = pd.DataFrame(dict(image_path=paths, label=labels))
+    val_mask = frame.index % 4 == 0
+    for key, data in (("train_csv", frame[~val_mask]), ("val_csv", frame[val_mask])):
+        path = tmp_path / f"{key}.csv"
+        data.to_csv(path, index=False)
+        cfg["data"][key] = str(path)
+    mapping = tmp_path / "mapping.json"
+    mapping.write_text(json.dumps({f"{i:04d}": i for i in range(3)}))
+    cfg["data"]["class_mapping"] = str(mapping)
+    tensor = tmp_path / "features.pt"
+    torch.save(torch.randn(12, 4), tensor)
+    index = tmp_path / "paths.json"
+    index.write_text(json.dumps(paths))
+    cfg["features"] = dict(tensor_path=str(tensor), paths_path=str(index))
+    monkeypatch.setattr(
+        trainer,
+        "build_model",
+        lambda c, d: (
+            AegisCLIP(
+                visual=torch.nn.Linear(4, 4),
+                num_classes=3,
+                feature_dim=4,
+                peft_mode="frozen",
+            ),
+            None,
+        ),
+    )
+    checkpoint = trainer.train(cfg)
+    state = torch.load(checkpoint, map_location="cpu", weights_only=False)
+    # 9 train samples / (2 microbatch * 2 accumulation) => 2 full updates + 1 last-batch update
+    assert state["global_step"] == 3
