@@ -1,8 +1,8 @@
 # REMATCH750_V3：精度优先的耗时权衡
 
-状态：**用户已于2026-09-23明确要求加入batch 1024并开始实施扫描，随后明确删除“不使用NPU0”的限制**。精度目标仍为同NPU B32基准macro下降≤0.1pp；只选当时空闲的设备。实施分支 `codex/rematch750_v3_scan`，独立目录 `/home/lux1/noise/worktrees/rematch750_v3_scan`。
+状态：**2026-09-23 已完成扫描、审计和提交包校验**。用户要求加入 batch1024 精度补偿、允许使用当时空闲的 NPU0、每十分钟监控。精度目标为同 NPU B32 基准 macro 下降≤0.1pp。实施分支 `codex/rematch750_v3_scan`，独立目录 `/home/lux1/noise/worktrees/rematch750_v3_scan`。
 
-实施进度：方案已增加batch1024补偿点、16轮动态审计和设备/数据绑定脚本。NPU1显存仅余约12.6/65.45GB，未选用；NPU2/6/7在一次只读探针中各余约65.07GB。正式训练和结果须以运行日志及审计为准；下表中的新增点位不是实测结果。
+实施结果：物理 NPU0 经空闲检查后执行三次完整训练。B64、B128、B1024 均通过 16/8 轮动态审计、checkpoint/optimizer 有限性及逐类重载检查。条件 B64_LR2 因 B128 达线而跳过。下表为预注册点位，实测值见后文。
 
 参考为V2同后端NPU batch32八轮：macro0.7190471887588501、micro0.7298387289047241、纯训练2670.459578s、完整CLI2870.871812s。精度可接受下界raw_macro=0.7180471887588501（71.80471887588501%）。一次达界只表示本次独立验证满足约束，不代表统计等价。
 
@@ -20,6 +20,21 @@ B64每轮2091步、八轮16728步；B128每轮1046步、十六轮16736步；B102
 
 用户的效率筛选与+0.20pp平台精度晋级门分开：满足≤0.1pp精度损失的最快新配置可生成工程交付CSV/ZIP并独立校验，标记为效率候选，不自动声称平台更优、不自动上传。若无新点满足约束，保留并复核原FT交付包。报告包含所有失败点，不只报告胜者。
 
+## 实测比较与交付
+
+| 点位 | 选中轮次 | macro | micro | 完整 CLI 秒数 | 相对 B32 macro | 精度下界 | 结论 |
+|---|---:|---:|---:|---:|---:|---|---|
+| B32 基准 | 8 | 71.9047% | 72.9839% | 2870.872 | — | 达线 | 已测基准 |
+| B64×8 | 8 | 70.8299% | 71.8683% | 1946.714 | −1.0748pp | 未达线 | 淘汰 |
+| B128×16 | 16 | 71.9320% | 72.9906% | 3663.711 | +0.0272pp | 达线 | 比 B32 慢 |
+| **B1024×16/LR×4** | **16** | **72.3472%** | **73.4140%** | **2055.272** | **+0.4425pp** | **达线** | **效率胜者** |
+
+B1024 纯训练 1816.882 秒、完整 CLI 比 B32 快 815.599 秒（1.3968 倍），2,096 次 optimizer 更新均成功；best checkpoint SHA-256 为 `a8de990eb0fd347e52dd5387d6cd986a30268ed316111dce6ce8d9e4c42c2f27`，epoch16 重载 macro/micro 和逐类结果完全一致。固定尾部 75 类 macro 55.9589%，其余 675 类 74.1682%；B32 对应 56.0729% 与 73.6638%，因此总 macro 改善不代表尾部提升。原始审计、各验证点曲线与计时在 `results/rematch750_v3/RM_V3_B1024_E16_LR4.json`；完整筛选表在 `results/rematch750_v3/comparison.json`。这是一轮单种子独立验证，未声称跨种子稳定性或平台得分。
+
+胜者在远端 `/workspace/noise-worktrees/rematch750_v3_scan/outputs/codex/rematch750_v3_tradeoff/RM_V3_B1024_E16_LR4/seed42/submission/` 生成 `pred_results.csv` 和 `submission.zip`，不上传平台。独立运行 `scripts/check_submission.py --test_dir /workspace/noise/test --class-mapping /workspace/noise/artifacts/stages/repechage/20260921_npu/class_to_idx.json --csv <submission>/pred_results.csv --zip <submission>/submission.zip`，9/9 检查通过：37,444 行、750 类范围、文件名全覆盖且无重复，ZIP 只含 `pred_results.csv`，包内外 CSV 字节相同。CSV SHA-256 `175c5be75eb9b18a291c34d7a20c035576269b5732695eea321d9bf83ad430bb`；ZIP SHA-256 `5c58f2cda01a7d9eeb7d2e31d5e46504371b2c8780dae52e9e43d6537ffe63bd`。推理清单的 checkpoint 哈希与审计一致；机器可读交付记录在 `results/rematch750_v3/delivery.json`。
+
+精确重放命令（先用 `scripts/bind_rematch750_v3.py` 生成远端 `.npu0.local.yaml`，验证空闲 NPU0 与相同数据/LP 哈希）：`ASCEND_RT_VISIBLE_DEVICES=0 OMP_NUM_THREADS=4 PYTHONPATH=reproducibility/aegis_f1 taskset -c 144-191 /workspace/noise-npu-venv/bin/python -u -m aegis_clip.cli.rematch train --config configs/rematch750_v3_b1024_e16_lr4.npu0.local.yaml`；推理将 `train` 换为 `infer`。单模型 best checkpoint 推理，未融合其他 checkpoint。
+
 ## 隔离与重放
 
 本机方案worktree `/home/lux1/noise-worktrees/rematch750_v3_tradeoff` 与实施worktree `/home/lux1/noise/worktrees/rematch750_v3_scan` 分开；远端实施源码目录 `/workspace/noise-worktrees/rematch750_v3_scan`。绑定脚本 `scripts/bind_rematch750_v3.py` 将本阶段原始数据/特征绝对路径指向 `/workspace/noise` 并校验同哈希NPU LP；输出在实施目录的 `outputs/codex/rematch750_v3_tradeoff/<candidate>/seed42/`，不覆盖原运行。
@@ -28,11 +43,11 @@ B64每轮2091步、八轮16728步；B128每轮1046步、十六轮16736步；B102
 
 `scripts/audit_rematch750_v2.py` 已改为按配置epochs和interval生成验证点与成功更新数；保留checkpoint有限性、optimizer步数、重载精确一致等审计标准。
 
-正式B64在物理NPU0完成，PID `989345`，环境 `ASCEND_RT_VISIBLE_DEVICES=0 OMP_NUM_THREADS=4 PYTHONPATH=reproducibility/aegis_f1`，CPU `taskset -c 144-191`，命令为 `/workspace/noise-npu-venv/bin/python -u -m aegis_clip.cli.rematch train --config configs/rematch750_v3_b64.npu0.local.yaml`。启动前空闲显存65,068,498,944字节，同哈希NPU LP与数据校验通过。8轮16,728次更新全部成功，按macro选epoch8；macro **70.8299%**、micro **71.8683%**，比B32 macro低1.0748pp，未达精度下界71.8047%。纯训练1752.747秒，完整CLI1946.714秒；checkpoint、optimizer有限性和重载审计通过，记录在 `results/rematch750_v3/RM_V3_B64.json`，无候选提交包。顺序运行器 `scripts/run_rematch750_v3_scan.py --wait-for-b64-pid 989345` 已接续B128，后续运行B1024，并按预设条件决定是否运行B64_LR2；每次启动前检查≥50GiB空闲显存，状态写入 `results/rematch750_v3/scan_status.json`。任何训练或审计失败即停止，不做平台上传。完整扫描结果仍待全部轮次与审计结束后报告。
+正式B64在物理NPU0完成，PID `989345`，环境 `ASCEND_RT_VISIBLE_DEVICES=0 OMP_NUM_THREADS=4 PYTHONPATH=reproducibility/aegis_f1`，CPU `taskset -c 144-191`，命令为 `/workspace/noise-npu-venv/bin/python -u -m aegis_clip.cli.rematch train --config configs/rematch750_v3_b64.npu0.local.yaml`。启动前空闲显存65,068,498,944字节，同哈希NPU LP与数据校验通过。8轮16,728次更新全部成功，按macro选epoch8；macro **70.8299%**、micro **71.8683%**，比B32 macro低1.0748pp，未达精度下界71.8047%。纯训练1752.747秒，完整CLI1946.714秒；checkpoint、optimizer有限性和重载审计通过，记录在 `results/rematch750_v3/RM_V3_B64.json`，无候选提交包。顺序运行器 `scripts/run_rematch750_v3_scan.py --wait-for-b64-pid 989345` 接续 B128、B1024，每次启动前检查≥50GiB 空闲显存，并于远端 `results/rematch750_v3/scan_status.json` 记录状态；已以 `all_runs_audited` 结束。
 
-B128×16也已完成且审计通过：16,736次更新、选epoch16，macro **71.9320%**、micro **72.9906%**，比B32 macro高0.0272pp，达到71.8047%精度下界；纯训练3317.859秒、完整CLI3663.711秒，比B32多792.839秒，不是效率胜者。记录在 `results/rematch750_v3/RM_V3_B128_E16.json`，无新提交包。由于B128达线，条件B64_LR2按预设规则跳过；顺序运行器已接续B1024补偿点。
+B128×16也已完成且审计通过：16,736次更新、选epoch16，macro **71.9320%**、micro **72.9906%**，比B32 macro高0.0272pp，达到71.8047%精度下界；纯训练3317.859秒、完整CLI3663.711秒，比B32多792.839秒，不是效率胜者。记录在 `results/rematch750_v3/RM_V3_B128_E16.json`，无该点位提交包。由于 B128 达线，条件 B64_LR2 按预设规则跳过。
 
-训练不串接平台上传。阶段结束推送方案分支，再在main集成目录以自动模式 `git pull --rebase --autostash origin main` 同步、合并、重新校验、推送；不执行手动stash pop。
+训练不串接平台上传。方案分支验证后推送；main 集成目录使用自动模式 `git pull --rebase --autostash origin main` 同步、合并、重新校验、推送；不执行手动 stash pop。
 
 修订原则：不同epoch可以胜出；按真实完整耗时评价，不要求相同样本遍历预算。B64×8与B128×16的预期更新数接近（16728 vs16736），但后者图像遍历翻倍、CE/GCE更新分配不同，不能称优化过程等价。
 
@@ -48,4 +63,4 @@ B128×16也已完成且审计通过：16,736次更新、选epoch16，macro **71.
 
 后续可研究的“大batch前期、小batch收尾”暂不纳入本轮：它需要新增调度与恢复逻辑，也会扩大比较范围。本轮1024只测一个预先固定的延长训练与LR补偿点。
 
-本轮已获执行授权。只有完整训练、审计、推理及提交校验完成后，才报告新增点位的实测精度与效率；配置解析通过不等于实验通过。
+本轮已完成完整训练、审计、推理和提交校验。平台成绩仍待用户实际提交，不能由本地验证外推。
