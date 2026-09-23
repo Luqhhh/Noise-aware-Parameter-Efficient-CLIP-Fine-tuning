@@ -53,7 +53,7 @@ B 轴的 16 轮伴随 `schedule_epochs` 8→16（余弦 horizon 同步），head
 | `SEARCH_A1_MIXUP_A02` | **72.5000 / 71.4466**（−0.37pp） | 是 |
 | `SEARCH_A2_MIXUP_A04` | **71.9288 / 70.8878**（−0.94pp） | 是 |
 | `SEARCH_B1_ANCHOR05_LR1E5` | **无 —— 训练崩溃，见 §1.4** | 否 |
-| `SEARCH_B2_ANCHOR00_LR3E6` | 待测 | **是**（实测速率下约 19:30 结束，不是 22:00） |
+| `SEARCH_B2_ANCHOR00_LR3E6` | **无有效值 —— 训练崩溃于第 5 轮，包是第 4 轮模型，见 §1.4** | 否 |
 
 **选择规则（22:00 执行）**：在可用包里选本地 micro 最优、且 macro 不与之矛盾者。若与基线的差异均落在单种子 0.90pp 变异之内（即都不显著超过 72.8696%），如实记录「本批暂未显示本地跃升」。
 **A1/A2 现均有实测值且均低于基线**（见 §1.4），原先「优先方案提名的 A2 与 B1」已不成立 —— A2 有实测的 −0.94pp，B1 没有结果。
@@ -64,7 +64,7 @@ B 轴的 16 轮伴随 `schedule_epochs` 8→16（余弦 horizon 同步），head
 
 **上传前必须核对**：`selected_report.json` 里的被选轮次应等于总轮数（`last_epoch` 语义），否则包不是预定终点的模型。
 
-### 1.4 执行结果（截至 2026-09-23 15:20）
+### 1.4 执行结果（截至 2026-09-23 16:20）
 
 基线 `RM_FT` 已核实 `selected_epoch: 8` = `schedule_epochs: 8`，即 `best_selector` 选中的就是最后一个 epoch —— **`last_epoch` 与 `best_selector` 在本例重合**，逐 epoch 对比是干净的 apples-to-apples。
 
@@ -103,10 +103,43 @@ PACKAGE MISSING SEARCH_B1_ANCHOR05_LR1E5
 
 **判断：环境级故障，不是配置缺陷。** 依据：(a) 崩溃前最后一条 Progress（step 6000）完全健康 —— loss 0.949、grad_norm 33.7、`amp_scale 128` 稳定、无 NaN/inf；(b) `cudaErrorUnknown` 属运行时/驱动错误类，不是数值爆炸（那会表现为 inf/nan 被 grad scaler 跳过）；(c) 同期 `dmesg` 出现连续的 `WSL … Relay ERROR: UtilAcceptVsock: Waiting for abnormally long accept(11)`，WSL↔Windows 边界当时确有异常；(d) A1/A2 各跑满 8 轮无此问题。**未获证明**，判别性实验是重跑 B1 —— 若重跑正常即坐实环境说。
 
-#### 两处对早期估计的更正
+#### B1 重跑失败（未测到环境假设）
+
+15:03 的崩溃在磁盘上留下 `outputs/search_20260923/SEARCH_B1_ANCHOR05_LR1E5/seed42`，15:03:40 启动的重跑 **18 秒即退出**：
+
+```
+=== B1 RERUN TRAIN END rc=1 2026-09-23T16:03:58+08:00 ===
+FileExistsError: Run directory exists: .../SEARCH_B1_ANCHOR05_LR1E5/seed42. Use --overwrite or --resume.
+```
+
+**因此「环境级故障」这个判断至今仍未被检验** —— 重跑没有跑到任何一个梯度步就死了。
+
+#### B2 训练崩溃（与 B1 同一签名）—— 包已产出但不可用
+
+```
+=== TRAIN END search_b2_anchor00_lr3e6 rc=134 2026-09-23T16:00:08+08:00 ===
+```
+
+与 B1 **完全相同的签名**：`trainer.py:1168 _gradient_norm` → `optim.py:25` → `torch.AcceleratorError: CUDA error: unknown error`，同样抛在 `Py_FinalizeEx` → `terminate()` → SIGABRT。崩溃前最后一条健康 Progress：15:57:03，epoch 5 / step 19200。两次崩溃配置不同（anchor 0.5 / lr 1e-5 @14 min vs anchor 0.0 / lr 3e-6 @56 min），共有的是机器与时间窗。
+
+**同时记录反证**：`dmesg` 全程无 Xid、无 GPU reset、无 nvrm 报错，只有本会话一直存在的 `dxgkio_query_adapter_info: Ioctl failed: -22` 与 WSL Relay 噪声；单独的 GPU 健康探针（`_gpu_smoke.py`，反复执行崩溃现场那个算子并每轮做 233MB 分配/释放，跑满 90 s）结果 `SMOKE OK iters=48594` 退出 0。**结论仍是未定**：瞬态 WSL/驱动故障与「16 轮档共有的某物」无法区分。相关性可疑但样本只有 2：**16 轮档 2/2 崩溃，8 轮档 2/2 跑完**。
+
+B2 被中断前已完成的两个评测点：
+
+| epoch | 基线（8 轮档）micro | B2（16 轮档）micro | Δ |
+|---:|---:|---:|---:|
+| 2 | 69.2944 | 68.6022 | −0.69 |
+| 4 | 71.6599 | 71.4113 | −0.25 |
+
+macro 同向（ep2 67.5788、ep4 70.5030）。**缺口在收窄**，但**不能读成「B2 快追上了」**：B2 是 16 轮余弦，ep4/16 处的学习率远高于基线 ep4/8 处，同一 epoch 序号在两条 schedule 上不是同一训练进度。这只是「未被证伪」。
+
+**B2 的包无效。** `infer` 从 `best.pt` 推理，而 B2 的 `best.binding.json` 写明 `"epoch": 4`；训练在第 5 轮被中断，`selected_report.json` **从未写出**（A1/A2 都有）。该包通过平台全部 9 项结构校验（单 checkpoint、确定性推理，**合规**），但它是 **16 轮计划的第 4 轮模型**，违反本批预登记的「被选轮次应等于总轮数」。**22:00 决策不得使用。** `_package_b2.sh` 当时只断言了 submission 目录存在，故误报 `PACKAGE` —— 已改为必须断言 `selected_report.json` 存在。
+
+#### 三处对早期估计的更正
 
 1. **速率**：实测 **0.117–0.125 s/step**，非我先前用的 0.169。据此 B1 应在约 17:05 训完、B2 约 19:30 结束、`BATCH1 DONE` 约 19:35 —— 不是 §1.2 写的「约 11 小时串行」。
-2. **B2 赶得上 22:00**（原先写「赶不上」）。因此由 `_package_b2.sh` 补出包步骤：编排脚本的最后一步只训练不出包，是依据错误估计写的；该脚本此刻在运行，bash 增量读取不能改，故另起等待进程补 infer，**不重启任何训练**。
+2. ~~**B2 赶得上 22:00**~~ **已被上一条崩溃作废**。原先写「赶不上」，后依实测速率改为「赶得上」，并为此另起 `_package_b2.sh` 补出包；B2 于 16:00 崩溃，这个补丁产出的包是第 4 轮模型，不可用。两次估计都错了，且错在同一个地方 —— 拿健康的运行时长外推一个已经出过故障的批次。
+3. **`--overwrite` / `--resume` 在 CLI 上不存在**，`FileExistsError` 的提示语（「Use --overwrite or --resume」）会误导人去找一个没有的开关。`train` 子命令只注册了 `--config`（`cli/rematch.py:136-143`），第 108 行以 `train(config)` 单参数调用；`trainer.py:116/118` 的 `resume` / `overwrite` 是 Python 形参，配置里也没有对应键。当崩溃残留的 `run_dir` 挡路时（`trainer.py:144`），**唯一出路是删除该目录**（`--overwrite` 内部做的就是 `shutil.rmtree(run_dir)`）或写 Python 驱动直调 `train(cfg, overwrite=True)`。
 
 #### 看门程序曾漏报这次崩溃（已修）
 
