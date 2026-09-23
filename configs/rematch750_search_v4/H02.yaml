@@ -1,15 +1,15 @@
 data:
-  class_mapping: ../artifacts/stages/repechage/20260921_npu/class_to_idx.json
-  dataset_manifest: ../artifacts/stages/repechage/20260921_npu/dataset_manifest.json
+  class_mapping: ../../artifacts/stages/repechage/20260921_npu/class_to_idx.json
+  dataset_manifest: ../../artifacts/stages/repechage/20260921_npu/dataset_manifest.json
   expected_official_train_samples: 148695
   expected_test_samples: 37444
   external_data: false
-  test_root: ../test
+  test_root: ../../test
   test_usage: inference_only
   train_augmentation: weak_rrc_flip
-  train_csv: ../artifacts/stages/repechage/20260921_npu/train_dev.csv
-  train_root: ../train
-  val_csv: ../artifacts/stages/repechage/20260921_npu/val_dev.csv
+  train_csv: ../../artifacts/stages/repechage/20260921_npu/train_dev.csv
+  train_root: ../../train
+  val_csv: ../../artifacts/stages/repechage/20260921_npu/val_dev.csv
   validation_overlap_with_training: false
 diagnostics:
   longtail:
@@ -26,9 +26,9 @@ evaluation:
   selector_metric: raw_macro
   tiebreak_metric: raw_micro
 features:
-  tensor_path: ../outputs/rematch750_search_v4/assets/RM_V3_B1024_E16_LR4_features/features.pt
-  paths_path: ../outputs/rematch750_search_v4/assets/RM_V3_B1024_E16_LR4_features/image_paths.json
-  manifest_path: ../outputs/rematch750_search_v4/assets/RM_V3_B1024_E16_LR4_features/manifest.json
+  tensor_path: ../../outputs/rematch750_search_v4/assets/RM_V3_B1024_E16_LR4_features/features.pt
+  paths_path: ../../outputs/rematch750_search_v4/assets/RM_V3_B1024_E16_LR4_features/image_paths.json
+  manifest_path: ../../outputs/rematch750_search_v4/assets/RM_V3_B1024_E16_LR4_features/manifest.json
 longtail:
   balanced_softmax_tau: 0.0
   loss_reweighting: none
@@ -52,7 +52,7 @@ model:
   cosine_scale_init: 20.0
   cosine_scale_trainable: true
 output:
-  root: ../outputs/rematch750_search_v4
+  root: ../../outputs/rematch750_search_v4
 project:
   data_version: '20260921'
   experiment_id: RM_V4_H02

@@ -41,6 +41,29 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def rebase_relative_paths(config: dict[str, Any]) -> dict[str, Any]:
+    """Configs live one level below configs/, so rewrite repo-relative ../ paths."""
+    path_fields = (
+        ("data", "class_mapping"),
+        ("data", "dataset_manifest"),
+        ("data", "train_csv"),
+        ("data", "val_csv"),
+        ("data", "train_root"),
+        ("data", "test_root"),
+        ("features", "tensor_path"),
+        ("features", "paths_path"),
+        ("features", "manifest_path"),
+        ("trust", "bundle_path"),
+        ("train", "init_checkpoint"),
+        ("output", "root"),
+    )
+    for section, key in path_fields:
+        value = config.get(section, {}).get(key)
+        if isinstance(value, str) and value.startswith("../"):
+            config[section][key] = "../" + value
+    return config
+
+
 def training_overrides(
     *,
     loss: dict[str, Any] | None = None,
@@ -96,6 +119,7 @@ def normalize_trial(
     base.setdefault("train", {})["device"] = "npu:UNASSIGNED"
     if parent_kind == "shared_lp":
         base["train"]["init_checkpoint"] = LP_CHECKPOINT
+    base = rebase_relative_paths(base)
     return base, {
         "trial_id": trial_id,
         "family": family,
@@ -170,6 +194,7 @@ def head_config(
     )
     if not derived_parent:
         cfg["train"].pop("init_checkpoint", None)
+    cfg = rebase_relative_paths(cfg)
     return cfg, {
         "trial_id": trial_id,
         "family": "H",
