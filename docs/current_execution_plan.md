@@ -12,6 +12,10 @@
 6. **之后每提交一个方案就和用户说一声**，用户好让队友跑。
 7. 方案可以**由我通过 brief 与 Codex 共同决策**。
 
+## 在途方案：REMATCH750_WD_RELAX_2X2（xjn，ready for NPU）
+
+在 V3 胜者 `RM_V3_B1024_E16_LR4` 上登记 AdamW 参数组 weight-decay 的 2×2 因子实验：同次控制 `WD00=(backbone 1e-4, head 1e-4)`，以及 `WD01=(0,1e-4)`、`WD02=(1e-4,0)`、`WD03=(0,0)`。四点只改变两组 weight decay 和实验身份/输出，固定 RM-LP parent、split、seed、batch 1024、16 epochs、LR、GCE、feature anchor、调度器与选模协议。方案已完成配置、运行器、机器可读 manifest 与定向测试，**未训练、未生成提交包、未触碰平台名额**；NPU 执行与验收见 [预注册及交接](rematch750_wd_relax_prereg_20260923.md)。
+
 ## 分工落实
 
 | 角色 | 机器 | 职责 |
