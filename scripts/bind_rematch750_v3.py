@@ -26,8 +26,8 @@ def digest(path: Path) -> str:
 
 
 def bind(template: Path, output: Path, shared_root: Path, physical_device: int) -> dict:
-    if physical_device <= 0:
-        raise ValueError("V3 requires an idle physical NPU other than device 0")
+    if physical_device < 0:
+        raise ValueError("Physical NPU index must be nonnegative")
     if os.environ.get("ASCEND_RT_VISIBLE_DEVICES") != str(physical_device):
         raise ValueError("ASCEND_RT_VISIBLE_DEVICES must select exactly the physical device being bound")
     if output.suffixes[-2:] != [".local", ".yaml"] or output.exists():

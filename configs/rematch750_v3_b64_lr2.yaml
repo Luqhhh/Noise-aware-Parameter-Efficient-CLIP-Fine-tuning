@@ -1,5 +1,5 @@
 # Conditional V3 point: run only if B64 and B128_E16 both miss the macro floor.
-# Bind an idle physical NPU other than 0 before execution.
+# Bind an idle physical NPU before execution.
 data:
   class_mapping: ../artifacts/stages/repechage/20260921_npu/class_to_idx.json
   dataset_manifest: ../artifacts/stages/repechage/20260921_npu/dataset_manifest.json

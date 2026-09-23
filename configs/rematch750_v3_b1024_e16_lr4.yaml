@@ -1,5 +1,5 @@
 # V3 compensated large-batch trial: longer cosine horizon and 4x head/visual LR.
-# Bind an idle physical NPU other than 0 before execution; this template is not executable.
+# Bind an idle physical NPU before execution; this template is not executable.
 data:
   class_mapping: ../artifacts/stages/repechage/20260921_npu/class_to_idx.json
   dataset_manifest: ../artifacts/stages/repechage/20260921_npu/dataset_manifest.json
