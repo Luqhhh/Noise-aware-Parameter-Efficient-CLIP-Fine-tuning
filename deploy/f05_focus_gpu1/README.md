@@ -3,6 +3,37 @@
 第二台机器按本文件拉取同一分支，并用显式路径运行分配到的单元。所有实验必须使用
 `focus/f05-four-lines` 的同一 commit；不要在 GPU1 上另开分支或修改配方。
 
+
+## 0. 当前 GPU0 运行状态与 GPU1 缺口
+
+GPU0 已在 RTX 4070 Laptop 8GB 上启动 C0：
+
+```text
+input 320px
+batch_size 16 x grad_accum 64 = effective batch 1024
+num_workers 8
+outputs/f05_focus/C0_F05_CUDA/seed42
+```
+
+因此 GPU1 若跑 N1，必须使用同样的 `16 x 64` 组合，否则 C0/N1 paired comparison 失效。
+GPU1 上若显存更大，也不要改成 256 x 4；effective batch 保持 1024 且 microbatch 配比与
+C0 一致。
+
+GPU1 代码拉到 `focus/f05-four-lines @ 867b982` 后，仍需要按它分配到的 unit 准备：
+
+| GPU1 unit | 必需资产 | 当前状态 |
+|---|---|---|
+| P0 | `artifacts/f05_focus/f05_val_logits.pt` 或 F05 checkpoint | 待 GPU1 提供/生成 |
+| N1 | `artifacts/f05_focus/hp_noise_manifest.csv` + RM-LP parent | manifest 未生成；parent 视 GPU1 现有 outputs |
+| D2 | F05 checkpoint、`clean070.csv`、D2 cache | 需 F05 + quality asset |
+| A0/D1 | F05 checkpoint | 需从 NPU 结果机同步 |
+
+如果 GPU1 使用本地 `artifacts/stages/repechage/20260921`，而 RM-LP parent 是 NPU 格式
+checkpoint，代码现已自动提供 `torch_npu` 兼容 shim；但 sibling binding 的
+`dataset_manifest_sha256` / `feature_manifest_sha256` 若来自 `20260921_npu`，需要
+与本地 manifest 做一次显式 rebase 后才能通过 V4 lineage gate。原始文件级
+`train_csv_sha256` / `class_mapping_sha256` 未变，实验数据仍是同一 canonical split。
+
 ## 1. GPU1 分配
 
 | Round | GPU0 | GPU1 | GPU1 需要的数据 |
