@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "protocol": "REMATCH750_F05_EVIDENCE_TRANSFER",
+  "server_status": "blocked_server",
+  "data_cutoff_utc": "2026-09-24T13:33:00Z",
+  "local_recorded_at_utc": "2026-09-24T16:55:00Z",
+  "server": {
+    "name": "vllm-lqh-86",
+    "endpoint": "36.140.239.86:32014",
+    "last_contact_utc": "2026-09-24T13:33:00Z",
+    "container_entry": "ssh_banner_closed",
+    "host_port_22": "ssh_banner_ok",
+    "note": "container entry unreachable; no ET training had started by cutoff"
+  },
+  "baseline": {
+    "trial": "HL00",
+    "experiment_id": "RM_HL00_F05_CONTROL",
+    "status": "completed",
+    "raw_macro": 0.7443073987960815,
+    "raw_micro": 0.7544354796409607,
+    "selected_epoch": 14,
+    "selected_report_sha256": "08a996e61508a757670f7da223ade7c09cd2f264ad664d22c82fc7fabbf9dc85"
+  },
+  "counts": {
+    "trials": 10,
+    "completed": 0,
+    "blocked_server": 10
+  },
+  "trials": [
+    {
+      "name": "ET01",
+      "experiment_id": "RM_ET01_ANCHOR1",
+      "status": "server_blocked",
+      "reason": "vllm-lqh-86 container entry unreachable before ET startup"
+    },
+    {
+      "name": "ET02",
+      "experiment_id": "RM_ET02_GCE_Q07",
+      "status": "server_blocked",
+      "reason": "vllm-lqh-86 container entry unreachable before ET startup"
+    },
+    {
+      "name": "ET03",
+      "experiment_id": "RM_ET03_BALSOFT_TAU05",
+      "status": "server_blocked",
+      "reason": "vllm-lqh-86 container entry unreachable before ET startup"
+    },
+    {
+      "name": "ET04",
+      "experiment_id": "RM_ET04_BALSOFT_TAU10",
+      "status": "server_blocked",
+      "reason": "vllm-lqh-86 container entry unreachable before ET startup"
+    },
+    {
+      "name": "ET05",
+      "experiment_id": "RM_ET05_BBLR_8E6",
+      "status": "server_blocked",
+      "reason": "vllm-lqh-86 container entry unreachable before ET startup"
+    },
+    {
+      "name": "ET06",
+      "experiment_id": "RM_ET06_BBLR_16E6",
+      "status": "server_blocked",
+      "reason": "vllm-lqh-86 container entry unreachable before ET startup"
+    },
+    {
+      "name": "ET07",
+      "experiment_id": "RM_ET07_HEADLR_2E4",
+      "status": "server_blocked",
+      "reason": "vllm-lqh-86 container entry unreachable before ET startup"
+    },
+    {
+      "name": "ET08",
+      "experiment_id": "RM_ET08_HEADLR_8E4",
+      "status": "server_blocked",
+      "reason": "vllm-lqh-86 container entry unreachable before ET startup"
+    },
+    {
+      "name": "ET09",
+      "experiment_id": "RM_ET09_WARMUP1",
+      "status": "server_blocked",
+      "reason": "vllm-lqh-86 container entry unreachable before ET startup"
+    },
+    {
+      "name": "ET10",
+      "experiment_id": "RM_ET10_E20",
+      "status": "server_blocked",
+      "reason": "vllm-lqh-86 container entry unreachable before ET startup"
+    }
+  ]
+}
