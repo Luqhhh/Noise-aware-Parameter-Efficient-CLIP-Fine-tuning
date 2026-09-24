@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "protocol": "REMATCH750_HEAD_L2SP",
+  "owner": "xjn",
+  "status": "ready_for_npu",
+  "created_at": "2026-09-24",
+  "baseline": {
+    "candidate": "RM_V4_F05",
+    "reference_config_sha256": "d5cf5ae16ee174cc2a6e3e75a84ce4a631255314f66f192a705197d714f21f9a",
+    "local_macro": 0.7443073987960815,
+    "local_micro": 0.7544354796409607,
+    "selected_epoch": 14,
+    "platform_score_percent": 65.4711,
+    "paired_control": "HL00"
+  },
+  "lineage": {
+    "parent_experiment_id": "RM_LP",
+    "parent_checkpoint_sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+    "train_csv_sha256": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "val_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "dataset_manifest_sha256": "af62cc3ae9c9fe3fdba9da125f15ef71b969f54c4a4a41e866de28682ce2efde",
+    "seed": 42
+  },
+  "fixed_recipe": {
+    "input_resolution": 320,
+    "micro_batch_size": 256,
+    "grad_accum_steps": 4,
+    "effective_batch_size": 1024,
+    "epochs": 16,
+    "head_lr": 0.0004,
+    "backbone_lr": 0.000012,
+    "backbone_weight_decay": 0.0001,
+    "loss": "ce_warmup_2_then_gce_q0.5",
+    "feature_distillation_weight": 2.0,
+    "selector_metric": "raw_macro"
+  },
+  "trials": [
+    {
+      "name": "HL00",
+      "experiment_id": "RM_HL00_F05_CONTROL",
+      "config": "configs/rematch750_head_l2sp/HL00.yaml",
+      "config_sha256": "ea0b5e945dd28419c7e7db6db8a501db4ebd52f19f4a07e45944d74ffaa9a1fb",
+      "classifier_mode": "linear",
+      "head_weight_decay": 0.0001
+    },
+    {
+      "name": "HL01",
+      "experiment_id": "RM_HL01_L2SP_WD1E4",
+      "config": "configs/rematch750_head_l2sp/HL01.yaml",
+      "config_sha256": "3a335bef2d78f3cce6dd5f4a4a65bf8ef2ab16648ecf213f0fc0b0d64b9ba1bb",
+      "classifier_mode": "anchored_residual",
+      "classifier_residual_scale": 1.0,
+      "head_weight_decay": 0.0001
+    },
+    {
+      "name": "HL02",
+      "experiment_id": "RM_HL02_L2SP_WD1E3",
+      "config": "configs/rematch750_head_l2sp/HL02.yaml",
+      "config_sha256": "2a817c69537924ff0ee4054b7a5646eba7907e9afb07870267b13351aa27c26b",
+      "classifier_mode": "anchored_residual",
+      "classifier_residual_scale": 1.0,
+      "head_weight_decay": 0.001
+    },
+    {
+      "name": "HL03",
+      "experiment_id": "RM_HL03_L2SP_WD1E2",
+      "config": "configs/rematch750_head_l2sp/HL03.yaml",
+      "config_sha256": "e4a7321af81548880793f5e3c0b5d54150f9f4f59257677f0a553889a5592c39",
+      "classifier_mode": "anchored_residual",
+      "classifier_residual_scale": 1.0,
+      "head_weight_decay": 0.01
+    }
+  ],
+  "promotion": {
+    "macro_delta_pp": 0.3,
+    "micro_max_regression_pp": 0.1,
+    "confirmation_seeds": [3407, 2026],
+    "minimum_directional_seeds": 2
+  },
+  "runner": "scripts/run_rematch750_head_l2sp.py",
+  "platform_submission": false
+}
