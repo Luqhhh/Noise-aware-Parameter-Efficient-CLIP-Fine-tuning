@@ -21,6 +21,10 @@
 
 以当前平台最佳 `F05` 的 **320px 固定配方**为参照，登记一次严格配对的分类头锚定消融：`HL00` 是同代码版本的普通线性头对照；`HL01/02/03` 把 RM-LP 分类头冻结为锚点，仅训练零初始化残差头，并将残差 AdamW weight decay 分别设为 `1e-4 / 1e-3 / 1e-2`。四点均从同一 RM-LP checkpoint 启动，不复用 F05 checkpoint；除分类头参数化、残差 weight decay、实验身份与输出目录外，固定 split、seed、320px、batch 256×accum 4、16 epochs、LR、GCE、feature anchor、调度器与选模协议。方案已完成配置、运行器、机器可读 manifest、预注册和定向回归测试，**未训练、未生成提交包、未触碰平台名额**。只有相对 `HL00` 本地 macro 至少 `+0.30pp` 且 micro 不下降的点才进入多 seed 复核；NPU 命令与验收门禁见[预注册及交接](rematch750_head_l2sp_prereg_20260924.md)。
 
+## 在途方案：REMATCH750_F05_EVIDENCE_TRANSFER（xjn，10 点 ready for NPU）
+
+在 NPU 资源充足的前提下，把搜索扩展为十个**单变量、可并行、非重复**的 F05 320px 点位，并复用已排队的同版本 `HL00` 作为共同对照。ET01–ET04 迁移 V4 的小正信号（feature anchor=1、GCE q=0.7、Balanced Softmax τ=0.5/1.0）；ET05–ET08 对 F05 的 backbone/head LR 做上下侧括点；ET09/ET10 分别检验 1 epoch warmup 与 20 epoch cosine。每点除声明变量、实验身份与输出外均与 HL00 一致；组合只允许由先独立达 `+0.30pp macro` 且 micro 不退化的因素派生。生成器、10 份配置、manifest、运行器和 5 项定向测试已就绪，**未训练、未生成提交包、未触碰平台名额**；详见[预注册及 NPU 交接](rematch750_f05_transfer_prereg_20260924.md)。
+
 ## 在途方案：REMATCH750_FULL_DATA_CONTROL（clairvoyanttt，ready for NPU）
 
 用户 2026-09-23 解禁全量训练后，把「V3 获胜配方跑全部 **148,695** 张（含原 val 的 14,880 张）」做成可直接执行的交付包。分支 `clairvoyanttt/rematch750-full-ft`，配置 `configs/rematch750_full_ft/{FULL00,FULL01}.yaml`，运行器 `scripts/run_rematch750_full_ft.py`，定向测试 7 项。**未训练、未生成提交包、未触碰平台名额。**
