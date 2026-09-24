@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-24T11:10:00Z",
+  "generated_at_utc": "2026-09-24T11:35:00Z",
   "protocol": "rematch750_search_v5",
   "cards_in_use_by_this_queue": [
     0,
@@ -148,7 +148,7 @@
     "scheme": "xjn/rematch750-head-l2sp",
     "branch_commit": "83d6157",
     "main_merge_commit": "0165fe2",
-    "status": "ready_for_npu",
+    "status": "queued_on_npu6_after_fix",
     "runner": "scripts/run_rematch750_head_l2sp.py",
     "assigned_card": 6,
     "starts_after": "NPU6 V5 H overflow lane",
@@ -160,6 +160,48 @@
     ],
     "baseline": "HL00",
     "promotion_rule": "HL01-HL03 相对 HL00 macro >= +0.30pp 且 micro 不下降，才进入 seed3407/2026 复核",
-    "notes": "从同一 RM-LP 父权重启动，不复用 F05 checkpoint；当前仅 ready_for_npu。"
-  }
+    "notes": "从同一 RM-LP 父权重启动，不复用 F05 checkpoint；当前仅 ready_for_npu。",
+    "integration_note": "runtime configs now inject rematch750_head_l2sp protocol + shared_lp parent so 320px lineage validates; HL00-HL03 re-launched."
+  },
+  "second_generation_lanes": {
+    "note": "12 newly unblocked V5 slots appended after current lane dispatchers; H tasks already deduplicated by completed markers.",
+    "npu0": [
+      "Q05",
+      "V07"
+    ],
+    "npu1": [
+      "Q02",
+      "V08"
+    ],
+    "npu2": [
+      "Q04",
+      "Q01",
+      "R05"
+    ],
+    "npu4": [
+      "Q06",
+      "V03"
+    ],
+    "npu5": [
+      "R06",
+      "V04"
+    ],
+    "npu7": [
+      "Q03"
+    ]
+  },
+  "unblocked_v5_slots": [
+    "R05",
+    "R06",
+    "V03",
+    "V04",
+    "V07",
+    "V08",
+    "Q01",
+    "Q02",
+    "Q03",
+    "Q04",
+    "Q05",
+    "Q06"
+  ]
 }
