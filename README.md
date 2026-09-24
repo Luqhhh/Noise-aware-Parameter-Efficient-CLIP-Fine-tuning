@@ -4,6 +4,8 @@
 
 **2026-09-23 冻结：** V3 winner `RM_V3_B1024_E16_LR4` 已由用户指令冻结，搜索关闭，不再追加 LR/epoch/batch/worker 扫描；远端 best/last checkpoint 与提交文件已设为只读并写入 `FROZEN.json`，机器可读记录见 [freeze.json](results/rematch750_v3/freeze.json)。**2026-09-23 xjn 新方案已交付、等待 NPU：** 在 V3 固定配方上做 backbone/head AdamW weight decay 的严格 2×2 消融，四点只改变两组 WD；配置、运行器、manifest、定向测试和判据均已就绪，尚未训练或生成提交包，见 [REMATCH750 WD relaxation 预注册](docs/rematch750_wd_relax_prereg_20260923.md)。**2026-09-23 clairvoyanttt 全量数据对照已交付、等待 NPU：** 用户解禁全量训练后，把「V3 获胜配方跑全部 **148,695** 张（含原 val 的 14,880 张）」做成可直接执行的交付包（`configs/rematch750_full_ft/`，分支 `clairvoyanttt/rematch750-full-ft`），**本机不训练**。按代码核对修正了方案口径：**这一步是 2 次训练而不是 1 次** —— `rematch_assets.checkpoint_binding()` 绑定 `train_csv_sha256`，dev RM-LP 不能作为全量 FT 的父，必须先产出全量 LP `RM_FULL_LP`（该 id 同时被 `validate_checkpoint(parent=True)` 硬性限定）；它是冻结特征上的线性探针，算力分钟级，总时长仍由 `RM_FULL` 的 16 轮主导。FULL01 与 V3 胜者的差异被限制在声明的数据口径字段内，并有定向测试强制校验；另附一条机器验证的断言：同一个真实 RM-LP checkpoint 在 dev 口径下是合法父、在全量口径下被 `checkpoint data lineage mismatch` 拒绝。**本轮本地无任何可信读数**（val ⊂ train），判据只有平台分相对 RM-FT **60.96570879179575%** 的差，且**预期落在 ±0.20pp 空档** —— 它关的是「数据量」这条轴，不是期待涨分；因此要花一个平台名额买信息，机会成本需用户裁决。7 项新测试全绿（`AEGIS_REMATCH_ASSETS` 指向真实资产时实测 7/7；全套 2 failed / 670 passed，两个失败均为既有的 `test_scope_protocol.py` 冻结资产用例）。尚未训练、未生成提交包、未触碰平台名额，见[预注册](docs/rematch750_full_ft_prereg_20260923.md)。
 
+**2026-09-24 xjn 新方案已交付、等待 NPU：** `REMATCH750_HEAD_L2SP` 使用当前平台最佳 F05 的 320px 配方做同版本配对控制，在同一 RM-LP 父权重上比较普通线性头与零初始化 anchored-residual 头，并扫描残差 head weight decay `1e-4 / 1e-3 / 1e-2`。配置、运行器、manifest、预注册和定向测试已就绪；**尚未训练、没有结果、没有提交包、没有平台成绩**。详见[预注册及交接](docs/rematch750_head_l2sp_prereg_20260924.md)。
+
 ## 当前状态
 
 **上面那段是本项目约定的状态落点：每完成一次交付就在原地更新它**（完成后做了什么、独立验证指标、是否有平台成绩）。阶段相关的一切都以它为准，不要在别处重复。

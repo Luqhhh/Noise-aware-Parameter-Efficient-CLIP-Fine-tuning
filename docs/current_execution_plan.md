@@ -17,6 +17,10 @@
 
 在 V3 胜者 `RM_V3_B1024_E16_LR4` 上登记 AdamW 参数组 weight-decay 的 2×2 因子实验：同次控制 `WD00=(backbone 1e-4, head 1e-4)`，以及 `WD01=(0,1e-4)`、`WD02=(1e-4,0)`、`WD03=(0,0)`。四点只改变两组 weight decay 和实验身份/输出，固定 RM-LP parent、split、seed、batch 1024、16 epochs、LR、GCE、feature anchor、调度器与选模协议。方案已完成配置、运行器、机器可读 manifest 与定向测试，**未训练、未生成提交包、未触碰平台名额**；NPU 执行与验收见 [预注册及交接](rematch750_wd_relax_prereg_20260923.md)。
 
+## 在途方案：REMATCH750_HEAD_L2SP（xjn，ready for NPU）
+
+以当前平台最佳 `F05` 的 **320px 固定配方**为参照，登记一次严格配对的分类头锚定消融：`HL00` 是同代码版本的普通线性头对照；`HL01/02/03` 把 RM-LP 分类头冻结为锚点，仅训练零初始化残差头，并将残差 AdamW weight decay 分别设为 `1e-4 / 1e-3 / 1e-2`。四点均从同一 RM-LP checkpoint 启动，不复用 F05 checkpoint；除分类头参数化、残差 weight decay、实验身份与输出目录外，固定 split、seed、320px、batch 256×accum 4、16 epochs、LR、GCE、feature anchor、调度器与选模协议。方案已完成配置、运行器、机器可读 manifest、预注册和定向回归测试，**未训练、未生成提交包、未触碰平台名额**。只有相对 `HL00` 本地 macro 至少 `+0.30pp` 且 micro 不下降的点才进入多 seed 复核；NPU 命令与验收门禁见[预注册及交接](rematch750_head_l2sp_prereg_20260924.md)。
+
 ## 在途方案：REMATCH750_FULL_DATA_CONTROL（clairvoyanttt，ready for NPU）
 
 用户 2026-09-23 解禁全量训练后，把「V3 获胜配方跑全部 **148,695** 张（含原 val 的 14,880 张）」做成可直接执行的交付包。分支 `clairvoyanttt/rematch750-full-ft`，配置 `configs/rematch750_full_ft/{FULL00,FULL01}.yaml`，运行器 `scripts/run_rematch750_full_ft.py`，定向测试 7 项。**未训练、未生成提交包、未触碰平台名额。**
