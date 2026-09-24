@@ -89,8 +89,12 @@ def per_class_report(config, run):
         validation_interpretation='overlapping diagnosis' if config['project'].get('full_training') else 'independent content groups, noisy labels'),run/'checkpoints/selected_report.json')
 
 
-def execute(action, config_path):
+def execute(action, config_path, output_root=None, device=None):
     config=load_config(config_path)
+    if output_root:
+        config['output']['root']=str(Path(output_root).resolve())
+    if device:
+        config['train']['device']=str(device)
     run=Path(config['output']['root'])/config['project']['experiment_id']/f"seed{config['project']['seed']}"
     if action=='prepare':return prepare(config)
     if action=='verify':
@@ -138,6 +142,10 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument('action',choices=['prepare','verify','cache','train','infer','run','record','prepare-full'])
     p.add_argument('--config',default=str(ROOT/'configs/rematch750_lp.yaml'))
+    p.add_argument('--output-root', default=None,
+                   help='Optional run-id-bound output root; does not change the config fingerprint.')
+    p.add_argument('--device', default=None,
+                   help='Optional runtime device override, e.g. npu:0.')
     p.add_argument('--candidate')
     p.add_argument('--submission-id')
     p.add_argument('--submitted-at')
@@ -167,7 +175,7 @@ def main():
         from aegis_clip.rematch_registry import full_configs
         print(full_configs(ROOT,args.candidate,read_registry()))
         return
-    execute(args.action,Path(args.config).resolve())
+    execute(args.action,Path(args.config).resolve(), output_root=args.output_root, device=args.device)
 
 
 if __name__=='__main__':main()

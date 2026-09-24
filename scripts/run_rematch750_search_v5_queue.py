@@ -16,8 +16,6 @@ import time
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "reproducibility/aegis_f1"))
 
@@ -74,36 +72,29 @@ def _write_lease(run_root: Path, trial_id: str) -> None:
     )
 
 
-def _write_runtime_config(source: Path, run_root: Path, device: str) -> Path:
-    """Resolve a source config into an absolute-path, run-root-bound copy."""
-    from aegis_clip.config import load_config, public_config
-
-    config = load_config(source)
-    public = public_config(config)
-    public["output"]["root"] = str(run_root)
-    public["train"]["device"] = device
-    public["project"]["trial_id"] = str(public["project"].get("trial_id", source.stem))
-    runtime = run_root / "runtime_config.yaml"
-    runtime.write_text(
-        yaml.safe_dump(public, sort_keys=False, allow_unicode=True),
-        encoding="utf-8",
+def _expected_model_run_dir(config: dict[str, Any], run_root: Path) -> Path:
+    """Return the model directory the CLI will create below the leased run root."""
+    return (
+        run_root
+        / str(config["project"]["experiment_id"])
+        / f"seed{int(config['project'].get('seed', 42))}"
     )
-    return runtime
 
 
-def _selected_report(run_root: Path) -> Path:
-    return run_root / "checkpoints/selected_report.json"
+def _selected_report(model_run_dir: Path) -> Path:
+    return model_run_dir / "checkpoints/selected_report.json"
 
 
-def _best_checkpoint(run_root: Path) -> Path:
-    return run_root / "checkpoints/best.pt"
+def _best_checkpoint(model_run_dir: Path) -> Path:
+    return model_run_dir / "checkpoints/best.pt"
 
 
 def _execute_one(trial_id: str, source_config: Path, device: str) -> int:
     from aegis_clip.config import load_config
     from aegis_clip.rematch_search_v5 import MechanismBlockedError, validate_declaration
 
-    declaration = validate_declaration(load_config(source_config))
+    config = load_config(source_config)
+    declaration = validate_declaration(config)
     if declaration["status"] != "implemented":
         _append_ledger(
             {
@@ -119,7 +110,7 @@ def _execute_one(trial_id: str, source_config: Path, device: str) -> int:
 
     # Re-run declaration with the executable gate before creating any run dir.
     try:
-        validate_declaration(load_config(source_config), require_implemented=True)
+        validate_declaration(config, require_implemented=True)
     except MechanismBlockedError as exc:
         _append_ledger({"trial_id": trial_id, "status": "blocked_implementation", "detail": str(exc)})
         print(f"SKIP {trial_id}: {exc}", flush=True)
@@ -127,7 +118,7 @@ def _execute_one(trial_id: str, source_config: Path, device: str) -> int:
 
     run_root = _new_run_root(trial_id)
     _write_lease(run_root, trial_id)
-    runtime_config = _write_runtime_config(source_config, run_root, device)
+    model_run_dir = _expected_model_run_dir(config, run_root)
     queue_log = run_root / "queue.log"
     command = [
         sys.executable,
@@ -135,7 +126,11 @@ def _execute_one(trial_id: str, source_config: Path, device: str) -> int:
         "aegis_clip.cli.rematch",
         "train",
         "--config",
-        str(runtime_config),
+        str(source_config),
+        "--output-root",
+        str(run_root),
+        "--device",
+        str(device),
     ]
     environment = dict(os.environ)
     environment.setdefault("PYTHONPATH", str(ROOT / "reproducibility/aegis_f1"))
@@ -153,7 +148,7 @@ def _execute_one(trial_id: str, source_config: Path, device: str) -> int:
         return_code = process.wait()
     elapsed = time.time() - started
 
-    if return_code != 0 or not _best_checkpoint(run_root).is_file():
+    if return_code != 0 or not _best_checkpoint(model_run_dir).is_file():
         _append_ledger(
             {
                 "trial_id": trial_id,
@@ -161,13 +156,14 @@ def _execute_one(trial_id: str, source_config: Path, device: str) -> int:
                 "return_code": return_code,
                 "elapsed_seconds": elapsed,
                 "run_root": str(run_root),
+                "model_run_dir": str(model_run_dir),
                 "queue_log": str(queue_log),
             }
         )
         print(f"FAIL {trial_id}: rc={return_code}", flush=True)
         return 1
 
-    if not _selected_report(run_root).is_file():
+    if not _selected_report(model_run_dir).is_file():
         _append_ledger(
             {
                 "trial_id": trial_id,
@@ -175,13 +171,14 @@ def _execute_one(trial_id: str, source_config: Path, device: str) -> int:
                 "return_code": return_code,
                 "elapsed_seconds": elapsed,
                 "run_root": str(run_root),
+                "model_run_dir": str(model_run_dir),
                 "reason": "best.pt exists but selected_report.json is missing",
             }
         )
         print(f"AUDIT_INCOMPLETE {trial_id}", flush=True)
         return 1
 
-    metrics = json.loads(_selected_report(run_root).read_text(encoding="utf-8"))
+    metrics = json.loads(_selected_report(model_run_dir).read_text(encoding="utf-8"))
     _append_ledger(
         {
             "trial_id": trial_id,
@@ -189,7 +186,8 @@ def _execute_one(trial_id: str, source_config: Path, device: str) -> int:
             "return_code": return_code,
             "elapsed_seconds": elapsed,
             "run_root": str(run_root),
-            "selected_report": str(_selected_report(run_root)),
+            "model_run_dir": str(model_run_dir),
+            "selected_report": str(_selected_report(model_run_dir)),
             "selected_epoch": metrics.get("selected_epoch"),
             "raw_macro": metrics.get("raw_macro"),
             "raw_micro": metrics.get("raw_micro"),
