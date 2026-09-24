@@ -109,3 +109,15 @@ ASCEND_RT_VISIBLE_DEVICES=<physical_card> \
   SHA；未出预测 CSV/ZIP 前不得称为可提交候选。
 
 本文件在 NPU 回填前只声明 `ready_for_npu`。
+
+## 8. Revision 对齐记录（2026-09-24 实现侧补记）
+
+- HL00 实际运行代码树：`9a74531a0e8fef54f2d2e955ecd4301c1e9ea8b6e1b30965bcd1b5ab8118aaba`
+  （与 `codex/rematch750_search_v5 @ 5ec6784` 的 `aegis_clip` 文件集一致）。
+- ET 对齐分支：`xjn/rematch750-f05-transfer-aligned`，基于 `5ec6784`，仅做加法式协议注册：
+  `rematch750_f05_transfer` 加入 supported protocol，并复用 V4 lineage dispatcher。
+- 对齐后 ET 代码树：`3417350f57de95cc5b592dbfb63df0a09824abd2851b1c1b191198538f1c4816`。
+- HL00 行为路径（`rematch750_head_l2sp`）不变；代码差异仅影响 `rematch750_f05_transfer` 的协议白名单与 lineage 分派。
+- 控制组绑定：`configs/rematch750_f05_transfer/hl00_control_binding.json`
+  （runtime config、selected_report、best.pt、training_code_manifest 的 SHA-256）。
+- 结果核对脚本：`scripts/report_rematch750_f05_transfer.py`。
