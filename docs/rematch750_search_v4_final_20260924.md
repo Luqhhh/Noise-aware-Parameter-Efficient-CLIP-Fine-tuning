@@ -153,3 +153,29 @@ FileNotFoundError: .../RM_V4_E02/seed42/logs/progress.jsonl
 - `C12`：NPU7，epoch 3/16，step 393
 
 尚未覆盖的旧失败结果只剩 `C09`、`C12`。
+
+---
+
+# 2026-09-24 04:23 UTC 全部重跑完成
+
+V4 全部 82 个 trial 均已有最终结果：
+
+| 状态 | 数量 |
+|---|---:|
+| passed_training | 79 |
+| already_complete | 3（F06、C03、C06） |
+| failed_rc_1 | 0 |
+
+C09、C12 最终结果：
+
+| trial | selected epoch | macro | micro | Δmacro vs V3 | Δmicro vs V3 |
+|---|---:|---:|---:|---:|---:|
+| C09 | 16 | 0.723513 | 0.734207 | +0.0041pp | +0.0067pp |
+| C12 | 16 | 0.723477 | 0.734207 | +0.0005pp | +0.0067pp |
+
+结论：
+- B05、E02 以及全部 C01–C12 重跑均已完成。
+- 当前没有失败 trial。
+- C 组所有结果均接近 V3 基线，没有显著本地增益。
+- 本地 top5 仍为 F05、F06、F03、F04、G01。
+- 当前本任务 NPU 队列已清空。
