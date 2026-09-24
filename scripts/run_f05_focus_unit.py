@@ -47,8 +47,10 @@ def _materialize_train_config(args: argparse.Namespace, unit: str) -> Path:
     config["train"]["device"] = str(args.device)
     config["output"]["root"] = str(Path(args.output_root).expanduser().resolve())
     if args.rm_lp_checkpoint:
+        # Keep the declared symlink path: trainer validates the sibling
+        # binding file and must not silently jump to the original NPU path.
         config["train"]["init_checkpoint"] = str(
-            Path(args.rm_lp_checkpoint).expanduser().resolve()
+            Path(os.path.abspath(str(Path(args.rm_lp_checkpoint).expanduser())))
         )
     if args.stage_dir:
         stage_dir = Path(args.stage_dir).expanduser().resolve()

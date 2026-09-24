@@ -15,6 +15,11 @@ import torch
 from aegis_clip.device import npu_initialized
 from aegis_clip.config import public_config
 from aegis_clip.model import AegisCLIP, build_model, interpolate_visual_positional_embedding
+from aegis_clip.npu_checkpoint_compat import ensure_npu_checkpoint_stubs
+
+# Make NPU-format checkpoints loadable on CUDA/CPU hosts.  A real torch_npu
+# installation is left untouched; the shim is a no-op there.
+ensure_npu_checkpoint_stubs()
 
 
 def save_checkpoint(
