@@ -42,7 +42,7 @@ loss:
   name: gce
   attention_local_training:
     enabled: true
-    crop_size: 160
+    crop_size: 189
     top_patches: 5
     local_supervision_weight: 0.5
     consistency_weight: 0.0

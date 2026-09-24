@@ -465,10 +465,8 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
         )
         _visual_amp(cfg, resolution=resolution, microbatch=256 if resolution == 320 else 128)
         cfg["model"]["peft_mode"] = "full_finetune"
-        crop_size = max(32, int(round(resolution * (area ** 0.5))))
-        if crop_size % 32:
-            crop_size -= crop_size % 32
-        crop_size = max(32, min(crop_size, resolution - 32))
+        crop_size = int(round(resolution * (area ** 0.5)))
+        crop_size = max(1, min(crop_size, resolution - 1))
         top_patches = max(1, min(5, (resolution // 32) ** 2))
         cfg["loss"]["attention_local_training"] = {
             "enabled": True,
