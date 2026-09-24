@@ -75,3 +75,57 @@ FileNotFoundError: .../RM_V4_E02/seed42/logs/progress.jsonl
 2. 增强日志目录与 `per_class_report` 的健壮性，避免日志被外部清理后直接失败。
 3. 重跑 B05、E02、C01–C12。
 4. 重跑后重新生成本地 top 与平台候选清单。
+
+---
+
+# 2026-09-24 03:30 UTC 重跑进展
+
+## 第一轮失败重跑已完成
+
+以下 trial 已完成并覆盖旧失败结果：
+
+| trial | status | selected epoch | macro | micro | Δmacro | Δmicro |
+|---|---|---:|---:|---:|---:|---:|
+| B05 | passed | 16 | 0.723607 | 0.734274 | +0.0135pp | +0.0134pp |
+| E02 | passed | 16 | 0.725303 | 0.733938 | +0.1831pp | −0.0202pp |
+| C01 | passed | 16 | 0.723252 | 0.733938 | −0.0221pp | −0.0202pp |
+| C04 | passed | 16 | 0.723286 | 0.733938 | −0.0187pp | −0.0202pp |
+| C07 | passed | 16 | 0.723649 | 0.734341 | +0.0176pp | +0.0202pp |
+| C10 | passed | 16 | 0.723477 | 0.734207 | +0.0005pp | +0.0067pp |
+
+这些结果均接近 V3 基线，没有明显本地增益；C 组 soft repair / hard relabel / unlabel consistency
+在当前点上未表现出显著收益。
+
+## 当前正在运行的 trial
+
+| NPU | trial | 进度 |
+|---|---|---|
+| 0 | C02 | epoch 12/16，step 1572 |
+| 1 | C03（迁移） | epoch 9/16，step 1140 |
+| 2 | C05 | epoch 11/16，step 1441 |
+| 4 | C06（迁移） | epoch 9/16，step 1060 |
+| 5 | C08 | epoch 11/16，step 1441 |
+| 7 | C11 | epoch 12/16，step 1480 |
+
+队列调整：
+- C03 从 NPU0 原队列迁移到 NPU1。
+- C06 从 NPU2 原队列迁移到 NPU4。
+- NPU0/NPU2 原队列 runner 已暂停，待迁移 trial 完成后恢复并跳过重复 trial。
+- C09、C12 仍保留在 NPU5、NPU7 原队列中。
+
+## 当前结果汇总
+
+- with_result：82
+- passed_training：73
+- already_complete：1（F06）
+- failed_rc_1：8（C02、C03、C05、C06、C08、C09、C11、C12 的旧失败结果，待覆盖）
+
+本地 top5 未变化：
+
+| trial | macro | micro |
+|---|---:|---:|
+| F05 | 74.4307% | 75.4435% |
+| F06 | 74.3915% | 75.4301% |
+| F03 | 74.0670% | 75.0874% |
+| F04 | 74.0063% | 75.0538% |
+| G01 | 73.2964% | 74.3884% |
