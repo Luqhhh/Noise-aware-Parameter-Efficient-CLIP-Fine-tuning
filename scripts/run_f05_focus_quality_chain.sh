@@ -14,6 +14,8 @@ OOF_DIR="${OOF_DIR:-$REPO_ROOT/outputs/f05_focus/oof}"
 ARTIFACT_DIR="${ARTIFACT_DIR:-$REPO_ROOT/artifacts/f05_focus}"
 C0_RUN_DIR="${C0_RUN_DIR:-$REPO_ROOT/outputs/f05_focus/C0_F05_CUDA/seed42}"
 C0_CONFIG="${C0_CONFIG:-$REPO_ROOT/outputs/f05_focus/_runtime_configs/C0_cuda_0.yaml}"
+L05_DONE="${L05_DONE:-$REPO_ROOT/outputs/f05_focus_l05/L05_DONE}"
+L05_FAILED="${L05_FAILED:-$REPO_ROOT/outputs/f05_focus_l05/L05_FAILED}"
 WAIT_FOR_C0="${WAIT_FOR_C0:-1}"
 DEVICE="${DEVICE:-cuda:0}"
 
@@ -46,6 +48,13 @@ REPORT_PY
     exit 1
   fi
   echo "[quality-chain] C0 finished"
+fi
+
+if [[ ! -f "$L05_DONE" && ! -f "$L05_FAILED" ]]; then
+  echo "[quality-chain] waiting for L05 to finish before OOF"
+  while [[ ! -f "$L05_DONE" && ! -f "$L05_FAILED" ]]; do
+    sleep 60
+  done
 fi
 
 # run_oof opens image_path values directly; canonical CSVs use train/... .

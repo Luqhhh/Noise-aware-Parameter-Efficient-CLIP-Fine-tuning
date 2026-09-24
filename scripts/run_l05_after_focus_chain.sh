@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Wait for the GPU0 C0 run and the OOF/quality chain, then start L05 locally.
+# Wait for GPU0 C0, then run L05 before the OOF/quality chain.
 #
 # L05: R02 384px global full fine-tune plus confidence-gated attention-local
 # supervision from epoch 5 with local_supervision_weight = 0.25.
@@ -21,14 +21,17 @@ EXPERIMENT_ID="${EXPERIMENT_ID:-RM_V5_L05_CUDA_LOCAL}"
 MICROBATCH_CANDIDATES="${MICROBATCH_CANDIDATES:-8,4,2}"
 
 mkdir -p "$OUTPUT_ROOT"
-echo "[l05-wait] waiting for C0 and OOF/quality chain to finish"
-while pgrep -f "resume_c0_gpu0.py" >/dev/null || \\
-      pgrep -f "run_f05_focus_quality_chain.sh" >/dev/null; do
+rm -f "$OUTPUT_ROOT/L05_DONE" "$OUTPUT_ROOT/L05_FAILED"
+
+echo "[l05-wait] waiting for C0 to finish"
+while pgrep -f "resume_c0_gpu0.py" >/dev/null || \
+      pgrep -f "aegis_clip.cli.rematch train --config .*C0_cuda_0.yaml" >/dev/null; do
   sleep 60
 done
+echo "[l05-wait] C0 finished; starting L05 before OOF/quality"
 
-echo "[l05-wait] GPU is expected free; starting L05"
-exec python3 "$REPO_ROOT/scripts/run_l05_local_retrain.py" \
+set +e
+python3 "$REPO_ROOT/scripts/run_l05_local_retrain.py" \
   --auto-microbatch \
   --microbatch-candidates "$MICROBATCH_CANDIDATES" \
   --device "$DEVICE" \
@@ -40,3 +43,14 @@ exec python3 "$REPO_ROOT/scripts/run_l05_local_retrain.py" \
   --runtime-dir "$RUNTIME_DIR" \
   --experiment-id "$EXPERIMENT_ID" \
   --desktop-dir "$DESKTOP_DIR"
+L05_STATUS=$?
+set -e
+
+if [[ "$L05_STATUS" -eq 0 ]]; then
+  touch "$OUTPUT_ROOT/L05_DONE"
+  echo "[l05-wait] L05 completed; OOF/quality chain may proceed"
+else
+  touch "$OUTPUT_ROOT/L05_FAILED"
+  echo "[l05-wait] L05 failed with status=$L05_STATUS; OOF/quality chain may proceed" >&2
+fi
+exit "$L05_STATUS"
