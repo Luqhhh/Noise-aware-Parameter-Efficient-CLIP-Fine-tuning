@@ -13,6 +13,7 @@ TRAIN_ROOT="${TRAIN_ROOT:-/home/lux1/noise/train}"
 OOF_DIR="${OOF_DIR:-$REPO_ROOT/outputs/f05_focus/oof}"
 ARTIFACT_DIR="${ARTIFACT_DIR:-$REPO_ROOT/artifacts/f05_focus}"
 C0_RUN_DIR="${C0_RUN_DIR:-$REPO_ROOT/outputs/f05_focus/C0_F05_CUDA/seed42}"
+C0_CONFIG="${C0_CONFIG:-$REPO_ROOT/outputs/f05_focus/_runtime_configs/C0_cuda_0.yaml}"
 WAIT_FOR_C0="${WAIT_FOR_C0:-1}"
 DEVICE="${DEVICE:-cuda:0}"
 
@@ -20,9 +21,26 @@ mkdir -p "$OOF_DIR" "$ARTIFACT_DIR"
 
 if [[ "$WAIT_FOR_C0" == "1" ]]; then
   echo "[quality-chain] waiting for C0 to finish"
-  while pgrep -f "aegis_clip.cli.rematch train --config .*C0_cuda_0.yaml" >/dev/null; do
+  while pgrep -f "aegis_clip.cli.rematch train --config .*C0_cuda_0.yaml" >/dev/null || \
+        pgrep -f "resume_c0_gpu0.py" >/dev/null; do
     sleep 60
   done
+  if [[ ! -f "$C0_RUN_DIR/checkpoints/selected_report.json" ]]; then
+    echo "[quality-chain] selected_report missing; generating it from best.pt"
+    env PYTHONPATH="$REPO_ROOT/reproducibility/aegis_f1" \
+      python3 - "$C0_CONFIG" "$C0_RUN_DIR" <<'REPORT_PY'
+import sys
+from pathlib import Path
+
+from aegis_clip.cli.rematch import per_class_report
+from aegis_clip.config import load_config
+
+config = load_config(sys.argv[1])
+run_dir = Path(sys.argv[2]).resolve()
+per_class_report(config, run_dir)
+print(f"wrote {run_dir / 'checkpoints/selected_report.json'}")
+REPORT_PY
+  fi
   if [[ ! -f "$C0_RUN_DIR/checkpoints/selected_report.json" ]]; then
     echo "[quality-chain] C0 stopped without selected_report.json: $C0_RUN_DIR" >&2
     exit 1
@@ -44,8 +62,8 @@ python3 "$REPO_ROOT/scripts/build_rematch750_quality_asset.py" \
   --seed 42 \
   --epochs 30 \
   --device "$DEVICE" \
-  --flip-batch-size 128 \
-  --flip-workers 4
+  --flip-batch-size 64 \
+  --flip-workers 2
 echo "[quality-chain] OOF/quality: done"
 
 echo "[quality-chain] N1 manifest: start"
