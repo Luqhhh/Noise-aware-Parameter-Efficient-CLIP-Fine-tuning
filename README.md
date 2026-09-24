@@ -8,6 +8,8 @@
 
 **2026-09-24 xjn 第二批策略已交付、等待 NPU：** `REMATCH750_F05_EVIDENCE_TRANSFER` 在 F05 320px 固定配方上登记 10 个非重复单变量点，覆盖旧正信号迁移（anchor、GCE q、Balanced Softmax）、backbone/head LR 括点及 warmup/训练时长；统一复用已排队的 `HL00` 控制，组合必须等单因素过门后再派生。配置生成器、10 份配置、manifest、运行器、预注册和定向测试均已就绪；**尚未训练、没有结果、没有提交包、没有平台成绩**。详见[预注册及交接](docs/rematch750_f05_transfer_prereg_20260924.md)。
 
+**2026-09-24 xjn 第三批策略已交付、等待 NPU：** `REMATCH750_DECAY_FILTER_2X2` 针对当前 AdamW 会对 bias、LayerNorm affine 和 token 向量同样施加非零 weight decay 的实现，固定 head/backbone WD 都为 `1e-4`，用同版本 `HL00` 控制做 head × visual 的矩阵-only decay 2×2 因子实验。默认行为保持不变；三份新配置只显式豁免对应 scope 的一维参数。生成器、配置、manifest、运行器、预注册与实现级测试已就绪；**尚未训练、没有结果、没有提交包、没有平台成绩**。详见[预注册及交接](docs/rematch750_decay_filter_prereg_20260924.md)。
+
 ## 当前状态
 
 **上面那段是本项目约定的状态落点：每完成一次交付就在原地更新它**（完成后做了什么、独立验证指标、是否有平台成绩）。阶段相关的一切都以它为准，不要在别处重复。

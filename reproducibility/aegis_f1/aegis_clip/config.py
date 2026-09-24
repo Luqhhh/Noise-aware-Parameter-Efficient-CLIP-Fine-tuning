@@ -385,6 +385,10 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("Unsupported train.gradient_norm_impl")
     if float(train.get("amp_initial_scale", 65536.0)) <= 0.0:
         raise ConfigError("train.amp_initial_scale must be positive")
+    for key in ("head_weight_decay_filter", "backbone_weight_decay_filter"):
+        mode = str(train.get(key, "all"))
+        if mode not in {"all", "matrix_only"}:
+            raise ConfigError(f"train.{key} must be all or matrix_only")
     selector_metric = evaluation.get("selector_metric", "proxy_macro")
     if selector_metric not in SELECTOR_METRICS:
         raise ConfigError(

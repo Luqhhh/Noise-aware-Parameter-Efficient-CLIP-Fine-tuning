@@ -25,6 +25,18 @@
 
 在 NPU 资源充足的前提下，把搜索扩展为十个**单变量、可并行、非重复**的 F05 320px 点位，并复用已排队的同版本 `HL00` 作为共同对照。ET01–ET04 迁移 V4 的小正信号（feature anchor=1、GCE q=0.7、Balanced Softmax τ=0.5/1.0）；ET05–ET08 对 F05 的 backbone/head LR 做上下侧括点；ET09/ET10 分别检验 1 epoch warmup 与 20 epoch cosine。每点除声明变量、实验身份与输出外均与 HL00 一致；组合只允许由先独立达 `+0.30pp macro` 且 micro 不退化的因素派生。生成器、10 份配置、manifest、运行器和 5 项定向测试已就绪，**未训练、未生成提交包、未触碰平台名额**；详见[预注册及 NPU 交接](rematch750_f05_transfer_prereg_20260924.md)。
 
+## 在途方案：REMATCH750_DECAY_FILTER_2X2（xjn，3 点 ready for NPU）
+
+代码审计发现 Aegis 当前 AdamW 会把同一 scope 的非零 weight decay 同时施加到
+权重矩阵、classifier bias、视觉 LayerNorm affine 与 token 向量。已有 WD_RELAX
+只比较整个 head/visual scope 的系数为 `1e-4` 或 `0`，没有回答一维参数是否应
+豁免。本轮固定 head/backbone WD 数值都为 `1e-4`，以同版本 `HL00` 为控制，登记
+严格 2×2 的另外三点：`DF01` 仅 head matrix-only、`DF02` 仅 visual
+matrix-only、`DF03` 两端 matrix-only。默认 `all` 完全保留旧行为；新模式只把
+`ndim<2` 张量拆入同 LR、零 decay 的参数组。配置生成器、三份配置、manifest、
+运行器、预注册和实现级测试已就绪，**未训练、没有结果、没有提交包、没有平台
+成绩**；详见[预注册及 NPU 交接](rematch750_decay_filter_prereg_20260924.md)。
+
 ## 在途方案：REMATCH750_FULL_DATA_CONTROL（clairvoyanttt，ready for NPU）
 
 用户 2026-09-23 解禁全量训练后，把「V3 获胜配方跑全部 **148,695** 张（含原 val 的 14,880 张）」做成可直接执行的交付包。分支 `clairvoyanttt/rematch750-full-ft`，配置 `configs/rematch750_full_ft/{FULL00,FULL01}.yaml`，运行器 `scripts/run_rematch750_full_ft.py`，定向测试 7 项。**未训练、未生成提交包、未触碰平台名额。**

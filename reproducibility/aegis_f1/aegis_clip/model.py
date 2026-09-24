@@ -838,34 +838,96 @@ class AegisCLIP(nn.Module):
         head_weight_decay: float,
         backbone_lr: float,
         backbone_weight_decay: float,
+        head_weight_decay_filter: str = "all",
+        backbone_weight_decay_filter: str = "all",
     ) -> list[dict[str, Any]]:
-        groups: list[dict[str, Any]] = [
-            {
-                "name": "head",
-                "params": [
-                    parameter
-                    for parameter in (
-                        list(self.feature_adapter.parameters())
-                        + list(self.classifier.parameters())
-                    )
-                    if parameter.requires_grad
-                ],
-                "lr": float(head_lr),
-                "weight_decay": float(head_weight_decay),
-            }
+        """Build optimizer groups with an optional one-dimensional no-decay split.
+
+        ``all`` preserves the historical behavior byte-for-byte: every trainable
+        tensor in a scope receives the configured AdamW decay. ``matrix_only``
+        keeps the same learning rate but assigns zero decay to one-dimensional
+        tensors (biases, LayerNorm affine parameters, and vector tokens). This
+        makes the treatment explicit instead of silently changing the numeric
+        weight-decay coefficient for the whole scope.
+        """
+
+        groups: list[dict[str, Any]] = []
+
+        def append_scope(
+            scope: str,
+            named_parameters: list[tuple[str, nn.Parameter]],
+            *,
+            learning_rate: float,
+            weight_decay: float,
+            filter_mode: str,
+        ) -> None:
+            if filter_mode not in {"all", "matrix_only"}:
+                raise ValueError(
+                    f"Unsupported {scope} weight-decay filter: {filter_mode}"
+                )
+            trainable = [
+                (name, parameter)
+                for name, parameter in named_parameters
+                if parameter.requires_grad
+            ]
+            if not trainable:
+                return
+            if filter_mode == "all":
+                groups.append(
+                    {
+                        "name": scope,
+                        "params": [parameter for _, parameter in trainable],
+                        "lr": float(learning_rate),
+                        "weight_decay": float(weight_decay),
+                    }
+                )
+                return
+            decay = [parameter for _, parameter in trainable if parameter.ndim >= 2]
+            no_decay = [parameter for _, parameter in trainable if parameter.ndim < 2]
+            if decay:
+                groups.append(
+                    {
+                        "name": scope,
+                        "params": decay,
+                        "lr": float(learning_rate),
+                        "weight_decay": float(weight_decay),
+                    }
+                )
+            if no_decay:
+                groups.append(
+                    {
+                        "name": f"{scope}_no_decay",
+                        "params": no_decay,
+                        "lr": float(learning_rate),
+                        "weight_decay": 0.0,
+                    }
+                )
+
+        head_named = [
+            (f"feature_adapter.{name}", parameter)
+            for name, parameter in self.feature_adapter.named_parameters()
+        ] + [
+            (f"classifier.{name}", parameter)
+            for name, parameter in self.classifier.named_parameters()
         ]
-        visual = [
-            parameter for parameter in self.visual.parameters() if parameter.requires_grad
+        append_scope(
+            "head",
+            head_named,
+            learning_rate=head_lr,
+            weight_decay=head_weight_decay,
+            filter_mode=str(head_weight_decay_filter),
+        )
+        visual_named = [
+            (f"visual.{name}", parameter)
+            for name, parameter in self.visual.named_parameters()
         ]
-        if visual:
-            groups.append(
-                {
-                    "name": "visual",
-                    "params": visual,
-                    "lr": float(backbone_lr),
-                    "weight_decay": float(backbone_weight_decay),
-                }
-            )
+        append_scope(
+            "visual",
+            visual_named,
+            learning_rate=backbone_lr,
+            weight_decay=backbone_weight_decay,
+            filter_mode=str(backbone_weight_decay_filter),
+        )
         return groups
 
     def effective_spec(self) -> dict[str, Any]:
