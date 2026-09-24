@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -24,6 +25,16 @@ FIELDS=['candidate','stage','data_version','code_commit','config_sha256','checkp
         'status','is_highest_score']
 
 
+def _git_commit_or_unknown(cwd: Path) -> str:
+    """Return HEAD commit, or an explicitly supplied audit label outside git."""
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=cwd, text=True
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return os.environ.get("REMATCH_CODE_COMMIT", "unknown")
+
+
 def read_registry():
     if not REGISTRY.exists():return []
     with REGISTRY.open() as f:return list(csv.DictReader(f))
@@ -41,7 +52,7 @@ def register(config, checkpoint, submission):
         if previous[0]['zip_sha256']!=m['submission_zip_sha256']:
             raise ValueError('Candidate ID already registered with different predictions')
         return
-    commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+    commit=_git_commit_or_unknown(ROOT)
     # Code hash also binds uncommitted implementation while a segment is running.
     code_files=[*sorted((ROOT/'reproducibility/aegis_f1/aegis_clip').rglob('*.py'))]
     atomic_json_dump({str(p.relative_to(ROOT)):sha256_file(p) for p in code_files},submission/'code_hashes.json')
@@ -109,7 +120,7 @@ def execute(action, config_path, output_root=None, device=None):
         from aegis_clip.trainer import train
         code_files=sorted((ROOT/'reproducibility/aegis_f1/aegis_clip').rglob('*.py'))
         # Keep the snapshot outside run_dir: trainer refuses pre-existing run dirs.
-        atomic_json_dump(dict(commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+        atomic_json_dump(dict(commit=_git_commit_or_unknown(ROOT),
             files={str(p.relative_to(ROOT)):sha256_file(p) for p in code_files}),
             run.parent/'training_code_manifest.json')
         checkpoint=train(config)
