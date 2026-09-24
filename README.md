@@ -6,6 +6,8 @@
 
 **2026-09-24 xjn 新方案已交付、等待 NPU：** `REMATCH750_HEAD_L2SP` 使用当前平台最佳 F05 的 320px 配方做同版本配对控制，在同一 RM-LP 父权重上比较普通线性头与零初始化 anchored-residual 头，并扫描残差 head weight decay `1e-4 / 1e-3 / 1e-2`。配置、运行器、manifest、预注册和定向测试已就绪；**尚未训练、没有结果、没有提交包、没有平台成绩**。详见[预注册及交接](docs/rematch750_head_l2sp_prereg_20260924.md)。
 
+**2026-09-24 xjn 第二批策略已交付、等待 NPU：** `REMATCH750_F05_EVIDENCE_TRANSFER` 在 F05 320px 固定配方上登记 10 个非重复单变量点，覆盖旧正信号迁移（anchor、GCE q、Balanced Softmax）、backbone/head LR 括点及 warmup/训练时长；统一复用已排队的 `HL00` 控制，组合必须等单因素过门后再派生。配置生成器、10 份配置、manifest、运行器、预注册和定向测试均已就绪；**尚未训练、没有结果、没有提交包、没有平台成绩**。详见[预注册及交接](docs/rematch750_f05_transfer_prereg_20260924.md)。
+
 ## 当前状态
 
 **上面那段是本项目约定的状态落点：每完成一次交付就在原地更新它**（完成后做了什么、独立验证指标、是否有平台成绩）。阶段相关的一切都以它为准，不要在别处重复。
