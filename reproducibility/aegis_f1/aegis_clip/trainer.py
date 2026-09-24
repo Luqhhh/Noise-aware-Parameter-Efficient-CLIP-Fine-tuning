@@ -217,7 +217,7 @@ def train(
         image_root=data_config["train_root"],
         preprocess=preprocess,
         feature_store=feature_store,
-        trust_bundle=trust_bundle,
+        trust_bundle=None,
     )
     _validate_train_val_overlap(
         train_dataset.paths,
@@ -675,6 +675,8 @@ def train(
     update_hook = optimizer.register_step_post_hook(count_optimizer_update)
     training_seconds = 0.0
     for epoch in range(start_epoch, epochs + 1):
+        log_dir.mkdir(parents=True, exist_ok=True)
+        checkpoint_dir.mkdir(parents=True, exist_ok=True)
         if hasattr(train_sampler, "set_epoch"):
             train_sampler.set_epoch(epoch)
         epoch_training_start = time.monotonic()

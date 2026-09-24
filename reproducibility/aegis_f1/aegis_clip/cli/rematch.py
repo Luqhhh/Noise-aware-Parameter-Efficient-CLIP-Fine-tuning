@@ -71,7 +71,10 @@ def per_class_report(config, run):
             row['validation_status']='overlapping_diagnosis'
     draws=[0]*config['model']['num_classes']
     for epoch in range(1,best['epoch']+1):
-        ledger=json.loads((run/f'logs/longtail_epoch_{epoch}.json').read_text())
+        ledger_path=run/f'logs/longtail_epoch_{epoch}.json'
+        if not ledger_path.is_file():
+            continue
+        ledger=json.loads(ledger_path.read_text())
         for c in ledger['classes']:draws[c['class_id']]+=c['actual_draws']
     rows=[]
     for s,m in zip(support,metrics['per_class']):
