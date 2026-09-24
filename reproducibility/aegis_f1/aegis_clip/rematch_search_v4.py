@@ -19,7 +19,7 @@ from aegis_clip.runtime import sha256_file, sha256_lines
 
 
 PROTOCOL = "rematch750_search_v4"
-PROTOCOLS = ("rematch750_search_v4", "rematch750_search_v5")
+PROTOCOLS = ("rematch750_search_v4", "rematch750_search_v5", "rematch750_head_l2sp")
 ALLOWED_RESOLUTIONS = (224, 256, 288, 320)
 V5_ALLOWED_RESOLUTIONS = (224, 320, 352, 384, 416, 448)
 PARENT_KINDS = {

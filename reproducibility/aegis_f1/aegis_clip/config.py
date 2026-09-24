@@ -78,9 +78,11 @@ INTERNAL_EXPERIMENT_STAGES = {"p4_ablation"}
 PROJECT_STAGES = COMPETITION_STAGES | INTERNAL_EXPERIMENT_STAGES
 REMATCH750_SEARCH_V4 = "rematch750_search_v4"
 REMATCH750_SEARCH_V5 = "rematch750_search_v5"
+REMATCH750_HEAD_L2SP = "rematch750_head_l2sp"
 REMATCH750_SEARCH_PROTOCOLS = {
     REMATCH750_SEARCH_V4,
     REMATCH750_SEARCH_V5,
+    REMATCH750_HEAD_L2SP,
 }
 V4_TRAIN_AUGMENTATIONS = {"weak_rrc_flip_randaugment"}
 V4_PARENT_KINDS = {"shared_lp", "same_split_continue", "frozen_backbone_head", "official_clip_head"}
