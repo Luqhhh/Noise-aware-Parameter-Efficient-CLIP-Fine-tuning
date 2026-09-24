@@ -1,0 +1,39 @@
+schema_version: 1
+experiment_id: A0_M1
+direction: attention-local
+stage: round0
+cost: low
+purpose: training-free migration of F05 global + attention local fusion
+parent:
+  kind: f05_checkpoint
+  checkpoint_env: F05_CHECKPOINT
+mechanism:
+  name: attention_guided_global_local_probability_fusion
+  input_resolution: 320
+  crop_size: 224
+  top_k: 5
+  fusions:
+  - global_weight: 0.5
+    local_weight: 0.5
+    tag: A0-50
+  - global_weight: 0.6
+    local_weight: 0.4
+    tag: A0-40
+  flip: false
+  reuse_existing_checkpoint: true
+promotion:
+  macro_delta_pp_min: 0.3
+  micro_delta_pp_min: -0.1
+  strong_macro_delta_pp: 0.5
+  breakthrough_macro_delta_pp: 1.0
+platform:
+  submission_allowed: false
+  test_tuning_allowed: false
+audit:
+  native_global_vs_attention_pipeline_global:
+    require_prediction_agreement: 1.0
+    require_max_abs_logit_diff: 0.0
+    acceptance_tolerance: 1.0e-05
+references:
+  preliminary_m1_raw_gain_pp: 0.85
+  frozen_local_view: 320px -> crop224 -> top5

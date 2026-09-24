@@ -1,0 +1,39 @@
+schema_version: 1
+experiment_id: D2_PTA
+direction: dual-adapter
+stage: round2
+cost: medium_low
+purpose: validate part-token adapter on F05
+parent:
+  kind: f05_checkpoint
+  checkpoint_env: F05_CHECKPOINT
+mechanism:
+  frozen_parent: F05_CHECKPOINT
+  train_subset: artifacts/f05_focus/clean070.csv
+  frozen_clean_probability_threshold: 0.7
+  local_geometry:
+    input_resolution: 320
+    crop_size: 160
+    top_k: 5
+  backbone_frozen: true
+  combine_rule: additive feature residual around native F05 local features
+  adapter: PartTokenResidualAdapter
+  feature_dim: 512
+  bottleneck_dim: 64
+  residual_scale: 0.25
+  dropout: 0.1
+  part_top_patches: 8
+  part_temperature: 0.07
+promotion:
+  macro_delta_pp_min: 0.3
+  micro_delta_pp_min: -0.1
+  strong_macro_delta_pp: 0.5
+  breakthrough_macro_delta_pp: 1.0
+platform:
+  submission_allowed: false
+  test_tuning_allowed: false
+audit:
+  epoch_zero_must_equal_f05_m1: true
+  global_path_frozen: true
+  same_subset_as_d1: true
+  part_top_patches_frozen: 8

@@ -29,12 +29,17 @@ from aegis_clip.part_token_adapter import (
 from aegis_clip.runtime import atomic_json_dump, set_seed, sha256_file
 
 
-def _load_cache(path: str | Path) -> dict[str, Any]:
+def _load_cache(
+    path: str | Path,
+    *,
+    expected_feature_dim: int | None = None,
+    expected_num_classes: int | None = None,
+) -> dict[str, Any]:
     payload = torch.load(path, map_location="cpu", weights_only=False)
     validate_part_token_cache(
         payload,
-        expected_feature_dim=512,
-        expected_num_classes=500,
+        expected_feature_dim=expected_feature_dim,
+        expected_num_classes=expected_num_classes,
     )
     return payload
 
@@ -222,13 +227,25 @@ def train_part_token_adapter(
         raise ValueError(
             f"R1 cache reference audit failed: center={center_audit}, m1={m1_audit}"
         )
+    feature_dim = int(
+        torch.as_tensor(train_cache["local_features"]).shape[1]
+    )
+    num_classes = int(
+        torch.as_tensor(train_cache["global_logits"]).shape[1]
+    )
+    if feature_dim != int(classifier_weight.shape[1]) or num_classes != int(
+        classifier_weight.shape[0]
+    ):
+        raise ValueError(
+            "R1 cache feature/class dimensions do not match the parent classifier"
+        )
 
     set_seed(int(seed), deterministic=True)
     device = torch.device(device_name)
     if device.type == "cuda" and not torch.cuda.is_available():
         raise ValueError("CUDA was requested but is unavailable")
     adapter = PartTokenResidualAdapter(
-        512,
+        feature_dim,
         int(bottleneck_dim),
         residual_scale=float(residual_scale),
         dropout=float(dropout),
@@ -484,7 +501,7 @@ def train_part_token_adapter(
         "experiment": "R1_F1_M1_PART_TOKEN_RESIDUAL",
         "state_dict": best_state,
         "spec": {
-            "feature_dim": 512,
+            "feature_dim": int(feature_dim),
             "bottleneck_dim": int(bottleneck_dim),
             "residual_scale": float(residual_scale),
             "dropout": float(dropout),

@@ -25,10 +25,17 @@ from aegis_clip.local_feature_adapter import (
 from aegis_clip.runtime import atomic_json_dump, set_seed, sha256_file
 
 
-def _load_cache(path: str | Path) -> dict[str, Any]:
+def _load_cache(
+    path: str | Path,
+    *,
+    expected_feature_dim: int | None = None,
+    expected_num_classes: int | None = None,
+) -> dict[str, Any]:
     payload = torch.load(path, map_location="cpu", weights_only=False)
     validate_local_adapter_cache(
-        payload, expected_feature_dim=512, expected_num_classes=500
+        payload,
+        expected_feature_dim=expected_feature_dim,
+        expected_num_classes=expected_num_classes,
     )
     return payload
 
@@ -92,7 +99,7 @@ def _classifier_from_checkpoint(
         bias = torch.as_tensor(state["classifier.bias"]).float().cpu()
     except KeyError as exc:
         raise ValueError("Parent checkpoint lacks the linear classifier") from exc
-    if tuple(weight.shape) != (500, 512) or tuple(bias.shape) != (500,):
+    if weight.ndim != 2 or bias.ndim != 1 or weight.shape[0] != bias.shape[0]:
         raise ValueError("Parent classifier dimensions are unexpected")
     return weight, bias, checkpoint
 
@@ -142,13 +149,14 @@ def _reference_audits_pass(
 def _prediction_metrics(
     predictions: torch.Tensor, cache: dict[str, Any]
 ) -> dict[str, float | int]:
+    num_classes = int(torch.as_tensor(cache["global_logits"]).shape[1])
     return prediction_metrics(
         predictions,
         labels=cache["labels"],
         clean_probability=cache["clean_probability"],
         pseudo_labels=cache["pseudo_labels"],
         correction_alpha=cache["correction_alpha"],
-        num_classes=500,
+        num_classes=num_classes,
         clean_core_threshold=0.70,
     )
 
@@ -358,13 +366,25 @@ def train_local_feature_adapter(
             "O3 cache reference audit failed: "
             f"center={center_audits}, m1={m1_audits}"
         )
+    feature_dim = int(
+        torch.as_tensor(train_caches[0]["local_features"]).shape[1]
+    )
+    num_classes = int(
+        torch.as_tensor(train_caches[0]["global_logits"]).shape[1]
+    )
+    if feature_dim != int(classifier_weight.shape[1]) or num_classes != int(
+        classifier_weight.shape[0]
+    ):
+        raise ValueError(
+            "O3 cache feature/class dimensions do not match the parent classifier"
+        )
 
     set_seed(int(seed), deterministic=True)
     device = torch.device(device_name)
     if device.type == "cuda" and not torch.cuda.is_available():
         raise ValueError("CUDA was requested but is unavailable")
     adapter = BottleneckLocalFeatureAdapter(
-        512,
+        feature_dim,
         int(bottleneck_dim),
         residual_scale=float(residual_scale),
         dropout=float(dropout),
@@ -570,7 +590,7 @@ def train_local_feature_adapter(
         best_state = {
             name: value.detach().cpu().clone()
             for name, value in BottleneckLocalFeatureAdapter(
-                512,
+                feature_dim,
                 int(bottleneck_dim),
                 residual_scale=float(residual_scale),
                 dropout=float(dropout),
@@ -610,7 +630,7 @@ def train_local_feature_adapter(
         ),
         "state_dict": best_state,
         "spec": {
-            "feature_dim": 512,
+            "feature_dim": int(feature_dim),
             "bottleneck_dim": int(bottleneck_dim),
             "residual_scale": float(residual_scale),
             "dropout": float(dropout),

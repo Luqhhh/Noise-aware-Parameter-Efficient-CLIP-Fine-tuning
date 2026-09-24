@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "protocol": "F05_FOCUS_SEVEN_UNIT_STAGE1",
+  "status": "design_only_not_yet_run",
+  "baseline": {
+    "experiment_id": "RM_V4_F05",
+    "macro": 0.7443073987960815,
+    "micro": 0.7544354796409607,
+    "platform_score_percent": 65.4711
+  },
+  "fixed_recipe": {
+    "input_resolution": 320,
+    "epochs": 16,
+    "effective_batch_size": 1024,
+    "head_lr": 0.0004,
+    "backbone_lr": 1.2e-05,
+    "weight_decay": 0.0001,
+    "loss": "ce_warmup_2_then_gce_q0.5",
+    "feature_distillation_weight": 2.0,
+    "seed": 42,
+    "selection": "raw_macro_then_raw_micro"
+  },
+  "promotion": {
+    "fail": "macro_delta_pp <= 0",
+    "weak": "0 < macro_delta_pp < 0.30",
+    "promote": "macro_delta_pp >= 0.30 and micro_delta_pp >= -0.10",
+    "strong": "macro_delta_pp >= 0.50 and micro_delta_pp >= 0",
+    "breakthrough": "macro_delta_pp >= 1.00",
+    "seed_confirmation": "2 of 3 seeds same direction after seed42 strong"
+  },
+  "units": [
+    {
+      "id": "C0",
+      "direction": "CUDA control",
+      "change": "rerun F05 on CUDA",
+      "cost": "high",
+      "round": 1,
+      "config": "configs/f05_focus/C0_cuda_control.yaml",
+      "config_sha256": "19bad81aa3ae7c7ebf042de3c604be893a3d1dd68b3075803cf3e5bfbe2fe9c3",
+      "kind": "train"
+    },
+    {
+      "id": "N1",
+      "direction": "high-precision noise drop",
+      "change": "F05 recipe + strict CL+kNN reject",
+      "cost": "high",
+      "round": 1,
+      "config": "configs/f05_focus/N1_hp_noise_drop.yaml",
+      "config_sha256": "b95aee4531882553dc1358351c7e3023298698e31e7f8e4802e7975d5d7984e3",
+      "kind": "train",
+      "paired_control": "C0"
+    },
+    {
+      "id": "A0",
+      "direction": "attention-local",
+      "change": "F05 checkpoint + M1",
+      "cost": "low",
+      "round": 0,
+      "config": "configs/f05_focus/A0_m1.yaml",
+      "config_sha256": "248215bf15bf9e81279044d575a554576b497469d85f805a44a54cc32758b60f",
+      "kind": "probe"
+    },
+    {
+      "id": "P0",
+      "direction": "prior",
+      "change": "F05 + validation-fitted prior",
+      "cost": "very_low",
+      "round": 0,
+      "config": "configs/f05_focus/P0_prior.yaml",
+      "config_sha256": "cb5836a3e1d7c09425be89307af27a0b76e248f6d3500d55e90ee833d35812aa",
+      "kind": "probe"
+    },
+    {
+      "id": "D1",
+      "direction": "Dual Adapter",
+      "change": "F05 + O3",
+      "cost": "medium_low",
+      "round": 2,
+      "config": "configs/f05_focus/D1_o3.yaml",
+      "config_sha256": "35cc505dc1125998f9062e208bcdcf66aa722d578decb1b760996a22c813c3ca",
+      "kind": "adapter"
+    },
+    {
+      "id": "D2",
+      "direction": "Dual Adapter",
+      "change": "F05 + PTA",
+      "cost": "medium_low",
+      "round": 2,
+      "config": "configs/f05_focus/D2_pta.yaml",
+      "config_sha256": "fd7b740d3c08b44dd4a40b975e3b28c158d9ad585bb28f368360a312df9e8624",
+      "kind": "adapter"
+    },
+    {
+      "id": "D3",
+      "direction": "Dual Adapter",
+      "change": "F05 + O3 + PTA",
+      "cost": "low",
+      "round": 3,
+      "config": null,
+      "config_sha256": null,
+      "kind": "compose",
+      "depends_on": [
+        "D1",
+        "D2"
+      ]
+    }
+  ],
+  "outputs": {
+    "C0": "outputs/f05_focus/C0_F05_CUDA",
+    "N1": "outputs/f05_focus/N1_HP_DROP",
+    "A0": "outputs/f05_focus/A0_M1",
+    "P0": "outputs/f05_focus/P0_PRIOR",
+    "D1": "outputs/f05_focus/D1_O3",
+    "D2": "outputs/f05_focus/D2_PTA",
+    "D3": "outputs/f05_focus/D3_DUAL"
+  },
+  "artifacts": {
+    "hp_noise_manifest": "artifacts/f05_focus/hp_noise_manifest.csv",
+    "clean070": "artifacts/f05_focus/clean070.csv",
+    "prior_bias": "artifacts/f05_focus/prior_bias.pt",
+    "f05_val_logits": "artifacts/f05_focus/f05_val_logits.pt",
+    "f05_attention_cache": "artifacts/f05_focus/f05_attention_cache.pt"
+  },
+  "execution_queue": [
+    {
+      "round": 0,
+      "gpu0": "A0",
+      "gpu1": "P0"
+    },
+    {
+      "round": 1,
+      "gpu0": "C0",
+      "gpu1": "N1"
+    },
+    {
+      "round": 2,
+      "gpu0": "D1",
+      "gpu1": "D2"
+    },
+    {
+      "round": 3,
+      "gpu0": "D3",
+      "gpu1": "strongest second seed"
+    },
+    {
+      "round": 4,
+      "gpu0": "strongest seed3407",
+      "gpu1": "strongest seed2026"
+    }
+  ],
+  "forbidden": [
+    "LR/WD/SAM/warmup/GCE-q/epoch sweeps before seven units finish",
+    "DDP across the two GPUs",
+    "changing effective batch size",
+    "N x A x D x P Cartesian combinations",
+    "test-batch prior fitting"
+  ]
+}
