@@ -24,6 +24,7 @@ PROTOCOLS = (
     "rematch750_search_v5",
     "rematch750_head_l2sp",
     "rematch750_f05_transfer",
+    "rematch750_decay_filter",
 )
 ALLOWED_RESOLUTIONS = (224, 256, 288, 320)
 V5_ALLOWED_RESOLUTIONS = (224, 320, 352, 384, 416, 448)

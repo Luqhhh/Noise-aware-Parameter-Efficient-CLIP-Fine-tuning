@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "protocol": "REMATCH750_DECAY_FILTER_2X2",
+  "created_at_utc": "2026-09-24T13:40:00Z",
+  "deployment_root": "/workspace/noise-et",
+  "aligned_branch": "xjn/rematch750-decay-filter-aligned",
+  "hl00_control_binding": "configs/rematch750_f05_transfer/hl00_control_binding.json",
+  "dispatch_order": "on selected lanes: ET first, then DF, then V5 tail",
+  "lanes": [
+    {"npu": 6, "wait_pid": 1257688, "et": ["ET01", "ET04"], "df": ["DF01"], "v5": ["Q01", "V04", "N01", "N02", "N03", "N04", "X01", "X02", "X03", "X04", "X05", "X06", "X07", "X08"]},
+    {"npu": 5, "wait_pid": 1247738, "et": ["ET02", "ET10"], "df": ["DF02"], "v5": ["V03"]},
+    {"npu": 2, "wait_pid": 1247736, "et": ["ET03"], "df": ["DF03"], "v5": ["Q02", "Q06"]}
+  ],
+  "other_lanes": "NPU0/1/4/7 keep the earlier ET-first wrapper; no DF assignment",
+  "estimated": {
+    "df_01_start_utc_approx": "2026-09-24T20:15:00Z",
+    "df_02_start_utc_approx": "2026-09-24T22:00:00Z",
+    "df_03_start_utc_approx": "2026-09-24T19:55:00Z",
+    "df_all_done_utc_approx": "2026-09-25T00:30:00Z",
+    "note": "DF runs after the lane's ET list and before its V5 tail; starts depend on old lane shell / HL release."
+  }
+}

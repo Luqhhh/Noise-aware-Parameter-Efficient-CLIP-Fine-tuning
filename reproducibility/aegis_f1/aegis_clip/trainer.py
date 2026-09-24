@@ -448,6 +448,12 @@ def train(
         visual_layer_decay=float(
             train_config.get("visual_layer_decay", 1.0)
         ),
+        head_weight_decay_filter=str(
+            train_config.get("head_weight_decay_filter", "all")
+        ),
+        backbone_weight_decay_filter=str(
+            train_config.get("backbone_weight_decay_filter", "all")
+        ),
     )
     if snscl_state is not None:
         groups.append(

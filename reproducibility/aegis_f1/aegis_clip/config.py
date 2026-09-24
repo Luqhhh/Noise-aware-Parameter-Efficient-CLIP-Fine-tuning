@@ -80,15 +80,17 @@ REMATCH750_SEARCH_V4 = "rematch750_search_v4"
 REMATCH750_SEARCH_V5 = "rematch750_search_v5"
 REMATCH750_HEAD_L2SP = "rematch750_head_l2sp"
 REMATCH750_F05_TRANSFER = "rematch750_f05_transfer"
+REMATCH750_DECAY_FILTER = "rematch750_decay_filter"
 REMATCH750_SEARCH_PROTOCOLS = {
     REMATCH750_SEARCH_V4,
     REMATCH750_SEARCH_V5,
     REMATCH750_HEAD_L2SP,
 }
-# F05 transfer is an additive evidence-transfer protocol: it reuses the V4
-# lineage validator but does not claim the V5 search declaration semantics.
+# Additive evidence-transfer protocols reuse the V4 lineage validator but do
+# not claim the V5 search declaration semantics.
 REMATCH750_SUPPORTED_PROTOCOLS = REMATCH750_SEARCH_PROTOCOLS | {
     REMATCH750_F05_TRANSFER,
+    REMATCH750_DECAY_FILTER,
 }
 V4_TRAIN_AUGMENTATIONS = {"weak_rrc_flip_randaugment"}
 V4_PARENT_KINDS = {"shared_lp", "same_split_continue", "frozen_backbone_head", "official_clip_head"}
@@ -480,6 +482,10 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("Unsupported train.gradient_norm_impl")
     if float(train.get("amp_initial_scale", 65536.0)) <= 0.0:
         raise ConfigError("train.amp_initial_scale must be positive")
+    for key in ("head_weight_decay_filter", "backbone_weight_decay_filter"):
+        mode = str(train.get(key, "all"))
+        if mode not in {"all", "matrix_only"}:
+            raise ConfigError(f"train.{key} must be all or matrix_only")
     selector_metric = evaluation.get("selector_metric", "proxy_macro")
     if selector_metric not in SELECTOR_METRICS:
         raise ConfigError(

@@ -906,77 +906,138 @@ class AegisCLIP(nn.Module):
         backbone_lr: float,
         backbone_weight_decay: float,
         visual_layer_decay: float = 1.0,
+        head_weight_decay_filter: str = "all",
+        backbone_weight_decay_filter: str = "all",
     ) -> list[dict[str, Any]]:
-        groups: list[dict[str, Any]] = [
-            {
-                "name": "head",
-                "params": [
-                    parameter
-                    for parameter in (
-                        list(self.feature_adapter.parameters())
-                        + list(self.classifier.parameters())
-                    )
-                    if parameter.requires_grad
-                ],
-                "lr": float(head_lr),
-                "weight_decay": float(head_weight_decay),
-            }
-        ]
-        visual = [
-            parameter for parameter in self.visual.parameters() if parameter.requires_grad
-        ]
-        if visual:
-            if (
-                self.peft_mode == "full_finetune"
-                and float(visual_layer_decay) < 1.0
-            ):
-                block_parameters: list[list[torch.nn.Parameter]] = []
-                block_lrs: list[float] = []
-                blocks = self.visual.transformer.resblocks
-                for offset, block in enumerate(blocks):
-                    params = [
-                        parameter
-                        for parameter in block.parameters()
-                        if parameter.requires_grad
-                    ]
-                    if not params:
-                        continue
-                    depth_from_top = len(blocks) - 1 - offset
-                    block_parameters.append(params)
-                    block_lrs.append(
-                        float(backbone_lr) * float(visual_layer_decay) ** depth_from_top
-                    )
-                assigned = {id(parameter) for params in block_parameters for parameter in params}
-                for params, lr in zip(block_parameters, block_lrs):
-                    groups.append(
-                        {
-                            "name": "visual_layer",
-                            "params": params,
-                            "lr": lr,
-                            "weight_decay": float(backbone_weight_decay),
-                        }
-                    )
-                shared_visual = [
-                    parameter for parameter in visual if id(parameter) not in assigned
-                ]
-                if shared_visual:
-                    groups.append(
-                        {
-                            "name": "visual_top",
-                            "params": shared_visual,
-                            "lr": float(backbone_lr),
-                            "weight_decay": float(backbone_weight_decay),
-                        }
-                    )
-            else:
+        """Build optimizer groups with an optional one-dimensional no-decay split.
+
+        ``all`` preserves the historical behavior exactly: every trainable
+        tensor in a scope receives the configured AdamW decay. ``matrix_only``
+        keeps the same learning rate but assigns zero decay to one-dimensional
+        tensors (biases, LayerNorm affine parameters, and vector tokens).
+        """
+        groups: list[dict[str, Any]] = []
+
+        def append_scope(
+            scope: str,
+            named_parameters: list[tuple[str, Any]],
+            *,
+            learning_rate: float,
+            weight_decay: float,
+            filter_mode: str,
+        ) -> None:
+            if filter_mode not in {"all", "matrix_only"}:
+                raise ValueError(
+                    f"Unsupported {scope} weight-decay filter: {filter_mode}"
+                )
+            trainable = [
+                (name, parameter)
+                for name, parameter in named_parameters
+                if parameter.requires_grad
+            ]
+            if not trainable:
+                return
+            if filter_mode == "all":
                 groups.append(
                     {
-                        "name": "visual",
-                        "params": visual,
-                        "lr": float(backbone_lr),
-                        "weight_decay": float(backbone_weight_decay),
+                        "name": scope,
+                        "params": [parameter for _, parameter in trainable],
+                        "lr": float(learning_rate),
+                        "weight_decay": float(weight_decay),
                     }
                 )
+                return
+            decay = [parameter for _, parameter in trainable if parameter.ndim >= 2]
+            no_decay = [
+                parameter for _, parameter in trainable if parameter.ndim < 2
+            ]
+            if decay:
+                groups.append(
+                    {
+                        "name": scope,
+                        "params": decay,
+                        "lr": float(learning_rate),
+                        "weight_decay": float(weight_decay),
+                    }
+                )
+            if no_decay:
+                groups.append(
+                    {
+                        "name": f"{scope}_no_decay",
+                        "params": no_decay,
+                        "lr": float(learning_rate),
+                        "weight_decay": 0.0,
+                    }
+                )
+
+        head_named = [
+            (f"feature_adapter.{name}", parameter)
+            for name, parameter in self.feature_adapter.named_parameters()
+        ] + [
+            (f"classifier.{name}", parameter)
+            for name, parameter in self.classifier.named_parameters()
+        ]
+        append_scope(
+            "head",
+            head_named,
+            learning_rate=head_lr,
+            weight_decay=head_weight_decay,
+            filter_mode=str(head_weight_decay_filter),
+        )
+
+        visual_named = [
+            (f"visual.{name}", parameter)
+            for name, parameter in self.visual.named_parameters()
+        ]
+        if self.peft_mode == "full_finetune" and float(visual_layer_decay) < 1.0:
+            block_named: list[list[tuple[str, Any]]] = []
+            block_lrs: list[float] = []
+            blocks = self.visual.transformer.resblocks
+            for offset, block in enumerate(blocks):
+                named = [
+                    (f"visual_block{offset}.{name}", parameter)
+                    for name, parameter in block.named_parameters()
+                ]
+                if not any(parameter.requires_grad for _, parameter in named):
+                    continue
+                depth_from_top = len(blocks) - 1 - offset
+                block_named.append(named)
+                block_lrs.append(
+                    float(backbone_lr) * float(visual_layer_decay) ** depth_from_top
+                )
+            assigned = {
+                id(parameter)
+                for named in block_named
+                for _, parameter in named
+            }
+            for named, learning_rate in zip(block_named, block_lrs):
+                append_scope(
+                    "visual_layer",
+                    named,
+                    learning_rate=learning_rate,
+                    weight_decay=backbone_weight_decay,
+                    filter_mode=str(backbone_weight_decay_filter),
+                )
+            shared_named = [
+                (f"visual.{name}", parameter)
+                for name, parameter in self.visual.named_parameters()
+                if id(parameter) not in assigned
+            ]
+            append_scope(
+                "visual_top",
+                shared_named,
+                learning_rate=backbone_lr,
+                weight_decay=backbone_weight_decay,
+                filter_mode=str(backbone_weight_decay_filter),
+            )
+        else:
+            append_scope(
+                "visual",
+                visual_named,
+                learning_rate=backbone_lr,
+                weight_decay=backbone_weight_decay,
+                filter_mode=str(backbone_weight_decay_filter),
+            )
         return groups
 
     def effective_spec(self) -> dict[str, Any]:
