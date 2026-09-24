@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "protocol": "REMATCH750_F05_EVIDENCE_TRANSFER",
+  "created_at_utc": "2026-09-24T13:15:00Z",
+  "deployment_root": "/workspace/noise-et",
+  "aligned_branch": "xjn/rematch750-f05-transfer-aligned",
+  "aligned_commits": ["adf6ae8", "d850291"],
+  "et_code_tree_sha256": "3417350f57de95cc5b592dbfb63df0a09824abd2851b1c1b191198538f1c4816",
+  "hl00_code_tree_sha256": "9a74531a0e8fef54f2d2e955ecd4301c1e9ea8b6e1b30965bcd1b5ab8118aaba",
+  "dispatch_order": "ET first, then V5 tail on each physical NPU",
+  "lanes": [
+    {"npu": 0, "wait_pid": 1247734, "et": ["ET08"], "v5": ["V07", "V08"], "wrapper_pid": 1267515},
+    {"npu": 1, "wait_pid": 1247735, "et": ["ET06"], "v5": ["Q03", "R06"], "wrapper_pid": 1267517},
+    {"npu": 2, "wait_pid": 1247736, "et": ["ET03"], "v5": ["Q02", "Q06"], "wrapper_pid": 1267520},
+    {"npu": 4, "wait_pid": 1247737, "et": ["ET07", "ET09"], "v5": ["Q04"], "wrapper_pid": 1267523},
+    {"npu": 5, "wait_pid": 1247738, "et": ["ET02", "ET10"], "v5": ["V03"], "wrapper_pid": 1267526},
+    {"npu": 6, "wait_pid": 1257688, "et": ["ET01", "ET04"], "v5": ["Q01", "V04", "N01", "N02", "N03", "N04", "X01", "X02", "X03", "X04", "X05", "X06", "X07", "X08"], "wrapper_pid": 1267529, "note": "N/X are fail-closed and expected to be skipped"},
+    {"npu": 7, "wait_pid": 1247739, "et": ["ET05"], "v5": ["Q05", "R05"], "wrapper_pid": 1267532}
+  ],
+  "estimated": {
+    "et_01_04_done_utc": "2026-09-25T04:15:00Z",
+    "all_et_done_utc": "2026-09-25T23:45:00Z",
+    "joint_tail_done_utc": "2026-09-25T02:45:00Z",
+    "note": "joint_tail_done_utc is from 13:13 UTC release estimate; ET and V5 run sequentially per lane. Actual times depend on old lane shell release and training duration."
+  }
+}
