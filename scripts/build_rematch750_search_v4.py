@@ -18,7 +18,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_DIR = ROOT / "configs/rematch750_search_v4"
 BASE_CONFIG = ROOT / "configs/rematch750_v3_b1024_e16_lr4.yaml"
-MANIFEST = ROOT / "search_manifest.json"
+MANIFEST = ROOT / "results/rematch750_search_v4/search_manifest_v4.json"
 V3_CHECKPOINT = (
     "/workspace/noise-worktrees/rematch750_v3_scan/outputs/codex/"
     "rematch750_v3_tradeoff/RM_V3_B1024_E16_LR4/seed42/checkpoints/best.pt"

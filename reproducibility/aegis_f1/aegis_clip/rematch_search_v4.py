@@ -19,7 +19,9 @@ from aegis_clip.runtime import sha256_file, sha256_lines
 
 
 PROTOCOL = "rematch750_search_v4"
+PROTOCOLS = ("rematch750_search_v4", "rematch750_search_v5")
 ALLOWED_RESOLUTIONS = (224, 256, 288, 320)
+V5_ALLOWED_RESOLUTIONS = (224, 320, 352, 384, 416, 448)
 PARENT_KINDS = {
     "shared_lp",
     "same_split_continue",
@@ -31,9 +33,31 @@ V4_TOP_LEVEL = {"project", "data", "features", "model", "trust", "elr", "loss", 
                 "prototype_contrastive", "dynamic_trust", "diagnostics"}
 
 
+def rematch_protocol(config: dict[str, Any]) -> str:
+    """Return the declared rematch-search protocol, if any."""
+    return str(config.get("project", {}).get("protocol", ""))
+
+
+def is_rematch_search(config: dict[str, Any]) -> bool:
+    """Return true for a protocol handled by this module (V4 or V5)."""
+    return rematch_protocol(config) in PROTOCOLS
+
+
 def is_v4(config: dict[str, Any]) -> bool:
-    """Return true when *config* explicitly opts into the V4 protocol."""
-    return str(config.get("project", {}).get("protocol", "")) == PROTOCOL
+    """Backward-compatible helper used by the V4 protocol dispatcher.
+
+    V5 shares this implementation for dataset/cache/checkpoint provenance;
+    V5-only semantic declarations are checked in :mod:`rematch_search_v5`.
+    """
+    return is_rematch_search(config)
+
+
+def is_v5(config: dict[str, Any]) -> bool:
+    return rematch_protocol(config) == "rematch750_search_v5"
+
+
+def _allowed_resolutions(config: dict[str, Any]) -> tuple[int, ...]:
+    return V5_ALLOWED_RESOLUTIONS if is_v5(config) else ALLOWED_RESOLUTIONS
 
 
 def require(condition: bool, message: str) -> None:
@@ -61,7 +85,7 @@ def _manifest(config: dict[str, Any]) -> tuple[Path, dict[str, Any]]:
 
 def validate_dataset(config: dict[str, Any]) -> dict[str, Any]:
     """Validate the immutable V4 data/split/official-weight identity."""
-    require(is_v4(config), "project.protocol is not rematch750_search_v4")
+    require(is_rematch_search(config), "project.protocol is not a supported rematch search protocol")
     project = config["project"]
     data = config["data"]
     model = config["model"]
@@ -72,9 +96,10 @@ def validate_dataset(config: dict[str, Any]) -> dict[str, Any]:
         "wrong pretrained source",
     )
     resolution = int(model.get("input_resolution", 224))
+    allowed_resolutions = _allowed_resolutions(config)
     require(
-        resolution in ALLOWED_RESOLUTIONS,
-        f"input resolution must be one of {ALLOWED_RESOLUTIONS}",
+        resolution in allowed_resolutions,
+        f"input resolution must be one of {allowed_resolutions}",
     )
     require(data.get("external_data") is False, "external data forbidden")
     require(
@@ -149,13 +174,16 @@ def _resolved_reference_resolution(config: dict[str, Any]) -> int:
     search = config.get("project", {}).get("search", {})
     value = search.get("reference_resolution", config.get("features", {}).get("reference_resolution", 224))
     value = int(value)
-    require(value in ALLOWED_RESOLUTIONS, "reference feature resolution is not declared")
+    require(
+        value in _allowed_resolutions(config),
+        "reference feature resolution is not declared",
+    )
     return value
 
 
 def _common_binding(config: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
     return {
-        "protocol": PROTOCOL,
+        "protocol": rematch_protocol(config),
         "stage": "repechage",
         "data_version": manifest["data_version"],
         "dataset_manifest_sha256": sha256_file(config["data"]["dataset_manifest"]),

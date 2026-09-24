@@ -2005,11 +2005,19 @@ def _training_preprocess(
     transforms = list(getattr(preprocess, "transforms", []))
     if len(transforms) < 2:
         raise ValueError("Cannot derive CLIP tensor conversion and normalization")
+    scale_min = float(data_config.get("rrc_scale_min", 0.70))
+    scale_max = float(data_config.get("rrc_scale_max", 1.0))
+    ratio_min = float(data_config.get("rrc_ratio_min", 0.85))
+    ratio_max = float(data_config.get("rrc_ratio_max", 1.15))
+    if not 0.0 < scale_min <= scale_max <= 1.0:
+        raise ValueError("rrc_scale_min/max must satisfy 0 < min <= max <= 1")
+    if not 0.0 < ratio_min <= ratio_max:
+        raise ValueError("rrc_ratio_min/max must satisfy 0 < min <= max")
     augmentation_ops = [
         RandomResizedCrop(
             int(input_resolution),
-            scale=(0.70, 1.0),
-            ratio=(0.85, 1.15),
+            scale=(scale_min, scale_max),
+            ratio=(ratio_min, ratio_max),
             interpolation=InterpolationMode.BICUBIC,
         ),
         RandomHorizontalFlip(p=0.5),

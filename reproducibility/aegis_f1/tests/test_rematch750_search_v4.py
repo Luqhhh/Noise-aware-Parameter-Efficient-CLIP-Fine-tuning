@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 def test_search_manifest_has_expected_trial_coverage():
-    manifest = json.loads((ROOT / "search_manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads((ROOT / "results/rematch750_search_v4/search_manifest_v4.json").read_text(encoding="utf-8"))
     assert manifest["protocol"] == "rematch750_search_v4"
     assert manifest["status"] == "planned_not_executed"
     assert len(manifest["trials"]) == 82

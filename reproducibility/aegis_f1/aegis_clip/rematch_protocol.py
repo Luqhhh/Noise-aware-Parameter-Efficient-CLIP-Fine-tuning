@@ -6,6 +6,7 @@ from typing import Any
 
 from aegis_clip import rematch_assets as _legacy
 from aegis_clip import rematch_search_v4 as _v4
+from aegis_clip import rematch_search_v5 as _v5
 
 
 def validate_dataset(config: dict[str, Any]):
@@ -35,6 +36,8 @@ def validate_checkpoint(path: str | Path, config: dict[str, Any], *, parent: boo
 
 
 def validate_training(config: dict[str, Any], resume: str | None = None, init_checkpoint: str | None = None):
+    if _v5.is_v5(config):
+        return _v5.validate_training(config, resume=resume, init_checkpoint=init_checkpoint)
     if _v4.is_v4(config):
         return _v4.validate_training(config, resume=resume, init_checkpoint=init_checkpoint)
     return _legacy.validate_training(config, resume=resume, init_checkpoint=init_checkpoint)
