@@ -1,0 +1,37 @@
+{
+  "record_id": "REMATCH750_F05_PLATFORM_20260924",
+  "recorded_date": "2026-09-24",
+  "source": "user_reported_platform_scores",
+  "test_samples": 37444,
+  "receipt_completeness": "score_only_submission_id_timestamp_period_and_package_hashes_not_supplied",
+  "candidates": [
+    {
+      "candidate": "RM_V4_F05",
+      "package_label": "F05_submission.zip",
+      "strategy": "REMATCH750_SEARCH_V4 F05 320px weak_rrc_flip GCE full fine-tune; selected epoch 14; V4 inference protocol",
+      "local_macro": 0.7443073987960815,
+      "local_micro": 0.7544354796409607,
+      "platform_score_percent": 65.4711,
+      "platform_score_fraction": 0.654711,
+      "correct_predictions": 24515,
+      "correct_predictions_basis": "inferred_from_reported_4_decimal_score_and_37444_total; count was not supplied by the user",
+      "platform_submission_id": null,
+      "submitted_at": null,
+      "platform_period": null,
+      "package_hashes_supplied": false
+    }
+  ],
+  "comparisons": {
+    "vs_RM_V4_F03": {
+      "platform_score_delta_pp": 1.05757580386712,
+      "correct_predictions_delta": 396
+    },
+    "target_70": {
+      "required_correct_predictions": 26211,
+      "additional_correct_predictions_over_f05": 1696,
+      "reached": false
+    }
+  },
+  "formal_registry_status": "receipt_pending",
+  "notes": "User reported F05 = 65.4711%. No submission ID, timezone-aware timestamp, reset period, or package hash was supplied on this receipt. F05 becomes the current known platform leader but does not reach the 70% target; the local-V5 search remains active. Do not convert the local-platform observed gap into a fixed prediction."
+}

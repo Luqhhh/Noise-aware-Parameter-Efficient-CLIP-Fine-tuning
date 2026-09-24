@@ -35,7 +35,10 @@ def test_v5_manifest_has_conditional_slot_coverage():
     counts = manifest["family_counts"]
     assert counts == {"R": 6, "S": 9, "K": 9, "V": 8, "L": 6, "Q": 6, "N": 4, "H": 12, "X": 8}
     assert manifest["baseline"]["candidate"] == "RM_V4_F05"
-    assert manifest["baseline"]["platform_score"] is None
+    assert manifest["baseline"]["platform_score"] == 65.4711
+    assert manifest["baseline"]["platform_correct_predictions"] == 24515
+    assert manifest["platform_goal"]["reached"] is False
+    assert manifest["platform_goal"]["additional_correct_predictions_needed"] == 1696
     assert manifest["first_wave"] == [
         "R02", "R04", "R01", "R03", "S01", "S02",
         "K02", "K03", "K07", "V02", "L01", "H01",

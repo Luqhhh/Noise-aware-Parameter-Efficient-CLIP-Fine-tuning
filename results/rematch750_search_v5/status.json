@@ -1,0 +1,19 @@
+{
+  "updated_date": "2026-09-24",
+  "protocol": "rematch750_search_v5",
+  "current_platform_candidate": "RM_V4_F05",
+  "local_macro": 0.7443073987960815,
+  "local_micro": 0.7544354796409607,
+  "selected_epoch": 14,
+  "platform_score_percent": 65.4711,
+  "platform_score_fraction": 0.654711,
+  "platform_correct_predictions": 24515,
+  "platform_correct_predictions_basis": "inferred_from_reported_4_decimal_score_and_37444_total",
+  "previous_platform_reference": "RM_V4_F03",
+  "platform_delta_vs_f03_pp": 1.05757580386712,
+  "target_70_percent": 70.0,
+  "target_70_required_correct": 26211,
+  "target_70_additional_correct_needed": 1696,
+  "target_70_reached": false,
+  "receipt": "results/rematch750_f05_platform_20260924.json"
+}
