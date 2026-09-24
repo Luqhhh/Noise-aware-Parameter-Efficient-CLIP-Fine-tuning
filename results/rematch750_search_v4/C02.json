@@ -1,12 +1,14 @@
 {
   "trial_id": "C02",
   "family": "C",
-  "status": "failed_rc_1",
-  "completed_at_unix": 1790186466,
-  "selected_epoch": null,
-  "raw_macro": null,
-  "raw_micro": null,
-  "delta_macro_vs_v3_pp": null,
-  "delta_micro_vs_v3_pp": null,
-  "log_path": "outputs/rematch750_search_v4/queue/C02.log"
+  "status": "passed_training",
+  "completed_at_unix": 1790221789,
+  "selected_epoch": 16,
+  "raw_macro": 0.7234292030334473,
+  "raw_micro": 0.7341398000717163,
+  "delta_macro_vs_v3_pp": -0.004315376281738281,
+  "delta_micro_vs_v3_pp": 0.0,
+  "log_path": "outputs/rematch750_search_v4/queue/C02.log",
+  "schedule_epochs": 16,
+  "validation_covered_classes": 750
 }

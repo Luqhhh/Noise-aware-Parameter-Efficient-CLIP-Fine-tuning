@@ -1,12 +1,14 @@
 {
   "trial_id": "C03",
   "family": "C",
-  "status": "failed_rc_1",
-  "completed_at_unix": 1790186499,
-  "selected_epoch": null,
-  "raw_macro": null,
-  "raw_micro": null,
-  "delta_macro_vs_v3_pp": null,
-  "delta_micro_vs_v3_pp": null,
-  "log_path": "outputs/rematch750_search_v4/queue/C03.log"
+  "status": "already_complete",
+  "completed_at_unix": 1790221790,
+  "selected_epoch": 16,
+  "raw_macro": 0.7232275605201721,
+  "raw_micro": 0.7339381575584412,
+  "delta_macro_vs_v3_pp": -0.02447962760925293,
+  "delta_micro_vs_v3_pp": -0.02016425132751465,
+  "log_path": "outputs/rematch750_search_v4/queue/C03.log",
+  "schedule_epochs": 16,
+  "validation_covered_classes": 750
 }
