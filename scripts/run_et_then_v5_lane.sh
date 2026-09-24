@@ -1,5 +1,5 @@
 #!/bin/bash
-# Sequential lane dispatcher: ET trials first, then V5 trials.
+# Sequential lane dispatcher: optional ET, then optional DF, then V5 tail.
 # Usage: run_et_then_v5_lane.sh <wait_pid> <physical_npu> <"ET01 ET02"> <"DF01 DF02"> <"Q01 V04">
 set -u
 WAIT_PID=${1:?wait_pid}
@@ -16,7 +16,7 @@ while kill -0 "$WAIT_PID" 2>/dev/null; do sleep 20; done
 source /usr/local/Ascend/cann-9.0.0/set_env.sh >/dev/null 2>&1
 export ASCEND_RT_VISIBLE_DEVICES="$DEVICE"
 export OMP_NUM_THREADS=4
-export REMATCH_CODE_COMMIT="${REMATCH_CODE_COMMIT:-xjn/rematch750-f05-transfer-aligned@d850291}"
+export REMATCH_CODE_COMMIT="${REMATCH_CODE_COMMIT:-xjn/rematch750-decay-filter-aligned@9f2046a}"
 
 if [ -n "$ET_TRIALS" ]; then
   cd "$ET_ROOT" || exit 1
