@@ -49,13 +49,19 @@ export CUDA_VISIBLE_DEVICES=0   # GPU1 进程内逻辑卡按实际隔离修改
 
 ## 4. Round 0 — GPU1 P0
 
-P0 只读 F05 validation logits。先确保：
+P0 只读 F05 validation logits。若 GPU1 上还没有该文件，可使用本机 F05 checkpoint
+生成一次：
 
-```text
-artifacts/f05_focus/f05_val_logits.pt
+```bash
+PYTHONPATH="$REPO_ROOT/reproducibility/aegis_f1" \
+python3 -m aegis_clip.cli.cache_validation_logits \
+  --checkpoint "$F05_CHECKPOINT" \
+  --view-mode center \
+  --output artifacts/f05_focus/f05_val_logits.pt \
+  --batch-size 128 --num-workers 4
 ```
 
-运行：
+然后运行：
 
 ```bash
 python3 scripts/run_f05_focus_unit.py \
