@@ -302,7 +302,23 @@ def main() -> int:
                 / f"L05_{args.experiment_id}_{args.device.replace(':', '_')}_mb{candidate}.yaml"
             )
             if runtime_candidate.is_file():
-                shutil.rmtree(_run_dir(runtime_candidate), ignore_errors=True)
+                candidate_run_dir = _run_dir(runtime_candidate)
+                if (candidate_run_dir / "checkpoints/best.pt").is_file():
+                    # Training succeeded; do not discard a valid checkpoint
+                    # because a later inference/export step failed.
+                    print(
+                        json.dumps(
+                            {
+                                "post_train_failure_with_valid_checkpoint": str(
+                                    candidate_run_dir
+                                )
+                            },
+                            ensure_ascii=False,
+                        ),
+                        flush=True,
+                    )
+                    raise
+                shutil.rmtree(candidate_run_dir, ignore_errors=True)
     if last_error is not None:
         raise last_error
     return 1
