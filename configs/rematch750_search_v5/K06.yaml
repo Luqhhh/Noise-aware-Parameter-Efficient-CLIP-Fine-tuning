@@ -41,7 +41,8 @@ loss:
   mixup_probability: 0.0
   name: gce
   anchor_schedule:
-    start_epoch: 1
+    enabled: true
+    hold_epochs: 2
     start_weight: 2.0
     end_epoch: 16
     end_weight: 0.2
@@ -66,7 +67,7 @@ project:
   family: K
   mechanism: 384px_schedule2to0.2
   parent_kind: shared_lp
-  implementation_status: blocked_implementation
+  implementation_status: implemented
   search:
     resolution: 384
     anchor_weight: 2.0
@@ -78,8 +79,6 @@ project:
     - 64
     smoke_required: true
     reference_resolution: 224
-  dependencies:
-  - anchor_schedule
 train:
   amp: true
   amp_growth_interval: 1000000000

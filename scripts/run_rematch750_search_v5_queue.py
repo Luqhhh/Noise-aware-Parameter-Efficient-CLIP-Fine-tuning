@@ -89,7 +89,8 @@ def _best_checkpoint(model_run_dir: Path) -> Path:
     return model_run_dir / "checkpoints/best.pt"
 
 
-def _execute_one(trial_id: str, source_config: Path, device: str) -> int:
+def _execute_one(trial_id: str, source_config: Path, device: str,
+                 num_workers: int | None = None, prefetch_factor: int | None = None) -> int:
     from aegis_clip.config import load_config
     from aegis_clip.rematch_search_v5 import MechanismBlockedError, validate_declaration
 
@@ -132,6 +133,10 @@ def _execute_one(trial_id: str, source_config: Path, device: str) -> int:
         "--device",
         str(device),
     ]
+    if num_workers is not None:
+        command += ["--num-workers", str(int(num_workers))]
+    if prefetch_factor is not None:
+        command += ["--prefetch-factor", str(int(prefetch_factor))]
     environment = dict(os.environ)
     environment.setdefault("PYTHONPATH", str(ROOT / "reproducibility/aegis_f1"))
     _append_ledger({"trial_id": trial_id, "status": "planned", "run_root": str(run_root)})
@@ -202,6 +207,8 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--trials", nargs="+", default=manifest.get("first_wave", []))
     parser.add_argument("--device", default="npu:0")
+    parser.add_argument("--workers", type=int, default=None)
+    parser.add_argument("--prefetch-factor", type=int, default=None)
     parser.add_argument("--lock", default=str(QUEUE_DIR / "queue.lock"))
     args = parser.parse_args()
 
@@ -222,7 +229,16 @@ def main() -> int:
                 _append_ledger({"trial_id": trial_id, "status": "failed_runtime", "reason": "config_missing"})
                 failures += 1
                 continue
-            failures += int(_execute_one(trial_id, source, args.device) != 0)
+            failures += int(
+                _execute_one(
+                    trial_id,
+                    source,
+                    args.device,
+                    num_workers=args.workers,
+                    prefetch_factor=args.prefetch_factor,
+                )
+                != 0
+            )
         return 1 if failures else 0
     finally:
         lock_path.unlink(missing_ok=True)

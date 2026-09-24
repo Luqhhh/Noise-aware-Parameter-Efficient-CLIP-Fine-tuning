@@ -100,12 +100,19 @@ def per_class_report(config, run):
         validation_interpretation='overlapping diagnosis' if config['project'].get('full_training') else 'independent content groups, noisy labels'),run/'checkpoints/selected_report.json')
 
 
-def execute(action, config_path, output_root=None, device=None):
+def execute(action, config_path, output_root=None, device=None, num_workers=None,
+            prefetch_factor=None):
     config=load_config(config_path)
     if output_root:
         config['output']['root']=str(Path(output_root).resolve())
     if device:
         config['train']['device']=str(device)
+    if num_workers is not None:
+        config['train']['num_workers']=int(num_workers)
+        if int(num_workers) == 0:
+            config['train']['loader_timeout']=0
+    if prefetch_factor is not None:
+        config['train']['prefetch_factor']=int(prefetch_factor)
     run=Path(config['output']['root'])/config['project']['experiment_id']/f"seed{config['project']['seed']}"
     if action=='prepare':return prepare(config)
     if action=='verify':
@@ -157,6 +164,10 @@ def main():
                    help='Optional run-id-bound output root; does not change the config fingerprint.')
     p.add_argument('--device', default=None,
                    help='Optional runtime device override, e.g. npu:0.')
+    p.add_argument('--num-workers', type=int, default=None,
+                   help='Optional DataLoader worker override for parallel trials.')
+    p.add_argument('--prefetch-factor', type=int, default=None,
+                   help='Optional DataLoader prefetch-factor override.')
     p.add_argument('--candidate')
     p.add_argument('--submission-id')
     p.add_argument('--submitted-at')
@@ -186,7 +197,14 @@ def main():
         from aegis_clip.rematch_registry import full_configs
         print(full_configs(ROOT,args.candidate,read_registry()))
         return
-    execute(args.action,Path(args.config).resolve(), output_root=args.output_root, device=args.device)
+    execute(
+        args.action,
+        Path(args.config).resolve(),
+        output_root=args.output_root,
+        device=args.device,
+        num_workers=args.num_workers,
+        prefetch_factor=args.prefetch_factor,
+    )
 
 
 if __name__=='__main__':main()

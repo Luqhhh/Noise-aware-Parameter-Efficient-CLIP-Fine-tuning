@@ -27,6 +27,7 @@ F05_CHECKPOINT = (
     "RM_V4_F05/seed42/checkpoints/best.pt"
 )
 F05_FEATURES = "../../outputs/rematch750_search_v5/assets/RM_V4_F05_encoder_features"
+F05_FEATURES_LOCAL = ROOT / "outputs/rematch750_search_v5/assets/RM_V4_F05_encoder_features"
 
 BASE: dict[str, Any] = {}
 
@@ -162,7 +163,9 @@ def _visual_amp(cfg: dict[str, Any], *, resolution: int, microbatch: int) -> dic
 
 def _h_config(trial_id: str, mechanism: str, classifier: str, sampler: str,
               init: str) -> tuple[dict[str, Any], dict[str, Any]]:
-    status = "pending_artifact"
+    features_ready = (F05_FEATURES_LOCAL / "manifest.json").is_file()
+    status = "implemented" if features_ready else "pending_artifact"
+    deps = [] if features_ready else ["F05_encoder_320_feature_cache"]
     cfg, meta = training_trial(
         trial_id,
         "H",
@@ -177,7 +180,7 @@ def _h_config(trial_id: str, mechanism: str, classifier: str, sampler: str,
             "smoke_required": False,
         },
         implementation_status=status,
-        dependencies=["F05_encoder_320_feature_cache"],
+        dependencies=deps,
         notes="Frozen F05 visual encoder; 20-epoch cached head refit.",
         parent_kind="frozen_backbone_head",
         kind="cached_head",
@@ -289,8 +292,8 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
         for optimizer, rho in (("adamw", None), ("sam", 0.025), ("sam", 0.05)):
             s_index += 1
             trial_id = f"S{s_index:02d}"
-            status = "implemented" if optimizer == "adamw" else "blocked_implementation"
-            deps = [] if optimizer == "adamw" else ["effective_batch_sam"]
+            status = "implemented"
+            deps = []
             mechanism = "fp32_adamw" if optimizer == "adamw" else f"fp32_sam_rho{rho:g}"
             cfg, meta = training_trial(
                 trial_id,
@@ -331,8 +334,8 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
         ):
             k_index += 1
             trial_id = f"K{k_index:02d}"
-            status = "blocked_implementation" if schedule else "implemented"
-            deps = ["anchor_schedule"] if schedule else []
+            status = "implemented"
+            deps = []
             cfg, meta = training_trial(
                 trial_id,
                 "K",
@@ -354,7 +357,8 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
             cfg["loss"]["feature_distillation_weight"] = float(anchor)
             if schedule:
                 cfg["loss"]["anchor_schedule"] = {
-                    "start_epoch": 1,
+                    "enabled": True,
+                    "hold_epochs": 2,
                     "start_weight": 2.0,
                     "end_epoch": 16,
                     "end_weight": 0.2,
@@ -376,12 +380,17 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
                 "smoke_required": True,
                 "reference_resolution": 224,
             },
-            implementation_status="blocked_implementation",
-            dependencies=["same_view_official_teacher"],
-            notes="Teacher must replay the same augmentation/random state; no cached center-crop reuse.",
+            implementation_status="implemented",
+            dependencies=[],
+            notes="Teacher replays the same augmented view resized to the official 224px encoder; no cached center-crop reuse.",
         )
         _visual_amp(cfg, resolution=resolution, microbatch=256 if resolution == 320 else 128)
         cfg["loss"]["feature_distillation_weight"] = 2.0
+        cfg["train"]["same_view_teacher"] = {
+            "enabled": True,
+            "source": "official_clip",
+            "resolution": 224,
+        }
         trials.append((cfg, meta))
 
     # V: training geometry.
@@ -450,9 +459,9 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
                 "smoke_required": True,
                 "reference_resolution": 224,
             },
-            implementation_status="blocked_implementation",
-            dependencies=["attention_local_area_start_fallback"],
-            notes="Global-only epochs 1-4; no local anchor/KL; activation-rate ledger required.",
+            implementation_status="implemented",
+            dependencies=[],
+            notes="Global-only epochs 1-4; confidence-gated local GCE; no local anchor/KL; activation-rate ledger emitted.",
         )
         _visual_amp(cfg, resolution=resolution, microbatch=256 if resolution == 320 else 128)
         cfg["model"]["peft_mode"] = "full_finetune"

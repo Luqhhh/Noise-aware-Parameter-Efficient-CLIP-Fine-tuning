@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import csv
 import json
 import math
@@ -194,6 +195,22 @@ def train(
     )
 
     model, preprocess = build_model(config, device)
+    same_view_config = dict(train_config.get("same_view_teacher", {}))
+    same_view_teacher_enabled = bool(same_view_config.get("enabled", False))
+    same_view_teacher: torch.nn.Module | None = None
+    same_view_resolution = int(same_view_config.get("resolution", 224))
+    if same_view_teacher_enabled:
+        if model.peft_mode != "full_finetune":
+            raise ValueError("same_view_teacher currently requires full_finetune")
+        if same_view_resolution != 224:
+            raise ValueError("same_view_teacher must bind the official 224px view")
+        if (float(config["loss"].get("mixup_probability", 0.0)) > 0.0
+                or float(config["loss"].get("cutmix_probability", 0.0)) > 0.0):
+            raise ValueError("same_view_teacher requires mixup/cutmix disabled")
+        same_view_teacher = copy.deepcopy(model.visual).to(device)
+        same_view_teacher.eval()
+        for parameter in same_view_teacher.parameters():
+            parameter.requires_grad_(False)
     visual_peft = model.visual_requires_grad
     train_preprocess = _training_preprocess(
         preprocess,
@@ -490,6 +507,10 @@ def train(
     )
     attention_local_config = config["loss"].get("attention_local_training", {})
     attention_local_enabled = bool(attention_local_config.get("enabled", False))
+    attention_local_start_epoch = int(attention_local_config.get("start_epoch", 1))
+    attention_local_confidence_gate = float(
+        attention_local_config.get("confidence_gate", 0.0)
+    )
 
     routing_config = config.get("clean_routing", {})
     routing_enabled = bool(routing_config.get("enabled", False))
@@ -674,6 +695,8 @@ def train(
         successful_updates += 1
     update_hook = optimizer.register_step_post_hook(count_optimizer_update)
     training_seconds = 0.0
+    sam_accum_batches: list[dict] = []
+    sam_accum_rng_state: dict | None = None
     for epoch in range(start_epoch, epochs + 1):
         log_dir.mkdir(parents=True, exist_ok=True)
         checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -768,6 +791,8 @@ def train(
             "attention_local_consistency": 0.0,
             "attention_local_agreement": 0.0,
             "attention_local_examples": 0,
+            "attention_local_active_examples": 0,
+            "attention_local_fallback_examples": 0,
             "trust_subspace_steps": 0,
             "trust_subspace_skipped_steps": 0,
             "trust_subspace_basis_updates": 0,
@@ -900,11 +925,23 @@ def train(
                     ),
                     generator=generator,
                 )
-            reference = batch["reference_features"].to(device).float()
-            mixed_reference = (
-                mix_lambda * reference
-                + (1.0 - mix_lambda) * reference[mix_permutation]
-            )
+            if same_view_teacher is not None:
+                if mix_lambda != 1.0:
+                    raise ValueError(
+                        "same_view_teacher does not support feature mixing"
+                    )
+                reference = _same_view_teacher_features(
+                    same_view_teacher,
+                    original_inputs,
+                    resolution=same_view_resolution,
+                ).to(device).float()
+                mixed_reference = reference
+            else:
+                reference = batch["reference_features"].to(device).float()
+                mixed_reference = (
+                    mix_lambda * reference
+                    + (1.0 - mix_lambda) * reference[mix_permutation]
+                )
 
             # --- Clean-Routing gate ---
             if routing_enabled and epoch >= routing_start_epoch:
@@ -937,6 +974,9 @@ def train(
                 optimizer.zero_grad(
                     set_to_none=not getattr(optimizer, "is_fused_optimizer", False)
                 )
+                if sam_enabled and accum_steps > 1:
+                    sam_accum_batches = []
+                    sam_accum_rng_state = _capture_rng_state(device)
             snscl_projected = None
             snscl_hard_labels = None
             snscl_admission_probabilities = None
@@ -988,7 +1028,7 @@ def train(
                 local_classification_value = logits.new_zeros(())
                 local_consistency_value = logits.new_zeros(())
                 local_agreement_value = logits.new_zeros(())
-                if attention_local_enabled:
+                if attention_local_enabled and epoch >= attention_local_start_epoch:
                     if input_key != "images" or mix_lambda != 1.0:
                         raise ValueError(
                             "Attention-local training requires unmixed online images"
@@ -1021,6 +1061,22 @@ def train(
                         config["loss"],
                         epoch,
                         batch_suspicious,
+                    )
+                    global_confidence = F.softmax(
+                        training_logits.detach().float(), dim=1
+                    ).max(dim=1).values
+                    fallback_mask = global_confidence < attention_local_confidence_gate
+                    local_per_sample = _attention_local_fallback_per_sample(
+                        local_per_sample,
+                        per_sample,
+                        global_confidence,
+                        attention_local_confidence_gate,
+                    )
+                    totals["attention_local_fallback_examples"] += int(
+                        fallback_mask.sum()
+                    )
+                    totals["attention_local_active_examples"] += int(
+                        (~fallback_mask).sum()
                     )
                     local_classification_value = (
                         local_per_sample * weights
@@ -1195,10 +1251,8 @@ def train(
                     )
                     elr_weight = elr_regularizer.rampup_weight(epoch)
                     loss = loss + elr_weight * elr_value
-                distill_weight = (
-                    float(config["loss"].get("feature_distillation_weight", 0.0))
-                    if model.peft_mode != "frozen"
-                    else 0.0
+                distill_weight = _feature_anchor_weight(
+                    config["loss"], epoch, model.peft_mode
                 )
                 drift = 1.0 - F.cosine_similarity(
                     encoded.float(), F.normalize(mixed_reference, dim=1), dim=1
@@ -1215,6 +1269,7 @@ def train(
                         loss = loss + feature_anchor_loss
 
                 sam_update = None
+                sam_first_pass_accumulated = False
                 if sam_enabled:
                     if use_amp:
                         raise NotImplementedError(
@@ -1236,41 +1291,95 @@ def train(
                         raise ValueError(
                             "SAM is not wired with: " + ", ".join(unsupported_sam)
                         )
-                    first_sam_loss = loss
 
-                    def sam_second_pass():
-                        return _sam_second_pass_loss(
+                    if accum_steps > 1:
+                        microbatch_state = {
+                            "forward_key": forward_key,
+                            "forward_inputs": forward_inputs.detach(),
+                            "mixed_gate": (
+                                None if mixed_gate is None else mixed_gate.detach()
+                            ),
+                            "mixed_reference": mixed_reference.detach(),
+                            "mixed_targets": mixed_targets.detach(),
+                            "mixed_weights": mixed_weights.detach(),
+                            "class_counts": class_counts,
+                            "prior_tau": prior_tau,
+                            "loss_config": config["loss"],
+                            "epoch": epoch,
+                            "batch_suspicious": (
+                                None
+                                if batch_suspicious is None
+                                else batch_suspicious.detach()
+                            ),
+                            "distill_weight": distill_weight,
+                            "sample_count": int(labels.numel()),
+                            "first_loss": float(loss.detach()),
+                        }
+                        sam_accum_batches.append(microbatch_state)
+                        (
+                            loss * (labels.numel() / max(cycle_samples, 1))
+                        ).backward()
+                        sam_first_pass_accumulated = True
+                        if is_update_step:
+                            sam_update = _sam_accumulated_optimizer_step(
+                                model,
+                                optimizer,
+                                microbatches=sam_accum_batches,
+                                cycle_samples=int(cycle_samples),
+                                rho=sam_rho,
+                                clip_norm=float(
+                                    train_config.get("max_grad_norm", 1.0)
+                                ),
+                                rng_state=sam_accum_rng_state,
+                                device=device,
+                            )
+                            gradient_norm = float(
+                                sam_update["preclip_gradient_norm"]
+                            )
+                            step_learning_rates = {
+                                group.get("name", f"group{i}"): float(group["lr"])
+                                for i, group in enumerate(optimizer.param_groups)
+                            }
+                            first_step_audited = True
+                            sam_accum_batches.clear()
+                            scheduler.step()
+                    else:
+                        first_sam_loss = loss
+
+                        def sam_second_pass():
+                            return _sam_second_pass_loss(
+                                model,
+                                device=device,
+                                use_amp=use_amp,
+                                forward_key=forward_key,
+                                forward_inputs=forward_inputs,
+                                mixed_gate=mixed_gate,
+                                mixed_reference=mixed_reference,
+                                mixed_targets=mixed_targets,
+                                mixed_weights=mixed_weights,
+                                class_counts=class_counts,
+                                prior_tau=prior_tau,
+                                loss_config=config["loss"],
+                                epoch=epoch,
+                                batch_suspicious=batch_suspicious,
+                                distill_weight=distill_weight,
+                            )
+
+                        sam_update = _sam_optimizer_step(
                             model,
-                            device=device,
-                            use_amp=use_amp,
-                            forward_key=forward_key,
-                            forward_inputs=forward_inputs,
-                            mixed_gate=mixed_gate,
-                            mixed_reference=mixed_reference,
-                            mixed_targets=mixed_targets,
-                            mixed_weights=mixed_weights,
-                            class_counts=class_counts,
-                            prior_tau=prior_tau,
-                            loss_config=config["loss"],
-                            epoch=epoch,
-                            batch_suspicious=batch_suspicious,
-                            distill_weight=distill_weight,
+                            optimizer,
+                            first_loss=first_sam_loss,
+                            second_pass=sam_second_pass,
+                            rho=sam_rho,
+                            clip_norm=float(train_config.get("max_grad_norm", 1.0)),
                         )
-
-                    sam_update = _sam_optimizer_step(
-                        model,
-                        optimizer,
-                        first_loss=first_sam_loss,
-                        second_pass=sam_second_pass,
-                        rho=sam_rho,
-                        clip_norm=float(train_config.get("max_grad_norm", 1.0)),
-                    )
-                    gradient_norm = float(sam_update["preclip_gradient_norm"])
-                    step_learning_rates = {
-                        group.get("name", f"group{i}"): float(group["lr"])
-                        for i, group in enumerate(optimizer.param_groups)
-                    }
-                    first_step_audited = True
+                        gradient_norm = float(sam_update["preclip_gradient_norm"])
+                        step_learning_rates = {
+                            group.get("name", f"group{i}"): float(group["lr"])
+                            for i, group in enumerate(optimizer.param_groups)
+                        }
+                        first_step_audited = True
+                        scheduler.step()
 
                 proto_loss = encoded.new_zeros(())
                 if proto_enabled and epoch >= proto_start_epoch:
@@ -1372,11 +1481,15 @@ def train(
                 totals["trust_subspace_uncertain_loss"] += float(
                     subspace_uncertain_value.detach()
                 ) * labels.numel()
-            elif sam_update is None:
+            elif sam_update is None and not sam_first_pass_accumulated:
                 scaler.scale(
                     loss * (labels.numel() / max(cycle_samples, 1))
                 ).backward()
-            if is_update_step and sam_update is None:
+            if (
+                is_update_step
+                and sam_update is None
+                and not sam_first_pass_accumulated
+            ):
                 scaler.unscale_(optimizer)
                 norm_impl = train_config.get("gradient_norm_impl", "sum_squares")
                 head_grad = _gradient_norm(model.classifier.parameters(), implementation=norm_impl)
@@ -1509,7 +1622,7 @@ def train(
                 float(fine_negative_value.detach()) * fine_suspicious_count
             )
             totals["fine_suspicious_samples"] += int(fine_suspicious_count)
-            if attention_local_enabled:
+            if attention_local_enabled and epoch >= attention_local_start_epoch:
                 totals["attention_local_classification"] += (
                     float(local_classification_value.detach()) * batch_size
                 )
@@ -1617,6 +1730,20 @@ def train(
             "train_attention_local_agreement": (
                 totals["attention_local_agreement"]
                 / max(1, totals["attention_local_examples"])
+            ),
+            "train_attention_local_active_examples": int(
+                totals["attention_local_active_examples"]
+            ),
+            "train_attention_local_fallback_examples": int(
+                totals["attention_local_fallback_examples"]
+            ),
+            "train_attention_local_activation_rate": (
+                totals["attention_local_active_examples"]
+                / max(
+                    1,
+                    totals["attention_local_active_examples"]
+                    + totals["attention_local_fallback_examples"],
+                )
             ),
             "train_trust_subspace_steps": int(totals["trust_subspace_steps"]),
             "train_trust_subspace_skipped_steps": int(
@@ -2039,6 +2166,56 @@ def _training_preprocess(
     return Compose([*augmentation_ops, transforms[-2], transforms[-1]])
 
 
+def _feature_anchor_weight(loss_config: dict[str, Any], epoch: int, peft_mode: str) -> float:
+    """Resolve a constant or piecewise-linear feature-anchor weight."""
+    if peft_mode == "frozen":
+        return 0.0
+    schedule = loss_config.get("anchor_schedule")
+    if not schedule or not bool(schedule.get("enabled", True)):
+        return float(loss_config.get("feature_distillation_weight", 0.0))
+    start_weight = float(schedule.get("start_weight", loss_config.get("feature_distillation_weight", 2.0)))
+    end_weight = float(schedule.get("end_weight", 0.2))
+    hold_epochs = int(schedule.get("hold_epochs", schedule.get("start_epoch", 2)))
+    end_epoch = int(schedule.get("end_epoch", 16))
+    if end_epoch <= hold_epochs:
+        raise ValueError("anchor_schedule.end_epoch must be greater than hold_epochs")
+    if epoch <= hold_epochs:
+        return start_weight
+    if epoch >= end_epoch:
+        return end_weight
+    progress = (epoch - hold_epochs) / float(end_epoch - hold_epochs)
+    return start_weight + progress * (end_weight - start_weight)
+
+
+def _same_view_teacher_features(
+    teacher: torch.nn.Module,
+    images: torch.Tensor,
+    *,
+    resolution: int = 224,
+) -> torch.Tensor:
+    """Return frozen official-CLIP features for the same augmented image view."""
+    if images.ndim != 4:
+        raise ValueError("same-view teacher expects image tensor [N,C,H,W]")
+    resized = F.interpolate(
+        images.float(),
+        size=(int(resolution), int(resolution)),
+        mode="bilinear",
+        align_corners=False,
+    )
+    with torch.no_grad():
+        return teacher(resized)
+
+
+def _attention_local_fallback_per_sample(
+    local_per_sample: torch.Tensor,
+    global_per_sample: torch.Tensor,
+    confidence: torch.Tensor,
+    gate: float,
+) -> torch.Tensor:
+    """Use global supervision when the global prediction is below the gate."""
+    return torch.where(confidence >= float(gate), local_per_sample, global_per_sample)
+
+
 def _select_training_forward(
     *,
     peft: bool,
@@ -2216,6 +2393,159 @@ def _sam_optimizer_step(
     optimizer.step()
     return {
         "first_loss": float(first_loss.detach()),
+        "second_loss": float(second_loss.detach()),
+        "first_gradient_norm": first_norm,
+        "second_gradient_norm": second_norm,
+        "preclip_gradient_norm": clipped_norm,
+        "actual_radius": float(rho),
+    }
+
+
+def _capture_rng_state(device) -> dict:
+    """Capture process RNG state for exact second-pass replay."""
+    state = {"cpu": torch.get_rng_state()}
+    if device is None:
+        return state
+    if device.type == "cuda" and torch.cuda.is_available():
+        try:
+            state["cuda"] = torch.cuda.get_rng_state(device)
+        except TypeError:
+            state["cuda"] = torch.cuda.get_rng_state()
+    if device.type == "npu" and hasattr(torch, "npu"):
+        getter = getattr(torch.npu, "get_rng_state", None)
+        if getter is not None:
+            try:
+                state["npu"] = getter(device)
+            except TypeError:
+                state["npu"] = getter()
+    return state
+
+
+def _restore_rng_state(state: dict | None, device) -> None:
+    """Restore a state captured by :func:`_capture_rng_state`."""
+    if not state:
+        return
+    if "cpu" in state:
+        torch.set_rng_state(state["cpu"])
+    if "cuda" in state and torch.cuda.is_available():
+        torch.cuda.set_rng_state(state["cuda"], device)
+    if "npu" in state and hasattr(torch, "npu"):
+        setter = getattr(torch.npu, "set_rng_state", None)
+        if setter is not None:
+            try:
+                setter(state["npu"], device)
+            except TypeError:
+                setter(state["npu"])
+
+
+def _sam_accumulated_optimizer_step(
+    model,
+    optimizer,
+    *,
+    microbatches: list[dict],
+    cycle_samples: int,
+    rho: float,
+    clip_norm: float = 1.0,
+    epsilon: float = 1.0e-12,
+    rng_state: dict | None = None,
+    device=None,
+):
+    """One effective-batch SAM update over already accumulated first-pass grads.
+
+    The caller must have already completed the first pass and accumulated
+    gradient tensors into ``parameter.grad`` with true-sample-count weighting.
+    This function performs one perturbation, replays the stored microbatches,
+    restores the original parameters, and executes exactly one optimizer step.
+    """
+    if not microbatches:
+        raise ValueError("effective-batch SAM requires at least one microbatch")
+    if not 0.0 <= float(rho) < 1.0:
+        raise ValueError("SAM rho must be in [0,1)")
+    if int(cycle_samples) <= 0:
+        raise ValueError("cycle_samples must be positive")
+    trainable = [parameter for parameter in model.parameters() if parameter.requires_grad]
+    if not trainable:
+        raise RuntimeError("SAM requires at least one trainable parameter")
+
+    norm_squared = 0.0
+    for parameter in trainable:
+        if parameter.grad is not None:
+            if not torch.isfinite(parameter.grad).all():
+                raise FloatingPointError("SAM first-pass gradient is non-finite")
+            norm_squared += float(parameter.grad.detach().float().pow(2).sum())
+    first_norm = math.sqrt(norm_squared)
+    if not math.isfinite(first_norm) or first_norm <= 0.0:
+        raise ValueError("SAM first-pass global gradient norm must be positive")
+
+    first_loss = sum(
+        float(mb["first_loss"]) * int(mb["sample_count"]) for mb in microbatches
+    ) / float(cycle_samples)
+
+    backups: list[torch.Tensor] = []
+    with torch.no_grad():
+        for parameter in trainable:
+            backups.append(parameter.detach().clone())
+            if parameter.grad is not None:
+                parameter.add_(
+                    parameter.grad,
+                    alpha=float(rho) / (first_norm + float(epsilon)),
+                )
+
+    zero_kwargs = {
+        "set_to_none": not getattr(optimizer, "is_fused_optimizer", False)
+    }
+    optimizer.zero_grad(**zero_kwargs)
+    _restore_rng_state(rng_state, device)
+
+    for microbatch in microbatches:
+        second_loss = _sam_second_pass_loss(
+            model,
+            device=device,
+            use_amp=False,
+            forward_key=str(microbatch["forward_key"]),
+            forward_inputs=microbatch["forward_inputs"],
+            mixed_gate=microbatch["mixed_gate"],
+            mixed_reference=microbatch["mixed_reference"],
+            mixed_targets=microbatch["mixed_targets"],
+            mixed_weights=microbatch["mixed_weights"],
+            class_counts=microbatch["class_counts"],
+            prior_tau=float(microbatch["prior_tau"]),
+            loss_config=microbatch["loss_config"],
+            epoch=int(microbatch["epoch"]),
+            batch_suspicious=microbatch["batch_suspicious"],
+            distill_weight=float(microbatch["distill_weight"]),
+        )
+        if not math.isfinite(float(second_loss.detach())):
+            with torch.no_grad():
+                for parameter, backup in zip(trainable, backups):
+                    parameter.copy_(backup)
+            raise FloatingPointError("SAM second-pass loss is non-finite")
+        (
+            second_loss
+            * (float(microbatch["sample_count"]) / float(cycle_samples))
+        ).backward()
+
+    with torch.no_grad():
+        for parameter, backup in zip(trainable, backups):
+            parameter.copy_(backup)
+
+    second_norm_squared = 0.0
+    for parameter in trainable:
+        if parameter.grad is not None:
+            if not torch.isfinite(parameter.grad).all():
+                raise FloatingPointError("SAM second-pass gradient is non-finite")
+            second_norm_squared += float(parameter.grad.detach().float().pow(2).sum())
+    second_norm = math.sqrt(second_norm_squared)
+    if not math.isfinite(second_norm) or second_norm <= 0.0:
+        raise FloatingPointError("SAM second-pass global gradient norm must be positive")
+    clipped_norm = float(
+        torch.nn.utils.clip_grad_norm_(
+            trainable, float(clip_norm), error_if_nonfinite=True
+        )
+    )
+    optimizer.step()
+    return {
+        "first_loss": first_loss,
         "second_loss": float(second_loss.detach()),
         "first_gradient_norm": first_norm,
         "second_gradient_norm": second_norm,

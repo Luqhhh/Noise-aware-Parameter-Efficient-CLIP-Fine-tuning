@@ -71,7 +71,7 @@ project:
   family: L
   mechanism: 384px_area0.55_lambda0.25
   parent_kind: shared_lp
-  implementation_status: blocked_implementation
+  implementation_status: implemented
   search:
     resolution: 384
     area_fraction: 0.55
@@ -84,8 +84,6 @@ project:
     - 64
     smoke_required: true
     reference_resolution: 224
-  dependencies:
-  - attention_local_area_start_fallback
 train:
   amp: true
   amp_growth_interval: 1000000000

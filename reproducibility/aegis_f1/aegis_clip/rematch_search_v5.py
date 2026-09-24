@@ -125,27 +125,49 @@ def validate_declaration(config: dict[str, Any], *, require_implemented: bool = 
         _require(not bool(config.get("train", {}).get("amp", True)),
                  "S group requires train.amp=false")
         if optimizer == "sam":
-            accum = int(config["train"].get("grad_accum_steps", 1))
-            if accum > 1 and status == IMPLEMENTED:
-                raise MechanismBlockedError(
-                    "effective-batch SAM with gradient accumulation is not implemented; "
-                    "microbatch-SAM is forbidden by the V5 specification"
-                )
-            if accum == 1 and status == IMPLEMENTED:
-                raise MechanismBlockedError(
-                    "microbatch-SAM is forbidden for V5 S-group points; "
-                    "use the effective-batch SAM implementation"
-                )
+            sam = config.get("train", {}).get("sam", {})
+            _require(
+                isinstance(sam, dict) and bool(sam.get("enabled", False)),
+                "S SAM point requires train.sam.enabled=true",
+            )
+            _require(
+                sam.get("mode", "standard_global_l2") == "standard_global_l2",
+                "S SAM point requires train.sam.mode=standard_global_l2",
+            )
+            _require(
+                int(config["train"].get("grad_accum_steps", 1)) > 1,
+                "V5 S SAM points must use the effective-batch accumulation path",
+            )
+            if status != IMPLEMENTED:
+                raise MechanismBlockedError("S SAM point is not implemented")
     elif family == "K":
         resolution = int(search.get("resolution", 0))
         _require(resolution in {320, 384, 448}, "K resolution must be 320, 384 or 448")
         if bool(search.get("anchor_schedule", False)):
-            _require(status != IMPLEMENTED, "anchor schedule is not implemented")
+            schedule = config.get("loss", {}).get("anchor_schedule", {})
+            _require(isinstance(schedule, dict) and schedule, "anchor schedule config missing")
+            _require(float(schedule.get("start_weight", -1.0)) >= 0.0,
+                     "anchor schedule start_weight must be non-negative")
+            _require(float(schedule.get("end_weight", -1.0)) >= 0.0,
+                     "anchor schedule end_weight must be non-negative")
+            hold = int(schedule.get("hold_epochs", 0))
+            end = int(schedule.get("end_epoch", 0))
+            _require(end > hold >= 0, "anchor schedule requires end_epoch > hold_epochs >= 0")
+            if status == BLOCKED_IMPLEMENTATION:
+                raise MechanismBlockedError("anchor schedule declaration is marked blocked")
         teacher = str(search.get("teacher", "fixed_reference"))
         _require(teacher in {"fixed_reference", "same_view_official", "none"},
                  "K teacher must be fixed_reference, same_view_official or none")
         if teacher == "same_view_official":
-            _require(status != IMPLEMENTED, "same-view official teacher is not implemented")
+            teacher_config = config.get("train", {}).get("same_view_teacher", {})
+            _require(
+                isinstance(teacher_config, dict)
+                and bool(teacher_config.get("enabled", False))
+                and str(teacher_config.get("source", "")) == "official_clip"
+                and int(teacher_config.get("resolution", 0)) == 224,
+                "same-view official teacher requires train.same_view_teacher "
+                "{enabled: true, source: official_clip, resolution: 224}",
+            )
     elif family == "V":
         resolution = int(search.get("resolution", 0))
         _require(resolution in {320, 384}, "V resolution must be 320 or 384")
@@ -159,8 +181,22 @@ def validate_declaration(config: dict[str, Any], *, require_implemented: bool = 
     elif family == "L":
         resolution = int(search.get("resolution", 0))
         _require(resolution in {320, 384}, "L resolution must be 320 or 384")
-        if status == IMPLEMENTED:
-            raise MechanismBlockedError("L attention-local V5 semantics are not implemented")
+        local_config = config.get("loss", {}).get("attention_local_training", {})
+        _require(
+            isinstance(local_config, dict) and bool(local_config.get("enabled", False)),
+            "L requires loss.attention_local_training.enabled=true",
+        )
+        _require(
+            int(local_config.get("start_epoch", 0)) >= 1,
+            "L attention local start_epoch must be positive",
+        )
+        _require(
+            0.0 <= float(local_config.get("confidence_gate", -1.0)) <= 1.0,
+            "L confidence_gate must be in [0,1]",
+        )
+        crop_size = int(local_config.get("crop_size", 0))
+        _require(0 < crop_size < int(config["model"]["input_resolution"]),
+                 "L crop_size must be smaller than input resolution")
     elif family == "Q":
         resolution = int(search.get("resolution", 0))
         _require(resolution in {320, 384}, "Q resolution must be 320 or 384")
@@ -183,10 +219,8 @@ def validate_declaration(config: dict[str, Any], *, require_implemented: bool = 
                  "H sampler_mode must be natural, sqrt_class_balanced or class_balanced")
         init = str(search.get("init", ""))
         _require(init in {"inherit", "reinit"}, "H init must be inherit or reinit")
-        if status == IMPLEMENTED:
-            raise MechanismBlockedError(
-                "H implementation is gated on the F05 320px feature cache and binding"
-            )
+        # Executable H rows still pass through the shared cache/checkpoint
+        # lineage validator, which verifies the F05 320px feature manifest.
     elif family == "X":
         components = search.get("component_trials", [])
         _require(isinstance(components, list) and len(components) >= 2,

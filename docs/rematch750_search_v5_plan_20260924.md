@@ -55,39 +55,46 @@
 
 ## 3. 当前可执行与阻塞
 
-可执行（`implementation_status=implemented`，共 15 个）：
+可执行（`implementation_status=implemented`，共 32 个）：
 
-- R01–R04：352/384/416/448 固定分辨率；声明的 microbatch 必须先在 NPU 上做
-  smoke，再按 `micro_batch_candidates` 选择第一个通过的大小。
-- S01/S04/S07：320/384/448 普通 FP32 AdamW 控制。
-- K01/K02/K04/K05：320/384 固定 reference anchor 0 / 0.5。
+- R01–R04：352/384/416/448 固定分辨率。
+- S01–S09：320/384/448 的 FP32 AdamW 与 SAM rho=0.025/0.05；SAM 槽位走
+  effective-batch 两遍累积路径，不是 microbatch-SAM。
+- K01–K09：固定 anchor、anchor 2.0→0.2 退火、同视图官方 224px 教师。
 - V01/V02/V05/V06：320/384 的 RRC 面积下界 0.5 / 0.8。
+- L01–L06：第 5 轮启用、面积/占比/置信门控的 attention-local V5 语义。
 
-明确阻塞（不可静默执行）：
+等待工件（不可静默执行）：
 
 | 槽位 | 状态 | 依赖 |
 |---|---|---|
-| R05, R06 | `blocked_implementation` | 阶段式分辨率切换、位置嵌入与 optimizer state 迁移 |
-| S02/S03/S05/S06/S08/S09 | `blocked_implementation` | effective-batch SAM（两遍完整 1024 有效 batch） |
-| K03/K06 | `blocked_implementation` | anchor 权重 2.0→0.2 的显式退火 |
-| K07–K09 | `blocked_implementation` | 同视图官方教师的两遍一致随机状态回放 |
+| H01–H12 | `pending_artifact` | F05 320px encoder 特征缓存与 binding |
+| N01–N04 | `conditional_pending_evidence` | 新的合法训练侧质量证据与 target/梯度活性 |
+| X01–X08 | `blocked_dependency` | 对应 component family 的胜者与兼容性重测 |
+| R05/R06 | `blocked_implementation` | 阶段式分辨率切换、位置嵌入与 optimizer state 迁移 |
 | V03/V07 | `blocked_implementation` | 训练与推理共用的确定性 letterbox |
 | V04/V08 | `blocked_implementation` | 仅末 4 轮 RRC [0.9,1.0] 的几何调度 |
-| L01–L06 | `blocked_implementation` | 第 5 轮启用、面积/占比、置信回退与激活率账本 |
 | Q01–Q06 | `blocked_implementation` | GSAM constant-rho + effective-batch 两遍框架 |
-| N01–N04 | `conditional_pending_evidence` | 新的合法训练侧质量证据与 target/梯度活性 |
-| H01–H12 | `pending_artifact` | F05 320px encoder 特征缓存与 binding |
-| X01–X08 | `blocked_dependency` | 对应 component family 的胜者与兼容性重测 |
 
-## 4. 尚未在本机执行
+## 4. 远端执行状态
 
-本工作区没有 NPU，也没有 V4 远端 checkpoints/缓存。下列事情**没有发生**：
+本工作区本身没有 NPU；V5 代码已部署到远端 `vllm-lqh-86` 的
+`/workspace/noise-v5`，并从只读资产与 LP checkpoint 启动训练。
 
-- 没有启动 NPU 训练；
+已启动并验证：
+
+- R01/R02/R03/S01：固定分辨率与 FP32 AdamW 控制，均已越过 first-step audit；
+- S02：first-step audit 后完成 effective-batch SAM 更新，step 20 已记录
+  `successful_optimizer_updates=20`；
+- K07：同视图官方教师 first-step audit 通过，step 20 已记录；
+- remote ledger：`/workspace/noise-v5/results/rematch750_search_v5/ledger.jsonl`
+
+仍未发生：
+
 - 没有生成或修改 F05 的提交包；
 - 没有上传平台；
 - 没有填充 F05 checkpoint / CSV / ZIP 的真实 hash；
-- F05 平台分只拿到 `65.4711%` 的分数回执，没有 submission ID、带时区时间、
+- F05 平台分只有 `65.4711%` 分数回执，没有 submission ID、带时区时间、
   reset-period 或包 hash；
 - 没有声称 70% 目标已达到。
 
@@ -106,6 +113,5 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m pytest \
   reproducibility/aegis_f1/tests/test_rematch750_search_v5.py -q
 ```
 
-在 S02/S03/S05/S06/S08/S09 和 Q01–Q06 可执行前，必须先实现并验收
-effective-batch SAM：真实 1024 有效 batch、两遍同一图像/增强/mix/RNG、只一次
-optimizer/scheduler 更新、rho=0 退化同口径 AdamW、断点恢复完整。
+S02 已用于验证 effective-batch SAM 的 1024 有效 batch 路径；Q01–Q06 仍需
+GSAM constant-rho 实现。H01–H12 需先生成 F05 320px encoder 特征缓存。

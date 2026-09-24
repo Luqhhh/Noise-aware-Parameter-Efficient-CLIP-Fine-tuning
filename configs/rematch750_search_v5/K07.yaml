@@ -61,7 +61,7 @@ project:
   family: K
   mechanism: 320px_same_view_official_teacher
   parent_kind: shared_lp
-  implementation_status: blocked_implementation
+  implementation_status: implemented
   search:
     resolution: 320
     anchor_weight: 2.0
@@ -73,8 +73,6 @@ project:
     - 64
     smoke_required: true
     reference_resolution: 224
-  dependencies:
-  - same_view_official_teacher
 train:
   amp: true
   amp_growth_interval: 1000000000
@@ -104,5 +102,9 @@ train:
   gradient_norm_impl: foreach
   grad_accum_steps: 4
   effective_batch_size: 1024
+  same_view_teacher:
+    enabled: true
+    source: official_clip
+    resolution: 224
 trust:
   enabled: false

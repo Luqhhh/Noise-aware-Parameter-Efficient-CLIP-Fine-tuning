@@ -61,7 +61,7 @@ project:
   family: S
   mechanism: fp32_sam_rho0.05
   parent_kind: shared_lp
-  implementation_status: blocked_implementation
+  implementation_status: implemented
   search:
     resolution: 320
     precision: fp32
@@ -73,8 +73,6 @@ project:
     - 64
     smoke_required: true
     reference_resolution: 224
-  dependencies:
-  - effective_batch_sam
 train:
   amp: false
   amp_growth_interval: 1000000000
