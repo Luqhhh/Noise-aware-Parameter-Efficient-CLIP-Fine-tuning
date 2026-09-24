@@ -79,10 +79,16 @@ PROJECT_STAGES = COMPETITION_STAGES | INTERNAL_EXPERIMENT_STAGES
 REMATCH750_SEARCH_V4 = "rematch750_search_v4"
 REMATCH750_SEARCH_V5 = "rematch750_search_v5"
 REMATCH750_HEAD_L2SP = "rematch750_head_l2sp"
+REMATCH750_F05_TRANSFER = "rematch750_f05_transfer"
 REMATCH750_SEARCH_PROTOCOLS = {
     REMATCH750_SEARCH_V4,
     REMATCH750_SEARCH_V5,
     REMATCH750_HEAD_L2SP,
+}
+# F05 transfer is an additive evidence-transfer protocol: it reuses the V4
+# lineage validator but does not claim the V5 search declaration semantics.
+REMATCH750_SUPPORTED_PROTOCOLS = REMATCH750_SEARCH_PROTOCOLS | {
+    REMATCH750_F05_TRANSFER,
 }
 V4_TRAIN_AUGMENTATIONS = {"weak_rrc_flip_randaugment"}
 V4_PARENT_KINDS = {"shared_lp", "same_split_continue", "frozen_backbone_head", "official_clip_head"}
@@ -141,7 +147,7 @@ def validate_config(config: dict[str, Any]) -> None:
     is_v4 = protocol == REMATCH750_SEARCH_V4
     is_v5 = protocol == REMATCH750_SEARCH_V5
     is_rematch_search = protocol in REMATCH750_SEARCH_PROTOCOLS
-    if protocol and not is_rematch_search:
+    if protocol and protocol not in REMATCH750_SUPPORTED_PROTOCOLS:
         raise ConfigError(f"Unsupported project.protocol: {protocol!r}")
     if is_rematch_search:
         if str(project.get("parent_kind", "")) not in V4_PARENT_KINDS:

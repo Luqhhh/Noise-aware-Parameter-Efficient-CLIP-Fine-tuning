@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "protocol": "REMATCH750_F05_EVIDENCE_TRANSFER",
+  "owner": "xjn",
+  "status": "ready_for_npu",
+  "created_at": "2026-09-24",
+  "baseline": {
+    "trial": "HL00",
+    "experiment_id": "RM_HL00_F05_CONTROL",
+    "config": "configs/rematch750_head_l2sp/HL00.yaml",
+    "config_sha256": "ea0b5e945dd28419c7e7db6db8a501db4ebd52f19f4a07e45944d74ffaa9a1fb",
+    "historical_reference": "RM_V4_F05",
+    "historical_local_macro": 0.7443073987960815,
+    "historical_local_micro": 0.7544354796409607,
+    "historical_platform_score_percent": 65.4711
+  },
+  "lineage": {
+    "parent_experiment_id": "RM_LP",
+    "parent_checkpoint_sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+    "train_csv_sha256": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "val_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "seed": 42
+  },
+  "fixed_recipe": {
+    "input_resolution": 320,
+    "micro_batch_size": 256,
+    "grad_accum_steps": 4,
+    "effective_batch_size": 1024,
+    "epochs": 16,
+    "head_lr": 0.0004,
+    "backbone_lr": 1.2e-05,
+    "loss": "ce_warmup_2_then_gce_q0.5",
+    "feature_distillation_weight": 2.0,
+    "selector_metric": "raw_macro"
+  },
+  "trials": [
+    {
+      "name": "ET01",
+      "experiment_id": "RM_ET01_ANCHOR1",
+      "mechanism": "feature_anchor_1.0",
+      "priority": 1,
+      "config": "configs/rematch750_f05_transfer/ET01.yaml",
+      "config_sha256": "5d0cb3440fd925c3df63cee7736bd167329ccf1d90ab4a0036f7039063632419",
+      "single_variable_overrides": {
+        "loss": {
+          "feature_distillation_weight": 1.0
+        }
+      },
+      "evidence": "V4 D03: +0.1293pp macro / +0.1142pp micro vs V3",
+      "status": "ready_for_npu"
+    },
+    {
+      "name": "ET02",
+      "experiment_id": "RM_ET02_GCE_Q07",
+      "mechanism": "gce_q_0.7",
+      "priority": 1,
+      "config": "configs/rematch750_f05_transfer/ET02.yaml",
+      "config_sha256": "1193d25c7b88bab1d108d4f5494511147989df6d3cb7c0677ced9ceed1a11ea3",
+      "single_variable_overrides": {
+        "loss": {
+          "gce_q": 0.7
+        }
+      },
+      "evidence": "V4 B05: +0.0135pp macro / +0.0134pp micro vs V3",
+      "status": "ready_for_npu"
+    },
+    {
+      "name": "ET03",
+      "experiment_id": "RM_ET03_BALSOFT_TAU05",
+      "mechanism": "balanced_softmax_tau_0.5",
+      "priority": 1,
+      "config": "configs/rematch750_f05_transfer/ET03.yaml",
+      "config_sha256": "a989ef4575dc4baf0409c8ef4d5159151fa2d047da3e12e7db19a9db6d5c34b3",
+      "single_variable_overrides": {
+        "longtail": {
+          "balanced_softmax_tau": 0.5
+        }
+      },
+      "evidence": "V4 E01: +0.1126pp macro / +0.0134pp micro vs V3",
+      "status": "ready_for_npu"
+    },
+    {
+      "name": "ET04",
+      "experiment_id": "RM_ET04_BALSOFT_TAU10",
+      "mechanism": "balanced_softmax_tau_1.0",
+      "priority": 1,
+      "config": "configs/rematch750_f05_transfer/ET04.yaml",
+      "config_sha256": "6faa41d6878684e0e21c3f9e2ed493750e91bc972aacdf1b70b0bbc442d0877c",
+      "single_variable_overrides": {
+        "longtail": {
+          "balanced_softmax_tau": 1.0
+        }
+      },
+      "evidence": "V4 E02: +0.1831pp macro / -0.0202pp micro vs V3",
+      "status": "ready_for_npu"
+    },
+    {
+      "name": "ET05",
+      "experiment_id": "RM_ET05_BBLR_8E6",
+      "mechanism": "backbone_lr_8e-6",
+      "priority": 2,
+      "config": "configs/rematch750_f05_transfer/ET05.yaml",
+      "config_sha256": "be50fe99c2096319a44ccec6af8dbee62319ebd3625650e89a20040dc68d2eeb",
+      "single_variable_overrides": {
+        "train": {
+          "backbone_lr": 8e-06
+        }
+      },
+      "evidence": "unexplored F05-local lower-side bracket",
+      "status": "ready_for_npu"
+    },
+    {
+      "name": "ET06",
+      "experiment_id": "RM_ET06_BBLR_16E6",
+      "mechanism": "backbone_lr_1.6e-5",
+      "priority": 2,
+      "config": "configs/rematch750_f05_transfer/ET06.yaml",
+      "config_sha256": "8b5c95246fd0eaec3c55eb54b1e3aee6518b4154493620f40bbdf13416182e05",
+      "single_variable_overrides": {
+        "train": {
+          "backbone_lr": 1.6e-05
+        }
+      },
+      "evidence": "unexplored F05-local upper-side bracket",
+      "status": "ready_for_npu"
+    },
+    {
+      "name": "ET07",
+      "experiment_id": "RM_ET07_HEADLR_2E4",
+      "mechanism": "head_lr_2e-4",
+      "priority": 2,
+      "config": "configs/rematch750_f05_transfer/ET07.yaml",
+      "config_sha256": "d12a83b3fd4529b9aa54865651762dbb940563142b7b254996ef0679de360155",
+      "single_variable_overrides": {
+        "train": {
+          "head_lr": 0.0002
+        }
+      },
+      "evidence": "unexplored F05-local lower-side bracket",
+      "status": "ready_for_npu"
+    },
+    {
+      "name": "ET08",
+      "experiment_id": "RM_ET08_HEADLR_8E4",
+      "mechanism": "head_lr_8e-4",
+      "priority": 2,
+      "config": "configs/rematch750_f05_transfer/ET08.yaml",
+      "config_sha256": "6034980caf5f2db368d3c9c2c1edde6a6a2fb92eb2dbb5442464acd613903a98",
+      "single_variable_overrides": {
+        "train": {
+          "head_lr": 0.0008
+        }
+      },
+      "evidence": "unexplored F05-local upper-side bracket",
+      "status": "ready_for_npu"
+    },
+    {
+      "name": "ET09",
+      "experiment_id": "RM_ET09_WARMUP1",
+      "mechanism": "lr_warmup_1_epoch",
+      "priority": 3,
+      "config": "configs/rematch750_f05_transfer/ET09.yaml",
+      "config_sha256": "c4f565758aa3379a72e63701475d5b0eef47d5db13163e83d71c35cea063258b",
+      "single_variable_overrides": {
+        "train": {
+          "lr_warmup_epochs": 1
+        }
+      },
+      "evidence": "high-resolution optimization-stability probe",
+      "status": "ready_for_npu"
+    },
+    {
+      "name": "ET10",
+      "experiment_id": "RM_ET10_E20",
+      "mechanism": "cosine_20_epochs",
+      "priority": 3,
+      "config": "configs/rematch750_f05_transfer/ET10.yaml",
+      "config_sha256": "80815c503dd2e3fd19cebf17ed61a5485dda080ff3bfe3687326ac5b3d5464db",
+      "single_variable_overrides": {
+        "train": {
+          "epochs": 20,
+          "schedule_epochs": 20
+        }
+      },
+      "evidence": "F05 selected epoch 14/16; tests a slower cosine tail",
+      "status": "ready_for_npu"
+    }
+  ],
+  "promotion": {
+    "reference": "same-revision HL00",
+    "macro_delta_pp": 0.3,
+    "micro_max_regression_pp": 0.1,
+    "confirmation_seeds": [
+      3407,
+      2026
+    ],
+    "minimum_directional_seeds": 2,
+    "combinations": "only after an individual factor passes promotion"
+  },
+  "runner": "scripts/run_rematch750_f05_transfer.py",
+  "platform_submission": false
+}
