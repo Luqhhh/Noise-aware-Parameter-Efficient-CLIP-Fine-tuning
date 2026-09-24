@@ -11,7 +11,7 @@ from aegis_clip.local_feature_adapter import (
     BottleneckLocalFeatureAdapter,
     fuse_global_local_log_probabilities,
 )
-from aegis_clip.model import AegisCLIP
+from aegis_clip.model import AegisCLIP, interpolate_visual_positional_embedding
 from aegis_clip.part_token_adapter import (
     PartTokenResidualAdapter,
     anchored_classifier_residual_logits,
@@ -38,18 +38,33 @@ def logits_with_last_block_attention(
     }
     if not all(hasattr(visual, name) for name in required):
         raise ValueError("Attention-guided inference requires CLIP ViT-B/32 internals")
-    if images.ndim != 4 or tuple(images.shape[-2:]) != (224, 224):
-        raise ValueError("Attention-guided inference requires [N,C,224,224] images")
+    if images.ndim != 4:
+        raise ValueError("Attention-guided inference requires [N,C,H,W] images")
+    stride = visual.conv1.stride
+    stride_height, stride_width = int(stride[0]), int(stride[1])
+    if images.shape[-2] % stride_height or images.shape[-1] % stride_width:
+        raise ValueError("Attention path input must be divisible by the ViT patch size")
+    target_grid = (
+        int(images.shape[-2]) // stride_height,
+        int(images.shape[-1]) // stride_width,
+    )
+    source_tokens = int(visual.positional_embedding.shape[0] - 1)
+    source_size = int(round(math.sqrt(source_tokens)))
+    if source_size * source_size != source_tokens:
+        raise ValueError("Attention path requires square CLIP patch positions")
     dtype = visual.conv1.weight.dtype
     values = visual.conv1(images.to(dtype=dtype))
     grid_height, grid_width = int(values.shape[-2]), int(values.shape[-1])
-    if grid_height * grid_width + 1 != visual.positional_embedding.shape[0]:
-        raise ValueError("Attention path requires the native CLIP patch grid")
+    if (grid_height, grid_width) != target_grid:
+        raise ValueError("Conv patch grid does not match requested image geometry")
     values = values.reshape(values.shape[0], values.shape[1], -1).permute(0, 2, 1)
     class_token = visual.class_embedding.to(values.dtype).reshape(1, 1, -1)
     class_token = class_token.expand(values.shape[0], 1, values.shape[-1])
     values = torch.cat([class_token, values], dim=1)
-    values = values + visual.positional_embedding.to(values.dtype).unsqueeze(0)
+    positions = interpolate_visual_positional_embedding(
+        visual.positional_embedding, target_grid
+    )
+    values = values + positions.to(values.dtype).unsqueeze(0)
     values = visual.ln_pre(values).permute(1, 0, 2)
 
     blocks = visual.transformer.resblocks

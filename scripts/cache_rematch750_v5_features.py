@@ -45,7 +45,7 @@ class SplitDataset(Dataset):
 
     def __getitem__(self, index: int):
         row = self.rows[index]
-        relative = str(row["image_path"])
+        relative = str(row["image_path"]).removeprefix("train/")
         path = resolve_image_path(self.root, relative)
         raw = path.read_bytes()
         expected_hash = row.get("file_sha256", "")
