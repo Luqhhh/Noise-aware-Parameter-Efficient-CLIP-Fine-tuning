@@ -138,6 +138,7 @@ cache 输出必须使用独立路径，避免与 D1 互相覆盖。
 ```bash
 GPU1_HOST=user@gpu1-host \
 GPU1_ROOT=/workspace/noise \
+GPU0_ROOT=/home/lux1/noise \
 bash deploy/f05_focus_gpu1/sync_required_assets.sh
 ```
 
