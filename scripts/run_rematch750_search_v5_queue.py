@@ -23,6 +23,7 @@ CONFIG_DIR = ROOT / "configs/rematch750_search_v5"
 RESULT_DIR = ROOT / "results/rematch750_search_v5"
 QUEUE_DIR = ROOT / "outputs/rematch750_search_v5/queue"
 LEDGER = RESULT_DIR / "ledger.jsonl"
+COMPLETED_DIR = RESULT_DIR / "completed"
 MANIFEST = ROOT / "search_manifest.json"
 
 
@@ -93,6 +94,18 @@ def _execute_one(trial_id: str, source_config: Path, device: str,
                  num_workers: int | None = None, prefetch_factor: int | None = None) -> int:
     from aegis_clip.config import load_config
     from aegis_clip.rematch_search_v5 import MechanismBlockedError, validate_declaration
+
+    marker = COMPLETED_DIR / f"{trial_id}.json"
+    if marker.is_file():
+        _append_ledger(
+            {
+                "trial_id": trial_id,
+                "status": "already_complete",
+                "completed_marker": str(marker),
+            }
+        )
+        print(f"SKIP {trial_id}: completed marker exists", flush=True)
+        return 0
 
     config = load_config(source_config)
     declaration = validate_declaration(config)
@@ -184,6 +197,23 @@ def _execute_one(trial_id: str, source_config: Path, device: str,
         return 1
 
     metrics = json.loads(_selected_report(model_run_dir).read_text(encoding="utf-8"))
+    COMPLETED_DIR.mkdir(parents=True, exist_ok=True)
+    marker.write_text(
+        json.dumps(
+            {
+                "trial_id": trial_id,
+                "completed_at_unix": _now(),
+                "model_run_dir": str(model_run_dir),
+                "selected_epoch": metrics.get("selected_epoch"),
+                "raw_macro": metrics.get("raw_macro"),
+                "raw_micro": metrics.get("raw_micro"),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     _append_ledger(
         {
             "trial_id": trial_id,
