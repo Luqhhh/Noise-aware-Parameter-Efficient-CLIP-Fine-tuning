@@ -32,6 +32,7 @@ echo "[l05-wait] C0 finished; starting L05 before OOF/quality"
 
 set +e
 python3 "$REPO_ROOT/scripts/run_l05_local_retrain.py" \
+  >> "$OUTPUT_ROOT/l05_train.log" 2>&1 \
   --auto-microbatch \
   --microbatch-candidates "$MICROBATCH_CANDIDATES" \
   --device "$DEVICE" \
