@@ -1,0 +1,147 @@
+{
+  "generated_at_utc": "2026-09-24T15:40:00Z",
+  "protocol": "rematch750_search_v5",
+  "cards_in_use_by_this_queue": [
+    0,
+    1,
+    2,
+    4,
+    5,
+    7
+  ],
+  "cards_external_excluded": [
+    3,
+    6
+  ],
+  "notes": "Costs are planning estimates in seconds from observed V5 runs plus resolution/family scaling. Lanes are sequential; blocked slots are NOT placed on cards to avoid stalls.",
+  "running": {
+    "npu0": {
+      "trial": "H01",
+      "remaining_seconds_estimate": 100
+    },
+    "npu1": {
+      "trial": "R04",
+      "remaining_seconds_estimate": 6430
+    },
+    "npu2": {
+      "trial": "S02",
+      "remaining_seconds_estimate": 2366
+    },
+    "npu4": {
+      "trial": "L01",
+      "remaining_seconds_estimate": 7990
+    },
+    "npu5": {
+      "trial": "K07",
+      "remaining_seconds_estimate": 2056
+    },
+    "npu7": {
+      "trial": "K03",
+      "remaining_seconds_estimate": 3906
+    }
+  },
+  "lanes": {
+    "npu0": {
+      "trials": [
+        "S08",
+        "S06",
+        "S04",
+        "K01"
+      ],
+      "estimated_total_seconds": 32100
+    },
+    "npu1": {
+      "trials": [
+        "V02",
+        "S03",
+        "K06",
+        "L06"
+      ],
+      "estimated_total_seconds": 32330
+    },
+    "npu2": {
+      "trials": [
+        "K09",
+        "L02",
+        "K04",
+        "K05",
+        "H03",
+        "H05",
+        "H07",
+        "H09",
+        "H10",
+        "H11"
+      ],
+      "estimated_total_seconds": 32046
+    },
+    "npu4": {
+      "trials": [
+        "K02",
+        "S05",
+        "V01",
+        "L04"
+      ],
+      "estimated_total_seconds": 32290
+    },
+    "npu5": {
+      "trials": [
+        "S09",
+        "S07",
+        "L03",
+        "H02",
+        "H04",
+        "H06",
+        "H08",
+        "H12"
+      ],
+      "estimated_total_seconds": 31956
+    },
+    "npu7": {
+      "trials": [
+        "L05",
+        "K08",
+        "V06",
+        "V05"
+      ],
+      "estimated_total_seconds": 32306
+    }
+  },
+  "estimated_totals": {
+    "makespan_seconds_min": 31956,
+    "makespan_seconds_max": 32330,
+    "lane_spread_seconds": 374,
+    "makespan_hours_approx": 8.9
+  },
+  "deferred_backlog": {
+    "conditional_pending_evidence": [
+      "N01",
+      "N02",
+      "N03",
+      "N04"
+    ],
+    "blocked_implementation": [
+      "R05",
+      "R06",
+      "V03",
+      "V04",
+      "V07",
+      "V08",
+      "Q01",
+      "Q02",
+      "Q03",
+      "Q04",
+      "Q05",
+      "Q06"
+    ],
+    "blocked_dependency": [
+      "X01",
+      "X02",
+      "X03",
+      "X04",
+      "X05",
+      "X06",
+      "X07",
+      "X08"
+    ]
+  }
+}
