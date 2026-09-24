@@ -1,0 +1,12 @@
+{
+  "trial_id": "C06",
+  "family": "C",
+  "status": "failed_rc_1",
+  "completed_at_unix": 1790186649,
+  "selected_epoch": null,
+  "raw_macro": null,
+  "raw_micro": null,
+  "delta_macro_vs_v3_pp": null,
+  "delta_micro_vs_v3_pp": null,
+  "log_path": "outputs/rematch750_search_v4/queue/C06.log"
+}

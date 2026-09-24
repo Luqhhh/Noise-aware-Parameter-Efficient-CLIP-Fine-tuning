@@ -1,0 +1,27 @@
+--- logs/train.log ---
+
+
+--- queue log tail ---
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/cli/rematch.py", line 170, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/cli/rematch.py", line 167, in main
+    execute(args.action,Path(args.config).resolve())
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/cli/rematch.py", line 108, in execute
+    checkpoint=train(config)
+               ^^^^^^^^^^^^^
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/trainer.py", line 214, in train
+    val_dataset = _build_dataset(
+                  ^^^^^^^^^^^^^^^
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/trainer.py", line 1954, in _build_dataset
+    return OnlineImageDataset(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/data.py", line 154, in __init__
+    trust_bundle.verify_coverage(self.paths)
+  File "/workspace/noise-worktrees/rematch750_search_v4/reproducibility/aegis_f1/aegis_clip/data.py", line 94, in verify_coverage
+    raise ValueError(
+ValueError: Trust bundle misses 14880 split samples; first=0000/095017bc930947d0917b451e527ea15b.jpg
+[ERROR] 2026-09-23-18:03:36 (PID:1217835, Device:0, RankID:-1) ERR99999 UNKNOWN applicaiton exception

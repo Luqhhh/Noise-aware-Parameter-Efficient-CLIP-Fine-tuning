@@ -1,0 +1,14 @@
+{
+  "trial_id": "F06",
+  "family": "F",
+  "status": "already_complete",
+  "completed_at_unix": 1790183861,
+  "selected_epoch": 16,
+  "raw_macro": 0.7439153790473938,
+  "raw_micro": 0.7543010711669922,
+  "delta_macro_vs_v3_pp": 2.044302225112915,
+  "delta_micro_vs_v3_pp": 2.016127109527588,
+  "log_path": "outputs/rematch750_search_v4/queue/F06.log",
+  "schedule_epochs": 16,
+  "validation_covered_classes": 750
+}
