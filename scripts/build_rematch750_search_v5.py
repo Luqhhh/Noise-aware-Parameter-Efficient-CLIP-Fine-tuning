@@ -644,11 +644,14 @@ def main() -> None:
         "baseline": {
             "candidate": "RM_V4_F05",
             "config": "configs/rematch750_search_v4/F05.yaml",
+            "config_sha256": "d5cf5ae16ee174cc2a6e3e75a84ce4a631255314f66f192a705197d714f21f9a",
             "checkpoint": F05_CHECKPOINT,
+            "checkpoint_sha256": None,
             "local_macro": 0.7443073987960815,
             "local_micro": 0.7544354796409607,
             "selected_epoch": 14,
             "platform_score": None,
+            "artifact_audit": "pending_real_artifact_hashes",
         },
         "historical_anchor": {
             "candidate": "RM_V3_B1024_E16_LR4",
