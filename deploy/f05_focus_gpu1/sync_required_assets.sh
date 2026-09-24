@@ -28,7 +28,7 @@ GPU1_HOST="${GPU1_HOST:?set GPU1_HOST=user@gpu1-host}"
 GPU1_ROOT="${GPU1_ROOT:?set GPU1_ROOT=/workspace/noise}"
 GPU0_ROOT="${GPU0_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 SSH_OPTS=${SSH_OPTS:--o ServerAliveInterval=30 -o ServerAliveCountMax=6}
-RSYNC_OPTS=${RSYNC_OPTS:--a --partial --human-readable --info=progress2}
+RSYNC_OPTS=${RSYNC_OPTS:--a --partial --human-readable --info=progress2 --mkpath}
 
 run_rsync() {
   local source="$1"
