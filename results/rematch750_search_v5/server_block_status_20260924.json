@@ -1,0 +1,671 @@
+{
+  "schema_version": 1,
+  "protocol": "REMATCH750_SEARCH_V5",
+  "server_status": "blocked_server",
+  "data_cutoff_utc": "2026-09-24T13:21:37Z",
+  "local_recorded_at_utc": "2026-09-24T16:55:00Z",
+  "server": {
+    "name": "vllm-lqh-86",
+    "endpoint": "36.140.239.86:32014",
+    "last_contact_utc": "2026-09-24T13:33:00Z",
+    "container_entry": "ssh_banner_closed",
+    "host_port_22": "ssh_banner_ok",
+    "note": "container entry unreachable for >3h; host port 22 sshd responds but our key is not authorized there. Training status after 13:33 UTC is unknown and remaining runs are treated as server-blocked."
+  },
+  "counts": {
+    "manifest_slots": 68,
+    "completed": 28,
+    "completed_full_ft": 16,
+    "completed_cached_head_h": 12,
+    "running_at_cutoff": 6,
+    "blocked_server": 40
+  },
+  "completed": [
+    {
+      "trial_id": "L05",
+      "family": "L",
+      "kind": "training",
+      "raw_macro": 0.7523912787437439,
+      "raw_micro": 0.7628360390663147,
+      "selected_epoch": 16,
+      "elapsed_seconds": 9900.239112615585,
+      "status": "completed"
+    },
+    {
+      "trial_id": "R02",
+      "family": "R",
+      "kind": "training",
+      "raw_macro": 0.7513769268989563,
+      "raw_micro": 0.7615591287612915,
+      "selected_epoch": 14,
+      "elapsed_seconds": 4137.145858049393,
+      "status": "completed"
+    },
+    {
+      "trial_id": "R04",
+      "family": "R",
+      "kind": "training",
+      "raw_macro": 0.7507224082946777,
+      "raw_micro": 0.760618269443512,
+      "selected_epoch": 16,
+      "elapsed_seconds": 10250.022647380829,
+      "status": "completed"
+    },
+    {
+      "trial_id": "R03",
+      "family": "R",
+      "kind": "training",
+      "raw_macro": 0.7507045269012451,
+      "raw_micro": 0.7613575458526611,
+      "selected_epoch": 16,
+      "elapsed_seconds": 4721.909662246704,
+      "status": "completed"
+    },
+    {
+      "trial_id": "K09",
+      "family": "K",
+      "kind": "training",
+      "raw_macro": 0.7503055930137634,
+      "raw_micro": 0.7602150440216064,
+      "selected_epoch": 16,
+      "elapsed_seconds": 9971.774485111237,
+      "status": "completed"
+    },
+    {
+      "trial_id": "K02",
+      "family": "K",
+      "kind": "training",
+      "raw_macro": 0.7473752498626709,
+      "raw_micro": 0.757594108581543,
+      "selected_epoch": 14,
+      "elapsed_seconds": 7973.8585550785065,
+      "status": "completed"
+    },
+    {
+      "trial_id": "L01",
+      "family": "L",
+      "kind": "training",
+      "raw_macro": 0.7471086382865906,
+      "raw_micro": 0.7572580575942993,
+      "selected_epoch": 16,
+      "elapsed_seconds": 8081.906618595123,
+      "status": "completed"
+    },
+    {
+      "trial_id": "L02",
+      "family": "L",
+      "kind": "training",
+      "raw_macro": 0.7469915151596069,
+      "raw_micro": 0.7571236491203308,
+      "selected_epoch": 16,
+      "elapsed_seconds": 8147.715509414673,
+      "status": "completed"
+    },
+    {
+      "trial_id": "K03",
+      "family": "K",
+      "kind": "training",
+      "raw_macro": 0.7467734217643738,
+      "raw_micro": 0.7568548321723938,
+      "selected_epoch": 14,
+      "elapsed_seconds": 8050.4584012031555,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H05",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.746600329875946,
+      "raw_micro": 0.7532930374145508,
+      "selected_epoch": 14,
+      "elapsed_seconds": 203.70579266548157,
+      "status": "completed"
+    },
+    {
+      "trial_id": "S08",
+      "family": "S",
+      "kind": "training",
+      "raw_macro": 0.7465827465057373,
+      "raw_micro": 0.7566532492637634,
+      "selected_epoch": 16,
+      "elapsed_seconds": 15796.02902173996,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H03",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.7457656860351562,
+      "raw_micro": 0.7545698881149292,
+      "selected_epoch": 4,
+      "elapsed_seconds": 215.0689721107483,
+      "status": "completed"
+    },
+    {
+      "trial_id": "R01",
+      "family": "R",
+      "kind": "training",
+      "raw_macro": 0.7452978491783142,
+      "raw_micro": 0.7561827898025513,
+      "selected_epoch": 14,
+      "elapsed_seconds": 3759.6249980926514,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H01",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.74508136510849,
+      "raw_micro": 0.7545698881149292,
+      "selected_epoch": 10,
+      "elapsed_seconds": 237.73338079452515,
+      "status": "completed"
+    },
+    {
+      "trial_id": "S01",
+      "family": "S",
+      "kind": "training",
+      "raw_macro": 0.7443761229515076,
+      "raw_micro": 0.7543683052062988,
+      "selected_epoch": 16,
+      "elapsed_seconds": 4554.054702281952,
+      "status": "completed"
+    },
+    {
+      "trial_id": "K07",
+      "family": "K",
+      "kind": "training",
+      "raw_macro": 0.7443462610244751,
+      "raw_micro": 0.7543683052062988,
+      "selected_epoch": 16,
+      "elapsed_seconds": 8155.264247179031,
+      "status": "completed"
+    },
+    {
+      "trial_id": "S02",
+      "family": "S",
+      "kind": "training",
+      "raw_macro": 0.743732750415802,
+      "raw_micro": 0.7535618543624878,
+      "selected_epoch": 16,
+      "elapsed_seconds": 8463.125426530838,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H11",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.7426455020904541,
+      "raw_micro": 0.749462366104126,
+      "selected_epoch": 18,
+      "elapsed_seconds": 223.35092210769653,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H09",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.7418900728225708,
+      "raw_micro": 0.7508736848831177,
+      "selected_epoch": 10,
+      "elapsed_seconds": 219.24817872047424,
+      "status": "completed"
+    },
+    {
+      "trial_id": "S09",
+      "family": "S",
+      "kind": "training",
+      "raw_macro": 0.7402671575546265,
+      "raw_micro": 0.7511425018310547,
+      "selected_epoch": 16,
+      "elapsed_seconds": 15736.085578203201,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H07",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.7401624321937561,
+      "raw_micro": 0.7507392764091492,
+      "selected_epoch": 12,
+      "elapsed_seconds": 220.00594449043274,
+      "status": "completed"
+    },
+    {
+      "trial_id": "V02",
+      "family": "V",
+      "kind": "training",
+      "raw_macro": 0.7397197484970093,
+      "raw_micro": 0.7498655915260315,
+      "selected_epoch": 14,
+      "elapsed_seconds": 8097.852689504623,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H12",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.7331275939941406,
+      "raw_micro": 0.7407258152961731,
+      "selected_epoch": 20,
+      "elapsed_seconds": 212.9346055984497,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H10",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.7327602505683899,
+      "raw_micro": 0.7420026659965515,
+      "selected_epoch": 14,
+      "elapsed_seconds": 202.58201122283936,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H08",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.7311525344848633,
+      "raw_micro": 0.7424731254577637,
+      "selected_epoch": 16,
+      "elapsed_seconds": 210.23990416526794,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H06",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.6644716262817383,
+      "raw_micro": 0.6706317067146301,
+      "selected_epoch": 20,
+      "elapsed_seconds": 214.52030158042908,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H04",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.6371057629585266,
+      "raw_micro": 0.6556451320648193,
+      "selected_epoch": 20,
+      "elapsed_seconds": 223.28308606147766,
+      "status": "completed"
+    },
+    {
+      "trial_id": "H02",
+      "family": "H",
+      "kind": "cached_head",
+      "raw_macro": 0.5826801657676697,
+      "raw_micro": 0.6113575100898743,
+      "selected_epoch": 20,
+      "elapsed_seconds": 243.50987029075623,
+      "status": "completed"
+    }
+  ],
+  "running_at_cutoff": [
+    {
+      "trial_id": "K04",
+      "family": "K",
+      "kind": "training",
+      "status": "server_blocked",
+      "note": "in-flight at 13:33 UTC; outcome unverified"
+    },
+    {
+      "trial_id": "K08",
+      "family": "K",
+      "kind": "training",
+      "status": "server_blocked",
+      "note": "in-flight at 13:33 UTC; outcome unverified"
+    },
+    {
+      "trial_id": "S03",
+      "family": "S",
+      "kind": "training",
+      "status": "server_blocked",
+      "note": "in-flight at 13:33 UTC; outcome unverified"
+    },
+    {
+      "trial_id": "S05",
+      "family": "S",
+      "kind": "training",
+      "status": "server_blocked",
+      "note": "in-flight at 13:33 UTC; outcome unverified"
+    },
+    {
+      "trial_id": "S06",
+      "family": "S",
+      "kind": "training",
+      "status": "server_blocked",
+      "note": "in-flight at 13:33 UTC; outcome unverified"
+    },
+    {
+      "trial_id": "S07",
+      "family": "S",
+      "kind": "training",
+      "status": "server_blocked",
+      "note": "in-flight at 13:33 UTC; outcome unverified"
+    }
+  ],
+  "blocked_server": [
+    {
+      "trial_id": "R05",
+      "family": "R",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "R06",
+      "family": "R",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "S03",
+      "family": "S",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": true
+    },
+    {
+      "trial_id": "S04",
+      "family": "S",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "S05",
+      "family": "S",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": true
+    },
+    {
+      "trial_id": "S06",
+      "family": "S",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": true
+    },
+    {
+      "trial_id": "S07",
+      "family": "S",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": true
+    },
+    {
+      "trial_id": "K01",
+      "family": "K",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "K04",
+      "family": "K",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": true
+    },
+    {
+      "trial_id": "K05",
+      "family": "K",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "K06",
+      "family": "K",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "K08",
+      "family": "K",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": true
+    },
+    {
+      "trial_id": "V01",
+      "family": "V",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "V03",
+      "family": "V",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "V04",
+      "family": "V",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "V05",
+      "family": "V",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "V06",
+      "family": "V",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "V07",
+      "family": "V",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "V08",
+      "family": "V",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "L03",
+      "family": "L",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "L04",
+      "family": "L",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "L06",
+      "family": "L",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "Q01",
+      "family": "Q",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "Q02",
+      "family": "Q",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "Q03",
+      "family": "Q",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "Q04",
+      "family": "Q",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "Q05",
+      "family": "Q",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "Q06",
+      "family": "Q",
+      "kind": "training",
+      "implementation_status": "implemented",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "N01",
+      "family": "N",
+      "kind": "training",
+      "implementation_status": "conditional_pending_evidence",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "N02",
+      "family": "N",
+      "kind": "training",
+      "implementation_status": "conditional_pending_evidence",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "N03",
+      "family": "N",
+      "kind": "training",
+      "implementation_status": "conditional_pending_evidence",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "N04",
+      "family": "N",
+      "kind": "training",
+      "implementation_status": "conditional_pending_evidence",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "X01",
+      "family": "X",
+      "kind": "training",
+      "implementation_status": "blocked_dependency",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "X02",
+      "family": "X",
+      "kind": "training",
+      "implementation_status": "blocked_dependency",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "X03",
+      "family": "X",
+      "kind": "training",
+      "implementation_status": "blocked_dependency",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "X04",
+      "family": "X",
+      "kind": "training",
+      "implementation_status": "blocked_dependency",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "X05",
+      "family": "X",
+      "kind": "training",
+      "implementation_status": "blocked_dependency",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "X06",
+      "family": "X",
+      "kind": "training",
+      "implementation_status": "blocked_dependency",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "X07",
+      "family": "X",
+      "kind": "training",
+      "implementation_status": "blocked_dependency",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    },
+    {
+      "trial_id": "X08",
+      "family": "X",
+      "kind": "training",
+      "implementation_status": "blocked_dependency",
+      "status": "server_blocked",
+      "was_running_at_cutoff": false
+    }
+  ]
+}
