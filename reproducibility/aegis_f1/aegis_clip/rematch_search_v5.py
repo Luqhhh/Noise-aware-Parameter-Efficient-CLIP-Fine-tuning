@@ -111,8 +111,18 @@ def validate_declaration(config: dict[str, Any], *, require_implemented: bool = 
         _require(resolution in _lineage.V5_ALLOWED_RESOLUTIONS,
                  f"R resolution must be one of {_lineage.V5_ALLOWED_RESOLUTIONS}")
         if bool(search.get("staged_resolution", False)):
-            _require(status != IMPLEMENTED,
-                     "staged-resolution semantics are not implemented")
+            staged = config.get("train", {}).get("staged_resolution", {})
+            _require(isinstance(staged, dict) and bool(staged.get("enabled", False)),
+                     "R staged point requires train.staged_resolution.enabled=true")
+            early = int(staged.get("early_resolution", 0))
+            late = int(staged.get("late_resolution", 0))
+            switch = int(staged.get("switch_epoch", 0))
+            _require(early in _lineage.V5_ALLOWED_RESOLUTIONS, "bad staged early_resolution")
+            _require(late in _lineage.V5_ALLOWED_RESOLUTIONS, "bad staged late_resolution")
+            _require(0 < switch <= int(config["train"].get("epochs", 16)),
+                     "staged switch_epoch must be inside the training horizon")
+            _require(int(config["model"].get("input_resolution", -1)) == early,
+                     "R staged config model.input_resolution must equal early_resolution")
         else:
             _require(int(config["model"].get("input_resolution", -1)) == resolution,
                      "R config input_resolution must equal project.search.resolution")
@@ -176,8 +186,26 @@ def validate_declaration(config: dict[str, Any], *, require_implemented: bool = 
             geometry in {"rrc_area_min", "letterbox", "late_rrc_window"},
             "V geometry must be rrc_area_min, letterbox or late_rrc_window",
         )
-        if geometry in {"letterbox", "late_rrc_window"}:
-            _require(status != IMPLEMENTED, f"V geometry {geometry!r} is not implemented")
+        if geometry == "letterbox":
+            _require(
+                config.get("data", {}).get("train_augmentation") == "clip_letterbox",
+                "V letterbox requires data.train_augmentation=clip_letterbox",
+            )
+        if geometry == "late_rrc_window":
+            late_rrc = config.get("data", {}).get("late_rrc", {})
+            _require(
+                isinstance(late_rrc, dict) and bool(late_rrc.get("enabled", False)),
+                "V late_rrc requires data.late_rrc.enabled=true",
+            )
+            _require(
+                0.0 < float(late_rrc.get("scale_min", 0.0))
+                <= float(late_rrc.get("scale_max", 0.0)) <= 1.0,
+                "V late_rrc scale bounds are invalid",
+            )
+            _require(
+                int(late_rrc.get("start_epoch", 0)) > 1,
+                "V late_rrc start_epoch must be positive",
+            )
     elif family == "L":
         resolution = int(search.get("resolution", 0))
         _require(resolution in {320, 384}, "L resolution must be 320 or 384")
@@ -200,10 +228,17 @@ def validate_declaration(config: dict[str, Any], *, require_implemented: bool = 
     elif family == "Q":
         resolution = int(search.get("resolution", 0))
         _require(resolution in {320, 384}, "Q resolution must be 320 or 384")
-        mode = str(config.get("train", {}).get("sam", {}).get("mode", ""))
+        sam = config.get("train", {}).get("sam", {})
+        mode = str(sam.get("mode", ""))
         _require(mode == "gsam_constant_rho", "Q config must declare train.sam.mode=gsam_constant_rho")
-        if status == IMPLEMENTED:
-            raise MechanismBlockedError("GSAM is not implemented")
+        _require(bool(sam.get("enabled", False)), "Q config must enable train.sam")
+        alpha = float(sam.get("gsam_alpha", -1.0))
+        _require(0.0 <= alpha <= 1.0, "Q gsam_alpha must be in [0,1]")
+        _require(
+            int(config["train"].get("grad_accum_steps", 1)) > 1,
+            "Q GSAM requires effective-batch accumulation",
+        )
+        _require(not bool(config["train"].get("amp", True)), "Q GSAM requires FP32")
     elif family == "N":
         _require(status in {CONDITIONAL_PENDING_EVIDENCE, BLOCKED_IMPLEMENTATION},
                  "N group is conditional and cannot be marked implemented without new evidence")

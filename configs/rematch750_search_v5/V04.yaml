@@ -11,6 +11,11 @@ data:
   train_root: ../../train
   val_csv: ../../artifacts/stages/repechage/20260921_npu/val_dev.csv
   validation_overlap_with_training: false
+  late_rrc:
+    enabled: true
+    start_epoch: 13
+    scale_min: 0.9
+    scale_max: 1.0
 diagnostics:
   longtail:
     enabled: true
@@ -61,7 +66,7 @@ project:
   family: V
   mechanism: 320px_late_rrc_0.9_1.0
   parent_kind: shared_lp
-  implementation_status: blocked_implementation
+  implementation_status: implemented
   search:
     resolution: 320
     geometry: late_rrc_window
@@ -73,8 +78,6 @@ project:
     reference_resolution: 224
     late_rrc_scale_min: 0.9
     late_rrc_scale_max: 1.0
-  dependencies:
-  - late_geometry_schedule
 train:
   amp: true
   amp_growth_interval: 1000000000

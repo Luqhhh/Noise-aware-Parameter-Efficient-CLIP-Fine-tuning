@@ -61,7 +61,7 @@ project:
   family: R
   mechanism: staged_224_to_384
   parent_kind: shared_lp
-  implementation_status: blocked_implementation
+  implementation_status: implemented
   search:
     resolution: 384
     staged_resolution: true
@@ -71,8 +71,6 @@ project:
     - 64
     smoke_required: true
     reference_resolution: 224
-  dependencies:
-  - stage_resolution_semantics
 train:
   amp: true
   amp_growth_interval: 1000000000
@@ -102,5 +100,10 @@ train:
   gradient_norm_impl: foreach
   grad_accum_steps: 4
   effective_batch_size: 1024
+  staged_resolution:
+    enabled: true
+    early_resolution: 224
+    late_resolution: 384
+    switch_epoch: 9
 trust:
   enabled: false

@@ -61,7 +61,7 @@ project:
   family: Q
   mechanism: 320px_gsam_alpha0.1
   parent_kind: shared_lp
-  implementation_status: blocked_implementation
+  implementation_status: implemented
   search:
     resolution: 320
     gsam_alpha: 0.1
@@ -72,9 +72,6 @@ project:
     - 64
     smoke_required: true
     reference_resolution: 224
-  dependencies:
-  - effective_batch_sam
-  - gsam_constant_rho
 train:
   amp: false
   amp_growth_interval: 1000000000

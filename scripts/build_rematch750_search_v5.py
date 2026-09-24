@@ -23,8 +23,8 @@ MANIFEST = ROOT / "search_manifest.json"
 V5_OUTPUT = "../../outputs/rematch750_search_v5"
 LP_CHECKPOINT = "/workspace/noise/outputs/rematch750_npu/RM_LP/seed42/checkpoints/best.pt"
 F05_CHECKPOINT = (
-    "/workspace/noise/outputs/rematch750_search_v4/rule_1pp_preserved/"
-    "RM_V4_F05/seed42/checkpoints/best.pt"
+    "/workspace/noise-worktrees/rematch750_search_v4/outputs/"
+    "rematch750_search_v4/RM_V4_F05/seed42/checkpoints/best.pt"
 )
 F05_FEATURES = "../../outputs/rematch750_search_v5/assets/RM_V4_F05_encoder_features"
 F05_FEATURES_LOCAL = ROOT / "outputs/rematch750_search_v5/assets/RM_V4_F05_encoder_features"
@@ -198,6 +198,7 @@ def _h_config(trial_id: str, mechanism: str, classifier: str, sampler: str,
         "paths_path": f"{F05_FEATURES}/image_paths.json",
         "manifest_path": f"{F05_FEATURES}/manifest.json",
     }
+    cfg["project"]["parent_experiment_id"] = "RM_V4_F05"
     cfg["loss"].update(
         name="cross_entropy",
         gce_q=0.5,
@@ -278,11 +279,18 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
                 "smoke_required": True,
                 "reference_resolution": 224,
             },
-            implementation_status="blocked_implementation",
-            dependencies=["stage_resolution_semantics"],
-            notes="Position embeddings and optimizer state must be migrated at the switch.",
+            implementation_status="implemented",
+            dependencies=[],
+            notes="Epoch 9 switch; positional embeddings are interpolated per-forward and optimizer moments stay shape-compatible.",
         )
         _visual_amp(cfg, resolution=early, microbatch=256)
+        cfg["train"]["staged_resolution"] = {
+            "enabled": True,
+            "early_resolution": int(early),
+            "late_resolution": int(late),
+            "switch_epoch": 9,
+        }
+        cfg["model"]["input_resolution"] = int(early)
         trials.append((cfg, meta))
 
     # S: FP32 AdamW controls and SAM radii.
@@ -399,8 +407,8 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
         for geometry, label, status, deps in (
             ("rrc_area_min", "rrc_area0.5", "implemented", []),
             ("rrc_area_min", "rrc_area0.8", "implemented", []),
-            ("letterbox", "letterbox", "blocked_implementation", ["train_inference_letterbox"]),
-            ("late_rrc_window", "late_rrc_0.9_1.0", "blocked_implementation", ["late_geometry_schedule"]),
+            ("letterbox", "letterbox", "implemented", []),
+            ("late_rrc_window", "late_rrc_0.9_1.0", "implemented", []),
         ):
             v_index += 1
             trial_id = f"V{v_index:02d}"
@@ -433,6 +441,13 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
                 cfg["data"]["rrc_scale_max"] = 1.0
             elif geometry == "letterbox":
                 cfg["data"]["train_augmentation"] = "clip_letterbox"
+            elif geometry == "late_rrc_window":
+                cfg["data"]["late_rrc"] = {
+                    "enabled": True,
+                    "start_epoch": 13,
+                    "scale_min": 0.9,
+                    "scale_max": 1.0,
+                }
             trials.append((cfg, meta))
 
     # L: attention-guided local details.
@@ -503,9 +518,9 @@ def build_trials() -> list[tuple[dict[str, Any], dict[str, Any]]]:
                 "smoke_required": True,
                 "reference_resolution": 224,
             },
-            implementation_status="blocked_implementation",
-            dependencies=["effective_batch_sam", "gsam_constant_rho"],
-            notes="Pair with S-group rho=0.025 at the same resolution; alpha=0 must degenerate to SAM.",
+            implementation_status="implemented",
+            dependencies=[],
+            notes="Pair with S-group rho=0.025 at the same resolution; alpha=0 degenerates to SAM.",
         )
         _visual_fp32(
             cfg,
@@ -653,7 +668,7 @@ def main() -> None:
             "config": "configs/rematch750_search_v4/F05.yaml",
             "config_sha256": "d5cf5ae16ee174cc2a6e3e75a84ce4a631255314f66f192a705197d714f21f9a",
             "checkpoint": F05_CHECKPOINT,
-            "checkpoint_sha256": None,
+            "checkpoint_sha256": "efcc6cb933cad305eab15109f88046b714f697f02c7228a6beea4d2f5603a70a",
             "local_macro": 0.7443073987960815,
             "local_micro": 0.7544354796409607,
             "selected_epoch": 14,

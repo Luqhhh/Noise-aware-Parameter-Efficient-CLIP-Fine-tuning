@@ -76,6 +76,7 @@ project:
     smoke_required: false
   dependencies:
   - F05_encoder_320_feature_cache
+  parent_experiment_id: RM_V4_F05
 train:
   amp: true
   amp_growth_interval: 1000000000
@@ -89,7 +90,7 @@ train:
   epochs: 20
   head_lr: 0.0004
   head_weight_decay: 0.0001
-  init_checkpoint: /workspace/noise/outputs/rematch750_search_v4/rule_1pp_preserved/RM_V4_F05/seed42/checkpoints/best.pt
+  init_checkpoint: /workspace/noise-worktrees/rematch750_search_v4/outputs/rematch750_search_v4/RM_V4_F05/seed42/checkpoints/best.pt
   loader_timeout: 120
   log_every_steps: 20
   lr_warmup_epochs: 0

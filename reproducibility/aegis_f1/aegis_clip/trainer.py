@@ -382,22 +382,28 @@ def train(
         loader_options["prefetch_factor"] = int(
             train_config.get("prefetch_factor", 1)
         )
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=int(train_config["batch_size"]),
-        shuffle=train_sampler is None,
-        sampler=train_sampler,
-        generator=generator if train_sampler is None else None,
-        drop_last=False,
-        **loader_options,
-    )
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=int(evaluation_config.get("batch_size", 256)),
-        shuffle=False,
-        drop_last=False,
-        **loader_options,
-    )
+    def make_train_loader():
+        return DataLoader(
+            train_dataset,
+            batch_size=int(train_config["batch_size"]),
+            shuffle=train_sampler is None,
+            sampler=train_sampler,
+            generator=generator if train_sampler is None else None,
+            drop_last=False,
+            **loader_options,
+        )
+
+    def make_val_loader():
+        return DataLoader(
+            val_dataset,
+            batch_size=int(evaluation_config.get("batch_size", 256)),
+            shuffle=False,
+            drop_last=False,
+            **loader_options,
+        )
+
+    train_loader = make_train_loader()
+    val_loader = make_val_loader()
 
     snscl_config = config["loss"].get("snscl", {})
     snscl_state = None
@@ -490,6 +496,12 @@ def train(
     sam_config = train_config.get("sam", {}) or {}
     sam_enabled = bool(sam_config.get("enabled", False))
     sam_rho = float(sam_config.get("rho", 0.05))
+    sam_mode = str(sam_config.get("mode", "standard_global_l2"))
+    sam_gsam_alpha = (
+        float(sam_config.get("gsam_alpha", 0.0))
+        if sam_mode == "gsam_constant_rho"
+        else None
+    )
     cap_config = config["loss"].get("adaptive_cap", {})
     adaptive_cap = (
         AdaptiveLossCap(
@@ -697,11 +709,72 @@ def train(
     training_seconds = 0.0
     sam_accum_batches: list[dict] = []
     sam_accum_rng_state: dict | None = None
+    active_geometry_key = None
     for epoch in range(start_epoch, epochs + 1):
         log_dir.mkdir(parents=True, exist_ok=True)
         checkpoint_dir.mkdir(parents=True, exist_ok=True)
         if hasattr(train_sampler, "set_epoch"):
             train_sampler.set_epoch(epoch)
+
+        # Staged resolution and late RRC geometry are epoch-dependent.  The
+        # model itself interpolates positional embeddings on every forward, so
+        # these switches do not change parameter shapes or optimizer moments.
+        staged_geometry = train_config.get("staged_resolution") or {}
+        late_rrc = data_config.get("late_rrc") or {}
+        geometry_active = bool(staged_geometry.get("enabled", bool(staged_geometry))) or bool(
+            late_rrc.get("enabled", bool(late_rrc))
+        )
+        if geometry_active:
+            active_resolution = int(model_config.get("input_resolution", 224))
+            data_epoch = dict(data_config)
+            if staged_geometry:
+                switch_epoch = int(staged_geometry.get("switch_epoch", 9))
+                early_resolution = int(
+                    staged_geometry.get("early_resolution", active_resolution)
+                )
+                active_resolution = int(
+                    staged_geometry.get("late_resolution", early_resolution)
+                    if epoch >= switch_epoch
+                    else early_resolution
+                )
+            if late_rrc and epoch >= int(late_rrc.get("start_epoch", 13)):
+                data_epoch["rrc_scale_min"] = float(
+                    late_rrc.get("scale_min", 0.9)
+                )
+                data_epoch["rrc_scale_max"] = float(
+                    late_rrc.get("scale_max", 1.0)
+                )
+            geometry_key = (
+                active_resolution,
+                float(data_epoch.get("rrc_scale_min", 0.70)),
+                float(data_epoch.get("rrc_scale_max", 1.0)),
+            )
+            if geometry_key != active_geometry_key:
+                train_dataset.transform = _training_preprocess(
+                    preprocess, data_epoch, active_resolution
+                )
+                train_loader = make_train_loader()
+                previous_resolution = int(
+                    getattr(model, "input_resolution", active_resolution)
+                )
+                model.input_resolution = active_resolution
+                if active_resolution != previous_resolution:
+                    try:
+                        from clip.clip import _transform
+
+                        val_dataset.transform = _transform(active_resolution)
+                    except ImportError:
+                        pass
+                    val_loader = make_val_loader()
+                logger.info(
+                    "Geometry epoch %d: resolution=%d rrc=[%.2f,%.2f]",
+                    epoch,
+                    active_resolution,
+                    geometry_key[1],
+                    geometry_key[2],
+                )
+                active_geometry_key = geometry_key
+
         epoch_training_start = time.monotonic()
         epoch_samples = (
             len(train_loader.sampler)
@@ -1292,6 +1365,10 @@ def train(
                             "SAM is not wired with: " + ", ".join(unsupported_sam)
                         )
 
+                    if sam_mode == "gsam_constant_rho" and accum_steps <= 1:
+                        raise ValueError(
+                            "GSAM constant-rho requires effective-batch accumulation"
+                        )
                     if accum_steps > 1:
                         microbatch_state = {
                             "forward_key": forward_key,
@@ -1330,6 +1407,7 @@ def train(
                                 clip_norm=float(
                                     train_config.get("max_grad_norm", 1.0)
                                 ),
+                                gsam_alpha=sam_gsam_alpha,
                                 rng_state=sam_accum_rng_state,
                                 device=device,
                             )
@@ -2118,8 +2196,6 @@ def _training_preprocess(
     preset = str(data_config.get("train_augmentation", "clip_center_crop"))
     if preset == "clip_center_crop":
         return preprocess
-    if preset not in {"weak_rrc_flip", "weak_rrc_flip_randaugment"}:
-        raise ValueError(f"Unsupported training augmentation: {preset}")
     try:
         from torchvision.transforms import (
             Compose,
@@ -2128,7 +2204,21 @@ def _training_preprocess(
             RandomResizedCrop,
         )
     except ImportError as exc:
-        raise ImportError("weak_rrc_flip requires torchvision") from exc
+        raise ImportError("training augmentation requires torchvision") from exc
+    if preset == "clip_letterbox":
+        from aegis_clip.image_preprocess import select_inference_preprocess
+
+        letterbox = select_inference_preprocess(
+            preprocess,
+            mode="clip_letterbox",
+            input_resolution=int(input_resolution),
+        )
+        letterbox_transforms = list(getattr(letterbox, "transforms", []))
+        if len(letterbox_transforms) < 3:
+            raise ValueError("Cannot derive CLIP tensor conversion and normalization")
+        return Compose([RandomHorizontalFlip(p=0.5), *letterbox_transforms])
+    if preset not in {"weak_rrc_flip", "weak_rrc_flip_randaugment"}:
+        raise ValueError(f"Unsupported training augmentation: {preset}")
     transforms = list(getattr(preprocess, "transforms", []))
     if len(transforms) < 2:
         raise ValueError("Cannot derive CLIP tensor conversion and normalization")
@@ -2447,6 +2537,7 @@ def _sam_accumulated_optimizer_step(
     rho: float,
     clip_norm: float = 1.0,
     epsilon: float = 1.0e-12,
+    gsam_alpha: float | None = None,
     rng_state: dict | None = None,
     device=None,
 ):
@@ -2480,6 +2571,10 @@ def _sam_accumulated_optimizer_step(
     first_loss = sum(
         float(mb["first_loss"]) * int(mb["sample_count"]) for mb in microbatches
     ) / float(cycle_samples)
+    active_parameters = [parameter for parameter in trainable if parameter.grad is not None]
+    first_gradients = [
+        parameter.grad.detach().clone() for parameter in active_parameters
+    ]
 
     backups: list[torch.Tensor] = []
     with torch.no_grad():
@@ -2529,6 +2624,41 @@ def _sam_accumulated_optimizer_step(
         for parameter, backup in zip(trainable, backups):
             parameter.copy_(backup)
 
+    gsam_projection = None
+    if gsam_alpha is not None and float(gsam_alpha) != 0.0:
+        if not 0.0 <= float(gsam_alpha) <= 1.0:
+            raise ValueError("GSAM alpha must be in [0,1]")
+        second_parameters = [
+            parameter
+            for parameter in active_parameters
+            if parameter.grad is not None
+        ]
+        if len(second_parameters) != len(active_parameters):
+            raise RuntimeError(
+                "GSAM requires the same trainable parameters to have "
+                "first- and second-pass gradients"
+            )
+        first_flat = torch.cat(
+            [grad.reshape(-1) for grad in first_gradients]
+        ).float()
+        second_flat = torch.cat(
+            [
+                parameter.grad.detach().reshape(-1)
+                for parameter in second_parameters
+            ]
+        ).float()
+        denominator = second_flat.dot(second_flat).clamp_min(float(epsilon))
+        gsam_projection = float(first_flat.dot(second_flat) / denominator)
+        orthogonal = first_flat - gsam_projection * second_flat
+        update_flat = second_flat + float(gsam_alpha) * orthogonal
+        offset = 0
+        for parameter in second_parameters:
+            count = int(parameter.numel())
+            parameter.grad.copy_(
+                update_flat[offset : offset + count].view_as(parameter.grad)
+            )
+            offset += count
+
     second_norm_squared = 0.0
     for parameter in trainable:
         if parameter.grad is not None:
@@ -2551,6 +2681,8 @@ def _sam_accumulated_optimizer_step(
         "second_gradient_norm": second_norm,
         "preclip_gradient_norm": clipped_norm,
         "actual_radius": float(rho),
+        "gsam_alpha": None if gsam_alpha is None else float(gsam_alpha),
+        "gsam_projection": gsam_projection,
     }
 
 
