@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-24T15:40:00Z",
+  "generated_at_utc": "2026-09-24T11:10:00Z",
   "protocol": "rematch750_search_v5",
   "cards_in_use_by_this_queue": [
     0,
@@ -143,5 +143,23 @@
       "X07",
       "X08"
     ]
+  },
+  "head_l2sp_queue": {
+    "scheme": "xjn/rematch750-head-l2sp",
+    "branch_commit": "83d6157",
+    "main_merge_commit": "0165fe2",
+    "status": "ready_for_npu",
+    "runner": "scripts/run_rematch750_head_l2sp.py",
+    "assigned_card": 6,
+    "starts_after": "NPU6 V5 H overflow lane",
+    "trials": [
+      "HL00",
+      "HL01",
+      "HL02",
+      "HL03"
+    ],
+    "baseline": "HL00",
+    "promotion_rule": "HL01-HL03 相对 HL00 macro >= +0.30pp 且 micro 不下降，才进入 seed3407/2026 复核",
+    "notes": "从同一 RM-LP 父权重启动，不复用 F05 checkpoint；当前仅 ready_for_npu。"
   }
 }
