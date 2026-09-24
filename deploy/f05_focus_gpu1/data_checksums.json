@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "source_root": "/home/lux1/noise",
+  "description": "canonical rematch750 20260921 split/feature assets and RM-LP seed42 parent",
+  "required_for_gpu1_round1": [
+    "artifacts/stages/repechage/20260921/class_to_idx.json",
+    "artifacts/stages/repechage/20260921/dataset_manifest.json",
+    "artifacts/stages/repechage/20260921/decode_report.json",
+    "artifacts/stages/repechage/20260921/features/image_paths.json",
+    "artifacts/stages/repechage/20260921/features/manifest.json",
+    "artifacts/stages/repechage/20260921/idx_to_class.json",
+    "artifacts/stages/repechage/20260921/test_manifest.csv",
+    "artifacts/stages/repechage/20260921/train_dev.csv",
+    "artifacts/stages/repechage/20260921/val_dev.csv",
+    "outputs/rematch750_npu/RM_LP/seed42/checkpoints/best.pt"
+  ],
+  "sha256": {
+    "artifacts/stages/repechage/20260921/class_to_idx.json": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "artifacts/stages/repechage/20260921/idx_to_class.json": "a0898a64d0293ea777ca92a92e292efcb5aa10a409f933f832a8c8db8d010030",
+    "artifacts/stages/repechage/20260921/dataset_manifest.json": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "artifacts/stages/repechage/20260921/decode_report.json": "1f2c9b7e8ed8d8d83a2cf9308869e69f66761cbf0a648beabbe225bc4ce1823a",
+    "artifacts/stages/repechage/20260921/train_dev.csv": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "artifacts/stages/repechage/20260921/val_dev.csv": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "artifacts/stages/repechage/20260921/test_manifest.csv": "73ceb05efca959a5db7422d5eacd96d997ed9f4ff4687b31ec3a66c0f91ed5a4",
+    "artifacts/stages/repechage/20260921/features/manifest.json": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "artifacts/stages/repechage/20260921/features/image_paths.json": "fcb7de523e06342c7ecad36d94b4f360ccd4f87cb402527897b7de4fef43d168",
+    "outputs/rematch750_npu/RM_LP/seed42/checkpoints/best.pt": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b"
+  }
+}
