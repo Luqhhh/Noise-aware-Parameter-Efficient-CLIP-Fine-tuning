@@ -64,7 +64,15 @@
       "passed": false
     },
     "verdict": "FAIL",
-    "verdict_basis": "Every epoch was rejected by the safety gate, which requires prediction_empty_classes == 0, while the fused prediction kept 5-6 classes empty (the F05+M1 baseline itself already has 4). No epoch could be selected, so the reported deltas are all 0.0pp."
+    "verdict_basis": "Every epoch was rejected, no epoch could be selected (best_record is null) and the reported deltas are all 0.0pp. The first run was blocked by the defective absolute empty-class condition: prediction_empty_classes == 0 is unsatisfiable here because the F05+M1 baseline itself leaves 4 classes empty, while this unit left 5-6. After the preregistered gate repair the empty-class conjunct is still not met by most epochs (only the inherited 4 would qualify) and a second, legitimate conjunct rejects every epoch: trusted_macro is below the frozen baseline at all five epochs (-0.094 to -0.210pp). That bound is satisfiable in principle by the identity candidate, so it is not a defect.",
+    "gate_repair": {
+      "preregistration": "docs/f05_focus_round2_safety_gate_preregistration_20260925.md",
+      "rerun_started": "2026-09-25T20:43:40+08:00",
+      "amended_condition": "prediction_empty_classes(candidate) <= prediction_empty_classes(baseline)",
+      "effect_on_this_unit": "no epoch satisfies the empty-class conjunct (5,5,5,6,6 empty classes against a baseline of 4)",
+      "remaining_blocker": "trusted_macro(candidate) >= trusted_macro(baseline) fails at every epoch, by -0.0944, -0.1120, -0.1536, -0.2096 and -0.1949pp respectively",
+      "outcome_unchanged": "best_record is still null (fallback to the zero-init adapter) and all deltas remain 0.0pp"
+    }
   },
   "timing": {
     "train_cache_seconds": 264,

@@ -56,7 +56,15 @@
       "passed": false
     },
     "verdict": "FAIL",
-    "verdict_basis": "No epoch was safety-eligible because the fused prediction always left 4-5 classes empty, so the gate that requires prediction_empty_classes == 0 could not be met; the best record fell back to the zero adapter and every delta is 0.0pp. The F05+M1 baseline itself already has 4 empty classes, so this safety gate is unsatisfiable for this local view."
+    "verdict_basis": "No epoch could be selected, so the best record fell back to the zero adapter and every delta is 0.0pp. The first run was blocked by the defective absolute empty-class condition (an epoch could never satisfy prediction_empty_classes == 0 because the F05+M1 baseline itself leaves 4 classes empty). After the preregistered gate repair that condition is relative to the baseline and is satisfied by epochs 1-2, but a different, legitimate conjunct still rejects every epoch: trusted_macro is below the frozen baseline at all five epochs (-0.083 to -0.270pp). Unlike the superseded condition, that bound is satisfiable in principle by the identity candidate, so it is not a defect -- this adapter family simply never reaches parity with F05+M1 on the trusted subset.",
+    "gate_repair": {
+      "preregistration": "docs/f05_focus_round2_safety_gate_preregistration_20260925.md",
+      "rerun_started": "2026-09-25T20:43:21+08:00",
+      "amended_condition": "prediction_empty_classes(candidate) <= prediction_empty_classes(baseline)",
+      "effect_on_this_unit": "epochs 1 and 2 now satisfy the empty-class conjunct (4 <= 4); epoch 3-5 (5 empty classes) still exceed the baseline",
+      "remaining_blocker": "trusted_macro(candidate) >= trusted_macro(baseline) fails at every epoch, by -0.0892, -0.0834, -0.1562, -0.2699 and -0.2156pp respectively",
+      "outcome_unchanged": "best_record is still null (fallback to the zero-init adapter) and all deltas remain 0.0pp"
+    }
   },
   "defects_fixed_during_execution": [
     {

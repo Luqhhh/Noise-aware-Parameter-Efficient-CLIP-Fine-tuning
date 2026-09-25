@@ -434,12 +434,14 @@ local view，并在运行前打印 epoch-zero audit；未过审计不得训练�
 | N1 | **fail**，Δmacro −0.3755pp（reject rate 4.33%） | `results/f05_focus_summary.csv` |
 | A0 | **fail**，Δmacro −0.0351pp / Δmicro +0.0470pp | `outputs/f05_focus/A0_M1/probe.json` |
 | P0 | **weak**，Δmacro +0.2615pp / Δmicro −0.1344pp（strength 0.75） | `outputs/f05_focus/P0_PRIOR/probe.json` |
-| D1（O3） | **fail**，epoch-zero 与 global 路径逐位精确，但 5 个 epoch 全部 `safety_eligible=false`（融合预测留 4–5 个空类），无 epoch 可入选，best = 零初始化 adapter，delta 0.0 | `outputs/f05_focus/D1_O3/gate.json`、`results/f05_focus_d1_o3_result_20260925.json` |
-| D2（PTA） | **fail**，同上（epoch1–3 空类 5 个、epoch4–5 为 6 个） | `outputs/f05_focus/D2_PTA/gate.json`、`results/f05_focus_d2_pta_result_20260925.json` |
+| D1（O3） | **fail**，epoch-zero 与 global 路径逐位精确，但 5 个 epoch 全部 `safety_eligible=false`，无 epoch 可入选，best = 零初始化 adapter，delta 0.0 | `outputs/f05_focus/D1_O3/gate.json`、`results/f05_focus_d1_o3_result_20260925.json` |
+| D2（PTA） | **fail**，同上；5 个 epoch 空类为 5/5/5/6/6 | `outputs/f05_focus/D2_PTA/gate.json`、`results/f05_focus_d2_pta_result_20260925.json` |
 
-D1、D2 的晋级基线统一为 **F05 + 同一 local view（M1）**：raw macro `0.7370553613`、raw micro `0.7482526898`；该基线自身就有 **4 个空类**，而安全门要求 `prediction_empty_classes == 0`，因此在本局部视角下没有任何 epoch 可能合格。两者 delta 均为 0.0，按 §6 判 **FAIL**。**D3 要求 D1、D2 同时 > M1，未满足，不生成**；两个 seed 轮要求 seed42 先达 strong，未触发。
+D1、D2 的晋级基线统一为 **F05 + 同一 local view（M1）**：raw macro `0.7370553613`、raw micro `0.7482526898`。两者 delta 均为 0.0，按 §6 判 **FAIL**。**D3 要求 D1、D2 同时 > M1，未满足，不生成**；两个 seed 轮要求 seed42 先达 strong，未触发。
 
-执行过程中修复了两处实现缺陷，均只改实现、不改判据与容差：
+**安全门已修订（2026-09-25 预注册）。** 原条件 `prediction_empty_classes == 0` 形式不可满足：M1 基线自身就有 **4 个空类**，连恒等候选都会被拒。修订把该条件改为**不劣于基线**（`candidate <= baseline`），其余阈值、特征漂移界与全部参照审计逐字未动。修订已实现并重跑，但**判定不变**：修订后 D1 epoch 1–2 已满足空类门，真正阻塞项变成 `trusted_macro(candidate) >= trusted_macro(baseline)`——两单元每个 epoch 都低于冻结基线 0.08–0.27pp，而这条是相对且可满足的条件（恒等候选即满足），属实质性负结果，故不再放宽。Round 2 局部 adapter 方向据此关闭。完整预注册、披露与逐 epoch 分解见 `docs/f05_focus_round2_safety_gate_preregistration_20260925.md`，机器可读契约为 `configs/f05_focus/manifest.json` 的 `safety_gate` 块。
+
+执行过程中修复了另外两处实现缺陷，均只改实现、不改判据与容差：
 
 1. D1 的两个 cache 与参照 cache 批大小不一致（64 vs 128），见 `results/f05_focus_d1_reference_audit_failure_20260925.json`；
 2. O3 评估路径改用与 PTA 相同的 `anchored_classifier_residual_logits` 残差写法，使 epoch-zero 门按构造精确成立，见 `results/f05_focus_d1_o3_result_20260925.json`。

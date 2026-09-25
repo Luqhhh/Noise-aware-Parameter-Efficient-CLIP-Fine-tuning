@@ -7,7 +7,7 @@
 - branch: `focus/f05-four-lines`
 - base commit: `1f53c56`
 - amended clause: §6 统一晋级制度中，**逐 epoch 选择安全门**与**最终 `passed` 门**里的 `prediction_empty_classes` 条件
-- status: `registered_before_rerun`
+- status: `executed_2026-09-25_verdict_unchanged`（见 §8）
 - platform submission: no
 - test data use: none；本修订不触碰测试集
 
@@ -108,3 +108,26 @@ results/f05_focus_d1_o3_result_20260925.json                     # 重跑后更�
 results/f05_focus_d2_pta_result_20260925.json                    # 重跑后更新
 results/f05_focus_summary.csv                                    # 重跑后更新
 ```
+
+## 8. 执行结果（2026-09-25 20:43）
+
+修订已实现、已提交（`ae233b7`），两个单元按第 4 节范围重跑（D1 20:43:21、D2 20:43:40，均 exit 0，输入逐字节复用），**判定不变：D1、D2 仍为 FAIL，delta 0.0pp**。
+
+修订确实生效了，但不是决定性的那一项：
+
+| 单元 | epoch | 空类 ≤ 基线(4) | trusted_macro ≥ 基线 | raw_micro ≥ 基线−0.001 | drift ≤ 0.01 | eligible |
+|---|---|---|---|---|---|---|
+| D1 | 1 | ✅ (4) | ❌ −0.0892pp | ✅ | ✅ | false |
+| D1 | 2 | ✅ (4) | ❌ −0.0834pp | ✅ | ✅ | false |
+| D1 | 3–5 | ❌ (5) | ❌ −0.16 ~ −0.27pp | ❌ | ✅ | false |
+| D2 | 1–2 | ❌ (5) | ❌ −0.094 ~ −0.112pp | ✅ | ✅ | false |
+| D2 | 3–5 | ❌ (5–6) | ❌ −0.15 ~ −0.21pp | ❌ | ✅ | false |
+
+结论与后续：
+
+1. 被修订的空类门**不再是**阻塞项（D1 epoch 1–2 已满足），缺陷修复按预期生效；`gate.json` 现在同时记录候选与基线的空类数。
+2. 真正阻塞的是 `trusted_macro(candidate) >= trusted_macro(baseline)`：两单元**每一个** epoch 都低于冻结基线 0.08–0.27pp。这条是**相对、可满足**的条件（恒等候选即满足），不是缺陷——因此**不应**再放宽，否则就是无依据地移动真实阈值。
+3. 因此 Round 2 局部 adapter 方向按第 5 节预注册规则**关闭**：无 epoch 入选、`best_record=null`、delta 0.0pp、D3 不生成、不追加 seed、不派生参数扫描。
+4. 修订后 `best_record` 仍为 null，所以数值与前一次重跑完全一致；变化的是**原因归属**：从「门不可满足」变成「adapter 达不到基线」。这一区别已写入两个单元的结果记录。
+
+证据：`outputs/f05_focus/D1_O3/gate.json`、`outputs/f05_focus/D2_PTA/gate.json`、`outputs/f05_focus/round2_rerun.log`。
