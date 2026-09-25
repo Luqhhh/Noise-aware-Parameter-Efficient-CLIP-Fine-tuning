@@ -358,6 +358,14 @@ def main() -> None:
     parser.add_argument("--flip-batch-size", type=int, default=256)
     parser.add_argument("--flip-workers", type=int, default=8)
     parser.add_argument("--device", default="cuda")
+    parser.add_argument(
+        "--protocol-name",
+        default="W3-0/W3-1 duplicate-aware 3-fold OOF",
+    )
+    parser.add_argument("--parent-artifact", default="b2_gce05")
+    parser.add_argument("--data-stage")
+    parser.add_argument("--source-train-csv-sha256")
+    parser.add_argument("--feature-cache-manifest-sha256")
     args = parser.parse_args()
 
     device = torch.device(
@@ -553,17 +561,26 @@ def main() -> None:
         json.dumps(audit, indent=2), encoding="utf-8"
     )
     manifest = {
-        "protocol": "W3-0/W3-1 duplicate-aware 3-fold OOF",
-        "parent": "b2_gce05",
+        "protocol": args.protocol_name,
+        "parent": args.parent_artifact,
         "loss": {"name": "gce", "q": args.q},
         "fixed_epochs": args.epochs,
         "fold_seed_base": args.seed,
+        "num_classes": args.num_classes,
         "feature_cache": str(cache_dir),
         "fold_assignments_sha256": _sha256(assignment_path),
         "oof_logits_sha256": _sha256(merged_path),
         "sample_quality_sha256": _sha256(quality_path),
         "sample_count": n_samples,
     }
+    if args.data_stage:
+        manifest["data_stage"] = args.data_stage
+    if args.source_train_csv_sha256:
+        manifest["source_train_csv_sha256"] = args.source_train_csv_sha256
+    if args.feature_cache_manifest_sha256:
+        manifest["feature_cache_manifest_sha256"] = (
+            args.feature_cache_manifest_sha256
+        )
     (output_dir / "oof_manifest.json").write_text(
         json.dumps(manifest, indent=2), encoding="utf-8"
     )

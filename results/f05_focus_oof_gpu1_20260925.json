@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "experiment_id": "REMATCH750_F05_FOCUS_OOF_3FOLD",
+  "worker": "GPU1",
+  "status": "completed",
+  "started_at": "2026-09-25T11:24:45+08:00",
+  "completed_at": "2026-09-25T11:40:50+08:00",
+  "duration_seconds": 965,
+  "source_commit": "ea53fc28e60bba4d5efb1085350a4a5bc45655c3",
+  "branch": "focus/f05-four-lines",
+  "runtime": {
+    "device": "cuda:0",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "torch": "2.13.0+cu130",
+    "folds": 3,
+    "fixed_epochs_per_fold": 30,
+    "seed": 42,
+    "loss": "GCE q=0.5",
+    "validation_used_for_epoch_selection": false,
+    "test_data_used": false
+  },
+  "lineage": {
+    "data_stage": "repechage_20260921",
+    "train_csv_sha256": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "feature_tensor_sha256": "ed7000c5bd36ace6ac4efd454c6b89287d87abbd35087c737ddd45e6447d1ae3",
+    "feature_paths_sha256": "fcb7de523e06342c7ecad36d94b4f360ccd4f87cb402527897b7de4fef43d168",
+    "feature_manifest_sha256": "a634f3f63b11d50e5ea5c62709230a2226710558d8917e98e1a74c5406e6a0cf",
+    "parent_artifact": "openai_clip_vit_b32_frozen_features"
+  },
+  "metrics": {
+    "sample_count": 133815,
+    "num_classes": 750,
+    "fold_sizes": [
+      44605,
+      44605,
+      44605
+    ],
+    "fold_holdout_accuracy": [
+      0.6283824443817139,
+      0.6304001808166504,
+      0.6262526512145996
+    ],
+    "oof_accuracy": 0.6283899413369204,
+    "prediction_disagreement_rate": 0.3716100586630796,
+    "reject_count": 5794,
+    "reject_rate": 0.043298583865784855,
+    "strict_suspect_count": 1981,
+    "cross_label_duplicate_conflict_count": 4067,
+    "clean070_count": 60072,
+    "clean070_fraction": 0.44891828270373274,
+    "clean070_class_count": 750,
+    "clean070_min_samples_per_class": 2
+  },
+  "artifacts": {
+    "fold_assignments": {
+      "path": "outputs/f05_focus/oof/fold_assignments.csv",
+      "size_bytes": 24602088,
+      "sha256": "d728b84ccb5935cdee90405a63d32ac9ba9d0b8a07c897452e83b39407d87a9d"
+    },
+    "flip_features": {
+      "path": "outputs/f05_focus/oof/flip_features.pt",
+      "size_bytes": 274054739,
+      "sha256": "9252096daf19a4384801ca17d5412ba4bfc62068e7769a87c8d5a6fd38292412"
+    },
+    "oof_logits": {
+      "path": "outputs/f05_focus/oof/oof_logits.pt",
+      "size_bytes": 211696765,
+      "sha256": "cf1cf493e80e031187d9abf3ce864f1afe7b47db327a9ee691742a763a5eb290"
+    },
+    "sample_quality": {
+      "path": "outputs/f05_focus/oof/sample_quality.csv",
+      "size_bytes": 47865678,
+      "sha256": "6b713f976b70016063ec77c93ccbb2ab54f76d169bdd61e330612ef52c674090"
+    },
+    "hp_noise_manifest": {
+      "path": "artifacts/f05_focus/hp_noise_manifest.csv",
+      "size_bytes": 20577217,
+      "sha256": "7f3c3f184527766b29532fad50c63fd1509abff76dcc72d538ef1b2df8fd7775"
+    },
+    "clean070": {
+      "path": "artifacts/f05_focus/clean070.csv",
+      "size_bytes": 11874953,
+      "sha256": "19a2dd81f61ec1f467222666c76fec4110775669c1c8afbfad865f980dcb0f2b"
+    }
+  },
+  "audit": {
+    "core_status_sha_verified": true,
+    "all_logits_finite": true,
+    "all_samples_have_one_oof_prediction": true,
+    "duplicate_groups_split_across_folds": false,
+    "sample_id_order_matches_logits": true,
+    "clean070_is_train_subset": true,
+    "labels_modified": false,
+    "pseudo_labels_created": false,
+    "targeted_tests": "20 passed"
+  },
+  "metadata_correction": {
+    "issue": "legacy OOF manifest hard-coded the 500-class b2_gce05 parent",
+    "corrected_protocol": "REMATCH750_F05_FOCUS_OOF_3FOLD",
+    "corrected_parent": "openai_clip_vit_b32_frozen_features",
+    "numeric_artifacts_changed": false
+  },
+  "next_stage_gate": {
+    "N1": "blocked until the exact GPU0 C0-paired RM-LP checkpoint is synchronized",
+    "required_rm_lp_sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+    "local_unapproved_rm_lp_sha256": "67a77e81d87a565e135d1dae30df001c7b543bfc872751d57f0e89b1e94d804a",
+    "P0_D2": "blocked until the exact F05/C0 checkpoint or validation logits are synchronized"
+  }
+}
