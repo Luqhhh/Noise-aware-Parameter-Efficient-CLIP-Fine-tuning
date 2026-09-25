@@ -426,6 +426,22 @@ local view，并在运行前打印 epoch-zero audit；未过审计不得训练�
 
 ## 11. 当前交付状态
 
-本文件与 `configs/f05_focus/manifest.json`、A0/P0 probe 脚本、N1 manifest builder、
-clean070 subset builder 一并构成“完整方案设计”。未运行完整训练、未产生平台分数、
-未上传提交包。
+**2026-09-25 更新：七单元中 C0、N1、A0、P0、D1、D2 已实际执行；D3 与两个 seed 轮未触发。**
+
+| 单元 | 结果 | 证据 |
+|---|---|---|
+| C0 | 完成，作为其后所有单元的冻结父模型（`best.pt` SHA-256 `f8205b5c683d23dd08a2df380e7ee99b242715351943d436caf440ef0fea3c2a`） | `outputs/f05_focus/C0_F05_CUDA/` |
+| N1 | **fail**，Δmacro −0.3755pp（reject rate 4.33%） | `results/f05_focus_summary.csv` |
+| A0 | **fail**，Δmacro −0.0351pp / Δmicro +0.0470pp | `outputs/f05_focus/A0_M1/probe.json` |
+| P0 | **weak**，Δmacro +0.2615pp / Δmicro −0.1344pp（strength 0.75） | `outputs/f05_focus/P0_PRIOR/probe.json` |
+| D1（O3） | **fail**，epoch-zero 与 global 路径逐位精确，但 5 个 epoch 全部 `safety_eligible=false`（融合预测留 4–5 个空类），无 epoch 可入选，best = 零初始化 adapter，delta 0.0 | `outputs/f05_focus/D1_O3/gate.json`、`results/f05_focus_d1_o3_result_20260925.json` |
+| D2（PTA） | **fail**，同上（epoch1–3 空类 5 个、epoch4–5 为 6 个） | `outputs/f05_focus/D2_PTA/gate.json`、`results/f05_focus_d2_pta_result_20260925.json` |
+
+D1、D2 的晋级基线统一为 **F05 + 同一 local view（M1）**：raw macro `0.7370553613`、raw micro `0.7482526898`；该基线自身就有 **4 个空类**，而安全门要求 `prediction_empty_classes == 0`，因此在本局部视角下没有任何 epoch 可能合格。两者 delta 均为 0.0，按 §6 判 **FAIL**。**D3 要求 D1、D2 同时 > M1，未满足，不生成**；两个 seed 轮要求 seed42 先达 strong，未触发。
+
+执行过程中修复了两处实现缺陷，均只改实现、不改判据与容差：
+
+1. D1 的两个 cache 与参照 cache 批大小不一致（64 vs 128），见 `results/f05_focus_d1_reference_audit_failure_20260925.json`；
+2. O3 评估路径改用与 PTA 相同的 `anchored_classifier_residual_logits` 残差写法，使 epoch-zero 门按构造精确成立，见 `results/f05_focus_d1_o3_result_20260925.json`。
+
+本七单元之外另有一条已闭环的平台线：本阶段 CUDA 本地重训 **L05** 取得平台 **66.94797564362783%**（TTA T=1.4 + prior 0.60），见 `results/f05_focus_l05_tta_prior_platform_20260925.json`。七单元中没有任何单元产生平台提交包。

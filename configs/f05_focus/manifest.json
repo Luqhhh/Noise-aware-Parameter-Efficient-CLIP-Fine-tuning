@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "protocol": "F05_FOCUS_SEVEN_UNIT_STAGE1",
-  "status": "design_only_not_yet_run",
+  "status": "executed_through_round_2_no_promotion",
   "baseline": {
     "experiment_id": "RM_V4_F05",
     "macro": 0.7443073987960815,
@@ -134,8 +134,8 @@
     },
     {
       "round": 2,
-      "gpu0": "D1",
-      "gpu1": "D2"
+      "gpu0": "D1, D2",
+      "gpu1": "none (D2 moved to GPU0)"
     },
     {
       "round": 3,

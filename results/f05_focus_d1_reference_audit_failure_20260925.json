@@ -42,5 +42,10 @@
     "file": "deploy/f05_focus_gpu0/run_focus_queue.sh",
     "change": "D1 train cache and D1 validation cache now use --batch-size 128, matching the reference generators; the audit gate and its tolerances were not modified.",
     "expected_audit_result": "center maximum_absolute_logit_difference == 0.0 with agreement 1.0; m1 maximum_absolute_logit_difference 3.8147e-06 <= 4.0e-06 with agreement 1.0"
+  },
+  "subsequent": {
+    "second_failure": "With the batch-size fix the reference audit passed, but the next gate failed: 'O3 zero-initialisation audit failed: {maximum_absolute_logit_difference: 0.010011672973632812, prediction_agreement: 0.9997983574867249}'. Cause: the O3 evaluation recomputed the shared linear head in fp32 from the cached features, while the cached logits were produced by an autocast forward, so a zero-initialised adapter could not be bit-exact.",
+    "resolution": "O3 evaluation now uses anchored_classifier_residual_logits, the same construction the part-token unit already used: cached local logits plus the fp32 classifier residual of (adapted - base). The residual is exactly zero at initialisation, so the gate holds by construction and gradients are unchanged. Audit gate and tolerances were not modified.",
+    "unit_verdict": "D1 then ran to completion and finished as FAIL with delta 0.0pp: every epoch was rejected by the safety gate because the fused prediction left 4-5 classes empty. See results/f05_focus_d1_o3_result_20260925.json."
   }
 }

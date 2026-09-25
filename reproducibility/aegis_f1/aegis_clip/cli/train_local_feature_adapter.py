@@ -22,6 +22,7 @@ from aegis_clip.local_feature_adapter import (
     validate_local_adapter_cache,
     weighted_local_log_probabilities,
 )
+from aegis_clip.part_token_adapter import anchored_classifier_residual_logits
 from aegis_clip.runtime import atomic_json_dump, set_seed, sha256_file
 
 
@@ -221,8 +222,20 @@ def _evaluate_multiscale(
                     adapted_features = base_features
                 else:
                     adapted_features = adapter(base_features)
-                    local_logits = F.linear(
-                        adapted_features, classifier_weight, classifier_bias
+                    # Anchor the shared head on the cached F05+M1 local logits
+                    # and add only the adapter's own residual, exactly as the
+                    # part-token unit already does. Recomputing the whole linear
+                    # head from the fp32 features is not bit-exact with the
+                    # cached logits, which were produced under autocast, so a
+                    # zero-initialised adapter could not pass the exact
+                    # epoch-zero gate. The residual is exactly zero at
+                    # initialisation, which makes that gate hold by
+                    # construction while leaving the gradients unchanged.
+                    local_logits = anchored_classifier_residual_logits(
+                        cached_local_logits[scale_index][start:stop].to(device),
+                        base_features,
+                        adapted_features,
+                        classifier_weight,
                     )
                 scale_logits.append(local_logits)
                 drift_sum += float(
