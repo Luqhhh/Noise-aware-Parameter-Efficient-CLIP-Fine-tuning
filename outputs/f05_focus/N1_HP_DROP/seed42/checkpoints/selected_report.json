@@ -1,0 +1,31 @@
+{
+  "raw_macro": 0.7411053776741028,
+  "raw_micro": 0.7516801357269287,
+  "schedule_epochs": 16,
+  "selected_epoch": 16,
+  "support_segments": {
+    "support_head": {
+      "covered_classes": 736,
+      "macro": 0.7525340914726257,
+      "micro": 0.7545257806777954,
+      "total_classes": 736,
+      "val_samples": 14804
+    },
+    "support_middle": {
+      "covered_classes": 12,
+      "macro": 0.16365741193294525,
+      "micro": 0.20270270109176636,
+      "total_classes": 12,
+      "val_samples": 74
+    },
+    "support_tail": {
+      "covered_classes": 2,
+      "macro": 0.0,
+      "micro": 0.0,
+      "total_classes": 2,
+      "val_samples": 2
+    }
+  },
+  "validation_covered_classes": 750,
+  "validation_interpretation": "independent content groups, noisy labels"
+}

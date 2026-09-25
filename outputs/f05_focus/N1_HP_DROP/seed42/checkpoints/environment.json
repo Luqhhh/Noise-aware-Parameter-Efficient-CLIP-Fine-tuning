@@ -1,0 +1,9 @@
+{
+  "clip_module": "/home/x28639/projects/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/.venv/lib/python3.12/site-packages/clip/__init__.py",
+  "cuda_available": true,
+  "cuda_runtime": "13.0",
+  "cudnn": 92000,
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "torch": "2.13.0+cu130"
+}
