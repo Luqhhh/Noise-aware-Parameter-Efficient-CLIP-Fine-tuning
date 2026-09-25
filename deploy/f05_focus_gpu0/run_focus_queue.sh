@@ -70,7 +70,7 @@ python3 -m aegis_clip.cli.cache_local_adapter_features \
   --output "$ARTIFACT_DIR/D1_train_cache_crop160.pt" \
   --crop-size 160 \
   --top-patches 5 \
-  --batch-size 64 \
+  --batch-size 128 \
   --num-workers 4
 
 step "D1 validation cache"
@@ -80,7 +80,7 @@ python3 -m aegis_clip.cli.cache_local_adapter_features \
   --output "$ARTIFACT_DIR/D1_val_cache_crop160.pt" \
   --crop-size 160 \
   --top-patches 5 \
-  --batch-size 64 \
+  --batch-size 128 \
   --num-workers 4
 
 step "D1 O3 adapter training"
