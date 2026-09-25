@@ -1,0 +1,23 @@
+{
+  "binding": {
+    "autocast": false,
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "data_version": "20260921",
+    "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+    "dataset_manifest_sha256": "24ac383f7054fa341df56d8325f0febd390fbf10f561b593018db4747e77d980",
+    "encoder_precision": "float32",
+    "feature_precision": "float32",
+    "input_resolution": 320,
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=320",
+    "protocol": "rematch750_search_v4",
+    "reference_resolution": 224,
+    "stage": "repechage",
+    "train_augmentation": "weak_rrc_flip",
+    "train_csv_sha256": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6"
+  },
+  "checkpoint_sha256": "ce2c0c960dc5c816682002d2e6191856898a48329373902508aaee8d9b3c1d95",
+  "epoch": 16,
+  "experiment_id": "N1_HP_DROP",
+  "training_config_sha256": "763eb8f2fa97a9276d324bda9eb0f544768974a85b550e882eddde419f903fd2"
+}
