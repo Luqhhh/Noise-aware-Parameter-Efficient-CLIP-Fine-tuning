@@ -28,6 +28,7 @@ for location in (str(ROOT), str(AEGIS_ROOT)):
 
 from aegis_clip.balanced_inference import prediction_metrics  # noqa: E402
 from aegis_clip.checkpoint import build_from_checkpoint  # noqa: E402
+from aegis_clip.config import load_config  # noqa: E402
 from aegis_clip.data import OnlineImageDataset, TrustBundle  # noqa: E402
 from aegis_clip.features import FrozenFeatureStore  # noqa: E402
 from aegis_clip.local_inference import attention_local_global_logits  # noqa: E402
@@ -56,11 +57,12 @@ def _build_loader(
     checkpoint: dict[str, Any],
     device: torch.device,
     *,
+    config_override: dict[str, Any] | None,
     input_resize_mode: str,
     batch_size: int,
     num_workers: int | None,
 ):
-    config = checkpoint["config"]
+    config = config_override or checkpoint["config"]
     model, preprocess, _ = build_from_checkpoint(
         checkpoint_path, device, config_override=config
     )
@@ -152,10 +154,12 @@ def run_probe(args: argparse.Namespace) -> dict[str, Any]:
     device = _device(args.device)
     set_seed(int(args.seed), deterministic=True)
 
+    config_override = load_config(args.config) if args.config else None
     model, config, loader = _build_loader(
         checkpoint_path,
         torch.load(checkpoint_path, map_location="cpu", weights_only=False),
         device,
+        config_override=config_override,
         input_resize_mode=str(args.input_resize_mode),
         batch_size=int(args.batch_size or 0),
         num_workers=args.num_workers,
@@ -353,6 +357,10 @@ def run_probe(args: argparse.Namespace) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", required=True)
+    parser.add_argument(
+        "--config",
+        help="Optional runtime YAML overriding val_csv / train_root / features paths",
+    )
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--batch-size", type=int, default=0)
     parser.add_argument("--num-workers", type=int)

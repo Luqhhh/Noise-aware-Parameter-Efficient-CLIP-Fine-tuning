@@ -10,6 +10,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from aegis_clip.checkpoint import build_from_checkpoint
+from aegis_clip.config import load_config
 from aegis_clip.data import OnlineImageDataset, TrustBundle
 from aegis_clip.features import FrozenFeatureStore
 from aegis_clip.local_inference import (
@@ -37,6 +38,7 @@ def cache_part_token_adapter_features(
     top_patches: int = 5,
     part_top_patches: int = 8,
     part_temperature: float = 0.07,
+    config_override: dict | None = None,
 ) -> Path:
     checkpoint_path = Path(checkpoint_path).resolve()
     split_csv = Path(split_csv).resolve()
@@ -46,8 +48,10 @@ def cache_part_token_adapter_features(
     if int(part_top_patches) <= 0 or float(part_temperature) <= 0.0:
         raise ValueError("Invalid part pooling settings")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model, preprocess, checkpoint = build_from_checkpoint(checkpoint_path, device)
-    config = checkpoint["config"]
+    model, preprocess, checkpoint = build_from_checkpoint(
+        checkpoint_path, device, config_override=config_override
+    )
+    config = config_override or checkpoint["config"]
     feature_config = config["features"]
     feature_store = FrozenFeatureStore(
         feature_config["tensor_path"],
@@ -178,6 +182,10 @@ def main() -> None:
     parser.add_argument("--top-patches", type=int, default=5)
     parser.add_argument("--part-top-patches", type=int, default=8)
     parser.add_argument("--part-temperature", type=float, default=0.07)
+    parser.add_argument(
+        "--config-override",
+        help="Optional runtime YAML overriding data/features paths",
+    )
     args = parser.parse_args()
     print(
         cache_part_token_adapter_features(
@@ -190,6 +198,11 @@ def main() -> None:
             top_patches=args.top_patches,
             part_top_patches=args.part_top_patches,
             part_temperature=args.part_temperature,
+            config_override=(
+                load_config(args.config_override)
+                if args.config_override
+                else None
+            ),
         )
     )
 

@@ -10,6 +10,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from aegis_clip.checkpoint import build_from_checkpoint
+from aegis_clip.config import load_config
 from aegis_clip.data import OnlineImageDataset, TrustBundle
 from aegis_clip.features import FrozenFeatureStore
 from aegis_clip.local_feature_adapter import validate_local_adapter_cache
@@ -27,6 +28,7 @@ def cache_local_adapter_features(
     num_workers: int,
     crop_size: int = 160,
     top_patches: int = 5,
+    config_override: dict | None = None,
 ) -> Path:
     checkpoint_path = Path(checkpoint_path).resolve()
     split_csv = Path(split_csv).resolve()
@@ -34,8 +36,10 @@ def cache_local_adapter_features(
     if int(batch_size) <= 0 or int(num_workers) < 0:
         raise ValueError("Invalid cache loader settings")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model, preprocess, checkpoint = build_from_checkpoint(checkpoint_path, device)
-    config = checkpoint["config"]
+    model, preprocess, checkpoint = build_from_checkpoint(
+        checkpoint_path, device, config_override=config_override
+    )
+    config = config_override or checkpoint["config"]
     feature_config = config["features"]
     feature_store = FrozenFeatureStore(
         feature_config["tensor_path"],
@@ -149,6 +153,10 @@ def main() -> None:
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--crop-size", type=int, default=160)
     parser.add_argument("--top-patches", type=int, default=5)
+    parser.add_argument(
+        "--config-override",
+        help="Optional runtime YAML overriding data/features paths",
+    )
     args = parser.parse_args()
     print(
         cache_local_adapter_features(
@@ -159,6 +167,11 @@ def main() -> None:
             num_workers=args.num_workers,
             crop_size=args.crop_size,
             top_patches=args.top_patches,
+            config_override=(
+                load_config(args.config_override)
+                if args.config_override
+                else None
+            ),
         )
     )
 

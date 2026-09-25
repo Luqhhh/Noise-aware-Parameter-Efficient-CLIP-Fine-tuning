@@ -10,6 +10,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from aegis_clip.checkpoint import build_from_checkpoint
+from aegis_clip.config import load_config
 from aegis_clip.data import CachedFeatureDataset, OnlineImageDataset, TrustBundle
 from aegis_clip.features import FrozenFeatureStore
 from aegis_clip.image_preprocess import select_inference_preprocess
@@ -33,6 +34,7 @@ def cache_validation_logits(
     input_resize_mode: str = "clip_center_crop",
     crop_size: int = 160,
     top_patches: int = 5,
+    config_override: dict | None = None,
 ) -> Path:
     checkpoint_path = Path(checkpoint_path).resolve()
     destination = Path(output_path).resolve()
@@ -51,8 +53,10 @@ def cache_validation_logits(
         raise ValueError("crop_size must be in [1, 224]")
     if not 1 <= int(top_patches) <= 49:
         raise ValueError("top_patches must be in [1, 49]")
-    model, preprocess, checkpoint = build_from_checkpoint(checkpoint_path, device)
-    config = checkpoint["config"]
+    model, preprocess, checkpoint = build_from_checkpoint(
+        checkpoint_path, device, config_override=config_override
+    )
+    config = config_override or checkpoint["config"]
     preprocess = select_inference_preprocess(
         preprocess,
         mode=input_resize_mode,
@@ -237,6 +241,10 @@ def main() -> None:
     parser.add_argument("--crop-size", type=int, default=160)
     parser.add_argument("--top-patches", type=int, default=5)
     parser.add_argument(
+        "--config-override",
+        help="Optional runtime YAML overriding data/features paths",
+    )
+    parser.add_argument(
         "--input-resize-mode",
         choices=["clip_center_crop", "clip_letterbox"],
         default="clip_center_crop",
@@ -252,6 +260,11 @@ def main() -> None:
         input_resize_mode=args.input_resize_mode,
         crop_size=args.crop_size,
         top_patches=args.top_patches,
+        config_override=(
+            load_config(args.config_override)
+            if args.config_override
+            else None
+        ),
     )
     print(path)
 

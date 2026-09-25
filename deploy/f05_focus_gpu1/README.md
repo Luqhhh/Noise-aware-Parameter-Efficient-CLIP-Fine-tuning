@@ -202,3 +202,54 @@ bash deploy/f05_focus_gpu1/verify_gpu1.sh \
 
 验证脚本会检查 Python/CUDA、repo 分支、数据目录、feature cache、parent checkpoint
 和 F05 checkpoint；缺失项 fail-closed。它不训练、不写 test 预测、不访问平台。
+
+---
+
+## 9. C0 checkpoint 同步与路径覆盖（GPU1）
+
+C0 完成后，GPU1 需要把 C0 checkpoint 放到自己的输出目录，并用
+`scripts/make_gpu1_runtime_config.py` 生成一份路径已覆盖的 runtime YAML。
+
+```bash
+python3 scripts/make_gpu1_runtime_config.py \
+  --checkpoint /path/to/C0_F05_CUDA/seed42/checkpoints/best.pt \
+  --stage-dir /data/.../artifacts/stages/repechage/20260921 \
+  --train-root /data/.../train \
+  --test-root /data/.../test \
+  --output configs/f05_focus_gpu1/C0_gpu1_runtime.yaml \
+  --device cuda:0 \
+  --experiment-id RM_V5_C0_GPU1 \
+  --output-root outputs/f05_focus_gpu1
+```
+
+之后：
+
+### A0
+
+```bash
+python3 scripts/run_a0_m1_probe.py \
+  --checkpoint /path/to/C0_F05_CUDA/seed42/checkpoints/best.pt \
+  --config configs/f05_focus_gpu1/C0_gpu1_runtime.yaml \
+  --device cuda:0
+```
+
+### P0 validation logits
+
+```bash
+python3 -m aegis_clip.cli.cache_validation_logits \
+  --checkpoint /path/to/C0_F05_CUDA/seed42/checkpoints/best.pt \
+  --config-override configs/f05_focus_gpu1/C0_gpu1_runtime.yaml \
+  --view-mode center \
+  --output artifacts/f05_focus/f05_val_logits.pt
+```
+
+### D1/D2 adapter cache
+
+生成 adapter cache 时传：
+
+```text
+--config-override configs/f05_focus_gpu1/C0_gpu1_runtime.yaml
+```
+
+这样 GPU1 可以使用自己的 `val_csv`、`train_root`、`features` 路径，而不依赖
+GPU0 的绝对路径。
