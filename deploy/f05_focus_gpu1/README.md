@@ -253,3 +253,32 @@ python3 -m aegis_clip.cli.cache_validation_logits \
 
 这样 GPU1 可以使用自己的 `val_csv`、`train_root`、`features` 路径，而不依赖
 GPU0 的绝对路径。
+
+---
+
+## 10. GPU1 直接生成 OOF/quality
+
+GPU1 可以不等 GPU0 的 L05，直接先生成 OOF/quality 资产：
+
+```bash
+git fetch origin focus/f05-four-lines
+git checkout -B focus/f05-four-lines origin/focus/f05-four-lines
+
+TRAIN_CSV=<GPU1_TRAIN_DEV_CSV> \
+CACHE_DIR=<GPU1_FEATURES_DIR> \
+TRAIN_ROOT=<GPU1_TRAIN_ROOT> \
+DEVICE=cuda:0 \
+bash deploy/f05_focus_gpu1/run_oof_quality_gpu1.sh
+```
+
+产出：
+
+```text
+outputs/f05_focus/oof/sample_quality.csv
+outputs/f05_focus/oof/oof_logits.pt
+artifacts/f05_focus/hp_noise_manifest.csv
+artifacts/f05_focus/clean070.csv
+```
+
+然后把 `hp_noise_manifest.csv` 和 `clean070.csv` 回传 GPU0，或直接供 GPU1 的
+N1 / D1 / D2 使用。

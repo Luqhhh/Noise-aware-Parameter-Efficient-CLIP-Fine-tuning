@@ -17,6 +17,7 @@ C0_CONFIG="${C0_CONFIG:-$REPO_ROOT/outputs/f05_focus/_runtime_configs/C0_cuda_0.
 L05_DONE="${L05_DONE:-$REPO_ROOT/outputs/f05_focus_l05/L05_DONE}"
 L05_FAILED="${L05_FAILED:-$REPO_ROOT/outputs/f05_focus_l05/L05_FAILED}"
 WAIT_FOR_C0="${WAIT_FOR_C0:-1}"
+SKIP_L05_WAIT="${SKIP_L05_WAIT:-0}"
 DEVICE="${DEVICE:-cuda:0}"
 
 mkdir -p "$OOF_DIR" "$ARTIFACT_DIR"
@@ -50,7 +51,7 @@ REPORT_PY
   echo "[quality-chain] C0 finished"
 fi
 
-if [[ ! -f "$L05_DONE" && ! -f "$L05_FAILED" ]]; then
+if [[ "$SKIP_L05_WAIT" != "1" && ! -f "$L05_DONE" && ! -f "$L05_FAILED" ]]; then
   echo "[quality-chain] waiting for L05 to finish before OOF"
   while [[ ! -f "$L05_DONE" && ! -f "$L05_FAILED" ]]; do
     sleep 60
