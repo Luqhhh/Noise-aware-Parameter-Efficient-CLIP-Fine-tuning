@@ -294,7 +294,7 @@ def _render_manifest(rendered: dict[Path, bytes]) -> bytes:
     manifest = {
         "schema_version": 1,
         "protocol": "F05_FOCUS_SEVEN_UNIT_STAGE1",
-        "status": "design_only_not_yet_run",
+        "status": "executed_through_round_2_no_promotion",
         "baseline": {
             "experiment_id": "RM_V4_F05",
             "macro": F05_MACRO,
@@ -414,7 +414,9 @@ def _render_manifest(rendered: dict[Path, bytes]) -> bytes:
         "execution_queue": [
             {"round": 0, "gpu0": "A0", "gpu1": "P0"},
             {"round": 1, "gpu0": "C0", "gpu1": "N1"},
-            {"round": 2, "gpu0": "D1", "gpu1": "D2"},
+            # D2 has no GPU1 runner or artifacts; it was executed on GPU0 after
+            # D1 released the card (deploy/f05_focus_gpu0/run_d2_adapter.sh).
+            {"round": 2, "gpu0": "D1, D2", "gpu1": "none (D2 moved to GPU0)"},
             {"round": 3, "gpu0": "D3", "gpu1": "strongest second seed"},
             {"round": 4, "gpu0": "strongest seed3407", "gpu1": "strongest seed2026"},
         ],

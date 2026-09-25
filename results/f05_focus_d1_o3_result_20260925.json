@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "unit": "D1",
+  "experiment_id": "D1_O3",
+  "adapter": "BottleneckLocalFeatureAdapter",
+  "protocol": "F05_FOCUS_SEVEN_UNIT_STAGE1",
+  "config": "configs/f05_focus/D1_o3.yaml",
+  "parent": {
+    "checkpoint": "outputs/f05_focus/C0_F05_CUDA/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "f8205b5c683d23dd08a2df380e7ee99b242715351943d436caf440ef0fea3c2a"
+  },
+  "inputs": {
+    "train_cache": "artifacts/f05_focus/D1_train_cache_crop160.pt",
+    "validation_cache": "artifacts/f05_focus/D1_val_cache_crop160.pt",
+    "center_reference": "artifacts/f05_focus/f05_val_logits.pt",
+    "m1_reference": "artifacts/f05_focus/f05_val_m1_crop160.pt",
+    "train_subset": "artifacts/f05_focus/clean070.csv",
+    "train_samples": 60072,
+    "cache_batch_size": 128
+  },
+  "fixed_parameters": {
+    "bottleneck_dim": 32,
+    "residual_scale": 0.25,
+    "dropout": 0.1,
+    "crop_size": 160,
+    "top_patches": 5,
+    "batch_size": 1024,
+    "max_epochs": 20,
+    "patience": 5,
+    "seed": 42
+  },
+  "audits": {
+    "center_reference": {"maximum_absolute_logit_difference": 0.0, "prediction_agreement": 1.0, "passed": true},
+    "m1_fusion_recompute": {"maximum_absolute_logit_difference": 3.8147e-06, "tolerance": 4.0e-06, "prediction_agreement": 1.0, "passed": true},
+    "epoch_zero_m1_bit_exact": true,
+    "global_path_bit_exact": true
+  },
+  "outcome": {
+    "epochs_run": 5,
+    "stop_reason": "patience 5 exhausted",
+    "safety_eligible_epochs": 0,
+    "per_epoch": [
+      {"epoch": 1, "clean_core_micro": 0.7475806474685669, "raw_micro": 0.7475806474685669, "prediction_empty_classes": 4, "local_feature_drift": 0.002445224344089467, "safety_eligible": false},
+      {"epoch": 2, "clean_core_micro": 0.7476478219032288, "raw_micro": 0.7476478219032288, "prediction_empty_classes": 4, "local_feature_drift": 0.0027248712637091194, "safety_eligible": false},
+      {"epoch": 3, "clean_core_micro": 0.7469086050987244, "raw_micro": 0.7469086050987244, "prediction_empty_classes": 5, "local_feature_drift": 0.0028541994992122856, "safety_eligible": false},
+      {"epoch": 4, "clean_core_micro": 0.7458333373069763, "raw_micro": 0.7458333373069763, "prediction_empty_classes": 5, "local_feature_drift": 0.0030954427616570585, "safety_eligible": false},
+      {"epoch": 5, "clean_core_micro": 0.7463037371635437, "raw_micro": 0.7463037371635437, "prediction_empty_classes": 5, "local_feature_drift": 0.0032259201490750875, "safety_eligible": false}
+    ],
+    "selected_state": "zero-initialised adapter (epoch 0)",
+    "baseline_f05_m1": {"raw_macro": 0.7370553612709045, "raw_micro": 0.7482526898384094, "prediction_empty_classes": 4},
+    "gate": {
+      "clean_core_micro_delta_pp": 0.0,
+      "trusted_macro_delta_pp": 0.0,
+      "raw_micro_delta_pp": 0.0,
+      "local_feature_drift": -4.648601496091453e-08,
+      "passed": false
+    },
+    "verdict": "FAIL",
+    "verdict_basis": "No epoch was safety-eligible because the fused prediction always left 4-5 classes empty, so the gate that requires prediction_empty_classes == 0 could not be met; the best record fell back to the zero adapter and every delta is 0.0pp. The F05+M1 baseline itself already has 4 empty classes, so this safety gate is unsatisfiable for this local view."
+  },
+  "defects_fixed_during_execution": [
+    {
+      "defect": "D1 cache batch size (64) did not match the reference caches (128)",
+      "symptom": "O3 cache reference audit failed: center max abs diff 0.037109375 with 3 prediction flips",
+      "record": "results/f05_focus_d1_reference_audit_failure_20260925.json"
+    },
+    {
+      "defect": "O3 evaluation recomputed the shared linear head in fp32 from cached features while the cached logits were produced under autocast, so a zero-initialised adapter could never satisfy the exact epoch-zero gate",
+      "symptom": "O3 zero-initialisation audit failed: max abs logit difference 0.010011672973632812 with 3 prediction flips",
+      "fix": "Trainer evaluation now uses anchored_classifier_residual_logits (shared with the part-token unit): cached local logits plus the fp32 classifier residual of (adapted - base) features. The residual is exactly zero at initialisation, so the gate holds by construction; gradients are unchanged.",
+      "file": "reproducibility/aegis_f1/aegis_clip/cli/train_local_feature_adapter.py",
+      "post_fix_audit": {"epoch_zero_m1_bit_exact": true, "global_path_bit_exact": true}
+    }
+  ],
+  "artifacts": {
+    "output_dir": "outputs/f05_focus/D1_O3",
+    "gate": "outputs/f05_focus/D1_O3/gate.json",
+    "history": "outputs/f05_focus/D1_O3/history.json",
+    "best": "outputs/f05_focus/D1_O3/best.pt",
+    "adapter": "outputs/f05_focus/D1_O3/best_adapter.pt",
+    "training_log": "outputs/f05_focus/D1_O3_train.log"
+  },
+  "note": "D3 is not generated: it requires both D1 > M1 and D2 > M1, and neither unit improved on the shared local-view baseline. No platform submission package was produced by any of the seven units."
+}

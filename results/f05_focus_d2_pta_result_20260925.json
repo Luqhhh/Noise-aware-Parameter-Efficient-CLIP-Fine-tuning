@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "unit": "D2",
+  "experiment_id": "D2_PTA",
+  "adapter": "PartTokenResidualAdapter",
+  "protocol": "F05_FOCUS_SEVEN_UNIT_STAGE1",
+  "config": "configs/f05_focus/D2_pta.yaml",
+  "runner": "deploy/f05_focus_gpu0/run_d2_adapter.sh",
+  "assignment_note": "The manifest assigned D2 to GPU1, but GPU1 has no D2 runner or artifacts (it only produced N1 and the OOF/quality assets). D2 was therefore executed on GPU0 after the A0/P0/D1 queue released the card, and the manifest execution_queue was updated to record this.",
+  "parent": {
+    "checkpoint": "outputs/f05_focus/C0_F05_CUDA/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "f8205b5c683d23dd08a2df380e7ee99b242715351943d436caf440ef0fea3c2a"
+  },
+  "inputs": {
+    "train_cache": "artifacts/f05_focus/D2_train_cache_crop160.pt",
+    "validation_cache": "artifacts/f05_focus/D2_val_cache_crop160.pt",
+    "center_reference": "artifacts/f05_focus/f05_val_logits.pt",
+    "m1_reference": "artifacts/f05_focus/f05_val_m1_crop160.pt",
+    "train_subset": "artifacts/f05_focus/clean070.csv",
+    "train_samples": 60072,
+    "cache_batch_size": 128
+  },
+  "fixed_parameters": {
+    "bottleneck_dim": 64,
+    "residual_scale": 0.25,
+    "dropout": 0.1,
+    "part_top_patches": 8,
+    "part_temperature": 0.07,
+    "crop_size": 160,
+    "top_patches": 5,
+    "batch_size": 1024,
+    "max_epochs": 20,
+    "patience": 5,
+    "seed": 42
+  },
+  "audits": {
+    "reference_audit_passed": true,
+    "epoch_zero_m1_reproduced": true,
+    "global_path_bit_exact": true,
+    "epoch_zero_audit": {"maximum_absolute_logit_difference": 0.0, "prediction_agreement": 1.0}
+  },
+  "outcome": {
+    "epochs_run": 5,
+    "stop_reason": "patience 5 exhausted",
+    "safety_eligible_epochs": 0,
+    "best_record": null,
+    "per_epoch": [
+      {"epoch": 0, "clean_core_micro": 0.7482526898384094, "raw_micro": 0.7482526898384094, "prediction_empty_classes": 4, "local_feature_drift": -4.648601496091453e-08, "safety_eligible": null},
+      {"epoch": 1, "clean_core_micro": 0.7475134134292603, "raw_micro": 0.7475134134292603, "prediction_empty_classes": 5, "local_feature_drift": 0.0027099954825575636, "safety_eligible": false},
+      {"epoch": 2, "clean_core_micro": 0.7473118305206299, "raw_micro": 0.7473118305206299, "prediction_empty_classes": 5, "local_feature_drift": 0.0030779236106462378, "safety_eligible": false},
+      {"epoch": 3, "clean_core_micro": 0.7467741966247559, "raw_micro": 0.7467741966247559, "prediction_empty_classes": 5, "local_feature_drift": 0.003251119262428694, "safety_eligible": false},
+      {"epoch": 4, "clean_core_micro": 0.7462365627288818, "raw_micro": 0.7462365627288818, "prediction_empty_classes": 6, "local_feature_drift": 0.0034917709007058094, "safety_eligible": false},
+      {"epoch": 5, "clean_core_micro": 0.7463709712028503, "raw_micro": 0.7463709712028503, "prediction_empty_classes": 6, "local_feature_drift": 0.0036925982403498824, "safety_eligible": false}
+    ],
+    "selected_state": "zero-initialised adapter (epoch 0); best_record is null",
+    "baseline_f05_m1": {"raw_macro": 0.7370553612709045, "raw_micro": 0.7482526898384094, "prediction_empty_classes": 4},
+    "gate": {
+      "clean_core_micro_delta_pp": 0.0,
+      "raw_micro_delta_pp": 0.0,
+      "trusted_macro_delta_pp": 0.0,
+      "clean_core_corrected": 0,
+      "clean_core_harmed": 0,
+      "local_feature_drift": -4.648601496091453e-08,
+      "passed": false
+    },
+    "verdict": "FAIL",
+    "verdict_basis": "Every epoch was rejected by the safety gate, which requires prediction_empty_classes == 0, while the fused prediction kept 5-6 classes empty (the F05+M1 baseline itself already has 4). No epoch could be selected, so the reported deltas are all 0.0pp."
+  },
+  "timing": {
+    "train_cache_seconds": 264,
+    "validation_cache_seconds": 88,
+    "adapter_training_seconds": 63
+  },
+  "artifacts": {
+    "output_dir": "outputs/f05_focus/D2_PTA",
+    "gate": "outputs/f05_focus/D2_PTA/gate.json",
+    "history": "outputs/f05_focus/D2_PTA/history.json",
+    "best": "outputs/f05_focus/D2_PTA/best.pt",
+    "adapter": "outputs/f05_focus/D2_PTA/best_adapter.pt",
+    "log": "outputs/f05_focus/gpu0_d2_queue.log",
+    "status": "outputs/f05_focus/gpu0_d2_status.json"
+  },
+  "note": "D3 is not generated: it requires both D1 > M1 and D2 > M1, and neither unit improved on the shared local-view baseline."
+}
