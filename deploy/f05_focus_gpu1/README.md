@@ -282,3 +282,26 @@ artifacts/f05_focus/clean070.csv
 
 然后把 `hp_noise_manifest.csv` 和 `clean070.csv` 回传 GPU0，或直接供 GPU1 的
 N1 / D1 / D2 使用。
+
+## 11. 2026-09-25 GPU1 OOF 实测状态
+
+GPU1 已在 `focus/f05-four-lines@ea53fc2` 完成 750 类、duplicate-aware 3-fold OOF：
+
+- 133,815 个 train-dev 样本，每折 holdout 44,605，重复内容组零跨折；
+- 三折固定 30 epochs，holdout accuracy 分别为 0.628382 / 0.630400 / 0.626253；
+- 合并 OOF accuracy 0.628390，logits `133815 x 750` 且全部有限；
+- N1 manifest reject 5,794（4.33%），strict suspect 1,981；
+- clean070 保留 60,072（44.89%），750 类全覆盖、最小每类 2 条；
+- 四个核心资产的 SHA 与 `artifacts/f05_focus/quality_chain_status.json` 一致。
+
+完整数字与资产 SHA 见 `results/f05_focus_oof_gpu1_20260925.json`。运行中发现旧
+`analysis.oof.run_oof` 会把 `oof_manifest.json` 的 parent 固定写成 500 类阶段的
+`b2_gce05`；生成器现显式绑定 `REMATCH750_F05_FOCUS_OOF_3FOLD`、
+`openai_clip_vit_b32_frozen_features`、750 类数据和 cache SHA。该修复只更正元数据，
+不改变 logits、quality、N1 manifest 或 clean070 数值。
+
+N1 仍必须等待与 GPU0 C0 完全相同的 RM-LP checkpoint（登记 SHA
+`d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b`）。GPU1
+本地另有 SHA `67a77e81...` 的 RM-LP 文件，未证明与 C0 parent 权重逐位一致，禁止
+拿它替代后直接声称 paired delta。P0/D2 继续等待精确 F05/C0 checkpoint 或 val
+logits。

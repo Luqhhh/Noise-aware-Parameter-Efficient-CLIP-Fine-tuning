@@ -27,6 +27,14 @@ def _sample_id(value: str) -> str:
     return hashlib.sha256(str(value).encode("utf-8")).hexdigest()
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--train-csv", required=True)
@@ -78,6 +86,10 @@ def main() -> int:
         encoding="utf-8",
     )
 
+    cache_manifest = Path(args.cache_dir) / "manifest.json"
+    if not cache_manifest.is_file():
+        raise FileNotFoundError(f"feature cache manifest is missing: {cache_manifest}")
+
     command = [
         sys.executable,
         "-m",
@@ -120,6 +132,16 @@ def main() -> int:
         str(args.flip_workers),
         "--device",
         args.device,
+        "--protocol-name",
+        "REMATCH750_F05_FOCUS_OOF_3FOLD",
+        "--parent-artifact",
+        "openai_clip_vit_b32_frozen_features",
+        "--data-stage",
+        "repechage_20260921",
+        "--source-train-csv-sha256",
+        _sha256_file(Path(args.train_csv)),
+        "--feature-cache-manifest-sha256",
+        _sha256_file(cache_manifest),
     ]
     environment = dict(__import__("os").environ)
     environment["PYTHONPATH"] = str(ROOT)
