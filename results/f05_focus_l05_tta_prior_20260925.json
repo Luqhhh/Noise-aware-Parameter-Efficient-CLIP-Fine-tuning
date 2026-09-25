@@ -123,8 +123,9 @@
     "pred_results_csv_sha256": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
     "submission_zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f",
     "check_submission_passed": true,
-    "platform_submitted": false,
-    "status": "ready_for_platform_decision"
+    "platform_submitted": true,
+    "platform_score_percent": 66.94797564362783,
+    "status": "platform_valid_promoted"
   },
-  "note": "Single TTA+prior candidate generated locally; no platform upload performed."
+  "note": "Single TTA+prior candidate generated locally. Platform score later backfilled from the user-reported result; the desktop submission.zip SHA-256 was re-verified against the recorded value. Machine-readable platform record: results/f05_focus_l05_tta_prior_platform_20260925.json."
 }
