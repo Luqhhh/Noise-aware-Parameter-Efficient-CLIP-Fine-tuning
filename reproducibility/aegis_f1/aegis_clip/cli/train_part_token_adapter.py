@@ -402,7 +402,12 @@ def train_part_token_adapter(
         )
         safety_eligible = bool(
             finite
-            and int(metrics["prediction_empty_classes"]) == 0
+            # Registered amendment 2026-09-25: the empty-class condition is
+            # relative to the F05+M1 baseline instead of an absolute zero, which
+            # the baseline itself cannot satisfy. See
+            # docs/f05_focus_round2_safety_gate_preregistration_20260925.md.
+            and int(metrics["prediction_empty_classes"])
+            <= int(baseline_metrics["prediction_empty_classes"])
             and float(metrics["trusted_macro"])
             >= float(baseline_metrics["trusted_macro"])
             and float(metrics["raw_micro"])
@@ -486,12 +491,17 @@ def train_part_token_adapter(
             and epoch_zero_audit["prediction_agreement"] == 1.0
         ),
     }
+    gate["prediction_empty_classes"] = int(best_metrics["prediction_empty_classes"])
+    gate["baseline_prediction_empty_classes"] = int(
+        baseline_metrics["prediction_empty_classes"]
+    )
     gate["passed"] = bool(
         gate["clean_core_micro_delta_pp"] >= 0.20
         and gate["trusted_macro_delta_pp"] >= 0.0
         and gate["raw_micro_delta_pp"] >= -0.10
         and gate["local_feature_drift"] <= 0.01
-        and int(best_metrics["prediction_empty_classes"]) == 0
+        # Registered amendment 2026-09-25 (see the safety-gate preregistration).
+        and gate["prediction_empty_classes"] <= gate["baseline_prediction_empty_classes"]
         and gate["reference_audit_passed"]
         and gate["global_path_bit_exact"]
         and gate["epoch_zero_m1_reproduced"]

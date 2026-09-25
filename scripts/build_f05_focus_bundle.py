@@ -321,6 +321,33 @@ def _render_manifest(rendered: dict[Path, bytes]) -> bytes:
             "breakthrough": "macro_delta_pp >= 1.00",
             "seed_confirmation": "2 of 3 seeds same direction after seed42 strong",
         },
+        # Registered amendment 2026-09-25. The previous condition
+        # `prediction_empty_classes == 0` was logically unsatisfiable: the
+        # F05 + same-local-view baseline used as the candidate reference already
+        # leaves 4 classes empty, so even the identity candidate was rejected.
+        # See the preregistration for the full argument and the disclosure that
+        # the round-2 results had already been observed when this was written.
+        "safety_gate": {
+            "registered_amendment": "2026-09-25",
+            "preregistration": "docs/f05_focus_round2_safety_gate_preregistration_20260925.md",
+            "baseline": "adapter=None evaluated on the same validation cache (F05 + same local view)",
+            "per_epoch_eligibility": [
+                "finite metrics",
+                "prediction_empty_classes(candidate) <= prediction_empty_classes(baseline)",
+                "trusted_macro(candidate) >= trusted_macro(baseline)",
+                "raw_micro(candidate) >= raw_micro(baseline) - 0.001",
+                "local_feature_drift(candidate) <= 0.01",
+            ],
+            "final_gate": [
+                "clean_core_micro_delta_pp >= 0.20",
+                "trusted_macro_delta_pp >= 0.0",
+                "raw_micro_delta_pp >= -0.10",
+                "local_feature_drift <= 0.01",
+                "prediction_empty_classes(candidate) <= prediction_empty_classes(baseline)",
+                "reference audits pass (center bit-exact, M1 fusion <= 4e-6, epoch zero bit-exact)",
+            ],
+            "superseded_condition": "prediction_empty_classes == 0",
+        },
         "units": [
             {
                 "id": "C0",
