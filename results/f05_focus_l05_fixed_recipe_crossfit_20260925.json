@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "experiment_id": "RM_V5_L05_CUDA_LOCAL",
+  "diagnostic": "fixed_recipe_conditional_crossfit",
+  "limitation": "Fixed-recipe conditional cross-fit diagnostic only. The checkpoint, the TTA temperature (1.4) and the prior strength (0.60) were selected on the whole validation set before this diagnostic. Excluding a fold when fitting the bias removes that fold's contribution to the bias, but it does not undo the earlier whole-validation model selection, so these numbers must not be reported as an unbiased end-to-end validation of the full pipeline.",
+  "recipe": {
+    "tta": "horizontal_flip",
+    "fusion": "mean_probabilities",
+    "temperature": 1.4,
+    "prior_strength": 0.6
+  },
+  "recipe_enforced": true,
+  "folds": 3,
+  "fold_seed": 42,
+  "fold_assignments_sha256": "14748868b6d707c60e4ae9468bb73c71b5b5556c83600429330b4ef4fe665139",
+  "content_group_partition": {
+    "content_groups": "/home/lux1/noise/artifacts/stages/repechage/20260921/content_groups.csv",
+    "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+    "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+    "distinct_groups": 14658
+  },
+  "binding": {
+    "cache": "/home/lux1/noise/worktrees/rematch750_f05_focus/artifacts/f05_focus_l05/l05_val_branch_logits.pt",
+    "cache_sha256": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc",
+    "checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "training_config_sha256": "70576eddbd625b20ba942bc5fa74e3687eafe5092d425a9027a68a7899018c44",
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+    "split_seed": 42,
+    "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+    "input_resolution": 384,
+    "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+    "encoder_precision": "float32",
+    "feature_precision": "float32",
+    "autocast": false
+  },
+  "baseline": {
+    "center_raw_macro": 0.7524970769882202,
+    "center_raw_micro": 0.7629704475402832,
+    "fused_no_bias_raw_macro": 0.7542707324028015,
+    "fused_no_bias_raw_micro": 0.7646505236625671
+  },
+  "full_validation_fit": {
+    "macro": 0.7582651376724243,
+    "micro": 0.7665322422981262,
+    "corrections": 138,
+    "corruptions": 110,
+    "changed": 604,
+    "bias_sha256": "facdd436ccba930adeaeae54af321e123bfefc3df83740ee857f871cf716771e",
+    "bias_fit_iterations": 50,
+    "fit_scope": {
+      "mode": "full_validation",
+      "fit_sample_count": 14880,
+      "fit_index_sha256": null
+    }
+  },
+  "conditional_crossfit": {
+    "pooled_out_of_fold": {
+      "macro": 0.7556777596473694,
+      "micro": 0.7639113068580627,
+      "delta_macro_pp": 0.1407027244567871,
+      "delta_micro_pp": -0.07392168045043945,
+      "corrections": 144,
+      "corruptions": 155,
+      "changed": 703
+    },
+    "per_fold": [
+      {
+        "fold": 0,
+        "holdout_samples": 4953,
+        "fit_samples": 9927,
+        "holdout_content_groups": 4886,
+        "evaluated_classes": 749,
+        "raw_macro": 0.7613210082054138,
+        "raw_micro": 0.7674136757850647,
+        "macro": 0.7608664035797119,
+        "micro": 0.7674136757850647,
+        "delta_macro_pp": -0.04546046257019043,
+        "delta_micro_pp": 0.0,
+        "corrections": 45,
+        "corruptions": 45,
+        "changed": 235,
+        "bias_sha256": "32b3249a50db74afad905a4661b66ba2cdf89eeae07aa91e0050f104d8512fe2",
+        "bias_fit_iterations": 50,
+        "fit_scope": {
+          "mode": "conditional_fold_exclusion",
+          "fit_sample_count": 9927,
+          "fit_index_sha256": "974947cbc64afb84226808ff53686665aeade7ce20be58f4cab2a97f318b47d4"
+        }
+      },
+      {
+        "fold": 1,
+        "holdout_samples": 4973,
+        "fit_samples": 9907,
+        "holdout_content_groups": 4887,
+        "evaluated_classes": 746,
+        "raw_macro": 0.747640073299408,
+        "raw_micro": 0.7625175714492798,
+        "macro": 0.7470913529396057,
+        "micro": 0.7623165249824524,
+        "delta_macro_pp": -0.05487203598022461,
+        "delta_micro_pp": -0.020104646682739258,
+        "corrections": 60,
+        "corruptions": 61,
+        "changed": 249,
+        "bias_sha256": "7c31b4ccd9dc6699a6945e58a9fbe1a7035cc5a3ce239decec71cd6ab58d1606",
+        "bias_fit_iterations": 50,
+        "fit_scope": {
+          "mode": "conditional_fold_exclusion",
+          "fit_sample_count": 9907,
+          "fit_index_sha256": "26d55908827529ba6863f6297a3c82a928cdf0e9ba0d3d3ea464e02943f3dd0c"
+        }
+      },
+      {
+        "fold": 2,
+        "holdout_samples": 4954,
+        "fit_samples": 9926,
+        "holdout_content_groups": 4885,
+        "evaluated_classes": 745,
+        "raw_macro": 0.759340763092041,
+        "raw_micro": 0.7640290856361389,
+        "macro": 0.7566614151000977,
+        "micro": 0.7620105147361755,
+        "delta_macro_pp": -0.26793479919433594,
+        "delta_micro_pp": -0.2018570899963379,
+        "corrections": 39,
+        "corruptions": 49,
+        "changed": 219,
+        "bias_sha256": "17265f59285f0cfcff68eb35ec404ff6a4bdcb73a6c70315d68aff02b9781ae3",
+        "bias_fit_iterations": 50,
+        "fit_scope": {
+          "mode": "conditional_fold_exclusion",
+          "fit_sample_count": 9926,
+          "fit_index_sha256": "f548aa8a23caf7cc497b21df579cd1fce34655a9ae4596f328d27efca656c4f8"
+        }
+      }
+    ]
+  },
+  "test_data_used": false,
+  "temperature_rescanned": false,
+  "prior_strength_rescanned": false
+}

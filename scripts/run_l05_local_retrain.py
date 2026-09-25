@@ -28,6 +28,16 @@ if str(AEGIS_ROOT) not in sys.path:
     sys.path.insert(0, str(AEGIS_ROOT))
 
 from aegis_clip.config import load_config  # noqa: E402
+from aegis_clip.runtime import sha256_file  # noqa: E402
+
+#: The data split is a frozen artifact: ``dataset_manifest.json`` records this
+#: seed and the train/val CSVs were written once.  Changing ``--train-seed`` must
+#: never re-draw it.
+SPLIT_SEED = 42
+
+#: The audited shared RM-LP parent (``parent_kind=shared_lp``).  A different
+#: parent changes the experiment and must be opted into explicitly.
+DEFAULT_RM_LP_SHA256 = "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b"
 
 
 def _abs(value: str | Path | None, default: Path | None = None) -> Path | None:
@@ -45,6 +55,66 @@ def _default_desktop() -> Path:
         return candidates[0]
     home_desktop = Path.home() / "Desktop"
     return home_desktop
+
+
+def _frozen_split_report(stage_dir: Path) -> dict:
+    """Fail closed unless the frozen train/val content-group split is untouched."""
+    manifest_path = stage_dir / "dataset_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if int(manifest.get("seed", -1)) != SPLIT_SEED:
+        raise ValueError(
+            "dataset manifest records split seed "
+            f"{manifest.get('seed')!r}, expected the frozen {SPLIT_SEED}; "
+            "the training seed must not re-draw the split"
+        )
+    verified: dict[str, str] = {}
+    for name, digest in manifest.get("files", {}).items():
+        path = stage_dir / name
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        actual = sha256_file(path)
+        if actual != digest:
+            raise ValueError(f"frozen split asset changed since the split was built: {name}")
+        verified[name] = actual
+    return {
+        "dataset_manifest": str(manifest_path),
+        "dataset_manifest_sha256": sha256_file(manifest_path),
+        "split_seed": int(manifest["seed"]),
+        "train_fingerprint": manifest.get("train_fingerprint"),
+        "test_fingerprint": manifest.get("test_fingerprint"),
+        "verified_assets": verified,
+    }
+
+
+def _parent_report(rm_lp: Path, expected_sha256: str | None) -> dict:
+    actual = sha256_file(rm_lp)
+    if expected_sha256 and actual != str(expected_sha256):
+        raise ValueError(
+            f"RM-LP parent SHA-256 changed: {actual} != expected {expected_sha256}"
+        )
+    return {
+        "parent_checkpoint": str(rm_lp),
+        "parent_sha256": actual,
+        "expected_parent_sha256": str(expected_sha256) if expected_sha256 else None,
+    }
+
+
+def _normalize_recipe(config: dict) -> dict:
+    """Drop the training seed and path metadata so only the recipe remains."""
+    normalized = json.loads(json.dumps(config, default=str))
+    normalized.pop("_config_path", None)
+    normalized.get("project", {}).pop("seed", None)
+    return normalized
+
+
+def _config_diff(left, right, prefix: str = "") -> list[str]:
+    diffs: list[str] = []
+    if isinstance(left, dict) and isinstance(right, dict):
+        for key in sorted(set(left) | set(right)):
+            diffs.extend(_config_diff(left.get(key), right.get(key), f"{prefix}.{key}" if prefix else str(key)))
+    elif left != right:
+        diffs.append(f"{prefix}: {left!r} != {right!r}")
+    return diffs
 
 
 def build_runtime_config(args: argparse.Namespace) -> Path:
@@ -75,6 +145,9 @@ def build_runtime_config(args: argparse.Namespace) -> Path:
             raise FileNotFoundError(stage_dir / name)
     if rm_lp is None or not rm_lp.is_file():
         raise FileNotFoundError(rm_lp)
+
+    split_report = _frozen_split_report(stage_dir)
+    parent_report = _parent_report(rm_lp, args.expected_parent_sha256)
 
     config["data"].update(
         {
@@ -112,6 +185,7 @@ def build_runtime_config(args: argparse.Namespace) -> Path:
     config["evaluation"]["inference_batch_size"] = int(args.infer_batch)
     config["output"]["root"] = str(_abs(args.output_root, ROOT / "outputs/f05_focus_l05"))
     config["project"]["experiment_id"] = str(args.experiment_id)
+    config["project"]["seed"] = int(args.train_seed)
     config["project"]["protocol"] = "rematch750_search_v5"
     config["project"]["implementation_status"] = "implemented"
     config["project"]["search"]["micro_batch_candidates"] = [int(args.microbatch)]
@@ -119,11 +193,56 @@ def build_runtime_config(args: argparse.Namespace) -> Path:
 
     runtime_root = _abs(args.runtime_dir, ROOT / "outputs/f05_focus_l05/_runtime_configs")
     runtime_root.mkdir(parents=True, exist_ok=True)
-    runtime_path = runtime_root / f"L05_{args.experiment_id}_{args.device.replace(':', '_')}_mb{args.microbatch}.yaml"
+    stem = (
+        f"L05_{args.experiment_id}_{args.device.replace(':', '_')}_mb{args.microbatch}"
+        f"_seed{int(args.train_seed)}"
+    )
+    runtime_path = runtime_root / f"{stem}.yaml"
+
+    recipe_reference = _abs(args.recipe_reference_config)
+    recipe_diff: list[str] | None = None
+    recipe_reference_note: str | None = None
+    if recipe_reference is not None:
+        if recipe_reference.is_file():
+            reference = load_config(recipe_reference)
+            recipe_diff = _config_diff(
+                _normalize_recipe(config), _normalize_recipe(reference)
+            )
+            if recipe_diff:
+                raise ValueError(
+                    "training recipe differs from the reference config beyond the "
+                    f"training seed: {recipe_diff[:5]}"
+                )
+        else:
+            recipe_reference_note = f"reference config not found: {recipe_reference}"
+
     runtime_path.write_text(
         yaml.safe_dump(config, sort_keys=False, allow_unicode=True),
         encoding="utf-8",
     )
+    preflight = {
+        "experiment_id": str(args.experiment_id),
+        "train_seed": int(args.train_seed),
+        "split_seed": SPLIT_SEED,
+        "device": str(args.device),
+        "microbatch": int(args.microbatch),
+        "grad_accum": int(args.grad_accum),
+        "runtime_config": str(runtime_path),
+        "run_dir": str(
+            Path(config["output"]["root"]) / str(args.experiment_id) / f"seed{int(args.train_seed)}"
+        ),
+        "frozen_split": split_report,
+        "parent": parent_report,
+        "recipe_reference_config": str(recipe_reference) if recipe_reference else None,
+        "recipe_diff": recipe_diff,
+        "recipe_reference_note": recipe_reference_note,
+    }
+    preflight_path = runtime_root / f"{stem}.preflight.json"
+    preflight_path.write_text(
+        json.dumps(preflight, ensure_ascii=False, indent=2, default=str) + "\n",
+        encoding="utf-8",
+    )
+    print(json.dumps(preflight, ensure_ascii=False, indent=2, default=str), flush=True)
     return runtime_path
 
 
@@ -201,6 +320,28 @@ def main() -> int:
     parser.add_argument("--output-root", default="outputs/f05_focus_l05")
     parser.add_argument("--runtime-dir", default="outputs/f05_focus_l05/_runtime_configs")
     parser.add_argument("--experiment-id", default="RM_V5_L05_CUDA")
+    parser.add_argument(
+        "--train-seed",
+        type=int,
+        default=42,
+        help=(
+            "Explicit training seed. The frozen train/val content-group split is "
+            f"NOT re-drawn; it stays at split_seed={SPLIT_SEED}."
+        ),
+    )
+    parser.add_argument(
+        "--expected-parent-sha256",
+        default=DEFAULT_RM_LP_SHA256,
+        help="Audited shared RM-LP parent SHA-256; pass '' to skip the check.",
+    )
+    parser.add_argument(
+        "--recipe-reference-config",
+        default=(
+            "outputs/f05_focus_l05/_runtime_configs/"
+            "L05_RM_V5_L05_CUDA_LOCAL_cuda_0_mb4.yaml"
+        ),
+        help="Config whose recipe (ignoring seed) the new run must match.",
+    )
     parser.add_argument("--desktop-dir")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--skip-train", action="store_true")
@@ -299,7 +440,8 @@ def main() -> int:
             )
             runtime_candidate = (
                 runtime_root
-                / f"L05_{args.experiment_id}_{args.device.replace(':', '_')}_mb{candidate}.yaml"
+                / f"L05_{args.experiment_id}_{args.device.replace(':', '_')}"
+                f"_mb{candidate}_seed{int(args.train_seed)}.yaml"
             )
             if runtime_candidate.is_file():
                 candidate_run_dir = _run_dir(runtime_candidate)

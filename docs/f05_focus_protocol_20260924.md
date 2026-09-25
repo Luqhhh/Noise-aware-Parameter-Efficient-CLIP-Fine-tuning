@@ -447,3 +447,14 @@ D1、D2 的晋级基线统一为 **F05 + 同一 local view（M1）**：raw macro
 2. O3 评估路径改用与 PTA 相同的 `anchored_classifier_residual_logits` 残差写法，使 epoch-zero 门按构造精确成立，见 `results/f05_focus_d1_o3_result_20260925.json`。
 
 本七单元之外另有一条已闭环的平台线：本阶段 CUDA 本地重训 **L05** 取得平台 **66.94797564362783%**（TTA T=1.4 + prior 0.60），见 `results/f05_focus_l05_tta_prior_platform_20260925.json`。七单元中没有任何单元产生平台提交包。
+
+**2026-09-25 补充（保护 + 绑定 + 固定配方诊断）：** `L05_T14_P060` 已登记为不可覆盖产物
+（`results/f05_focus_l05_protected_packages.json`），CSV/ZIP/manifest 哈希复核通过，未重训、未重交。
+`run_l05_local_retrain.py` 补上真正生效的 `--train-seed`（不动 split seed 42、RM-LP parent SHA 与配方），
+`build_l05_tta_prior_submission_final.py` 默认拒绝覆盖，新增
+`aegis_clip/tta_prior_binding.py` 把校准缓存绑定到 checkpoint / class mapping / split / 内容组 /
+分辨率精度 / TTA 与 prior bias SHA。在既有缓存上按固定配方（T=1.4、prior=0.60）做内容组 3 折条件交叉拟合：
+pooled OOF Macro **0.7556778**、Micro **0.7639113**，相对 flip-TTA 无 prior 基线
+**+0.1407pp / −0.0739pp**，纠正 144 / 破坏 155，逐折 ΔMacro 全为负。因此平台 +0.5582pp
+不能归因于 prior。完整记录见
+[L05 校准绑定与固定配方诊断](f05_focus_l05_calibration_binding_20260925.md)。

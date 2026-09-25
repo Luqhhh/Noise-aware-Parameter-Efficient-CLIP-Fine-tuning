@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "diagnostic": "l05_tta_prior_binding_audit",
+  "test_data_used": false,
+  "protected_packages": {
+    "registry": "results/f05_focus_l05_protected_packages.json",
+    "status": "verified",
+    "packages": [
+      {
+        "candidate": "L05_T14_P060",
+        "repo_path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060",
+        "status": "verified",
+        "files": {
+          "manifest.json": {
+            "present": true,
+            "sha256": "3712f796bf8736207c5dc28c38b0b4364248f4ba32d09ffaf4a475a8762ef79b",
+            "matches_record": true
+          },
+          "pred_results.csv": {
+            "present": true,
+            "sha256": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
+            "matches_record": true
+          },
+          "submission.zip": {
+            "present": true,
+            "sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f",
+            "matches_record": true
+          }
+        }
+      }
+    ]
+  },
+  "recipe": {
+    "tta": "horizontal_flip",
+    "fusion": "mean_probabilities",
+    "temperature": 1.4,
+    "prior_strength": 0.6
+  },
+  "checkpoint": {
+    "checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "training_config_sha256": "70576eddbd625b20ba942bc5fa74e3687eafe5092d425a9027a68a7899018c44",
+    "experiment_id": "RM_V5_L05_CUDA_LOCAL",
+    "epoch": 16,
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+    "train_csv_sha256": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "input_resolution": 384,
+    "reference_resolution": 224,
+    "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+    "encoder_precision": "float32",
+    "feature_precision": "float32",
+    "autocast": false,
+    "protocol": "rematch750_search_v5",
+    "data_version": "20260921",
+    "stage": "repechage"
+  },
+  "cache_identity": {
+    "cache": "/home/lux1/noise/worktrees/rematch750_f05_focus/artifacts/f05_focus_l05/l05_val_branch_logits.pt",
+    "cache_sha256": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc",
+    "cache_format_version": 1,
+    "num_samples": 14880,
+    "num_classes": 750,
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+    "split_seed": 42,
+    "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+    "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+    "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+    "cache_tta_fusion": "mean_probabilities",
+    "cache_tta_temperature": 1.0,
+    "input_resolution": 384,
+    "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+    "encoder_precision": "float32",
+    "feature_precision": "float32",
+    "autocast": false,
+    "checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "training_config_sha256": "70576eddbd625b20ba942bc5fa74e3687eafe5092d425a9027a68a7899018c44",
+    "protocol": "rematch750_search_v5"
+  },
+  "full_validation_fit": {
+    "macro": 0.7582651376724243,
+    "micro": 0.7665322422981262,
+    "bias_sha256": "facdd436ccba930adeaeae54af321e123bfefc3df83740ee857f871cf716771e",
+    "bias_fit_iterations": 50,
+    "fit_scope": {
+      "mode": "full_validation",
+      "fit_sample_count": 14880,
+      "fit_index_sha256": null
+    },
+    "prior_record": {
+      "schema_version": 1,
+      "bias_sha256": "facdd436ccba930adeaeae54af321e123bfefc3df83740ee857f871cf716771e",
+      "bias_dim": 750,
+      "prior_fit_iterations": 50,
+      "fit_report": {
+        "max_iterations": 50,
+        "iterations": 50,
+        "tolerance": 1e-06,
+        "damping": 0.5,
+        "fitted_max_marginal_error": 7.931026630103588e-06,
+        "initial_marginal_l1": 0.15060216188430786,
+        "final_marginal_l1": 0.0010294198291376233,
+        "final_max_marginal_error": 7.42392148822546e-06,
+        "bias_min": -1.513406753540039,
+        "bias_max": 3.171046018600464,
+        "target_prior": "uniform"
+      },
+      "fit_scope": {
+        "mode": "full_validation",
+        "fit_sample_count": 14880,
+        "fit_index_sha256": null
+      },
+      "test_data_used": false,
+      "recipe": {
+        "tta": "horizontal_flip",
+        "fusion": "mean_probabilities",
+        "temperature": 1.4,
+        "prior_strength": 0.6
+      },
+      "cache": "/home/lux1/noise/worktrees/rematch750_f05_focus/artifacts/f05_focus_l05/l05_val_branch_logits.pt",
+      "cache_sha256": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc",
+      "checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+      "checkpoint_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+      "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+      "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+      "split_seed": 42,
+      "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+      "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+      "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+      "num_samples": 14880,
+      "num_classes": 750,
+      "input_resolution": 384,
+      "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+      "encoder_precision": "float32",
+      "feature_precision": "float32",
+      "autocast": false
+    }
+  },
+  "recorded_result": {
+    "path": "results/f05_focus_l05_tta_prior_platform_20260925.json",
+    "expected": {
+      "macro": 0.7582651376724243,
+      "micro": 0.7665322422981262
+    },
+    "reproduces_recorded_metrics": true
+  }
+}

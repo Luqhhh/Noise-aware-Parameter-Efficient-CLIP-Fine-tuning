@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "updated": "2026-09-25",
+  "policy": "Candidate directories listed here are frozen deliverables. Builders must refuse the same candidate id and must never delete or regenerate these directories.",
+  "protected_packages": [
+    {
+      "candidate": "L05_T14_P060",
+      "repo_path": "outputs/f05_focus_l05/L05_T14_P060",
+      "platform_score_percent": 66.94797564362783,
+      "baseline_center_platform_percent": 66.38980878111312,
+      "delta_vs_center_platform_pp": 0.5581668625147103,
+      "files": {
+        "manifest.json": "3712f796bf8736207c5dc28c38b0b4364248f4ba32d09ffaf4a475a8762ef79b",
+        "pred_results.csv": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
+        "submission.zip": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f"
+      },
+      "checkpoint": "outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+      "checkpoint_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+      "training_config": "outputs/f05_focus_l05/_runtime_configs/L05_RM_V5_L05_CUDA_LOCAL_cuda_0_mb4.yaml",
+      "training_config_sha256": "70576eddbd625b20ba942bc5fa74e3687eafe5092d425a9027a68a7899018c44",
+      "val_branch_cache": "artifacts/f05_focus_l05/l05_val_branch_logits.pt",
+      "val_branch_cache_sha256": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc",
+      "prior_bias_sha256": "facdd436ccba930adeaeae54af321e123bfefc3df83740ee857f871cf716771e",
+      "recipe": {
+        "tta": "horizontal_flip",
+        "fusion": "mean_probabilities",
+        "temperature": 1.4,
+        "prior_strength": 0.6
+      },
+      "check_submission_passed": true,
+      "status": "protected_do_not_overwrite"
+    }
+  ]
+}

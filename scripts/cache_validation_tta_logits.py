@@ -22,6 +22,7 @@ from aegis_clip.data import OnlineImageDataset, TrustBundle  # noqa: E402
 from aegis_clip.features import FrozenFeatureStore  # noqa: E402
 from aegis_clip.runtime import seed_worker, sha256_file  # noqa: E402
 from aegis_clip.tta import TTA_FUSION_MODES, fuse_paired_logits  # noqa: E402
+from aegis_clip.tta_prior_binding import cache_provenance_block  # noqa: E402
 
 
 @torch.no_grad()
@@ -105,7 +106,7 @@ def main() -> int:
         correction_parts.append(batch["correction_alpha"].float().cpu())
         paths.extend(str(path) for path in batch["path"])
     payload = {
-        "format_version": 1,
+        "format_version": 2,
         "checkpoint": str(checkpoint_path),
         "checkpoint_sha256": sha256_file(checkpoint_path),
         "validation_csv": str(config["data"]["val_csv"]),
@@ -120,6 +121,15 @@ def main() -> int:
         "logits": torch.cat(logits_parts),
         "original_logits": torch.cat(original_parts),
         "flip_logits": torch.cat(flipped_parts),
+        "provenance": cache_provenance_block(
+            paths,
+            config,
+            checkpoint_path,
+            tta="horizontal_flip",
+            fusion=str(args.tta_fusion),
+            temperature=float(args.tta_temperature),
+            training_config_path=args.config,
+        ),
     }
     destination = Path(args.output).resolve()
     destination.parent.mkdir(parents=True, exist_ok=True)
