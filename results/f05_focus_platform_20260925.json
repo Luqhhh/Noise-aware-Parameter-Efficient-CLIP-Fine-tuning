@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "experiment_id": "RM_V5_L05_CUDA_LOCAL",
+  "platform_score_percent": 66.38980878111312,
+  "historical_f05_platform_percent": 65.4711,
+  "delta_vs_f05_pp": 0.91870878111312,
+  "local": {
+    "selected_epoch": 16,
+    "raw_macro": 0.7524970769882202,
+    "raw_micro": 0.7629704475402832,
+    "local_control_C0_raw_macro": 0.744860053062439,
+    "local_control_C0_raw_micro": 0.7548387050628662,
+    "delta_vs_C0_macro_pp": 0.7637023925781252,
+    "delta_vs_C0_micro_pp": 0.8131742477416992
+  },
+  "submission_path_windows": "C:/Users/lqh22/Desktop/RM_V5_L05_CUDA_LOCAL_submission_20260925_183802",
+  "submission_path_repo": "outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/submission",
+  "status": "platform_valid_promoted",
+  "note": "Platform score reported by user after L05 center-only submission; TTA/prior probes pending."
+}
