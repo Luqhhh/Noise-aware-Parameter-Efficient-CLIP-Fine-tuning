@@ -3,7 +3,8 @@
 - artifact_type: implementation record
 - branch: `focus/f05-four-lines`
 - date: 2026-09-25
-- status: **代码已实现、最小检查已通过、单卡 smoke 已跑通；尚未完成 3×3 epoch 正式续训，无新分数，无平台提交**
+- status: **代码已实现、最小检查已通过、单卡 smoke 已跑通；3×3 epoch 正式续训队列已于
+  2026-09-25 22:16 在本机 RTX 4070 上串行启动，结果尚未产出，无新分数，无平台提交**
 - test data use: none（三个候选都不读取测试图；本文件不含任何新预测指标）
 
 ## 0. 已核对的代码基线
@@ -134,6 +135,10 @@ python3 scripts/check_l05_new_candidates.py            # CPU，结果 results/l0
 | NEW03 实质受影响组数 / 样本数 | 1705 / 3527 |
 
 注意 `results/l05_new_candidates.csv` 只有表头，**没有数据行**——正式续训尚未完成。
+
+队列状态：2026-09-25 22:16 已按上面的命令在本机 RTX 4070（单卡、串行）启动，先跑 NEW01。
+每个候选约需数小时（384px、133,815 张、有效 batch 1024），队列结束后
+`results/l05_new_candidates.csv` 会自动写入三行；在那之前本文件不报告任何候选分数。
 
 ## 6. 单卡串行队列
 
