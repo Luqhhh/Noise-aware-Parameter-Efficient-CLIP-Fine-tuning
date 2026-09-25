@@ -24,9 +24,16 @@ from aegis_clip.device import resolve_device, amp_enabled
 from aegis_clip.config import public_config
 from aegis_clip.data import (
     CachedFeatureDataset,
+    GeometryAwareImageDataset,
     OnlineImageDataset,
     TrustBundle,
+    collate_geometry_batch,
     load_class_mapping,
+)
+from aegis_clip.candidate_losses import (
+    build_padded_candidate_tensors,
+    flip_fusion_global_loss,
+    set_generalized_cross_entropy,
 )
 from aegis_clip.evaluation import evaluate, format_metrics
 from aegis_clip.features import FrozenFeatureStore, canonical_sample_path
@@ -220,6 +227,15 @@ def train(
     use_cached = bool(model_config.get("use_cached_training", not visual_peft))
     if visual_peft and use_cached:
         raise ValueError("Visual PEFT cannot use cached-only training")
+    attention_local_section = config["loss"].get("attention_local_training", {})
+    roi_source = str(attention_local_section.get("roi_source", "model_input"))
+    if roi_source not in {"model_input", "original"}:
+        raise ValueError(f"Unsupported attention_local_training.roi_source: {roi_source}")
+    geometry_enabled = bool(attention_local_section.get("enabled", False)) and (
+        roi_source == "original"
+    )
+    if geometry_enabled and use_cached:
+        raise ValueError("Original-image ROI local views require online images")
     train_dataset = _build_dataset(
         use_cached=use_cached,
         split_csv=data_config["train_csv"],
@@ -227,6 +243,7 @@ def train(
         preprocess=train_preprocess,
         feature_store=feature_store,
         trust_bundle=trust_bundle,
+        geometry=geometry_enabled,
     )
     val_dataset = _build_dataset(
         use_cached=not visual_peft,
@@ -390,6 +407,7 @@ def train(
             sampler=train_sampler,
             generator=generator if train_sampler is None else None,
             drop_last=False,
+            collate_fn=collate_geometry_batch if geometry_enabled else None,
             **loader_options,
         )
 
@@ -523,6 +541,78 @@ def train(
     attention_local_confidence_gate = float(
         attention_local_config.get("confidence_gate", 0.0)
     )
+    # NEW01: the local view is re-extracted from the original RGB image using the
+    # RRC/resize/flip geometry recorded by the dataset.
+    roi_normalize = None
+    if geometry_enabled:
+        tail = list(getattr(train_preprocess, "transforms", []))
+        if not tail:
+            raise ValueError("Original-image ROI requires a normalizing tail transform")
+        roi_normalize = tail[-1]
+
+    # NEW02: supervise the same flip-mean-probability structure the inference
+    # package uses, without any prior bias and without a temperature scan.
+    flip_fusion_config = config["loss"].get("flip_fusion", {})
+    flip_fusion_enabled = bool(flip_fusion_config.get("enabled", False))
+    flip_fusion_q = float(flip_fusion_config.get("q", config["loss"].get("gce_q", 0.5)))
+    flip_fusion_temperature = float(flip_fusion_config.get("temperature", 1.4))
+
+    # NEW03: cross-label exact-duplicate groups are supervised by their candidate
+    # label set instead of being weight-zeroed.
+    set_supervision_config = config["loss"].get("set_supervision", {})
+    set_supervision_enabled = bool(set_supervision_config.get("enabled", False))
+    set_supervision_q = float(
+        set_supervision_config.get("q", config["loss"].get("gce_q", 0.5))
+    )
+    candidate_index: torch.Tensor | None = None
+    candidate_mask: torch.Tensor | None = None
+    group_weight: torch.Tensor | None = None
+    if set_supervision_enabled:
+        from aegis_clip.duplicate_sets import load_candidate_label_sets
+
+        sidecar_path = set_supervision_config.get("candidate_labels_path")
+        if not sidecar_path:
+            raise ValueError(
+                "loss.set_supervision requires candidate_labels_path (a sidecar)"
+            )
+        candidate_labels = load_candidate_label_sets(sidecar_path)
+        candidate_index, candidate_mask, group_weight = build_padded_candidate_tensors(
+            train_dataset.paths, candidate_labels, num_classes=num_classes
+        )
+        candidate_index = candidate_index.to(device)
+        candidate_mask = candidate_mask.to(device)
+        group_weight = group_weight.to(device)
+        logger.info(
+            "Set supervision active | affected_samples=%d | max_set_size=%d",
+            int((group_weight < 1.0).sum()),
+            int(candidate_index.shape[1]),
+        )
+    if flip_fusion_enabled or set_supervision_enabled:
+        if float(config["loss"].get("mixup_probability", 0.0)) > 0.0 or float(
+            config["loss"].get("cutmix_probability", 0.0)
+        ) > 0.0:
+            raise ValueError(
+                "flip_fusion/set_supervision require mixup and cutmix disabled"
+            )
+        incompatible = []
+        for section in (
+            "clean_routing",
+            "prototype_contrastive",
+            "dynamic_trust",
+            "elr",
+            "active_forgetting",
+        ):
+            if bool(config.get(section, {}).get("enabled", False)):
+                incompatible.append(section)
+        for section in ("dual_gce", "snscl"):
+            if bool(config["loss"].get(section, {}).get("enabled", False)):
+                incompatible.append(section)
+        if incompatible:
+            raise ValueError(
+                f"flip_fusion/set_supervision are incompatible with: {sorted(incompatible)}"
+            )
+    if flip_fusion_enabled and geometry_enabled:
+        logger.info("NEW01 + NEW02 combined: original-image ROI + flip-fusion objective")
 
     routing_config = config.get("clean_routing", {})
     routing_enabled = bool(routing_config.get("enabled", False))
@@ -1070,13 +1160,48 @@ def train(
                 training_logits = class_prior_adjusted_logits(
                     logits, class_counts, prior_tau
                 )
-                per_sample = _per_sample_loss(
-                    training_logits,
-                    mixed_targets,
-                    config["loss"],
-                    epoch,
-                    batch_suspicious,
-                )
+                batch_candidate_index = None
+                batch_candidate_mask = None
+                effective_weights = mixed_weights
+                if set_supervision_enabled:
+                    if input_key != "images" or mix_lambda != 1.0:
+                        raise ValueError(
+                            "set_supervision requires unmixed online images"
+                        )
+                    batch_candidate_index = candidate_index[batch_indices]
+                    batch_candidate_mask = candidate_mask[batch_indices]
+                    effective_weights = mixed_weights * group_weight[batch_indices]
+                    per_sample = set_generalized_cross_entropy(
+                        F.softmax(training_logits.float(), dim=1),
+                        batch_candidate_index,
+                        batch_candidate_mask,
+                        q=set_supervision_q,
+                    )
+                elif flip_fusion_enabled:
+                    if input_key != "images" or mix_lambda != 1.0:
+                        raise ValueError("flip_fusion requires unmixed online images")
+                    flip_arguments = dict(arguments)
+                    flip_arguments[forward_key] = torch.flip(
+                        forward_inputs, dims=(3,)
+                    )
+                    logits_flipped, _ = model(**flip_arguments, return_features=True)
+                    per_sample, _flip_diagnostics = flip_fusion_global_loss(
+                        training_logits,
+                        class_prior_adjusted_logits(
+                            logits_flipped, class_counts, prior_tau
+                        ),
+                        mixed_targets,
+                        q=flip_fusion_q,
+                        temperature=flip_fusion_temperature,
+                    )
+                else:
+                    per_sample = _per_sample_loss(
+                        training_logits,
+                        mixed_targets,
+                        config["loss"],
+                        epoch,
+                        batch_suspicious,
+                    )
                 if cyclic_enabled:
                     per_sample, cyclic_delta = smoothstep_damped_loss(
                         per_sample,
@@ -1095,8 +1220,8 @@ def train(
                 if adaptive_cap is not None and epoch >= cap_start:
                     per_sample = adaptive_cap(per_sample, trusted_loss_mask)
                 classification_loss = (
-                    per_sample * mixed_weights
-                ).sum() / mixed_weights.sum().clamp_min(1.0e-8)
+                    per_sample * effective_weights
+                ).sum() / effective_weights.sum().clamp_min(1.0e-8)
                 loss = classification_loss
                 local_classification_value = logits.new_zeros(())
                 local_consistency_value = logits.new_zeros(())
@@ -1114,27 +1239,70 @@ def train(
                         _, _, patch_attention = logits_with_last_block_attention(
                             model, original_inputs
                         )
-                        local_inputs = attention_guided_crop(
-                            original_inputs,
-                            patch_attention.detach(),
-                            crop_size=int(
-                                attention_local_config.get("crop_size", 160)
-                            ),
-                            top_patches=int(
-                                attention_local_config.get("top_patches", 5)
-                            ),
-                        )
+                        if geometry_enabled:
+                            from aegis_clip.original_roi import (
+                                attention_crop_box,
+                                original_roi_batch,
+                            )
+
+                            local_box = attention_crop_box(
+                                patch_attention.detach(),
+                                crop_size=int(
+                                    attention_local_config.get("crop_size", 160)
+                                ),
+                                top_patches=int(
+                                    attention_local_config.get("top_patches", 5)
+                                ),
+                                height=int(original_inputs.shape[-2]),
+                                width=int(original_inputs.shape[-1]),
+                            )
+                            batch_geometry = batch["geometry"].to(
+                                device, non_blocking=True
+                            ).float()
+                            # original_roi_batch maps the global-input box back to
+                            # the original image internally (it already un-flips).
+                            local_inputs = original_roi_batch(
+                                batch["originals"].to(device, non_blocking=True),
+                                batch["original_sizes"].to(device, non_blocking=True),
+                                batch_geometry,
+                                local_box,
+                                out_size=int(original_inputs.shape[-1]),
+                                normalize=roi_normalize,
+                            )
+                            totals["attention_local_original_roi_examples"] = (
+                                totals.get("attention_local_original_roi_examples", 0)
+                                + int(local_inputs.shape[0])
+                            )
+                        else:
+                            local_inputs = attention_guided_crop(
+                                original_inputs,
+                                patch_attention.detach(),
+                                crop_size=int(
+                                    attention_local_config.get("crop_size", 160)
+                                ),
+                                top_patches=int(
+                                    attention_local_config.get("top_patches", 5)
+                                ),
+                            )
                     local_logits = model(images=local_inputs)
                     local_training_logits = class_prior_adjusted_logits(
                         local_logits, class_counts, prior_tau
                     )
-                    local_per_sample = _per_sample_loss(
-                        local_training_logits,
-                        targets,
-                        config["loss"],
-                        epoch,
-                        batch_suspicious,
-                    )
+                    if set_supervision_enabled:
+                        local_per_sample = set_generalized_cross_entropy(
+                            F.softmax(local_training_logits.float(), dim=1),
+                            batch_candidate_index,
+                            batch_candidate_mask,
+                            q=set_supervision_q,
+                        )
+                    else:
+                        local_per_sample = _per_sample_loss(
+                            local_training_logits,
+                            targets,
+                            config["loss"],
+                            epoch,
+                            batch_suspicious,
+                        )
                     global_confidence = F.softmax(
                         training_logits.detach().float(), dim=1
                     ).max(dim=1).values
@@ -1152,8 +1320,8 @@ def train(
                         (~fallback_mask).sum()
                     )
                     local_classification_value = (
-                        local_per_sample * weights
-                    ).sum() / weights.sum().clamp_min(1.0e-8)
+                        local_per_sample * effective_weights
+                    ).sum() / effective_weights.sum().clamp_min(1.0e-8)
                     local_weight = float(
                         attention_local_config.get(
                             "local_supervision_weight", 0.5
@@ -1718,6 +1886,15 @@ def train(
                     denominator=mixed_weights.sum().clamp_min(1.0e-8).detach())
             if is_update_step:
                 global_step += 1
+            max_steps = int(train_config.get("max_steps", 0) or 0)
+            if max_steps and global_step >= max_steps:
+                logger.warning(
+                    "train.max_steps=%d reached at global_step=%d; ending the epoch "
+                    "early. This is an implementation smoke, not a budgeted run.",
+                    max_steps,
+                    global_step,
+                )
+                break
             log_every = int(train_config.get("log_every_steps", 0))
             if (
                 log_every
@@ -2155,9 +2332,14 @@ def _build_dataset(
     preprocess: Any,
     feature_store: FrozenFeatureStore,
     trust_bundle: TrustBundle | None,
+    geometry: bool = False,
 ) -> torch.utils.data.Dataset:
     if use_cached:
         return CachedFeatureDataset(split_csv, feature_store, trust_bundle)
+    if geometry:
+        return GeometryAwareImageDataset(
+            split_csv, image_root, preprocess, feature_store, trust_bundle
+        )
     return OnlineImageDataset(
         split_csv, image_root, preprocess, feature_store, trust_bundle
     )

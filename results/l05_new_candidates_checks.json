@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "device": "cpu",
+  "test_data_used": false,
+  "new01_geometry": {
+    "samples": 3,
+    "box_valid": true,
+    "roi_shape": [
+      3,
+      3,
+      384,
+      384
+    ],
+    "original_sizes": [
+      [
+        800,
+        800
+      ],
+      [
+        956,
+        1300
+      ],
+      [
+        644,
+        500
+      ]
+    ],
+    "max_abs_delta_vs_downscaled_recrop": 1.0,
+    "changed": true,
+    "active_local_samples": 3
+  },
+  "new02_flip_fusion": {
+    "both_branches_grad_nonzero": true,
+    "p_mix_is_mean": true,
+    "loss_finite": true
+  },
+  "new03_set_supervision": {
+    "sidecar": "/home/lux1/noise/worktrees/rematch750_f05_focus/artifacts/l05_new_candidates/NEW03_candidate_labels.json",
+    "num_conflict_groups": 1705,
+    "num_conflict_samples": 3527,
+    "non_singleton_samples": 3527,
+    "sets_sorted_unique": true,
+    "singleton_equals_gce": true
+  },
+  "gradient_probe": null
+}

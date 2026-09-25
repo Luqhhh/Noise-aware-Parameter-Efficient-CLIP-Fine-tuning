@@ -5,13 +5,15 @@ from __future__ import annotations
 import json
 import hashlib
 import io
+import math
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 import pandas as pd
 import torch
 from PIL import Image, ImageFile
 from torch.utils.data import Dataset
+from torch.utils.data._utils.collate import default_collate
 
 from aegis_clip.features import FrozenFeatureStore, canonical_sample_path
 
@@ -182,6 +184,216 @@ class OnlineImageDataset(Dataset):
         }
         item.update(_trust_values(self.trust_bundle, relative_path, label))
         return item
+
+
+class GeometryAwareImageDataset(Dataset):
+    """Online image dataset that also returns the original RGB and its geometry.
+
+    NEW01 needs the *original* image so the local view can be re-extracted at the
+    native resolution instead of being upscaled from the already-downscaled model
+    input.  The global view is built by exactly the same recipe as
+    :class:`OnlineImageDataset` (RandomResizedCrop -> RandomHorizontalFlip ->
+    CLIP tensor conversion and normalization), but the sampled crop ``(i, j, h, w)``
+    and the flip flag are recorded so the local attention box can be mapped back
+    to original-image coordinates.
+
+    ``geometry`` is a float32 vector ``(H0, W0, i, j, h, w, flip, S)``:
+    the original height/width, the RRC top/left/crop-height/crop-width in original
+    pixels, the flip flag, and the model input size ``S``.
+    """
+
+    def __init__(
+        self,
+        split_csv: str | Path,
+        image_root: str | Path,
+        preprocess: Callable,
+        feature_store: FrozenFeatureStore,
+        trust_bundle: TrustBundle | None = None,
+    ) -> None:
+        self.frame = _load_split(split_csv)
+        self.paths = self.frame["image_path"].astype(str).tolist()
+        self.labels = self.frame["label"].astype(int).tolist()
+        self.image_root = Path(image_root)
+        self.transform = preprocess
+        self.feature_store = feature_store
+        self.trust_bundle = trust_bundle
+        (
+            self.rrc_size,
+            self.rrc_scale,
+            self.rrc_ratio,
+            self.rrc_interpolation,
+            self.flip_probability,
+            self.tail_transform,
+        ) = split_geometry_augmentation(preprocess)
+        feature_store.verify_coverage(self.paths)
+        if trust_bundle is not None:
+            trust_bundle.verify_coverage(self.paths)
+
+    def __len__(self) -> int:
+        return len(self.paths)
+
+    def __getitem__(self, index: int) -> dict[str, torch.Tensor | str]:
+        relative_path = self.paths[index]
+        label = self.labels[index]
+        absolute_path = resolve_image_path(self.image_root, relative_path)
+        try:
+            source = absolute_path
+            if "file_sha256" in self.frame.columns:
+                ImageFile.LOAD_TRUNCATED_IMAGES = False
+                raw = absolute_path.read_bytes()
+                if hashlib.sha256(raw).hexdigest() != self.frame.iloc[index]["file_sha256"]:
+                    raise ValueError("Training image changed after stage audit")
+                source = io.BytesIO(raw)
+            with Image.open(source) as image:
+                image = image.convert("RGB")
+                width, height = image.size
+                top, left, crop_height, crop_width = _sample_rrc_params(
+                    height,
+                    width,
+                    self.rrc_scale,
+                    self.rrc_ratio,
+                )
+                crop = _resized_crop(
+                    image,
+                    top,
+                    left,
+                    crop_height,
+                    crop_width,
+                    self.rrc_size,
+                    self.rrc_interpolation,
+                )
+                flip = bool(torch.rand(()).item() < self.flip_probability)
+                if flip:
+                    crop = _hflip(crop)
+                tensor = self.tail_transform(crop)
+                original = _pil_to_tensor(image)
+        except Exception as exc:
+            raise RuntimeError(f"Failed to decode training image: {absolute_path}") from exc
+        item: dict[str, torch.Tensor | str] = {
+            "images": tensor,
+            "original": original,
+            "geometry": torch.tensor(
+                [
+                    float(height),
+                    float(width),
+                    float(top),
+                    float(left),
+                    float(crop_height),
+                    float(crop_width),
+                    1.0 if flip else 0.0,
+                    float(self.rrc_size[0]),
+                ],
+                dtype=torch.float32,
+            ),
+            "reference_features": self.feature_store.get(relative_path),
+            "index": torch.tensor(index, dtype=torch.long),
+            "label": torch.tensor(label, dtype=torch.long),
+            "path": canonical_sample_path(relative_path),
+        }
+        item.update(_trust_values(self.trust_bundle, relative_path, label))
+        return item
+
+
+def split_geometry_augmentation(preprocess: Callable) -> tuple:
+    """Split a geometry-aware training transform into (params, tail)."""
+    from torchvision.transforms import Compose, RandomHorizontalFlip, RandomResizedCrop
+
+    transforms = list(getattr(preprocess, "transforms", []))
+    rrc = next((t for t in transforms if isinstance(t, RandomResizedCrop)), None)
+    if rrc is None:
+        raise ValueError(
+            "Geometry-aware training requires a RandomResizedCrop in the transform"
+        )
+    flip = next((t for t in transforms if isinstance(t, RandomHorizontalFlip)), None)
+    tail = [t for t in transforms if t is not rrc and t is not flip]
+    if not tail:
+        raise ValueError("Geometry-aware training requires tensor/normalize transforms")
+    size = rrc.size if isinstance(rrc.size, (tuple, list)) else (rrc.size, rrc.size)
+    return (
+        (int(size[0]), int(size[1])),
+        (float(rrc.scale[0]), float(rrc.scale[1])),
+        (float(rrc.ratio[0]), float(rrc.ratio[1])),
+        rrc.interpolation,
+        float(flip.p) if flip is not None else 0.0,
+        Compose(tail),
+    )
+
+
+def _sample_rrc_params(
+    height: int,
+    width: int,
+    scale: tuple[float, float],
+    ratio: tuple[float, float],
+) -> tuple[int, int, int, int]:
+    """Replicate torchvision RandomResizedCrop.get_params with the torch RNG."""
+    area = height * width
+    log_ratio = (math.log(ratio[0]), math.log(ratio[1]))
+    for _ in range(10):
+        target_area = area * float(torch.empty(1).uniform_(scale[0], scale[1]).item())
+        aspect_ratio = math.exp(
+            float(torch.empty(1).uniform_(log_ratio[0], log_ratio[1]).item())
+        )
+        crop_width = int(round(math.sqrt(target_area * aspect_ratio)))
+        crop_height = int(round(math.sqrt(target_area / aspect_ratio)))
+        if 0 < crop_width <= width and 0 < crop_height <= height:
+            top = int(torch.randint(0, height - crop_height + 1, size=(1,)).item())
+            left = int(torch.randint(0, width - crop_width + 1, size=(1,)).item())
+            return top, left, crop_height, crop_width
+    in_ratio = float(width) / float(height)
+    if in_ratio < ratio[0]:
+        crop_width = width
+        crop_height = int(round(crop_width / ratio[0]))
+    elif in_ratio > ratio[1]:
+        crop_height = height
+        crop_width = int(round(crop_height * ratio[1]))
+    else:
+        crop_width = width
+        crop_height = height
+    return (height - crop_height) // 2, (width - crop_width) // 2, crop_height, crop_width
+
+
+def _resized_crop(image, top, left, height, width, size, interpolation):
+    from torchvision.transforms import functional as TF
+
+    return TF.resized_crop(image, top, left, height, width, list(size), interpolation)
+
+
+def _hflip(image):
+    from torchvision.transforms import functional as TF
+
+    return TF.hflip(image)
+
+
+def _pil_to_tensor(image) -> torch.Tensor:
+    from torchvision.transforms import functional as TF
+
+    return TF.pil_to_tensor(image)
+
+
+def collate_geometry_batch(batch: list[dict[str, Any]]) -> dict[str, Any]:
+    """Collate a geometry batch, zero-padding variable-size originals.
+
+    Only the current batch's originals are kept; the true sizes travel alongside
+    so the ROI crop is bounded by the real image extent, not the padding.
+    """
+    originals = [item["original"] for item in batch]
+    max_height = max(int(o.shape[1]) for o in originals)
+    max_width = max(int(o.shape[2]) for o in originals)
+    padded = torch.zeros(
+        len(batch), 3, max_height, max_width, dtype=originals[0].dtype
+    )
+    sizes = torch.zeros(len(batch), 2, dtype=torch.long)
+    for row, original in enumerate(originals):
+        height, width = int(original.shape[1]), int(original.shape[2])
+        padded[row, :, :height, :width] = original
+        sizes[row, 0] = height
+        sizes[row, 1] = width
+    collated = default_collate(
+        [{key: value for key, value in item.items() if key != "original"} for item in batch]
+    )
+    collated["originals"] = padded
+    collated["original_sizes"] = sizes
+    return collated
 
 
 class TestImageDataset(Dataset):
