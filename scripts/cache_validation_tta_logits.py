@@ -78,6 +78,8 @@ def main() -> int:
     model.eval()
     use_amp = bool(config["train"].get("amp", True)) and device.type == "cuda"
     logits_parts = []
+    original_parts = []
+    flipped_parts = []
     labels_parts = []
     clean_parts = []
     pseudo_parts = []
@@ -95,6 +97,8 @@ def main() -> int:
             temperature=float(args.tta_temperature),
         )
         logits_parts.append(fused.cpu())
+        original_parts.append(first.detach().float().cpu())
+        flipped_parts.append(second.detach().float().cpu())
         labels_parts.append(batch["label"].long().cpu())
         clean_parts.append(batch["clean_probability"].float().cpu())
         pseudo_parts.append(batch["pseudo_label"].long().cpu())
@@ -114,6 +118,8 @@ def main() -> int:
         "pseudo_labels": torch.cat(pseudo_parts),
         "correction_alpha": torch.cat(correction_parts),
         "logits": torch.cat(logits_parts),
+        "original_logits": torch.cat(original_parts),
+        "flip_logits": torch.cat(flipped_parts),
     }
     destination = Path(args.output).resolve()
     destination.parent.mkdir(parents=True, exist_ok=True)

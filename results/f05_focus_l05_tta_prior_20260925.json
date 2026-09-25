@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "experiment_id": "RM_V5_L05_CUDA_LOCAL",
+  "candidate": "L05_T14_P060",
+  "selection": {
+    "tta_temperature": 1.4,
+    "prior_strength": 0.6,
+    "selection_basis": "best local raw_micro on expanded T x prior grid; T=1.4 neighborhood is a plateau"
+  },
+  "local_validation": {
+    "center_raw_macro": 0.7524970769882202,
+    "center_raw_micro": 0.7629704475402832,
+    "selected_raw_macro": 0.758265,
+    "selected_raw_micro": 0.766532,
+    "delta_macro_pp": 0.5768,
+    "delta_micro_pp": 0.3562
+  },
+  "grid": {
+    "temperatures": [
+      1.0,
+      1.1,
+      1.2,
+      1.3,
+      1.4,
+      1.5
+    ],
+    "strengths": [
+      0.25,
+      0.5,
+      0.6,
+      0.7,
+      0.75,
+      0.8,
+      0.9,
+      1.0
+    ],
+    "top10": [
+      {
+        "temperature": 1.4,
+        "strength": 0.7,
+        "raw_macro": 0.7585740685462952,
+        "raw_micro": 0.7661290168762207,
+        "changed_predictions_vs_raw": 718,
+        "bias_fit_iterations": 50
+      },
+      {
+        "temperature": 1.4,
+        "strength": 0.6,
+        "raw_macro": 0.7582651376724243,
+        "raw_micro": 0.7665322422981262,
+        "changed_predictions_vs_raw": 604,
+        "bias_fit_iterations": 50
+      },
+      {
+        "temperature": 1.4,
+        "strength": 0.75,
+        "raw_macro": 0.758243978023529,
+        "raw_micro": 0.7655913829803467,
+        "changed_predictions_vs_raw": 756,
+        "bias_fit_iterations": 50
+      },
+      {
+        "temperature": 1.1,
+        "strength": 0.5,
+        "raw_macro": 0.7581480145454407,
+        "raw_micro": 0.7664650678634644,
+        "changed_predictions_vs_raw": 600,
+        "bias_fit_iterations": 50
+      },
+      {
+        "temperature": 1.5,
+        "strength": 0.75,
+        "raw_macro": 0.7581028938293457,
+        "raw_micro": 0.7655913829803467,
+        "changed_predictions_vs_raw": 727,
+        "bias_fit_iterations": 50
+      },
+      {
+        "temperature": 1.0,
+        "strength": 0.5,
+        "raw_macro": 0.758091390132904,
+        "raw_micro": 0.7661962509155273,
+        "changed_predictions_vs_raw": 651,
+        "bias_fit_iterations": 50
+      },
+      {
+        "temperature": 1.3,
+        "strength": 0.6,
+        "raw_macro": 0.7580838203430176,
+        "raw_micro": 0.7661290168762207,
+        "changed_predictions_vs_raw": 638,
+        "bias_fit_iterations": 50
+      },
+      {
+        "temperature": 1.3,
+        "strength": 0.7,
+        "raw_macro": 0.7580432891845703,
+        "raw_micro": 0.7653898000717163,
+        "changed_predictions_vs_raw": 748,
+        "bias_fit_iterations": 50
+      },
+      {
+        "temperature": 1.2,
+        "strength": 0.5,
+        "raw_macro": 0.7579540014266968,
+        "raw_micro": 0.7663306593894958,
+        "changed_predictions_vs_raw": 572,
+        "bias_fit_iterations": 50
+      },
+      {
+        "temperature": 1.2,
+        "strength": 0.7,
+        "raw_macro": 0.7578800320625305,
+        "raw_micro": 0.7650537490844727,
+        "changed_predictions_vs_raw": 788,
+        "bias_fit_iterations": 50
+      }
+    ]
+  },
+  "package": {
+    "repo_path": "outputs/f05_focus_l05/L05_T14_P060",
+    "desktop_path_windows": "C:/Users/lqh22/Desktop/L05_L05_T14_P060_20260925_192721",
+    "pred_results_csv_sha256": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
+    "submission_zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f",
+    "check_submission_passed": true,
+    "platform_submitted": false,
+    "status": "ready_for_platform_decision"
+  },
+  "note": "Single TTA+prior candidate generated locally; no platform upload performed."
+}

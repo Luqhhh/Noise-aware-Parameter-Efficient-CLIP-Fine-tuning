@@ -1,0 +1,407 @@
+{
+  "selector_metric": "raw_macro",
+  "temperatures": [
+    1.0,
+    1.1,
+    1.2,
+    1.3,
+    1.4,
+    1.5
+  ],
+  "strengths": [
+    0.25,
+    0.5,
+    0.6,
+    0.7,
+    0.75,
+    0.8,
+    0.9,
+    1.0
+  ],
+  "grid": [
+    {
+      "temperature": 1.4,
+      "strength": 0.7,
+      "raw_macro": 0.7585740685462952,
+      "raw_micro": 0.7661290168762207,
+      "changed_predictions_vs_raw": 718,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.4,
+      "strength": 0.6,
+      "raw_macro": 0.7582651376724243,
+      "raw_micro": 0.7665322422981262,
+      "changed_predictions_vs_raw": 604,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.4,
+      "strength": 0.75,
+      "raw_macro": 0.758243978023529,
+      "raw_micro": 0.7655913829803467,
+      "changed_predictions_vs_raw": 756,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.1,
+      "strength": 0.5,
+      "raw_macro": 0.7581480145454407,
+      "raw_micro": 0.7664650678634644,
+      "changed_predictions_vs_raw": 600,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.5,
+      "strength": 0.75,
+      "raw_macro": 0.7581028938293457,
+      "raw_micro": 0.7655913829803467,
+      "changed_predictions_vs_raw": 727,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.0,
+      "strength": 0.5,
+      "raw_macro": 0.758091390132904,
+      "raw_micro": 0.7661962509155273,
+      "changed_predictions_vs_raw": 651,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.3,
+      "strength": 0.6,
+      "raw_macro": 0.7580838203430176,
+      "raw_micro": 0.7661290168762207,
+      "changed_predictions_vs_raw": 638,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.3,
+      "strength": 0.7,
+      "raw_macro": 0.7580432891845703,
+      "raw_micro": 0.7653898000717163,
+      "changed_predictions_vs_raw": 748,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.2,
+      "strength": 0.5,
+      "raw_macro": 0.7579540014266968,
+      "raw_micro": 0.7663306593894958,
+      "changed_predictions_vs_raw": 572,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.2,
+      "strength": 0.7,
+      "raw_macro": 0.7578800320625305,
+      "raw_micro": 0.7650537490844727,
+      "changed_predictions_vs_raw": 788,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.3,
+      "strength": 0.5,
+      "raw_macro": 0.7578268051147461,
+      "raw_micro": 0.7662634253501892,
+      "changed_predictions_vs_raw": 546,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.2,
+      "strength": 0.6,
+      "raw_macro": 0.7577439546585083,
+      "raw_micro": 0.7657257914543152,
+      "changed_predictions_vs_raw": 679,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.4,
+      "strength": 0.5,
+      "raw_macro": 0.7576755285263062,
+      "raw_micro": 0.7663978338241577,
+      "changed_predictions_vs_raw": 502,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.5,
+      "strength": 0.7,
+      "raw_macro": 0.7576084136962891,
+      "raw_micro": 0.7656586170196533,
+      "changed_predictions_vs_raw": 686,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.5,
+      "strength": 0.6,
+      "raw_macro": 0.7575209736824036,
+      "raw_micro": 0.7658601999282837,
+      "changed_predictions_vs_raw": 574,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.5,
+      "strength": 0.8,
+      "raw_macro": 0.7575019598007202,
+      "raw_micro": 0.7647849321365356,
+      "changed_predictions_vs_raw": 775,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.1,
+      "strength": 0.7,
+      "raw_macro": 0.7574982643127441,
+      "raw_micro": 0.7644489407539368,
+      "changed_predictions_vs_raw": 853,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.3,
+      "strength": 0.75,
+      "raw_macro": 0.7574841976165771,
+      "raw_micro": 0.7645833492279053,
+      "changed_predictions_vs_raw": 791,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.5,
+      "strength": 0.5,
+      "raw_macro": 0.7574685215950012,
+      "raw_micro": 0.7662634253501892,
+      "changed_predictions_vs_raw": 481,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.1,
+      "strength": 0.6,
+      "raw_macro": 0.7574509382247925,
+      "raw_micro": 0.7652553915977478,
+      "changed_predictions_vs_raw": 725,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.2,
+      "strength": 0.75,
+      "raw_macro": 0.7572669982910156,
+      "raw_micro": 0.7641128897666931,
+      "changed_predictions_vs_raw": 847,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.4,
+      "strength": 0.8,
+      "raw_macro": 0.7572473883628845,
+      "raw_micro": 0.7643145322799683,
+      "changed_predictions_vs_raw": 814,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.0,
+      "strength": 0.6,
+      "raw_macro": 0.7571148872375488,
+      "raw_micro": 0.7648521661758423,
+      "changed_predictions_vs_raw": 770,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.2,
+      "strength": 0.8,
+      "raw_macro": 0.7570776343345642,
+      "raw_micro": 0.7637096643447876,
+      "changed_predictions_vs_raw": 910,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.1,
+      "strength": 0.75,
+      "raw_macro": 0.7569643259048462,
+      "raw_micro": 0.7636424899101257,
+      "changed_predictions_vs_raw": 905,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.0,
+      "strength": 0.7,
+      "raw_macro": 0.7568178772926331,
+      "raw_micro": 0.7635752558708191,
+      "changed_predictions_vs_raw": 909,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.3,
+      "strength": 0.8,
+      "raw_macro": 0.7567570209503174,
+      "raw_micro": 0.7636424899101257,
+      "changed_predictions_vs_raw": 842,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.2,
+      "strength": 0.25,
+      "raw_macro": 0.75673907995224,
+      "raw_micro": 0.7661962509155273,
+      "changed_predictions_vs_raw": 288,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.3,
+      "strength": 0.25,
+      "raw_macro": 0.7566639184951782,
+      "raw_micro": 0.7661962509155273,
+      "changed_predictions_vs_raw": 275,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.0,
+      "strength": 0.75,
+      "raw_macro": 0.7566100358963013,
+      "raw_micro": 0.7631048560142517,
+      "changed_predictions_vs_raw": 974,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.1,
+      "strength": 0.25,
+      "raw_macro": 0.7565280795097351,
+      "raw_micro": 0.7659946084022522,
+      "changed_predictions_vs_raw": 308,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.1,
+      "strength": 0.8,
+      "raw_macro": 0.7564479112625122,
+      "raw_micro": 0.7628360390663147,
+      "changed_predictions_vs_raw": 967,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.0,
+      "strength": 0.25,
+      "raw_macro": 0.7564102411270142,
+      "raw_micro": 0.7658601999282837,
+      "changed_predictions_vs_raw": 330,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.4,
+      "strength": 0.25,
+      "raw_macro": 0.7562605142593384,
+      "raw_micro": 0.7658601999282837,
+      "changed_predictions_vs_raw": 253,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.4,
+      "strength": 0.9,
+      "raw_macro": 0.7561930418014526,
+      "raw_micro": 0.7629032135009766,
+      "changed_predictions_vs_raw": 916,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.5,
+      "strength": 0.9,
+      "raw_macro": 0.7561041116714478,
+      "raw_micro": 0.7629704475402832,
+      "changed_predictions_vs_raw": 871,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.5,
+      "strength": 0.25,
+      "raw_macro": 0.7560123801231384,
+      "raw_micro": 0.7656586170196533,
+      "changed_predictions_vs_raw": 244,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.0,
+      "strength": 0.8,
+      "raw_macro": 0.7559937238693237,
+      "raw_micro": 0.7623655796051025,
+      "changed_predictions_vs_raw": 1026,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.3,
+      "strength": 0.9,
+      "raw_macro": 0.7557947039604187,
+      "raw_micro": 0.762231171131134,
+      "changed_predictions_vs_raw": 967,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.2,
+      "strength": 0.9,
+      "raw_macro": 0.7555686235427856,
+      "raw_micro": 0.7617607712745667,
+      "changed_predictions_vs_raw": 1023,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.4,
+      "strength": 1.0,
+      "raw_macro": 0.7552276849746704,
+      "raw_micro": 0.7615591287612915,
+      "changed_predictions_vs_raw": 1012,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.1,
+      "strength": 0.9,
+      "raw_macro": 0.7550373673439026,
+      "raw_micro": 0.7610214948654175,
+      "changed_predictions_vs_raw": 1076,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.5,
+      "strength": 1.0,
+      "raw_macro": 0.7548596858978271,
+      "raw_micro": 0.7614919543266296,
+      "changed_predictions_vs_raw": 975,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.3,
+      "strength": 1.0,
+      "raw_macro": 0.7545791864395142,
+      "raw_micro": 0.7606855034828186,
+      "changed_predictions_vs_raw": 1073,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.2,
+      "strength": 1.0,
+      "raw_macro": 0.7544896602630615,
+      "raw_micro": 0.7596774101257324,
+      "changed_predictions_vs_raw": 1133,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.1,
+      "strength": 1.0,
+      "raw_macro": 0.7541733384132385,
+      "raw_micro": 0.7588037848472595,
+      "changed_predictions_vs_raw": 1219,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.0,
+      "strength": 0.9,
+      "raw_macro": 0.7539017200469971,
+      "raw_micro": 0.7596102356910706,
+      "changed_predictions_vs_raw": 1176,
+      "bias_fit_iterations": 50
+    },
+    {
+      "temperature": 1.0,
+      "strength": 1.0,
+      "raw_macro": 0.7533602118492126,
+      "raw_micro": 0.757594108581543,
+      "changed_predictions_vs_raw": 1309,
+      "bias_fit_iterations": 50
+    }
+  ]
+}
