@@ -1,4 +1,4 @@
-# L05 训练侧 logit 幅度惩罚（预注册）
+# L05 训练侧 logit 幅度惩罚（预注册与实测，已关闭）
 
 实验 `L05_LOGIT_PENALTY_20260926`，分支 `codex/l05_logit_penalty`，基于main `1ea4cf7`。
 开始前fetch全部分支，核对V4/V5所有训练机制、focus及现有候选，未发现spectral decoupling/
@@ -66,10 +66,54 @@ formal的model/data/train/loss/evaluation/trust与MS00逐项一致。
 进程记录不是完成证据，正式结果待验证；当前只推送方案分支，不合并未验证结果到main。
 
 
-## 2026-09-27 00:24运行检查（非方法结果）
+## 2026-09-27 00:24运行检查（历史快照，非方法结果）
 
 smoke两次更新、14,880张中心验证及原生重载完成，penalty calls=4/examples=16，
 累计penalty_sum=0.3607485592；checkpoint/sidecar SHA复核通过。
 正式epoch0复现L05中心macro/micro=75.2497%/76.2970%，原队列自动启动正式训练，
 累计59/262次更新全部成功；driver215110、child215869仍存活，未观察到训练错误。
 尚无正式完整验证/解码结果，不将smoke数值当作方法成绩。下一次约00:54检查。
+
+
+## 最终实测（2026-09-27）
+
+原队列正常完成，262/262次更新全部成功，未触发止损。按center raw macro选择epoch1：
+epoch1 macro/micro=75.2842%/76.3105%；epoch2=75.2670%/76.3105%。
+最佳checkpoint原生重载中心验证及独立进程的14,880张val双分支缓存生成均完成。
+
+| 固定Flip/T1.4/prior0.60 | macro | micro | 对L05 Δmacro/Δmicro |
+|---|---:|---:|---|
+| 现役L05 | 75.8265% | 76.6532% | — |
+| 复用MS00普通续训 | 75.7948% | 76.6129% | −0.0317pp / −0.0403pp |
+| SD01 logit惩罚 | 75.8253% | 76.6465% | −0.0012pp / −0.0067pp |
+
+SD01比MS00高0.0306pp/0.0336pp，但未超过现役，也未过+0.30pp门。
+**本固定配方关闭，不派生lambda、预算或惩罚位置扫描，不生成新测试候选。**
+训练惩罚calls=133,816，examples=535,260，penalty_sum=14,093.384134；examples含global/local
+及多轮重复前向，不是独立图片数。lambda始终为0.004359280240465393。
+
+最佳checkpoint SHA256=`47a9f1dd37de03a8d127e7e013da333d5d3f91ec8de682dc666db2910f7b7ee7`。
+best/epoch1/last与各自惩罚sidecar、源代码及系数文件SHA全部一致。
+CPU NumPy float64独立解码与Torch的14,880/14,880个预测完全一致，prior bias最大差6.62e-7，
+阶段/划分/模型/缓存绑定及484份Git源码blob复核通过。该审计复核缓存解码，
+不等同于再跑一次独立图像推理，也不证明平台收益。3项损失与恢复测试通过。
+
+新增实现包括惩罚模块、训练队列、独立解码审计、配置和测试；完整实测、逐轮指标、
+控制引用、checkpoint与交付哈希见[最终机器可读记录](../results/l05_logit_penalty_20260927.json)。
+此前启动JSON保留为历史运行快照。
+
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 scripts/audit_l05_logit_penalty.py \
+  --config configs/l05_logit_penalty/fixed.json
+python3 scripts/check_submission.py \
+  --test_dir /home/lux1/noise/test \
+  --class-mapping /home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json \
+  --csv /home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv \
+  --zip /home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip
+```
+
+本轮交付上方现役L05_T14_P060保底CSV/ZIP，37,444行，9/9校验通过；不是SD01新候选。
+CSV SHA256=`51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75`，
+ZIP SHA256=`e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f`。
+未上传平台，无新平台成绩，最佳仍为66.94797564362783%，70分以上目标未达到。
+在本段交付检查点停止扩展；后续长训练仍按用户要求每30分钟监控。
