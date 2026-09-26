@@ -24,7 +24,8 @@ CLS位置编码保留；原12×12直接返回原张量。参考
 不与center logits融合、不扫分辨率/温度/先验。只读14,880张val；训练和测试图不用于本轮拟合
 或筛选（parent训练资产按已有stage绑定验证）。测试只在候选通过后做确定性推理。
 从文件哈希和严格像素解码检查开始，禁止坏图零填充。按尺寸分桶batch32，结果恢复原val顺序。
-编码器/分类头float32、无autocast，保持已登记确定性数值设置。
+原预注册曾声明编码器/分类头float32、无autocast；该声明与冻结参照缓存的实际生成协议不符。
+在任何方法结果产生前已更正为CUDA AMP float16，输出缓存存float32；审计阈值不变，详见文末。
 
 ## 判据与审计
 
@@ -45,5 +46,20 @@ python3 -m pytest tests/test_l05_rectangular_view.py -q
 python3 scripts/run_l05_rectangular_view.py --config configs/l05_rectangular_view/fixed.json
 ```
 
-输出独立目录`outputs/codex/l05_rectangular_view/`，拒绝覆盖完成结果；只用空闲GPU，
+首个失败目录`outputs/codex/l05_rectangular_view/`保留；修正后输出到新目录
+`outputs/codex/l05_rectangular_view_v2/`，拒绝覆盖完成结果；只用空闲GPU，
 运行期间每30分钟监控。无外部数据、无跨阶段资产、无集成、无测试时训练。
+
+
+## 数值协议修正（正式方法验证前）
+
+首个进程240969已终止，停在32张原生方形重放检查，未进入矩形完整val验证，没有方法成绩。
+独立检查缓存生成脚本：`use_amp = config.train.amp and device==cuda`；参照缓存本身没有
+记录autocast字段。实测纯float32的原图/Flip logits与参照最大差0.02314949/0.02764320，
+而AMP两路最大差均为0、32/32 top1一致；独立审计forward与原生forward最大差也为0。
+
+错误在本轮预注册对参照精度的理解，不归因于几何机制。现明确修正为与参照一致的AMP，
+保留1e-4原生重放阈值、1e-5矩形路径阈值、模型/几何/温度/先验/晋级门全部原样。
+首轮源码559b859、日志、implementation.json、precision_diagnostic.json与invalid_reason.json
+均保留，重跑使用独立v2目录。诊断只验证数值一致性，不对AMP/float32做方法选优。
+完整证据见[精度审计](../results/l05_rectangular_precision_audit_20260927.json)。

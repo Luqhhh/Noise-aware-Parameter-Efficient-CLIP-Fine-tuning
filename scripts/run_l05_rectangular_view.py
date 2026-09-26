@@ -58,6 +58,7 @@ def main():
     assert (cfg['protocol'], cfg['short_edge'], cfg['long_cap'], cfg['patch_size'], cfg['batch_size']) == (
         'l05_rectangular_fullframe_v1', 384, 576, 32, 32)
     assert (cfg['temperature'], cfg['prior_strength'], cfg['fold_seed'], cfg['folds']) == (1.4, .6, 42, 3)
+    assert cfg['autocast'] is True and cfg['autocast_dtype'] == 'float16'
     torch.set_num_threads(4)
     torch.backends.cudnn.benchmark = False
     rows, reference, identity = preflight(cfg)
@@ -70,7 +71,8 @@ def main():
         'script_sha256': sha256_file(__file__), 'support_sha256': sha256_file(Path(__file__).with_name('l05_rectangular_support.py')),
         'model_source_sha256': sha256_file(Path(__file__).resolve().parents[1]/'reproducibility/aegis_f1/aegis_clip/model.py'),
         'commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
-        'torch': torch.__version__, 'command': os.sys.argv, 'pid': os.getpid()})
+        'torch': torch.__version__, 'autocast': True, 'autocast_dtype': 'float16',
+        'command': os.sys.argv, 'pid': os.getpid()})
     model, native, checkpoint = build_from_checkpoint(cfg['parent_checkpoint'], torch.device('cuda:0'))
     model.eval().requires_grad_(False)
     assert isinstance(model.feature_adapter, torch.nn.Identity)
@@ -79,7 +81,7 @@ def main():
     loader = DataLoader(Images(rows[:32], cfg['image_root'], native), batch_size=32, num_workers=2)
     square = next(iter(loader)).cuda()
     replay = []
-    with torch.inference_mode():
+    with torch.inference_mode(), torch.autocast('cuda', dtype=torch.float16):
         for flip, key in ((False, 'original_logits'), (True, 'flip_logits')):
             images = square.flip(3) if flip else square
             logits = model(images=images)
@@ -103,7 +105,7 @@ def main():
     seen = torch.zeros(len(rows), dtype=torch.bool)
     geometry_audit = {}
     started = time.monotonic()
-    with torch.inference_mode():
+    with torch.inference_mode(), torch.autocast('cuda', dtype=torch.float16):
         for indices, images in loader:
             assert not seen[indices].any()
             images = images.cuda(non_blocking=True)

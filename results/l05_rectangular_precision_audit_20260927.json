@@ -1,0 +1,57 @@
+{
+  "purpose": "diagnose_native_precision_replay_before_method_evaluation",
+  "samples": 32,
+  "results": [
+    {
+      "autocast": false,
+      "branch": "original_logits",
+      "max_abs_vs_reference": 0.023149490356445312,
+      "identical_top1": 32,
+      "independent_forward_max_abs": 0.0
+    },
+    {
+      "autocast": false,
+      "branch": "flip_logits",
+      "max_abs_vs_reference": 0.027643203735351562,
+      "identical_top1": 32,
+      "independent_forward_max_abs": 0.0
+    },
+    {
+      "autocast": true,
+      "branch": "original_logits",
+      "max_abs_vs_reference": 0.0,
+      "identical_top1": 32,
+      "independent_forward_max_abs": 0.0
+    },
+    {
+      "autocast": true,
+      "branch": "flip_logits",
+      "max_abs_vs_reference": 0.0,
+      "identical_top1": 32,
+      "independent_forward_max_abs": 0.0
+    }
+  ],
+  "identity": {
+    "parent": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "manifest": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "config": "ce6180975b2cbadf03a4149dce78588e713b5cc411473352b06a2c08114e1c88",
+    "reference_cache": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc",
+    "format": 1
+  },
+  "status": "invalid_precision_protocol_before_method_evaluation",
+  "reason": "Original reference cache was generated under AMP; float32 replay failed preregistered tolerance",
+  "failed_implementation": {
+    "command": [
+      "/home/lux1/noise-worktrees/l05_rectangular_view/scripts/run_l05_rectangular_view.py",
+      "--config",
+      "/home/lux1/noise-worktrees/l05_rectangular_view/configs/l05_rectangular_view/fixed.json"
+    ],
+    "commit": "559b859ab107fde5bb9aeb44f71acbaa45276575",
+    "config_sha256": "07fb423eb9a65f0a531166af31c21e08f444c0c4573643d2ed0833edd5c593dd",
+    "model_source_sha256": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+    "pid": 240969,
+    "script_sha256": "c29f188220b3afe530c6cb817697004407ac2c1cc697270f1b224d55d9d58c16",
+    "support_sha256": "8a18105e78836fdd8c00b2428f2ab1fb07d52c8751753fbb436d639cbca03f1e",
+    "torch": "2.12.1+cu126"
+  }
+}
