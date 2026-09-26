@@ -458,3 +458,14 @@ pooled OOF Macro **0.7556778**、Micro **0.7639113**，相对 flip-TTA 无 prior
 **+0.1407pp / −0.0739pp**，纠正 144 / 破坏 155，逐折 ΔMacro 全为负。因此平台 +0.5582pp
 不能归因于 prior。完整记录见
 [L05 校准绑定与固定配方诊断](f05_focus_l05_calibration_binding_20260925.md)。
+
+**2026-09-26 补充（单卡新候选搜索，不做复验版）：** 从 L05 checkpoint 独立续训三个候选
+（seed 42、最多 3 个新增 epoch、`parent_kind=same_split_continue`，不重划数据、不重跑
+A0/N1/O3/PTA、不补 seed3407/2026、不扫参），全部完成并落表
+`results/l05_new_candidates.csv`。固定协议（flip + `mean_probabilities` + T=1.4 + 本阶段验证集
+prior 0.60）下 decode macro 相对 L05 winner（0.7582651）的差：
+NEW01 原图 ROI **−0.0335pp**（fail）、NEW02 融合目标 **+0.0144pp**（weak）、
+NEW03 冲突组集合监督 **+0.0615pp**（weak，唯一同时提高 micro 的，+0.0470pp）。
+三者均未过 +0.30pp 晋级门，**不替换 L05 winner、不生成提交候选、未上传平台**。
+按预注册口径只记为「阶段二续训配方收益」，不归因于单个新组件。实现与完整记录见
+[L05 单卡新候选搜索实现记录](l05_new_candidates_implementation_20260925.md)。
