@@ -143,7 +143,11 @@ def set_generalized_cross_entropy(
 
     ``candidate_index`` is ``[N,K]`` long class ids with padded values ignored
     where ``candidate_mask`` is falsy.  Every row needs at least one valid
-    candidate and the resulting set mass must lie in ``[epsilon, 1]``.
+    candidate.  The set mass is clamped into ``[epsilon, 1]`` rather than rejected:
+    with float32 softmax a confident prediction outside the candidate set can drive
+    every in-set probability to zero, and clamping keeps the loss finite and the
+    gradient bounded (``|dL/dz|`` scales like ``sqrt(r)``).  Only structurally
+    invalid input (empty set, out-of-range id, mass above one) fails closed.
     """
     q = _validate_q(q)
     epsilon = _validate_epsilon(epsilon)
@@ -166,11 +170,9 @@ def set_generalized_cross_entropy(
     safe_index = index.clamp(0, values.shape[1] - 1)
     gathered = values.gather(1, safe_index)
     mass = (gathered * mask.to(values.dtype)).sum(dim=1)
-    if bool((mass < epsilon).any()):
-        raise ValueError("candidate set mass falls below epsilon")
     if bool((mass > 1.0 + 1.0e-5).any()):
         raise ValueError("candidate set mass exceeds one (duplicate classes?)")
-    return (1.0 - mass.clamp_min(epsilon).pow(q)) / q
+    return (1.0 - mass.clamp(min=epsilon, max=1.0).pow(q)) / q
 
 
 def build_padded_candidate_tensors(

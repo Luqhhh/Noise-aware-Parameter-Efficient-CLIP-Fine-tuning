@@ -3,9 +3,25 @@
 - artifact_type: implementation record
 - branch: `focus/f05-four-lines`
 - date: 2026-09-25
-- status: **代码已实现、最小检查已通过、单卡 smoke 已跑通；3×3 epoch 正式续训队列已于
-  2026-09-25 22:16 在本机 RTX 4070 上串行启动，结果尚未产出，无新分数，无平台提交**
-- test data use: none（三个候选都不读取测试图；本文件不含任何新预测指标）
+- status: **代码已实现、最小检查通过、smoke 通过；NEW01 与 NEW02 已完成并落表，NEW03 首跑因
+  集合质量下溢缺陷失败、已修复并于 2026-09-26 12:31 重跑中；无平台提交**
+- test data use: none（三个候选都不读取测试图）
+
+## 结果（本地固定协议，未上传平台）
+
+| candidate | selected_epoch | center macro/micro | decode macro/micro | delta_vs_l05 | 纠正/破坏 | status |
+|---|---:|---|---|---:|---:|---|
+| NEW01 原图 ROI | 2 | 0.7526595 / 0.7629704 | 0.7579297 / 0.7663307 | **−0.0335pp** | 208 / 158 | fail |
+| NEW02 融合目标 | 2 | 0.7537390 / 0.7643145 | 0.7584087 / 0.7665995 | **+0.0144pp** | 211 / 177 | weak |
+| NEW03 集合监督 | — | 重跑中 | 重跑中 | — | — | pending |
+
+参照：L05 winner 的 decode macro/micro = 0.7582651 / 0.7665322；`delta_vs_l05` 是 decode macro
+相对该值的百分点差。本地 +0.30pp 晋级门未过，两个候选都没有理由替换既有 L05 winner。
+
+NEW03 首跑在 epoch 1 第一步即报 `ValueError: candidate set mass falls below epsilon`
+（float32 softmax 下模型对集合外类别过于自信，集合内概率全部下溢）。已把集合质量改为
+**钳制到 `[epsilon, 1]`** 而不是 fail-fast：损失保持有限、梯度有界（`|dL/dz| ~ sqrt(r)`），
+结构性非法输入（空集合、越界 id、质量和 > 1）仍 fail-closed。新增回归测试后重跑。
 
 ## 0. 已核对的代码基线
 

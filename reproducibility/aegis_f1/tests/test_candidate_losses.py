@@ -114,12 +114,20 @@ def test_set_gce_rejects_empty_rows_and_out_of_range_ids() -> None:
         )
 
 
-def test_set_gce_rejects_mass_outside_unit_interval() -> None:
-    probabilities = torch.tensor([[1.0, 0.0, 0.0, 0.0]])
-    with pytest.raises(ValueError):
-        set_generalized_cross_entropy(
-            probabilities, torch.tensor([[1]]), torch.tensor([[True]])
-        )
+def test_set_gce_clamps_underflowed_mass_instead_of_raising() -> None:
+    # A confident out-of-set prediction drives every candidate probability to 0.
+    probabilities = torch.tensor([[1.0, 0.0, 0.0, 0.0]], requires_grad=True)
+    loss = set_generalized_cross_entropy(
+        probabilities, torch.tensor([[1]]), torch.tensor([[True]])
+    )
+    assert torch.isfinite(loss).all()
+    assert float(loss.detach()) == pytest.approx((1.0 - 1.0e-7**0.5) / 0.5, rel=1.0e-5)
+    loss.sum().backward()
+    assert probabilities.grad is not None
+    assert bool(torch.isfinite(probabilities.grad).all())
+
+
+def test_set_gce_rejects_mass_above_one() -> None:
     duplicate = torch.tensor([[0.1, 0.7, 0.1, 0.1]])
     with pytest.raises(ValueError):
         set_generalized_cross_entropy(
