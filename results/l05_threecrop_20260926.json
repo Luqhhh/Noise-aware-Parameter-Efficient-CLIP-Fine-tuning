@@ -1,0 +1,141 @@
+{
+  "branch_cache_sha256": {
+    "val_edges_000000.pt": "c956b0ccd540370b5c9199a7aa81b2e5687836120aa6bddb925a2330c06e672a",
+    "val_edges_001024.pt": "4c564f79d447b30701a51347991cf78e11f54245eb487f66ff6d692f7ce0b083",
+    "val_edges_002048.pt": "6cf30754e65fd689f1d0d3f7e2334b7abbabb96b2f62171754887f0fcadfbdff",
+    "val_edges_003072.pt": "0cba491acdb6e89fa18211f6c4a49f847954acfbe3bff43fee15fdd1306e92e6",
+    "val_edges_004096.pt": "f17d0b3c92d69085364b75fe0d93ad879291126488f01939c7ec7ded0f9d9d42",
+    "val_edges_005120.pt": "e33c5bd80b51ec6e5517505737e35b6d36c6a9ed7f5fe24a2b02279f8e7c9e99",
+    "val_edges_006144.pt": "2016c5e7bcd441a783cab795078a0a80be4a9ccc25313907e4e7a34c4a602d21",
+    "val_edges_007168.pt": "655aaa9d657bca67530be404f7640dec438668d003b30661fd6f3cfde171bac1",
+    "val_edges_008192.pt": "63adf671ce1c124f85507392c25d6de8ead26cc8941e01b33693a5d01e944647",
+    "val_edges_009216.pt": "78b4e36c34698fcc42f7e3fa32c9b66c95805dab5e9c8f482bb49431b56423b0",
+    "val_edges_010240.pt": "d014303c06d163623420870998fb49ea82c9fcb15445960eddbcea71b7a7d700",
+    "val_edges_011264.pt": "ef13a2aa4d31447b0a434f44060fc9a5177d620d9f878cbe68acc2badf92f00d",
+    "val_edges_012288.pt": "1c5c0e9480f970f1219f1553ce7fbe7800b078896da3e23522e90771aa4bfcf7",
+    "val_edges_013312.pt": "8f0f8a5994018562720e2222281cf04942673ca136f3152f236c94e8caec60a3",
+    "val_edges_014336.pt": "11ef7e0edfa44b27cd70d1a3c4f1bb9cc31818e0dca0b8e1e2570c96a6397bba"
+  },
+  "calibration": "uniform prior fitted on full validation; same-set diagnostic",
+  "delta_pp": {
+    "macro": 0.1379591684395831,
+    "micro": 0.08064516129032695
+  },
+  "fallback_delivery": {
+    "candidate": "L05_T14_P060",
+    "checks_passed": 9,
+    "csv": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+    "csv_sha256": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
+    "new_candidate": false,
+    "platform_score_percent": 66.94797564362783,
+    "rows": 37444,
+    "zip": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip",
+    "zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f"
+  },
+  "identity": {
+    "config": "d6823c07c718ac3a3ba2e5dde4b5f6439f231c278bda2abfd891ae8978e1d9cd",
+    "format": 1,
+    "manifest": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "parent": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "reference_cache": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc"
+  },
+  "implementation": {
+    "command": [
+      "scripts/run_l05_threecrop.py",
+      "--config",
+      "configs/l05_threecrop/fixed.json"
+    ],
+    "commit": "9d8110ce11ad68f6b83df1b206443e418147006e",
+    "config_sha256": "860b29014ef6f69996e8d368aa527dec7a23bce85fea90dca263e163654d39df",
+    "pid": 81012,
+    "script_sha256": "3f0cd59166fc01a2b4be551a3a8331eb8c65f31261685cd912e5047cd7b9f583",
+    "torch": "2.12.1+cu126"
+  },
+  "independent_audit": {
+    "all_15_chunk_hashes_and_paths_verified": true,
+    "count": 14880,
+    "independent_numpy_float64_fusion_max_abs": 2.40573032428415e-06,
+    "parent_sha256_after": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "prediction_agreement_count": 14880
+  },
+  "independent_end_to_end_validation": false,
+  "metrics": {
+    "baseline": {
+      "decode": {
+        "macro": 0.7582651238982523,
+        "micro": 0.7665322580645161
+      },
+      "no_prior": {
+        "macro": 0.7542707517573286,
+        "micro": 0.7646505376344086
+      },
+      "prior_fit": {
+        "bias_max": 3.171046018600464,
+        "bias_min": -1.5134068727493286,
+        "damping": 0.5,
+        "final_marginal_l1": 0.0010294177336618304,
+        "final_max_marginal_error": 7.423805072903633e-06,
+        "fitted_max_marginal_error": 7.931143045425415e-06,
+        "initial_marginal_l1": 0.15060216188430786,
+        "iterations": 50,
+        "max_iterations": 50,
+        "target_prior": "uniform",
+        "tolerance": 1e-06
+      }
+    },
+    "threecrop": {
+      "decode": {
+        "macro": 0.7596447155826481,
+        "micro": 0.7673387096774194
+      },
+      "no_prior": {
+        "macro": 0.7574629180710953,
+        "micro": 0.7676747311827957
+      },
+      "prior_fit": {
+        "bias_max": 3.088914155960083,
+        "bias_min": -1.2930078506469727,
+        "damping": 0.5,
+        "final_marginal_l1": 0.0007113018073141575,
+        "final_max_marginal_error": 5.333102308213711e-06,
+        "fitted_max_marginal_error": 5.759182386100292e-06,
+        "initial_marginal_l1": 0.14985889196395874,
+        "iterations": 50,
+        "max_iterations": 50,
+        "target_prior": "uniform",
+        "tolerance": 1e-06
+      }
+    }
+  },
+  "native_replay": [
+    {
+      "branch": "original_logits",
+      "max_abs": 0.0,
+      "top1_identical": true
+    },
+    {
+      "branch": "flip_logits",
+      "max_abs": 0.0,
+      "top1_identical": true
+    }
+  ],
+  "new_branch_count": 4,
+  "paired": {
+    "changed": 693,
+    "corrections": 174,
+    "regressions": 162
+  },
+  "preliminary_gate_pass": false,
+  "promotion_pass": false,
+  "protocol": "l05_threecrop_v1",
+  "status": "closed_below_preregistered_promotion_gate",
+  "test_data_used": false,
+  "tests": {
+    "command": "python3 -m pytest tests/test_l05_threecrop.py -q",
+    "passed": 6
+  },
+  "timing": {
+    "total_seconds": 186.9417078059996
+  },
+  "validation_samples": 14880
+}
