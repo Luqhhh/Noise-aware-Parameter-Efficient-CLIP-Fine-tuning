@@ -1,0 +1,231 @@
+{
+  "baseline_numpy_replay_identical": 14880,
+  "config": {
+    "assets": "/home/lux1/noise/artifacts/stages/repechage/20260921",
+    "experiment_id": "L05_VECTOR_CALIBRATION_20260927",
+    "folds": 3,
+    "monitor_interval_seconds": 1800,
+    "output": "outputs/codex/l05_vector_calibration",
+    "parent_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+    "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "prior_strength": 0.6,
+    "reference_cache": "/home/lux1/noise/worktrees/rematch750_f05_focus/artifacts/f05_focus_l05/l05_val_branch_logits.pt",
+    "reference_cache_sha256": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc",
+    "regularization": 1.0,
+    "seed": 42,
+    "temperature": 1.4
+  },
+  "corrections": 116,
+  "crossfit_baseline": {
+    "macro": 0.7558876599219766,
+    "micro": 0.7641801075268817
+  },
+  "crossfit_candidate": {
+    "macro": 0.753764806945546,
+    "micro": 0.7605510752688172
+  },
+  "crossfit_seconds": 8.755566174993874,
+  "crossfit_sha256": "31733bc64ac5cf2e5ba1de6e9f7aed4600125bf44e78373add3678328262b78f",
+  "delivery": {
+    "checked_at": "2026-09-27T07:49:25.671767+08:00",
+    "csv": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+    "csv_sha256": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
+    "kind": "existing_L05_platform_best_fallback_not_new_candidate",
+    "rows": 37444,
+    "validation_command": [
+      "python3",
+      "scripts/check_submission.py",
+      "--test_dir",
+      "/home/lux1/noise/test",
+      "--class-mapping",
+      "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+      "--csv",
+      "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+      "--zip",
+      "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip"
+    ],
+    "validation_exit_code": 0,
+    "validation_output": "Test set contains 37444 images\n\n============================================================\nChecking pred_results.csv...\n============================================================\n  \u2705 File name: pred_results.csv\n  \u2705 Line count: 37444 (matches test set)\n  \u2705 All image names found in test set\n  \u2705 No duplicate image names\n  \u2705 All test images covered\n  \u2705 All labels are 4-digit strings\n  \u2705 All labels in range [0000, 0749]\n\n============================================================\nChecking submission.zip...\n============================================================\n  \u2705 ZIP contains only pred_results.csv (no directory)\n\n============================================================\n\ud83c\udf89 All checks passed! Submission is ready.\n",
+    "zip": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip",
+    "zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f"
+  },
+  "delta_pp": {
+    "macro": -0.2122852976430556,
+    "micro": -0.3629032258064546
+  },
+  "delta_vs_frozen_pp": {
+    "macro": -0.45003169527062514,
+    "micro": -0.5981182795698925
+  },
+  "experiment_id": "L05_VECTOR_CALIBRATION_20260927",
+  "folds": [
+    {
+      "fit": {
+        "bias_max": 0.23250460191246652,
+        "bias_min": -0.17243640269541324,
+        "classes": 750,
+        "converged": true,
+        "function_evaluations": 55,
+        "independent_autograd_max_abs": 2.5099280293039428e-17,
+        "iterations": 53,
+        "missing_classes_frozen": [
+          46
+        ],
+        "objective_final": 1.178230969164071,
+        "objective_initial": 1.2713786894809578,
+        "projected_gradient_inf_norm": 5.857108767253188e-08,
+        "regularization": 1.0,
+        "samples": 9868,
+        "scale_max": 1.5815360094877424,
+        "scale_min": 0.9204004598954738
+      },
+      "fit_samples": 9868,
+      "fold": 0,
+      "held_out_samples": 5012,
+      "prior_fit": {
+        "bias_max": 3.109898567199707,
+        "bias_min": -2.0122339725494385,
+        "damping": 0.5,
+        "final_marginal_l1": 0.0006789470789954066,
+        "final_max_marginal_error": 1.1398340575397015e-05,
+        "fitted_max_marginal_error": 1.2231990694999695e-05,
+        "initial_marginal_l1": 0.1699986308813095,
+        "iterations": 50,
+        "max_iterations": 50,
+        "target_prior": "uniform",
+        "tolerance": 1e-06
+      }
+    },
+    {
+      "fit": {
+        "bias_max": 0.32581056654641827,
+        "bias_min": -0.19350285399260034,
+        "classes": 750,
+        "converged": true,
+        "function_evaluations": 55,
+        "independent_autograd_max_abs": 3.0249240612345574e-17,
+        "iterations": 53,
+        "missing_classes_frozen": [],
+        "objective_final": 1.2014127733273834,
+        "objective_initial": 1.2934502797549015,
+        "projected_gradient_inf_norm": 2.754207920766319e-07,
+        "regularization": 1.0,
+        "samples": 10043,
+        "scale_max": 1.6550511908389551,
+        "scale_min": 0.9655178173027439
+      },
+      "fit_samples": 10043,
+      "fold": 1,
+      "held_out_samples": 4837,
+      "prior_fit": {
+        "bias_max": 3.213027000427246,
+        "bias_min": -1.9218844175338745,
+        "damping": 0.5,
+        "final_marginal_l1": 0.0011068410240113735,
+        "final_max_marginal_error": 7.225316949188709e-06,
+        "fitted_max_marginal_error": 7.66129232943058e-06,
+        "initial_marginal_l1": 0.16966497898101807,
+        "iterations": 50,
+        "max_iterations": 50,
+        "target_prior": "uniform",
+        "tolerance": 1e-06
+      }
+    },
+    {
+      "fit": {
+        "bias_max": 0.4599301229183913,
+        "bias_min": -0.15372793164377987,
+        "classes": 750,
+        "converged": true,
+        "function_evaluations": 55,
+        "independent_autograd_max_abs": 2.862293735361732e-17,
+        "iterations": 51,
+        "missing_classes_frozen": [
+          183
+        ],
+        "objective_final": 1.1765901851938745,
+        "objective_initial": 1.2704775878647334,
+        "projected_gradient_inf_norm": 1.2189948764447772e-07,
+        "regularization": 1.0,
+        "samples": 9849,
+        "scale_max": 1.5376849924525922,
+        "scale_min": 1.0
+      },
+      "fit_samples": 9849,
+      "fold": 2,
+      "held_out_samples": 5031,
+      "prior_fit": {
+        "bias_max": 3.202425241470337,
+        "bias_min": -2.1852869987487793,
+        "damping": 0.5,
+        "final_marginal_l1": 0.0014303275384008884,
+        "final_max_marginal_error": 1.6101053915917873e-05,
+        "fitted_max_marginal_error": 1.6798265278339386e-05,
+        "initial_marginal_l1": 0.17526806890964508,
+        "iterations": 50,
+        "max_iterations": 50,
+        "target_prior": "uniform",
+        "tolerance": 1e-06
+      }
+    }
+  ],
+  "frozen_baseline": {
+    "macro": 0.7582651238982523,
+    "micro": 0.7665322580645161
+  },
+  "goal_above_70_verified": false,
+  "identity": {
+    "config": "f85d342c6d8d0f7fb44adf5208cac826004ed51fe5d29e76ec4815260e998f54",
+    "format": 1,
+    "manifest": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "parent": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "reference_cache": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc"
+  },
+  "implementation": {
+    "command": [
+      "scripts/run_l05_vector_calibration.py",
+      "--config",
+      "configs/l05_vector_calibration/fixed.json"
+    ],
+    "commit": "9a466bc6b844d6f7e1fd254e42f5140afd710dea",
+    "config": {
+      "assets": "/home/lux1/noise/artifacts/stages/repechage/20260921",
+      "experiment_id": "L05_VECTOR_CALIBRATION_20260927",
+      "folds": 3,
+      "monitor_interval_seconds": 1800,
+      "output": "outputs/codex/l05_vector_calibration",
+      "parent_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+      "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+      "prior_strength": 0.6,
+      "reference_cache": "/home/lux1/noise/worktrees/rematch750_f05_focus/artifacts/f05_focus_l05/l05_val_branch_logits.pt",
+      "reference_cache_sha256": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc",
+      "regularization": 1.0,
+      "seed": 42,
+      "temperature": 1.4
+    },
+    "identity": {
+      "config": "f85d342c6d8d0f7fb44adf5208cac826004ed51fe5d29e76ec4815260e998f54",
+      "format": 1,
+      "manifest": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "parent": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+      "reference_cache": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc"
+    },
+    "pid": 247107,
+    "script_sha256": "fe9681d2460232134cd6abfe450a771245b3a8ac922666b6a2c382d2f17dee3d",
+    "support_sha256": "8f0d08b3372b5fb8309a53ce8a22db581ebc142d9f23d7c033b2e44582408dd1"
+  },
+  "independent_heldout_predictions_identical": 14880,
+  "independent_numpy_float64_fusion_and_saved_parameter_replay": {
+    "baseline_identical": 14880,
+    "candidate_identical": 14880
+  },
+  "labels_used_for_calibration": true,
+  "limitation": "Conditional calibration cross-fit; parent checkpoint and base recipe selected using whole validation; not unbiased full-pipeline OOF",
+  "platform_best": 66.94797564362783,
+  "platform_result": null,
+  "promotion_pass": false,
+  "regressions": 170,
+  "status": "closed_below_promotion_gate",
+  "test_used": false,
+  "tests": "4 passed"
+}
