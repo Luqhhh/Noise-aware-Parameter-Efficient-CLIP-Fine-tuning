@@ -89,3 +89,10 @@ V2 smoke 已完成：2 次优化更新、完整 14,880 张验证及重载通过�
 现役 L05_T14_P060 保底包位于
 `/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/`，
 37,444 行，2026-09-26 9/9 提交校验再通过。正式训练完成前不合并实验结果到 main。
+
+
+正式队列于 2026-09-26 19:33:48（Asia/Shanghai）启动，驱动 PID 86908，初始 MS00 子进程
+PID 86947；进程启动时刻与源码提交写入 `outputs/codex/l05_mixstyle/queue_process.json`。
+这是运行记录，不能仅凭 PID 文件判断仍在运行；须匹配 /proc 的 start_ticks、检查活进程
+与子进程及其日志。当前状态为 **formal_queue_running_no_strategy_result**。
+代码/预注册及启动审计已推送方案分支，待两臂结果、重载/提交校验完成再集成 main。

@@ -1,10 +1,30 @@
 {
   "invalid_first_smoke": "outputs/codex/l05_mixstyle/runs/MS01_SMOKE/seed42/invalid_reason.json",
+  "observed_queue_state": {
+    "arm": "MS00",
+    "driver_pid": 86908,
+    "phase": "training"
+  },
   "plain_inference_audit": {
     "eval_hook_calls": 0,
     "eval_hook_vs_plain_max_abs": 0.0,
     "plain_checkpoint_load": "passed",
     "samples": 32
+  },
+  "process_at_launch": {
+    "command": [
+      "/usr/bin/python3",
+      "/home/lux1/noise-worktrees/l05_mixstyle/scripts/run_l05_mixstyle.py",
+      "--config",
+      "/home/lux1/noise-worktrees/l05_mixstyle/configs/l05_mixstyle/fixed.json",
+      "--phase",
+      "queue"
+    ],
+    "implementation_commit": "e98d863cee5e0d3487ab8b9465c982fc10bcecd7",
+    "output": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle",
+    "pid": 86908,
+    "proc_start_ticks": "3579265",
+    "started_at": "2026-09-26T11:33:48.001677+00:00"
   },
   "smoke": {
     "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS01_SMOKE_V2/seed42/checkpoints/best.pt",
@@ -27,6 +47,6 @@
     "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
     "verified_source_files": 484
   },
-  "status": "implementation_smoke_valid_formal_training_pending",
+  "status": "formal_queue_running_no_strategy_result",
   "tests_passed": 5
 }
