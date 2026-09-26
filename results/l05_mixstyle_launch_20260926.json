@@ -1,0 +1,32 @@
+{
+  "invalid_first_smoke": "outputs/codex/l05_mixstyle/runs/MS01_SMOKE/seed42/invalid_reason.json",
+  "plain_inference_audit": {
+    "eval_hook_calls": 0,
+    "eval_hook_vs_plain_max_abs": 0.0,
+    "plain_checkpoint_load": "passed",
+    "samples": 32
+  },
+  "smoke": {
+    "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS01_SMOKE_V2/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "fa29340e8590757785c1c32217b6f90d0bb0071749db992ba878dcfff53b863c",
+    "config_sha256": "4e5dd8aa217caab2b8ed0433e8657128b86def77f645485154423a12106e06f5",
+    "smoke": true,
+    "state": {
+      "alpha": 0.1,
+      "applied": 3,
+      "calls": 6,
+      "examples": 12,
+      "probability": 0.5,
+      "seed": 42
+    },
+    "stopped": false
+  },
+  "source_receipt": {
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+    "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "verified_source_files": 484
+  },
+  "status": "implementation_smoke_valid_formal_training_pending",
+  "tests_passed": 5
+}

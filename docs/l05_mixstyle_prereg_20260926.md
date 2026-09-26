@@ -78,3 +78,14 @@ python3 scripts/run_l05_mixstyle.py --config configs/l05_mixstyle/fixed.json --p
 修复为以外层 AegisCLIP 的 training 标志门控 hook，并新增“冻结 stem 为 eval、外层模型为
 train”的回归测试；目前 5 项测试通过。`MS01_SMOKE_V2` 在新的独立目录重新跑。
 正式 MS01 结束时若 calls 或 applied 为0则硬拒，不能静默成为控制臂。
+
+
+V2 smoke 已完成：2 次优化更新、完整 14,880 张验证及重载通过，MixStyle 在 6 次训练前向
+中激活 3 次（12 样本前向）。原生 `build_from_checkpoint` 直接加载，32 张真实验证图上
+带/不带 eval hook 的 logits 最大差为0、eval 调用计数为0。5 项回归测试通过。
+这些只证明接线与序列化有效，不属于固定预算方法成绩。记录见
+[启动审计](../results/l05_mixstyle_launch_20260926.json)。
+
+现役 L05_T14_P060 保底包位于
+`/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/`，
+37,444 行，2026-09-26 9/9 提交校验再通过。正式训练完成前不合并实验结果到 main。
