@@ -1,0 +1,27 @@
+{
+  "actually_resized": 9946,
+  "cache_sha256": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc",
+  "checkpoint_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+  "downscaled": {
+    "macro": 0.7521926786696004,
+    "micro": 0.7629704301075269
+  },
+  "fusion": "mean_probabilities, temperature 1.4, horizontal flip",
+  "limit": 14880,
+  "model_input_resolution": 384,
+  "native_replay_first_32": {
+    "all_branch_top1_agree": true,
+    "max_abs_logit_diff": 0.0
+  },
+  "original": {
+    "macro": 0.7542707517573287,
+    "micro": 0.7646505376344086
+  },
+  "paired": {
+    "corrections": 51,
+    "prediction_changed": 271,
+    "regressions": 76
+  },
+  "pre_resize": "bicubic, longest side at most 500px",
+  "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+}
