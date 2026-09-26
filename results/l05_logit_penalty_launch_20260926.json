@@ -151,6 +151,18 @@
   },
   "coefficient_file_sha256": "939fc3ebdb4bf3c7a174938c0ab428a4b78244526a37be74306bbd69e1f7bb8d",
   "experiment_id": "L05_LOGIT_PENALTY_20260926",
+  "formal_epoch0": {
+    "raw_macro": 0.7524970769882202,
+    "raw_micro": 0.7629704475402832,
+    "samples": 14880
+  },
+  "last_observed_formal_progress": {
+    "attempted_updates": 59,
+    "child_pid": 215869,
+    "log_time": "2026-09-27T00:24:15.967+08:00",
+    "planned_updates": 262,
+    "successful_updates": 59
+  },
   "platform_result": null,
   "preflight": {
     "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
@@ -182,7 +194,25 @@
     "evaluation",
     "trust"
   ],
-  "status": "queue_launched_smoke_then_formal_pending_verification",
+  "smoke": {
+    "checkpoint": "/home/lux1/noise-worktrees/l05_logit_penalty/outputs/codex/l05_logit_penalty/runs/SD01_SMOKE/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "35636faf92a9bb3844b31a2a10ea26a80942577530f2d12fcea73fb19d1b7149",
+    "config_sha256": "8229b334e1830126aa4040f8f0a3c606e1c6e1bf17699fdefbff6012bed92023",
+    "reload_center": {
+      "raw_macro": 0.7496848106384277,
+      "raw_micro": 0.7604166865348816,
+      "samples": 14880
+    },
+    "smoke": true,
+    "state": {
+      "calls": 4,
+      "coefficient": 0.004359280240465393,
+      "examples": 16,
+      "penalty_sum": 0.3607485592365265
+    },
+    "stopped": false
+  },
+  "status": "smoke_passed_formal_training_running_no_strategy_result",
   "test_used": false,
   "tests": "3 passed"
 }

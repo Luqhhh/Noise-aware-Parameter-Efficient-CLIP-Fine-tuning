@@ -64,3 +64,12 @@ formal的model/data/train/loss/evaluation/trust与MS00逐项一致。
 队列于2026-09-26 23:53:42 Asia/Shanghai启动，driver PID215110、start_ticks5138776。
 先smoke后正式；实现提交5360562。下一次监控不早于2026-09-27 00:23:42。
 进程记录不是完成证据，正式结果待验证；当前只推送方案分支，不合并未验证结果到main。
+
+
+## 2026-09-27 00:24运行检查（非方法结果）
+
+smoke两次更新、14,880张中心验证及原生重载完成，penalty calls=4/examples=16，
+累计penalty_sum=0.3607485592；checkpoint/sidecar SHA复核通过。
+正式epoch0复现L05中心macro/micro=75.2497%/76.2970%，原队列自动启动正式训练，
+累计59/262次更新全部成功；driver215110、child215869仍存活，未观察到训练错误。
+尚无正式完整验证/解码结果，不将smoke数值当作方法成绩。下一次约00:54检查。
