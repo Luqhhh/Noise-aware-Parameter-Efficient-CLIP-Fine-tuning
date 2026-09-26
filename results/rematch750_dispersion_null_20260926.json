@@ -1,0 +1,479 @@
+{
+ "stage": "measurement",
+ "test_used_for_tuning": false,
+ "changes_any_threshold": false,
+ "derives_any_candidate": false,
+ "uses_submission_slot": false,
+ "reps": 1000,
+ "seed": 42,
+ "val_prediction_source": {
+  "method": "frozen backbone + linear head on cached features; CPU only",
+  "checkpoint": "outputs/rematch750/RM_LP/seed42/checkpoints/best.pt",
+  "rows": 14880,
+  "reconstructed_micro": 0.6362231373786926,
+  "recorded_micro": 0.6363575458526611,
+  "abs_micro_diff_images": 1.9999980926513672,
+  "predicted_class_count": 741
+ },
+ "test_csv": {
+  "RM_LP": {
+   "path": "outputs/rematch750/RM_LP/seed42/submission/pred_results.csv",
+   "sha256": "5d564b6d96cf038cbc750114674c9bb204c12c361fba55cff143c34176f43dc2",
+   "rows": 37444,
+   "distinct_predicted_classes": 740
+  },
+  "RM_FT": {
+   "path": "outputs/rematch750/RM_FT/seed42/submission/pred_results.csv",
+   "sha256": "7e390c533883fea6e66453751216cb22ca608bf34f50f7b79d2d59d13c7ca12e",
+   "rows": 37444,
+   "distinct_predicted_classes": 741
+  }
+ },
+ "O1_val_vs_test": {
+  "k": 2.5163978494623658,
+  "defined_classes": 741,
+  "mean_z": 0.10888609290122986,
+  "sd_z": 2.5128016471862793,
+  "chi2_over_dof": 6.317507266998291,
+  "abs_z_gt_2": 244,
+  "abs_z_gt_3": 110,
+  "abs_z_gt_4": 62,
+  "x0_y_pos": 2,
+  "x0_y0": 7
+ },
+ "N1_test_split_14880_22564": {
+  "what": "test 37444 随机切 14880 / 22564，两侧同总体，k=1.5168；X 规模与 O1 严格一致",
+  "pool": "RM_LP test pred_results.csv",
+  "n_a": 14880,
+  "n_b": 22564,
+  "summary": {
+   "sd_z": {
+    "observed": 2.5128016471862793,
+    "null_mean": 1.056546331524849,
+    "null_sd": 0.03433618526312158,
+    "null_p2_5": 0.9935492381453515,
+    "null_median": 1.0556375980377197,
+    "null_p97_5": 1.1241879969835282,
+    "null_min": 0.9545632004737854,
+    "null_max": 1.184775471687317,
+    "p_ge_observed": 0.0
+   },
+   "chi2_over_dof": {
+    "observed": 6.317507266998291,
+    "null_mean": 1.1260772814750672,
+    "null_sd": 0.07427074591956632,
+    "null_p2_5": 0.9921484917402268,
+    "null_median": 1.1222167015075684,
+    "null_p97_5": 1.277591836452484,
+    "null_min": 0.9144057631492615,
+    "null_max": 1.4172205924987793,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_2": {
+    "observed": 244.0,
+    "null_mean": 42.219,
+    "null_sd": 5.746482494627568,
+    "null_p2_5": 31.0,
+    "null_median": 42.0,
+    "null_p97_5": 53.0,
+    "null_min": 24.0,
+    "null_max": 64.0,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_3": {
+    "observed": 110.0,
+    "null_mean": 8.007,
+    "null_sd": 2.708188561619237,
+    "null_p2_5": 3.0,
+    "null_median": 8.0,
+    "null_p97_5": 13.024999999999977,
+    "null_min": 1.0,
+    "null_max": 18.0,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_4": {
+    "observed": 62.0,
+    "null_mean": 1.807,
+    "null_sd": 1.328727404894064,
+    "null_p2_5": 0.0,
+    "null_median": 2.0,
+    "null_p97_5": 5.0,
+    "null_min": 0.0,
+    "null_max": 7.0,
+    "p_ge_observed": 0.0
+   },
+   "defined_classes": {
+    "observed": 741.0,
+    "null_mean": 735.196,
+    "null_sd": 1.7800990850940757,
+    "null_p2_5": 732.0,
+    "null_median": 735.0,
+    "null_p97_5": 738.0,
+    "null_min": 730.0,
+    "null_max": 740.0,
+    "p_ge_observed": 0.0
+   },
+   "x0_y_pos": {
+    "observed": 2.0,
+    "null_mean": 4.804,
+    "null_sd": 1.7800990850940763,
+    "null_p2_5": 2.0,
+    "null_median": 5.0,
+    "null_p97_5": 8.0,
+    "null_min": 0.0,
+    "null_max": 10.0,
+    "p_ge_observed": 0.9769999980926514
+   },
+   "x0_y0": {
+    "observed": 7.0,
+    "null_mean": 10.0,
+    "null_sd": 0.0,
+    "null_p2_5": 10.0,
+    "null_median": 10.0,
+    "null_p97_5": 10.0,
+    "null_min": 10.0,
+    "null_max": 10.0,
+    "p_ge_observed": 1.0
+   },
+   "mean_z": {
+    "observed": 0.10888609290122986,
+    "null_mean": 0.09978777798637747,
+    "null_sd": 0.013109669771123381,
+    "null_p2_5": 0.074635249376297,
+    "null_median": 0.09966320544481277,
+    "null_p97_5": 0.12498357258737088,
+    "null_min": 0.05910349637269974,
+    "null_max": 0.13904763758182526,
+    "p_ge_observed": 0.24500000476837158
+   }
+  }
+ },
+ "N2_test_split_half": {
+  "what": "test 37444 随机切 18722 / 18722，k=1",
+  "pool": "RM_LP test pred_results.csv",
+  "n_a": 18722,
+  "n_b": 18722,
+  "summary": {
+   "sd_z": {
+    "observed": 2.5128016471862793,
+    "null_mean": 1.0393558777570724,
+    "null_sd": 0.03179068670093937,
+    "null_p2_5": 0.9788609564304351,
+    "null_median": 1.0385822057724,
+    "null_p97_5": 1.106259474158287,
+    "null_min": 0.9415948987007141,
+    "null_max": 1.1533355712890625,
+    "p_ge_observed": 0.0
+   },
+   "chi2_over_dof": {
+    "observed": 6.317507266998291,
+    "null_mean": 1.0866133705973626,
+    "null_sd": 0.06740591869605236,
+    "null_p2_5": 0.9629606902599335,
+    "null_median": 1.0836085677146912,
+    "null_p97_5": 1.2315149515867232,
+    "null_min": 0.8889653086662292,
+    "null_max": 1.3378660678863525,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_2": {
+    "observed": 244.0,
+    "null_mean": 38.786,
+    "null_sd": 5.812916135124763,
+    "null_p2_5": 27.0,
+    "null_median": 39.0,
+    "null_p97_5": 51.0,
+    "null_min": 21.0,
+    "null_max": 56.0,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_3": {
+    "observed": 110.0,
+    "null_mean": 6.253,
+    "null_sd": 2.3644410717084074,
+    "null_p2_5": 2.0,
+    "null_median": 6.0,
+    "null_p97_5": 11.0,
+    "null_min": 0.0,
+    "null_max": 15.0,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_4": {
+    "observed": 62.0,
+    "null_mean": 1.416,
+    "null_sd": 1.1323542847652497,
+    "null_p2_5": 0.0,
+    "null_median": 1.0,
+    "null_p97_5": 4.0,
+    "null_min": 0.0,
+    "null_max": 5.0,
+    "p_ge_observed": 0.0
+   },
+   "defined_classes": {
+    "observed": 741.0,
+    "null_mean": 736.914,
+    "null_sd": 1.5293603051416373,
+    "null_p2_5": 734.0,
+    "null_median": 737.0,
+    "null_p97_5": 740.0,
+    "null_min": 730.0,
+    "null_max": 740.0,
+    "p_ge_observed": 0.0
+   },
+   "x0_y_pos": {
+    "observed": 2.0,
+    "null_mean": 3.086,
+    "null_sd": 1.5293603051416385,
+    "null_p2_5": 0.0,
+    "null_median": 3.0,
+    "null_p97_5": 6.0,
+    "null_min": 0.0,
+    "null_max": 10.0,
+    "p_ge_observed": 0.8560000061988831
+   },
+   "x0_y0": {
+    "observed": 7.0,
+    "null_mean": 10.0,
+    "null_sd": 0.0,
+    "null_p2_5": 10.0,
+    "null_median": 10.0,
+    "null_p97_5": 10.0,
+    "null_min": 10.0,
+    "null_max": 10.0,
+    "p_ge_observed": 1.0
+   },
+   "mean_z": {
+    "observed": 0.10888609290122986,
+    "null_mean": 0.08151134928688407,
+    "null_sd": 0.01290238192927882,
+    "null_p2_5": 0.05646542571485043,
+    "null_median": 0.08103461563587189,
+    "null_p97_5": 0.107358680665493,
+    "null_min": 0.04209993779659271,
+    "null_max": 0.12984086573123932,
+    "p_ge_observed": 0.01899999938905239
+   }
+  }
+ },
+ "N3_val_split_half": {
+  "what": "val 14880 随机切 7440 / 7440，k=1，域内基线",
+  "pool": "RM-LP val predictions (CPU reconstruction)",
+  "n_a": 7440,
+  "n_b": 7440,
+  "summary": {
+   "sd_z": {
+    "observed": 2.5128016471862793,
+    "null_mean": 1.092098425745964,
+    "null_sd": 0.03815854263394163,
+    "null_p2_5": 1.0260714948177339,
+    "null_median": 1.0910311341285706,
+    "null_p97_5": 1.1728199034929276,
+    "null_min": 0.9651839733123779,
+    "null_max": 1.2384165525436401,
+    "p_ge_observed": 0.0
+   },
+   "chi2_over_dof": {
+    "observed": 6.317507266998291,
+    "null_mean": 1.2082151911258698,
+    "null_sd": 0.08584097391253726,
+    "null_p2_5": 1.06267192363739,
+    "null_median": 1.2036209106445312,
+    "null_p97_5": 1.3930044054985047,
+    "null_min": 0.9404999017715454,
+    "null_max": 1.5595567226409912,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_2": {
+    "observed": 244.0,
+    "null_mean": 45.488,
+    "null_sd": 5.85714624729161,
+    "null_p2_5": 34.0,
+    "null_median": 45.0,
+    "null_p97_5": 57.0,
+    "null_min": 28.0,
+    "null_max": 64.0,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_3": {
+    "observed": 110.0,
+    "null_mean": 10.522,
+    "null_sd": 2.947236366870186,
+    "null_p2_5": 5.0,
+    "null_median": 10.0,
+    "null_p97_5": 16.0,
+    "null_min": 3.0,
+    "null_max": 26.0,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_4": {
+    "observed": 62.0,
+    "null_mean": 3.37,
+    "null_sd": 1.8050923406735655,
+    "null_p2_5": 0.9750000000000014,
+    "null_median": 3.0,
+    "null_p97_5": 8.0,
+    "null_min": 0.0,
+    "null_max": 11.0,
+    "p_ge_observed": 0.0
+   },
+   "defined_classes": {
+    "observed": 741.0,
+    "null_mean": 738.278,
+    "null_sd": 1.4087940590095729,
+    "null_p2_5": 735.0,
+    "null_median": 738.0,
+    "null_p97_5": 741.0,
+    "null_min": 734.0,
+    "null_max": 741.0,
+    "p_ge_observed": 0.03400000184774399
+   },
+   "x0_y_pos": {
+    "observed": 2.0,
+    "null_mean": 2.722,
+    "null_sd": 1.4087940590095844,
+    "null_p2_5": 0.0,
+    "null_median": 3.0,
+    "null_p97_5": 6.0,
+    "null_min": 0.0,
+    "null_max": 7.0,
+    "p_ge_observed": 0.7979999780654907
+   },
+   "x0_y0": {
+    "observed": 7.0,
+    "null_mean": 9.0,
+    "null_sd": 0.0,
+    "null_p2_5": 9.0,
+    "null_median": 9.0,
+    "null_p97_5": 9.0,
+    "null_min": 9.0,
+    "null_max": 9.0,
+    "p_ge_observed": 1.0
+   },
+   "mean_z": {
+    "observed": 0.10888609290122986,
+    "null_mean": 0.1248672653734684,
+    "null_sd": 0.010361007978525346,
+    "null_p2_5": 0.10637545250356198,
+    "null_median": 0.12445667013525963,
+    "null_p97_5": 0.1473858643323183,
+    "null_min": 0.09828828275203705,
+    "null_max": 0.1672021895647049,
+    "p_ge_observed": 0.949999988079071
+   }
+  }
+ },
+ "N1ft_test_split_RM_FT": {
+  "what": "N1 同设计，但用 RM_FT 的 test 预测（手臂对照）",
+  "pool": "RM_FT test pred_results.csv",
+  "n_a": 14880,
+  "n_b": 22564,
+  "summary": {
+   "sd_z": {
+    "observed": 2.5128016471862793,
+    "null_mean": 1.0498221120238305,
+    "null_sd": 0.034077558332050006,
+    "null_p2_5": 0.9863893538713455,
+    "null_median": 1.047855257987976,
+    "null_p97_5": 1.1146882116794585,
+    "null_min": 0.9480715394020081,
+    "null_max": 1.1456114053726196,
+    "p_ge_observed": 0.0
+   },
+   "chi2_over_dof": {
+    "observed": 6.317507266998291,
+    "null_mean": 1.1111732754707337,
+    "null_sd": 0.0729154804472667,
+    "null_p2_5": 0.9779169678688049,
+    "null_median": 1.1057828664779663,
+    "null_p97_5": 1.2519999891519547,
+    "null_min": 0.906262218952179,
+    "null_max": 1.325857400894165,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_2": {
+    "observed": 244.0,
+    "null_mean": 41.437,
+    "null_sd": 6.1588929981745055,
+    "null_p2_5": 30.0,
+    "null_median": 41.0,
+    "null_p97_5": 54.0,
+    "null_min": 24.0,
+    "null_max": 63.0,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_3": {
+    "observed": 110.0,
+    "null_mean": 7.316,
+    "null_sd": 2.6132303712020786,
+    "null_p2_5": 2.0,
+    "null_median": 7.0,
+    "null_p97_5": 13.0,
+    "null_min": 0.0,
+    "null_max": 17.0,
+    "p_ge_observed": 0.0
+   },
+   "abs_z_gt_4": {
+    "observed": 62.0,
+    "null_mean": 1.548,
+    "null_sd": 1.2029726277613966,
+    "null_p2_5": 0.0,
+    "null_median": 1.0,
+    "null_p97_5": 4.0,
+    "null_min": 0.0,
+    "null_max": 6.0,
+    "p_ge_observed": 0.0
+   },
+   "defined_classes": {
+    "observed": 741.0,
+    "null_mean": 737.741,
+    "null_sd": 1.4289719944634753,
+    "null_p2_5": 735.0,
+    "null_median": 738.0,
+    "null_p97_5": 740.0,
+    "null_min": 733.0,
+    "null_max": 741.0,
+    "p_ge_observed": 0.01600000075995922
+   },
+   "x0_y_pos": {
+    "observed": 2.0,
+    "null_mean": 3.259,
+    "null_sd": 1.4289719944634796,
+    "null_p2_5": 1.0,
+    "null_median": 3.0,
+    "null_p97_5": 6.0,
+    "null_min": 0.0,
+    "null_max": 8.0,
+    "p_ge_observed": 0.9039999842643738
+   },
+   "x0_y0": {
+    "observed": 7.0,
+    "null_mean": 9.0,
+    "null_sd": 0.0,
+    "null_p2_5": 9.0,
+    "null_median": 9.0,
+    "null_p97_5": 9.0,
+    "null_min": 9.0,
+    "null_max": 9.0,
+    "p_ge_observed": 1.0
+   },
+   "mean_z": {
+    "observed": 0.10888609290122986,
+    "null_mean": 0.09622257708385587,
+    "null_sd": 0.011114417798913884,
+    "null_p2_5": 0.07437989003956318,
+    "null_median": 0.09571948647499084,
+    "null_p97_5": 0.11924928873777389,
+    "null_min": 0.059496890753507614,
+    "null_max": 0.12936511635780334,
+    "p_ge_observed": 0.13500000536441803
+   }
+  }
+ },
+ "preregistered_verdict": {
+  "rule": "p_ge(sd_z) > 0.05 → NOT_EVIDENCE; <= 0.05 → EVIDENCE_OF_DIFFERENCE",
+  "p_ge_sd_z_N1": 0.0,
+  "p_ge_chi2_N1": 0.0,
+  "verdict": "EVIDENCE_OF_DIFFERENCE",
+  "text": "EVIDENCE_OF_DIFFERENCE: O1 的 sd(z) 显著超出同总体切分基线。但机制仍不可辨识 —— 统计量比对预测分布且 test 标签不可得，不能区分「test 真实类别分布不同」与「逐类漂移崩溃」。"
+ }
+}
