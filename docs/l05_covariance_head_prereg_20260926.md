@@ -1,4 +1,4 @@
-# L05 共享协方差判别头（预注册）
+# L05 共享协方差判别头（预注册与实测，已关闭）
 
 实验 `L05_COVARIANCE_HEAD_20260926`，独立分支 `codex/l05_covariance_head`，
 基于 main `04fc74b`。开始前已 fetch 并核对所有本地/远端分支；V4 H01–H24、V5 H01–H12
@@ -44,3 +44,39 @@ OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2 python3 scripts/run_l05_covariance_head
 代码、配置、正式输出均在本worktree的独立目录。禁止覆盖已存在结果；
 只拟合训练集均值/协方差、验证集解码prior；测试集不用于任何拟合或选择。
 CLIP ViT-B/32/OpenAI官方权重、单checkpoint、无外部/跨阶段资产、无测试时训练。
+
+
+## 实测结果与交付
+
+CPU正式拟合完成；训练133,815张、验证14,880张，750类全部覆盖，训练每类4–223张。
+训练侧OAS收缩系数0.0009290332；没有扫描或修改预注册公式。
+
+| 候选 | center macro/micro | 固定解码 macro/micro | 对L05解码 Δmacro/Δmicro |
+|---|---|---|---|
+| CH00 各向同性 | 68.7317% / 69.4220% | 69.0352% / 69.5901% | −6.7913pp / −7.0632pp |
+| CH01 共享协方差OAS | 70.6992% / 71.4449% | 71.1367% / 71.6935% | −4.6898pp / −4.9597pp |
+
+两臂中心视图均触发−2pp工程止损，未晋级；虽CH01较CH00好，仍不能替换L05。
+关闭该固定配方，不派生收缩/温度/类先验扫描，也不进行测试集候选推理。
+原型均值与高斯假设在该特征/标签条件下没有达到目标；不据此推断所有协方差方法无效。
+
+4项测试通过，包括与sklearn OAS独立实现的一致性、直接Gaussian距离与线性头等价。
+正式两臂各14,880个解码预测经NumPy float64独立重算与Torch完全一致；原生完整checkpoint
+重载后各29,760个分支预测一致，logits最大差0，视觉权重逐位未变。
+这些是**缓存验证与模型重载证据**，未重跑全部图像推理，未产生平台成绩。
+
+实现新增2个脚本、1份固定配置、4项测试及本记录。实现提交`9bb7fc3`已在开跑前冻结并推送。
+全部分片SHA、源配置/数据/父模型身份、checkpoint SHA、实测数值和交付校验输出见
+[机器可读结果](../results/l05_covariance_head_20260926.json)。本地运行输出在
+`/home/lux1/noise-worktrees/l05_covariance_head/outputs/codex/l05_covariance_head/`。
+
+本轮交付既有L05_T14_P060保底包（不是本轮候选），37,444行，9/9校验通过：
+
+- CSV：`/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv`
+- ZIP：`/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip`
+- CSV SHA256：`51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75`
+- ZIP SHA256：`e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f`
+
+校验确切命令记录在结果JSON的`delivery.validation_command`。
+平台最佳仍为66.94797564362783%，70分目标未达。本轮验证后提交/推送方案分支，
+main集成目录按自动模式pull、merge、复核、push，随后停在交付检查点。
