@@ -1,4 +1,4 @@
-# L05 Patch-stem MixStyle 配对续训（预注册，运行中）
+# L05 Patch-stem MixStyle 配对续训（预注册与实测，已关闭）
 
 分支 `codex/l05_mixstyle`；实验 `L05_MIXSTYLE_20260926`。2026-09-26 已同步 origin/main，
 检查全部分支、V4 82 份配置、V5 64 份配置、focus 和近期关闭实验：没有 MixStyle 方向。
@@ -37,7 +37,7 @@ RNG，保证配对顺序。调用计数与 checkpoint SHA 绑定保存，恢复�
 MS01 必须同时超过现役 L05 与配对 MS00 解码 macro ≥.30pp，且 micro 不下降；MS00 若单独
 超过现役同门槛可作为续训候选，不归因于 MixStyle。未过门关闭，不自动派生扫描。
 过门后独立重载、条件交叉校准和生成单 checkpoint CSV/ZIP，平台上传仍由用户执行。
-无效运行/实现 smoke 不进结果表。正式结果尚未产生。
+无效运行/实现 smoke 不进结果表。正式结果见文末，固定配方未过门。
 
 ## 规则合规性
 
@@ -94,10 +94,10 @@ V2 smoke 已完成：2 次优化更新、完整 14,880 张验证及重载通过�
 正式队列于 2026-09-26 19:33:48（Asia/Shanghai）启动，驱动 PID 86908，初始 MS00 子进程
 PID 86947；进程启动时刻与源码提交写入 `outputs/codex/l05_mixstyle/queue_process.json`。
 这是运行记录，不能仅凭 PID 文件判断仍在运行；须匹配 /proc 的 start_ticks、检查活进程
-与子进程及其日志。当前状态为 **formal_queue_running_no_strategy_result**。
+与子进程及其日志。启动时状态为 **formal_queue_running_no_strategy_result**；最终状态为 **complete**。
 代码/预注册及启动审计已推送方案分支，待两臂结果、重载/提交校验完成再集成 main。
 
-## 控制臂中期结果（配对实验尚未完成）
+## 控制臂中期结果（历史快照；最终配对结果见下）
 
 MS00 已完成两轮、262/262 次优化更新，未触发止损，按 center raw macro 选择 epoch1。
 epoch1 中心视图 macro/micro=75.3086%/76.3508%；epoch2=75.2473%/76.2970%。
@@ -118,3 +118,49 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 scripts/audit_l05_mixstyle_deco
 MS01 已由原队列自动启动（子进程163142），epoch0复现 L05；其训练及方法对照结果尚未完成。
 MS00 阴性结果不构成提前终止 MS01 的依据，固定配方与晋级门均保持原样。
 本节为中期实测记录，不是实验段交付；未产生新平台提交或新平台成绩，暂不集成 main。
+
+
+## 最终实测与关闭结论（2026-09-26 23:30 检查）
+
+原串行队列已正常结束，MS00/MS01 各完成 2 epoch、262/262 次优化更新，无止损。
+两臂均按预注册 center raw macro 选择 epoch1；MS01 epoch2 center macro/micro
+为75.3201%/76.3441%，未超过其 epoch1 macro。最佳 checkpoint 原生重载中心验证通过，
+另由独立进程在不安装训练 hook 的情况下生成完整 val 双分支缓存。
+
+| 固定 Flip/T1.4/prior0.60 | macro | micro | 对 L05 Δmacro | 对 L05 Δmicro |
+|---|---:|---:|---:|---:|
+| 现役 L05 | 75.8265% | 76.6532% | — | — |
+| MS00 普通续训 | 75.7948% | 76.6129% | −0.0317pp | −0.0403pp |
+| MS01 MixStyle | 75.7095% | 76.5323% | −0.1171pp | −0.1210pp |
+
+MS01 相对配对 MS00 也下降0.0853pp/0.0806pp，**两臂均未过门，本固定配方关闭**。
+不自动派生概率/强度/层位置扫描。此结论只覆盖该固定预算配方，不证明所有 MixStyle 无效。
+训练结束调用计数200,724，激活100,360次、涉及401,437个样本前向；这不是独立图片数。
+最佳 MS01 SHA256=`e3530676c08a830575ea5259513af2714a02ebd48c9944f42f77661f27512523`。
+两臂 best/epoch1/last checkpoint 与各自 MixStyle sidecar SHA 均复核一致。
+
+两臂独立 CPU NumPy float64 解码各14,880/14,880个预测与 Torch 完全一致，MS01 bias
+最大差6.66e-7。缓存、checkpoint、配置、划分及484份固定源码 blob 绑定验证通过。
+完整数值、逐轮指标、重载指标、激活计数、文件哈希及提交校验输出见
+[最终机器可读结果](../results/l05_mixstyle_20260926.json)。此前中期 JSON 保留为历史快照。
+
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 scripts/audit_l05_mixstyle_decode.py \
+  --config configs/l05_mixstyle/fixed.json --arm MS01
+python3 -m pytest tests/test_l05_mixstyle.py -q
+python3 scripts/check_submission.py \
+  --test_dir /home/lux1/noise/test \
+  --class-mapping /home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json \
+  --csv /home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv \
+  --zip /home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip
+```
+
+复放训练/审计应使用新的独立 output 路径；原目录拒绝覆盖。完整固定配置在
+`configs/l05_mixstyle/fixed.json`，正式训练入口仍为前述 `--phase queue`。
+
+本轮交付现役 **L05_T14_P060 保底 CSV/ZIP**，不是 MS01 新候选：37,444行，9/9提交校验通过，
+CSV SHA256=`51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75`，
+ZIP SHA256=`e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f`。
+路径见上方校验命令及最终结果 JSON。本轮未上传平台，无新平台成绩；已知最佳仍为
+**66.94797564362783%**，**70分以上目标未达到**。在本实验段交付检查点停止扩展。
+后续运行按用户新要求每30分钟监控一次，不持续轮询队列和日志。
