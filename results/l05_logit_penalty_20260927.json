@@ -1,0 +1,443 @@
+{
+  "baseline": {
+    "macro": 0.7582651238982523,
+    "micro": 0.7665322580645161
+  },
+  "candidate": {
+    "binding": {
+      "autocast": false,
+      "cache": "/home/lux1/noise-worktrees/l05_logit_penalty/outputs/codex/l05_logit_penalty/runs/SD01/seed42/val_branch_logits.pt",
+      "cache_format_version": 2,
+      "cache_sha256": "fbfc6da441fc7f1335da61e56aea4596e5106f05cb63f877f2385f0d05a3c74a",
+      "cache_tta_fusion": "mean_probabilities",
+      "cache_tta_temperature": 1.0,
+      "checkpoint": "/home/lux1/noise-worktrees/l05_logit_penalty/outputs/codex/l05_logit_penalty/runs/SD01/seed42/checkpoints/best.pt",
+      "checkpoint_sha256": "47a9f1dd37de03a8d127e7e013da333d5d3f91ec8de682dc666db2910f7b7ee7",
+      "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+      "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+      "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+      "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+      "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "encoder_precision": "float32",
+      "feature_precision": "float32",
+      "input_resolution": 384,
+      "num_classes": 750,
+      "num_samples": 14880,
+      "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+      "protocol": "rematch750_search_v5",
+      "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+      "split_seed": 42,
+      "training_config_sha256": "c47da0d905ee6431035e414d0330c062d520939229a0842c2743fffb9d797b1d",
+      "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+    },
+    "center": {
+      "macro": 0.7528419494628906,
+      "micro": 0.7631048560142517
+    },
+    "checkpoint": "/home/lux1/noise-worktrees/l05_logit_penalty/outputs/codex/l05_logit_penalty/runs/SD01/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "47a9f1dd37de03a8d127e7e013da333d5d3f91ec8de682dc666db2910f7b7ee7",
+    "decode": {
+      "flip_no_prior_macro": 0.7556167840957642,
+      "flip_no_prior_micro": 0.7658601999282837,
+      "macro": 0.7582533955574036,
+      "micro": 0.7664650678634644,
+      "prior_bias_sha256": "5d96eab6f62b54791ae0418cbcd37b8f89d2a23d009b49b8f0afd77c5a0586d9",
+      "prior_fit_iterations": 50,
+      "prior_strength": 0.6,
+      "vs_center": {
+        "changed": 766,
+        "corrections": 197,
+        "regressions": 147
+      },
+      "vs_flip_no_prior": {
+        "changed": 602,
+        "corrections": 131,
+        "regressions": 122
+      }
+    },
+    "prior_strength_scanned": false,
+    "protocol": {
+      "center": "center view only",
+      "decode": "horizontal_flip:mean_probabilities:t=1.4:validation_fitted_prior=0.6"
+    },
+    "schema_version": 1,
+    "temperature_scanned": false,
+    "test_data_used": false,
+    "training_config_sha256": "c47da0d905ee6431035e414d0330c062d520939229a0842c2743fffb9d797b1d"
+  },
+  "coefficient": {
+    "coefficient": 0.004359280240465393,
+    "feature_shards": [
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_000000.pt",
+        "sha256": "fec701f9b1bdb4fcd23bfdc5c7e74fdaac3fd64809a1571278977064b82da1ef"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_004096.pt",
+        "sha256": "6d97efae7b05ce1cfbd04e6f96d7c022020d70e66268df03527b9179895b6382"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_008192.pt",
+        "sha256": "c9fa9666f7942036241f72f374a6907e631926f3b68f768eec3e326bd2d81cbe"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_012288.pt",
+        "sha256": "1bfa5fb5871da1f1b519a2e4c9545e295ec4b0c3049f825f83361803084f77e7"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_016384.pt",
+        "sha256": "fa92467e4737debf67cbc25b9a3d177a0b94395691d90d7ec522b8c466bd0047"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_020480.pt",
+        "sha256": "3f423b4d4736c83df10977cbef5ac6964f2a38b72794d4ba78f81e7c902448c6"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_024576.pt",
+        "sha256": "d895e987ed141f3d56ff838c94f4256c48570df242bc208fe20f511b3fc60f2d"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_028672.pt",
+        "sha256": "b70fdc0a1a11ea4432df009117420d01fdb723ad9b7e2176e4b4513fb79cf614"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_032768.pt",
+        "sha256": "5eb04b4f36dbc236704bb7da29ee5d6191f8480807232ba4e1c3d12058aa2b60"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_036864.pt",
+        "sha256": "0ea4a05c9c054a4beeeb0e2ef21816f554cd7d430eb5299763eba23d2f5a5d53"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_040960.pt",
+        "sha256": "f649c00af384c34a211167859b7bdb499d8daf21f09dc57f24b2af78027574f9"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_045056.pt",
+        "sha256": "9cd4576bb5255883b1136984fc2f4b766cba484f94b19f543430992b66564c4f"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_049152.pt",
+        "sha256": "c2ed5c245e493e4140adb01e35e2b44026ab880a47e4147a237e817bfcd0c941"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_053248.pt",
+        "sha256": "11d18733993355d520f0886984f730253b5a58a55eafe0ee6b07503980b417f8"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_057344.pt",
+        "sha256": "440ba8de59d4b4b92e0a63afe6067f2ebd9c3e032c251b1405696bc09ff3a1cf"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_061440.pt",
+        "sha256": "e54244c34ce93aed6d75078962e6ee5bf40c8f476ddebfb1b1f00f71dfa703d5"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_065536.pt",
+        "sha256": "827fa62ed54a07d63a699e02553156d4d6acb772c230de0868f14f8a94a44726"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_069632.pt",
+        "sha256": "db4cbe7fee26b6fe4a118cc6dc5ae979268f6316f6ccf464f2e917fcf3734d07"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_073728.pt",
+        "sha256": "52749a0c2c0a66088271448d139060f61568b71e39406af997656e740f355cd5"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_077824.pt",
+        "sha256": "8c62459af1c1d6b06f81028e5ae8040c6bd17afe93ff6cb2634067257426197f"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_081920.pt",
+        "sha256": "2f9118d983440c3d14cfea48701e42a52697c30f37c3a47856fc78d4712f8652"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_086016.pt",
+        "sha256": "7a8303af19a9db0059f109a63092320a93442ad0d82e34683b4a738e425122c1"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_090112.pt",
+        "sha256": "63ea3b3225613e61c31a44b05b58a1254de7c7be9c862e6671c9a5a4d4998c8f"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_094208.pt",
+        "sha256": "c70e2ac5290b50a8cbed7051ed8fbc22f77702c4162f88a9e9530d326e653c97"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_098304.pt",
+        "sha256": "38d38543247cb75332ded8a06ce4026512622b009ac4941636c3b473b9555995"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_102400.pt",
+        "sha256": "68ea2c969d904788a6fe6abd4ed2e9e38d0cfbfe0b3734974b8feb32b30cca19"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_106496.pt",
+        "sha256": "8341de4cdfe81ea900e3065c98c04bfd91d2f6e49792042e244b6ffdfbc3b09b"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_110592.pt",
+        "sha256": "c0928f9ee7331799ab34346da5f85220028778055196fc56a26812652cfaad99"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_114688.pt",
+        "sha256": "43e8cdaa57f243fa92723c564f122f78e2b7c31e7c8dff28b5b8a97a324f0524"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_118784.pt",
+        "sha256": "9f9a9125b6a8426df6ac807f635b6d557bd235980e5471bb7128b6df2840fa0c"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_122880.pt",
+        "sha256": "8c262d7ba181f4f554654e8fd7825f689c0ef6094a7976ff9d2041d26542f72d"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_126976.pt",
+        "sha256": "6f66b2bd1a0f0a7f5425c2bf72a08dccaf0c9d338642146832f9c1f75d3cf345"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_131072.pt",
+        "sha256": "687f0f7125c5e97a558b374dfc4bf34e46c3b5de2bdf953197c4c39291b34222"
+      }
+    ],
+    "initial_penalty_to_gce_ratio": 0.1,
+    "mean_gce": 0.26008401931954767,
+    "mean_squared_logit": 11.932429436643941,
+    "source_identity": {
+      "config": "de61d151e22fdbd4f2b0ca3c2b253c033b302ba83dd77eefe03a0075bb205f8d",
+      "format": 1,
+      "manifest": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "parent": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+      "reference_cache": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc"
+    },
+    "test_used": false,
+    "training_samples": 133815,
+    "validation_used_for_coefficient": false
+  },
+  "control": {
+    "binding": {
+      "autocast": false,
+      "cache": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/val_branch_logits.pt",
+      "cache_format_version": 2,
+      "cache_sha256": "c68c1255db037483ba48fb37496a259e12778a227af4d1be47719adf31b23762",
+      "cache_tta_fusion": "mean_probabilities",
+      "cache_tta_temperature": 1.0,
+      "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/checkpoints/best.pt",
+      "checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+      "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+      "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+      "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+      "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+      "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "encoder_precision": "float32",
+      "feature_precision": "float32",
+      "input_resolution": 384,
+      "num_classes": 750,
+      "num_samples": 14880,
+      "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+      "protocol": "rematch750_search_v5",
+      "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+      "split_seed": 42,
+      "training_config_sha256": "f851988f03f7bac101133551d30146e38928cc0c87618f9408da4422eeb39491",
+      "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+    },
+    "center": {
+      "macro": 0.7530860900878906,
+      "micro": 0.7635080814361572
+    },
+    "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+    "decode": {
+      "flip_no_prior_macro": 0.754989743232727,
+      "flip_no_prior_micro": 0.7652553915977478,
+      "macro": 0.7579477429389954,
+      "micro": 0.7661290168762207,
+      "prior_bias_sha256": "4b14713d0a62b7dcb014b04c9a0a71382c542ba567866a0cbe73f089828b3c63",
+      "prior_fit_iterations": 50,
+      "prior_strength": 0.6,
+      "vs_center": {
+        "changed": 785,
+        "corrections": 194,
+        "regressions": 155
+      },
+      "vs_flip_no_prior": {
+        "changed": 616,
+        "corrections": 134,
+        "regressions": 121
+      }
+    },
+    "prior_strength_scanned": false,
+    "protocol": {
+      "center": "center view only",
+      "decode": "horizontal_flip:mean_probabilities:t=1.4:validation_fitted_prior=0.6"
+    },
+    "schema_version": 1,
+    "temperature_scanned": false,
+    "test_data_used": false,
+    "training_config_sha256": "f851988f03f7bac101133551d30146e38928cc0c87618f9408da4422eeb39491"
+  },
+  "delivery": {
+    "checked_at": "2026-09-27T01:45:28.782950+08:00",
+    "csv": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+    "csv_sha256": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
+    "kind": "existing_platform_best_fallback_not_SD01",
+    "rows": 37444,
+    "validation_command": [
+      "python3",
+      "scripts/check_submission.py",
+      "--test_dir",
+      "/home/lux1/noise/test",
+      "--class-mapping",
+      "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+      "--csv",
+      "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+      "--zip",
+      "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip"
+    ],
+    "validation_exit_code": 0,
+    "validation_output": "Test set contains 37444 images\n\n============================================================\nChecking pred_results.csv...\n============================================================\n  ✅ File name: pred_results.csv\n  ✅ Line count: 37444 (matches test set)\n  ✅ All image names found in test set\n  ✅ No duplicate image names\n  ✅ All test images covered\n  ✅ All labels are 4-digit strings\n  ✅ All labels in range [0000, 0749]\n\n============================================================\nChecking submission.zip...\n============================================================\n  ✅ ZIP contains only pred_results.csv (no directory)\n\n============================================================\n🎉 All checks passed! Submission is ready.\n",
+    "zip": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip",
+    "zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f"
+  },
+  "delta_vs_control_pp": {
+    "macro": 0.030565932579262878,
+    "micro": 0.033602150537637154
+  },
+  "delta_vs_l05_pp": {
+    "macro": -0.0011716333252365096,
+    "micro": -0.0067204301075207695
+  },
+  "epochs": {
+    "1": {
+      "attempted_optimizer_updates": 131,
+      "cumulative_training_seconds": 2753.673411701995,
+      "raw_macro": 0.7528419494628906,
+      "raw_micro": 0.7631048560142517,
+      "successful_optimizer_updates": 131
+    },
+    "2": {
+      "attempted_optimizer_updates": 262,
+      "cumulative_training_seconds": 5474.580453955001,
+      "raw_macro": 0.7526695728302002,
+      "raw_micro": 0.7631048560142517,
+      "successful_optimizer_updates": 262
+    }
+  },
+  "experiment_id": "L05_LOGIT_PENALTY_20260926",
+  "goal_above_70_verified": false,
+  "implementation_commit": "536056220945f8707bcc6244d35b9ebf057f854f",
+  "independent_audit": {
+    "binding": {
+      "autocast": false,
+      "cache": "/home/lux1/noise-worktrees/l05_logit_penalty/outputs/codex/l05_logit_penalty/runs/SD01/seed42/val_branch_logits.pt",
+      "cache_format_version": 2,
+      "cache_sha256": "fbfc6da441fc7f1335da61e56aea4596e5106f05cb63f877f2385f0d05a3c74a",
+      "cache_tta_fusion": "mean_probabilities",
+      "cache_tta_temperature": 1.0,
+      "checkpoint": "/home/lux1/noise-worktrees/l05_logit_penalty/outputs/codex/l05_logit_penalty/runs/SD01/seed42/checkpoints/best.pt",
+      "checkpoint_sha256": "47a9f1dd37de03a8d127e7e013da333d5d3f91ec8de682dc666db2910f7b7ee7",
+      "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+      "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+      "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+      "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+      "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "encoder_precision": "float32",
+      "feature_precision": "float32",
+      "input_resolution": 384,
+      "num_classes": 750,
+      "num_samples": 14880,
+      "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+      "protocol": "rematch750_search_v5",
+      "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+      "split_seed": 42,
+      "training_config_sha256": "c47da0d905ee6431035e414d0330c062d520939229a0842c2743fffb9d797b1d",
+      "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+    },
+    "evaluation_sha256": "6e83664eb927d80c97af6ef3dd806f56ecef802f503757e1a6a98b5ccca656b2",
+    "identical_decoded_predictions": 14880,
+    "limitation": "Cache decode audit, not another independent image-inference pass or platform proof",
+    "max_bias_difference": 6.618335877117687e-07,
+    "numpy_float64_metrics": {
+      "macro": 0.7582534075649999,
+      "micro": 0.7664650537634409
+    },
+    "prior_iterations": 50,
+    "script_sha256": "7bbace36cc3f54c2b21f609f7491485466a966a9337cab9265cd46ae165afb48",
+    "sidecars": {
+      "best.pt": {
+        "checkpoint_sha256": "47a9f1dd37de03a8d127e7e013da333d5d3f91ec8de682dc666db2910f7b7ee7",
+        "options": {
+          "coefficient": 0.004359280240465393,
+          "coefficient_file_sha256": "939fc3ebdb4bf3c7a174938c0ab428a4b78244526a37be74306bbd69e1f7bb8d",
+          "source_sha256": "151f286a1501ec60b594d2c230527dbf8ef69eda7ba97fdb2badf61f11d7ad32"
+        },
+        "state": {
+          "calls": 66908,
+          "coefficient": 0.004359280240465393,
+          "examples": 267630,
+          "penalty_sum": 7086.3186490647495
+        }
+      },
+      "epoch_1.pt": {
+        "checkpoint_sha256": "5e0a69bb5162b52a1201d364efe1e3a502fed9c7cf0b5f400add71a647a1675c",
+        "options": {
+          "coefficient": 0.004359280240465393,
+          "coefficient_file_sha256": "939fc3ebdb4bf3c7a174938c0ab428a4b78244526a37be74306bbd69e1f7bb8d",
+          "source_sha256": "151f286a1501ec60b594d2c230527dbf8ef69eda7ba97fdb2badf61f11d7ad32"
+        },
+        "state": {
+          "calls": 66908,
+          "coefficient": 0.004359280240465393,
+          "examples": 267630,
+          "penalty_sum": 7086.3186490647495
+        }
+      },
+      "last.pt": {
+        "checkpoint_sha256": "2ed0eb59a0d0a36d5a451b662dd709e0013dd4864a8ba53657195a299a82a7ea",
+        "options": {
+          "coefficient": 0.004359280240465393,
+          "coefficient_file_sha256": "939fc3ebdb4bf3c7a174938c0ab428a4b78244526a37be74306bbd69e1f7bb8d",
+          "source_sha256": "151f286a1501ec60b594d2c230527dbf8ef69eda7ba97fdb2badf61f11d7ad32"
+        },
+        "state": {
+          "calls": 133816,
+          "coefficient": 0.004359280240465393,
+          "examples": 535260,
+          "penalty_sum": 14093.384134195745
+        }
+      }
+    },
+    "source_receipt": {
+      "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+      "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+      "verified_source_files": 484
+    },
+    "test_data_used": false
+  },
+  "pass": false,
+  "platform_best": 66.94797564362783,
+  "platform_result": null,
+  "selected_epoch": 1,
+  "status": "closed_below_promotion_gate",
+  "test_used": false,
+  "training_complete": {
+    "checkpoint": "/home/lux1/noise-worktrees/l05_logit_penalty/outputs/codex/l05_logit_penalty/runs/SD01/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "47a9f1dd37de03a8d127e7e013da333d5d3f91ec8de682dc666db2910f7b7ee7",
+    "config_sha256": "c47da0d905ee6431035e414d0330c062d520939229a0842c2743fffb9d797b1d",
+    "reload_center": {
+      "raw_macro": 0.7528419494628906,
+      "raw_micro": 0.7631048560142517,
+      "samples": 14880
+    },
+    "smoke": false,
+    "state": {
+      "calls": 133816,
+      "coefficient": 0.004359280240465393,
+      "examples": 535260,
+      "penalty_sum": 14093.384134195745
+    },
+    "stopped": false
+  }
+}

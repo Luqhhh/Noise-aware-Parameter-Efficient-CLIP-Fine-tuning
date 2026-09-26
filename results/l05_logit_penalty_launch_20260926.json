@@ -1,0 +1,218 @@
+{
+  "coefficient": {
+    "coefficient": 0.004359280240465393,
+    "feature_shards": [
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_000000.pt",
+        "sha256": "fec701f9b1bdb4fcd23bfdc5c7e74fdaac3fd64809a1571278977064b82da1ef"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_004096.pt",
+        "sha256": "6d97efae7b05ce1cfbd04e6f96d7c022020d70e66268df03527b9179895b6382"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_008192.pt",
+        "sha256": "c9fa9666f7942036241f72f374a6907e631926f3b68f768eec3e326bd2d81cbe"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_012288.pt",
+        "sha256": "1bfa5fb5871da1f1b519a2e4c9545e295ec4b0c3049f825f83361803084f77e7"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_016384.pt",
+        "sha256": "fa92467e4737debf67cbc25b9a3d177a0b94395691d90d7ec522b8c466bd0047"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_020480.pt",
+        "sha256": "3f423b4d4736c83df10977cbef5ac6964f2a38b72794d4ba78f81e7c902448c6"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_024576.pt",
+        "sha256": "d895e987ed141f3d56ff838c94f4256c48570df242bc208fe20f511b3fc60f2d"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_028672.pt",
+        "sha256": "b70fdc0a1a11ea4432df009117420d01fdb723ad9b7e2176e4b4513fb79cf614"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_032768.pt",
+        "sha256": "5eb04b4f36dbc236704bb7da29ee5d6191f8480807232ba4e1c3d12058aa2b60"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_036864.pt",
+        "sha256": "0ea4a05c9c054a4beeeb0e2ef21816f554cd7d430eb5299763eba23d2f5a5d53"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_040960.pt",
+        "sha256": "f649c00af384c34a211167859b7bdb499d8daf21f09dc57f24b2af78027574f9"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_045056.pt",
+        "sha256": "9cd4576bb5255883b1136984fc2f4b766cba484f94b19f543430992b66564c4f"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_049152.pt",
+        "sha256": "c2ed5c245e493e4140adb01e35e2b44026ab880a47e4147a237e817bfcd0c941"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_053248.pt",
+        "sha256": "11d18733993355d520f0886984f730253b5a58a55eafe0ee6b07503980b417f8"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_057344.pt",
+        "sha256": "440ba8de59d4b4b92e0a63afe6067f2ebd9c3e032c251b1405696bc09ff3a1cf"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_061440.pt",
+        "sha256": "e54244c34ce93aed6d75078962e6ee5bf40c8f476ddebfb1b1f00f71dfa703d5"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_065536.pt",
+        "sha256": "827fa62ed54a07d63a699e02553156d4d6acb772c230de0868f14f8a94a44726"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_069632.pt",
+        "sha256": "db4cbe7fee26b6fe4a118cc6dc5ae979268f6316f6ccf464f2e917fcf3734d07"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_073728.pt",
+        "sha256": "52749a0c2c0a66088271448d139060f61568b71e39406af997656e740f355cd5"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_077824.pt",
+        "sha256": "8c62459af1c1d6b06f81028e5ae8040c6bd17afe93ff6cb2634067257426197f"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_081920.pt",
+        "sha256": "2f9118d983440c3d14cfea48701e42a52697c30f37c3a47856fc78d4712f8652"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_086016.pt",
+        "sha256": "7a8303af19a9db0059f109a63092320a93442ad0d82e34683b4a738e425122c1"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_090112.pt",
+        "sha256": "63ea3b3225613e61c31a44b05b58a1254de7c7be9c862e6671c9a5a4d4998c8f"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_094208.pt",
+        "sha256": "c70e2ac5290b50a8cbed7051ed8fbc22f77702c4162f88a9e9530d326e653c97"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_098304.pt",
+        "sha256": "38d38543247cb75332ded8a06ce4026512622b009ac4941636c3b473b9555995"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_102400.pt",
+        "sha256": "68ea2c969d904788a6fe6abd4ed2e9e38d0cfbfe0b3734974b8feb32b30cca19"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_106496.pt",
+        "sha256": "8341de4cdfe81ea900e3065c98c04bfd91d2f6e49792042e244b6ffdfbc3b09b"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_110592.pt",
+        "sha256": "c0928f9ee7331799ab34346da5f85220028778055196fc56a26812652cfaad99"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_114688.pt",
+        "sha256": "43e8cdaa57f243fa92723c564f122f78e2b7c31e7c8dff28b5b8a97a324f0524"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_118784.pt",
+        "sha256": "9f9a9125b6a8426df6ac807f635b6d557bd235980e5471bb7128b6df2840fa0c"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_122880.pt",
+        "sha256": "8c262d7ba181f4f554654e8fd7825f689c0ef6094a7976ff9d2041d26542f72d"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_126976.pt",
+        "sha256": "6f66b2bd1a0f0a7f5425c2bf72a08dccaf0c9d338642146832f9c1f75d3cf345"
+      },
+      {
+        "path": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features/train_131072.pt",
+        "sha256": "687f0f7125c5e97a558b374dfc4bf34e46c3b5de2bdf953197c4c39291b34222"
+      }
+    ],
+    "initial_penalty_to_gce_ratio": 0.1,
+    "mean_gce": 0.26008401931954767,
+    "mean_squared_logit": 11.932429436643941,
+    "source_identity": {
+      "config": "de61d151e22fdbd4f2b0ca3c2b253c033b302ba83dd77eefe03a0075bb205f8d",
+      "format": 1,
+      "manifest": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "parent": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+      "reference_cache": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc"
+    },
+    "test_used": false,
+    "training_samples": 133815,
+    "validation_used_for_coefficient": false
+  },
+  "coefficient_file_sha256": "939fc3ebdb4bf3c7a174938c0ab428a4b78244526a37be74306bbd69e1f7bb8d",
+  "experiment_id": "L05_LOGIT_PENALTY_20260926",
+  "formal_epoch0": {
+    "raw_macro": 0.7524970769882202,
+    "raw_micro": 0.7629704475402832,
+    "samples": 14880
+  },
+  "last_observed_formal_progress": {
+    "attempted_updates": 59,
+    "child_pid": 215869,
+    "log_time": "2026-09-27T00:24:15.967+08:00",
+    "planned_updates": 262,
+    "successful_updates": 59
+  },
+  "platform_result": null,
+  "preflight": {
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+    "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "verified_source_files": 484
+  },
+  "process": {
+    "command": [
+      "/usr/bin/python3",
+      "/home/lux1/noise-worktrees/l05_logit_penalty/scripts/run_l05_logit_penalty.py",
+      "--config",
+      "/home/lux1/noise-worktrees/l05_logit_penalty/configs/l05_logit_penalty/fixed.json",
+      "--phase",
+      "queue"
+    ],
+    "implementation_commit": "536056220945f8707bcc6244d35b9ebf057f854f",
+    "launch_time": "2026-09-26T23:53:42.309008+08:00",
+    "monitor_interval_seconds": 1800,
+    "next_monitor_after": "2026-09-27T00:23:42.309008+08:00",
+    "pid": 215110,
+    "start_ticks": "5138776"
+  },
+  "same_control_sections": [
+    "model",
+    "data",
+    "train",
+    "loss",
+    "evaluation",
+    "trust"
+  ],
+  "smoke": {
+    "checkpoint": "/home/lux1/noise-worktrees/l05_logit_penalty/outputs/codex/l05_logit_penalty/runs/SD01_SMOKE/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "35636faf92a9bb3844b31a2a10ea26a80942577530f2d12fcea73fb19d1b7149",
+    "config_sha256": "8229b334e1830126aa4040f8f0a3c606e1c6e1bf17699fdefbff6012bed92023",
+    "reload_center": {
+      "raw_macro": 0.7496848106384277,
+      "raw_micro": 0.7604166865348816,
+      "samples": 14880
+    },
+    "smoke": true,
+    "state": {
+      "calls": 4,
+      "coefficient": 0.004359280240465393,
+      "examples": 16,
+      "penalty_sum": 0.3607485592365265
+    },
+    "stopped": false
+  },
+  "status": "smoke_passed_formal_training_running_no_strategy_result",
+  "test_used": false,
+  "tests": "3 passed"
+}
