@@ -1,4 +1,4 @@
-# L05 全图矩形视图（预注册）
+# L05 全图矩形视图（预注册与实测，已关闭）
 
 实验 `L05_RECTANGULAR_VIEW_20260927`，分支 `codex/l05_rectangular_view`，base main `9f403f3`。
 开始前fetch并检查全部本地/远端分支及近期main结果。三位置裁剪仍是方形窗口，已关闭；
@@ -63,3 +63,42 @@ python3 scripts/run_l05_rectangular_view.py --config configs/l05_rectangular_vie
 首轮源码559b859、日志、implementation.json、precision_diagnostic.json与invalid_reason.json
 均保留，重跑使用独立v2目录。诊断只验证数值一致性，不对AMP/float32做方法选优。
 完整证据见[精度审计](../results/l05_rectangular_precision_audit_20260927.json)。
+
+
+## 实测结果与关闭（2026-09-27）
+
+V2进程241818正常完成全部14,880张验证图，未产生新测试候选。
+
+| 固定 Flip / T1.4 / prior0.60 解码 | macro | micro |
+| --- | ---: | ---: |
+| 现役 L05 | 75.8265% | 76.6532% |
+| 全图矩形视图 | 75.4873% | 76.2836% |
+| 相对现役（百分点） | −0.3392 | −0.3696 |
+
+纠正294张、退化349张，净少判对55张；未过+0.30pp初筛门，未执行条件交叉校准。
+本固定配方关闭，不派生几何或融合扫描，无新平台成绩；平台最佳仍为66.94797564362783%，
+70分目标未达。结果中的`center_without_prior`是历史字段名，实际指单路全图矩形视图。
+
+实现与实测分开记录：正式推理复用Aegis原生矩形路径；新增支持脚本只提供尺寸规则与独立
+前向审计，未改训练权重。32张方形原图/Flip重放相对冻结缓存最大误差均为0；
+30种尺寸分桶各首个batch的原生/独立前向最大误差均为0。全部14,880个解码预测与独立
+NumPy float64重算一致，prior bias最大差6.637708140910803e-7（50次迭代）。
+模型参数逐位未变、父checkpoint哈希未变。6项定向测试通过。
+分桶推理计时100.8776秒，只含分桶推理，不含预检、方形重放及校准。
+独立解码不等于第二次全量图像推理，当前分数使用同一验证集拟合prior。
+
+机器可读的配置、代码哈希、缓存哈希、审计与交付校验见
+[最终结果](../results/l05_rectangular_view_20260927.json)。
+实现文件为`scripts/l05_rectangular_support.py`、`scripts/run_l05_rectangular_view.py`、
+`tests/test_l05_rectangular_view.py`及`configs/l05_rectangular_view/fixed.json`；
+确切重放命令见上文，已完成目录禁止覆盖，重放应改用新的输出目录。
+
+本轮按预注册交付现役L05_T14_P060保底包，37,444行及9/9提交校验通过：
+
+- CSV：`/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv`
+- ZIP：`/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip`
+- CSV SHA256：`51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75`
+- ZIP SHA256：`e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f`
+
+这两份是既有平台最佳包，不是本轮的新预测。提交校验命令与原始输出已写入最终结果的
+`delivery`字段。本段完成Git集成后停在检查点；后续长任务维持每30分钟一次监控。
