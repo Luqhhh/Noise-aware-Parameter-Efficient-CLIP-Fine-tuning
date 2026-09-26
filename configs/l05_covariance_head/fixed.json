@@ -1,0 +1,13 @@
+{
+  "experiment_id": "L05_COVARIANCE_HEAD_20260926",
+  "source_config": "/home/lux1/noise-worktrees/l05_nonlinear_head/configs/l05_nonlinear_head/fixed.json",
+  "source_features": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features",
+  "output": "outputs/codex/l05_covariance_head",
+  "temperature": 1.4,
+  "prior_strength": 0.6,
+  "gate_macro_pp": 0.30,
+  "covariance": "pooled_class_residuals_mle_oas",
+  "class_priors": "uniform",
+  "fit_precision": "float64",
+  "head_precision": "float32"
+}
