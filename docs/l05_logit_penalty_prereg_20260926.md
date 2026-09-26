@@ -60,3 +60,7 @@ python3 scripts/run_l05_logit_penalty.py --config configs/l05_logit_penalty/fixe
 标定惩罚均值0.02600840193，正好是固定10%比例，未使用val选择强度。
 formal的model/data/train/loss/evaluation/trust与MS00逐项一致。
 完整分片哈希和预检见[启动记录](../results/l05_logit_penalty_launch_20260926.json)。
+
+队列于2026-09-26 23:53:42 Asia/Shanghai启动，driver PID215110、start_ticks5138776。
+先smoke后正式；实现提交5360562。下一次监控不早于2026-09-27 00:23:42。
+进程记录不是完成证据，正式结果待验证；当前只推送方案分支，不合并未验证结果到main。
