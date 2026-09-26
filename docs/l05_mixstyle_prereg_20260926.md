@@ -96,3 +96,25 @@ PID 86947；进程启动时刻与源码提交写入 `outputs/codex/l05_mixstyle/
 这是运行记录，不能仅凭 PID 文件判断仍在运行；须匹配 /proc 的 start_ticks、检查活进程
 与子进程及其日志。当前状态为 **formal_queue_running_no_strategy_result**。
 代码/预注册及启动审计已推送方案分支，待两臂结果、重载/提交校验完成再集成 main。
+
+## 控制臂中期结果（配对实验尚未完成）
+
+MS00 已完成两轮、262/262 次优化更新，未触发止损，按 center raw macro 选择 epoch1。
+epoch1 中心视图 macro/micro=75.3086%/76.3508%；epoch2=75.2473%/76.2970%。
+最佳 checkpoint SHA256=`fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a`。
+固定 Flip/T1.4/prior0.60 解码 macro/micro=75.7948%/76.6129%，相对现役
+L05 为 −0.0317pp/−0.0403pp，**控制臂未过晋级门**。
+
+CPU 独立 NumPy float64 解码审计与原 Torch 解码的全部14,880个预测一致，
+prior bias 最大绝对差6.52e-7，缓存/checkpoint/划分绑定再核对通过。
+此审计复核缓存解码，不等同于再次独立重跑全部图像推理，也不证明平台收益。
+记录见 [中期结果](../results/l05_mixstyle_interim_20260926.json)。
+
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 scripts/audit_l05_mixstyle_decode.py \
+  --config configs/l05_mixstyle/fixed.json --arm MS00
+```
+
+MS01 已由原队列自动启动（子进程163142），epoch0复现 L05；其训练及方法对照结果尚未完成。
+MS00 阴性结果不构成提前终止 MS01 的依据，固定配方与晋级门均保持原样。
+本节为中期实测记录，不是实验段交付；未产生新平台提交或新平台成绩，暂不集成 main。
