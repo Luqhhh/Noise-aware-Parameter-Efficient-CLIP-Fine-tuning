@@ -27,6 +27,7 @@ from aegis_clip.data import (
     TrustBundle,
     load_class_mapping,
 )
+from aegis_clip.degradation import build_train_degradation
 from aegis_clip.evaluation import evaluate, format_metrics
 from aegis_clip.features import FrozenFeatureStore, canonical_sample_path
 from aegis_clip.losses import (
@@ -199,6 +200,13 @@ def train(
     use_cached = bool(model_config.get("use_cached_training", not visual_peft))
     if visual_peft and use_cached:
         raise ValueError("Visual PEFT cannot use cached-only training")
+    if use_cached and data_config.get("train_degradation"):
+        # Cached features were computed from undegraded pixels, so the
+        # degradation spec would silently do nothing -- exactly the kind of
+        # failure that disguises itself as "the method did not work".
+        raise ValueError(
+            "train_degradation cannot be applied under cached-only training"
+        )
     train_dataset = _build_dataset(
         use_cached=use_cached,
         split_csv=data_config["train_csv"],
@@ -1773,9 +1781,13 @@ def _training_preprocess(
     input_resolution: int = 224,
 ) -> Any:
     preset = str(data_config.get("train_augmentation", "clip_center_crop"))
+    degradation = build_train_degradation(data_config.get("train_degradation"))
     if preset == "clip_center_crop":
-        return preprocess
-    if preset != "weak_rrc_flip":
+        # Absent train_degradation must stay bit-identical to the historical
+        # behaviour, so return the original object rather than a Compose wrapper.
+        if degradation is None:
+            return preprocess
+    elif preset != "weak_rrc_flip":
         raise ValueError(f"Unsupported training augmentation: {preset}")
     try:
         from torchvision.transforms import (
@@ -1785,12 +1797,19 @@ def _training_preprocess(
             RandomResizedCrop,
         )
     except ImportError as exc:
-        raise ImportError("weak_rrc_flip requires torchvision") from exc
+        raise ImportError(
+            "training augmentation requires torchvision"
+        ) from exc
     transforms = list(getattr(preprocess, "transforms", []))
     if len(transforms) < 2:
         raise ValueError("Cannot derive CLIP tensor conversion and normalization")
+    if preset == "clip_center_crop":
+        # Degradation composes on the PIL image ahead of CLIP's own resize and
+        # centre crop; the tensor conversion and normalisation still run once.
+        return Compose([degradation, *transforms])
     return Compose(
         [
+            *([degradation] if degradation is not None else []),
             RandomResizedCrop(
                 int(input_resolution),
                 scale=(0.70, 1.0),
