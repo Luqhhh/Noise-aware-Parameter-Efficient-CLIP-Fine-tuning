@@ -45,3 +45,54 @@ SHA256("42:"+group) 前 8 bytes 大端整数 mod 3 分折；各折的 prior 仅�
 
 固定配置 `configs/l05_threecrop/fixed.json`。独立输出 `outputs/codex/l05_threecrop/`。
 复现：`python3 scripts/run_l05_threecrop.py --config configs/l05_threecrop/fixed.json`。
+
+
+## 实测结果
+
+| 固定协议 | 无 prior macro / micro | prior=0.60 macro / micro |
+|---|---|---|
+| 现役 L05 center+Flip | 75.4271% / 76.4651% | 75.8265% / 76.6532% |
+| 三位置裁剪+Flip | 75.7463% / 76.7675% | 75.9645% / 76.7339% |
+| 差（pp） | +0.3192 / +0.3024 | **+0.1380 / +0.0806** |
+
+共 693 张预测改变，纠正 174、破坏 162。预注册主判据是现役完整解码口径，macro 未过
++0.30pp 门，故**关闭本固定协议，不派生 crop/融合权重/温度/prior 扫描，不运行晋级后的
+交叉校准，不出新测试候选、不使用平台名额**。无 prior 的 +0.3192pp 是诊断，不能事后替换
+正式判据；且其绝对 macro 仍低于现役 prior 解码。结果说明补充空间覆盖有小幅本地收益，
+但不足以在既有 pipeline 中晋级，不能据此声称平台会涨或所有多 crop 方案均无效。
+
+实施：新增独立推理协议入口和固定配置，复用同 checkpoint / prior 组件；原生 CLI 闸门、
+模型权重、训练划分、旧提交包均未修改。测试图未用于该验证实验。平台最佳仍为既有
+**66.94797564362783%**，70 分目标未达。
+
+## 验证与重放
+
+- 首 32 张原生 center/Flip logits 对旧缓存最大绝对差均 0、top1 全一致。
+- 四个新增视图覆盖全部 14,880 张；15 个分块的路径、血缘和文件 SHA 均复核。
+- 独立 NumPy float64 重算六路 softmax→平均→log→冻结 bias，14,880/14,880 最终预测一致，
+  macro/micro 复现到 1e-12；最大 logit 差与完整耗时见结果 JSON。冻结 checkpoint 的运行后
+  SHA 与运行前相同。
+- 裁剪几何、方图等价性与非法融合输入测试 **6 passed**。
+- 现役保底包 **9/9** 提交校验通过，37,444 行。
+
+```bash
+cd /home/lux1/noise-worktrees/l05_threecrop
+python3 -m pytest tests/test_l05_threecrop.py -q
+python3 scripts/run_l05_threecrop.py --config configs/l05_threecrop/fixed.json
+python3 scripts/audit_l05_threecrop.py --config configs/l05_threecrop/fixed.json
+python3 scripts/check_submission.py --test_dir /home/lux1/noise/test --class-mapping /home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json --csv /home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv --zip /home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip
+```
+
+完整输出在 `/home/lux1/noise-worktrees/l05_threecrop/outputs/codex/l05_threecrop/`。
+重跑使用新的独立 output 目录，完成结果拒绝覆盖。实现提交 `9d8110c` 已在执行前推送。
+机器可读指标、缓存 SHA、脚本 SHA、独立审计与保底交付信息：
+[results/l05_threecrop_20260926.json](../results/l05_threecrop_20260926.json)。
+
+本轮保底 CSV/ZIP（既有赢家，非新生成）在
+`/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/`。
+CSV SHA `51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75`；
+ZIP SHA `e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f`。
+
+改动文件：`scripts/run_l05_threecrop.py`、`scripts/audit_l05_threecrop.py`、`configs/l05_threecrop/fixed.json`、
+`tests/test_l05_threecrop.py`、本预注册、结果 JSON、README 状态段、
+`docs/current_execution_plan.md`、`.gitignore`。
