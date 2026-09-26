@@ -118,7 +118,7 @@ def main():
                 difference = float((logits-independent).abs().max())
                 assert difference <= 1e-5 and torch.equal(logits.argmax(1), independent.argmax(1))
                 geometry_audit[shape] = {'max_abs': difference, 'samples': len(images)}
-            original[indices], flipped[indices] = logits.cpu(), flip_logits.cpu()
+            original[indices], flipped[indices] = logits.float().cpu(), flip_logits.float().cpu()
             seen[indices] = True
     assert seen.all()
     inference_seconds = time.monotonic() - started
