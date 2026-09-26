@@ -1,0 +1,85 @@
+{
+  "MS00": {
+    "audit": {
+      "arm": "MS00",
+      "binding": {
+        "autocast": false,
+        "cache": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/val_branch_logits.pt",
+        "cache_format_version": 2,
+        "cache_sha256": "c68c1255db037483ba48fb37496a259e12778a227af4d1be47719adf31b23762",
+        "cache_tta_fusion": "mean_probabilities",
+        "cache_tta_temperature": 1.0,
+        "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/checkpoints/best.pt",
+        "checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+        "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+        "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+        "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+        "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+        "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+        "encoder_precision": "float32",
+        "feature_precision": "float32",
+        "input_resolution": 384,
+        "num_classes": 750,
+        "num_samples": 14880,
+        "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+        "protocol": "rematch750_search_v5",
+        "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+        "split_seed": 42,
+        "training_config_sha256": "f851988f03f7bac101133551d30146e38928cc0c87618f9408da4422eeb39491",
+        "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+      },
+      "covered_classes": 750,
+      "device": "cpu",
+      "evaluation_sha256": "3e93f505619252546e755491689fff01f851cfbe3012020850578a66c4eba253",
+      "identical_decoded_predictions": 14880,
+      "limitation": "Cache decode audit; does not independently rerun image inference or prove platform benefit",
+      "max_bias_difference": 6.517851416087961e-07,
+      "numpy_float64_metrics": {
+        "macro": 0.7579477482392073,
+        "micro": 0.7661290322580645
+      },
+      "prior_iterations": 50,
+      "script_sha256": "fb7a51c0132c84e42b26ef9304f8155920eff381a92af3ab0f3797b4fe422fd3",
+      "source_receipt": {
+        "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+        "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+        "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+        "verified_source_files": 484
+      },
+      "test_data_used": false,
+      "validation_samples": 14880
+    },
+    "center": {
+      "macro": 0.7530860900878906,
+      "micro": 0.7635080814361572
+    },
+    "decode": {
+      "macro": 0.7579477482392073,
+      "micro": 0.7661290322580645
+    },
+    "delta_vs_l05_pp": {
+      "macro": -0.03173756590449939,
+      "micro": -0.040322580645157924
+    },
+    "promotion_pass": false,
+    "training_complete": {
+      "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/checkpoints/best.pt",
+      "checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+      "config_sha256": "f851988f03f7bac101133551d30146e38928cc0c87618f9408da4422eeb39491",
+      "smoke": false,
+      "state": {
+        "alpha": 0.1,
+        "applied": 0,
+        "calls": 0,
+        "examples": 0,
+        "probability": 0.0,
+        "seed": 42
+      },
+      "stopped": false
+    }
+  },
+  "MS01": "running; no formal result yet",
+  "experiment_id": "L05_MIXSTYLE_20260926",
+  "platform_result": null,
+  "status": "control_complete_paired_experiment_running"
+}

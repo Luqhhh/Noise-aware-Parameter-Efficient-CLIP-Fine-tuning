@@ -1,0 +1,21 @@
+{
+  "experiment_id": "L05_MIXSTYLE_20260926",
+  "framework_commit": "f050ecb",
+  "parent_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+  "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+  "assets": "/home/lux1/noise/artifacts/stages/repechage/20260921",
+  "image_root": "/home/lux1/noise/train",
+  "output": "outputs/codex/l05_mixstyle",
+  "seed": 42,
+  "epochs": 2,
+  "microbatch": 4,
+  "accumulation": 256,
+  "backbone_lr": 0.000003,
+  "head_lr": 0.0001,
+  "probability": 0.5,
+  "alpha": 0.1,
+  "workers": 2,
+  "temperature": 1.4,
+  "prior_strength": 0.6,
+  "gate_macro_pp": 0.30
+}

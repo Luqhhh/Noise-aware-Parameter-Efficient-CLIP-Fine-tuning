@@ -1,0 +1,445 @@
+{
+  "MS00_pass": false,
+  "MS01_delta_vs_MS00_pp": {
+    "macro": -0.08531539626921436,
+    "micro": -0.08064516129031585
+  },
+  "MS01_pass": false,
+  "arms": {
+    "MS00": {
+      "binding": {
+        "autocast": false,
+        "cache": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/val_branch_logits.pt",
+        "cache_format_version": 2,
+        "cache_sha256": "c68c1255db037483ba48fb37496a259e12778a227af4d1be47719adf31b23762",
+        "cache_tta_fusion": "mean_probabilities",
+        "cache_tta_temperature": 1.0,
+        "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/checkpoints/best.pt",
+        "checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+        "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+        "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+        "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+        "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+        "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+        "encoder_precision": "float32",
+        "feature_precision": "float32",
+        "input_resolution": 384,
+        "num_classes": 750,
+        "num_samples": 14880,
+        "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+        "protocol": "rematch750_search_v5",
+        "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+        "split_seed": 42,
+        "training_config_sha256": "f851988f03f7bac101133551d30146e38928cc0c87618f9408da4422eeb39491",
+        "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+      },
+      "center": {
+        "macro": 0.7530860900878906,
+        "micro": 0.7635080814361572
+      },
+      "center_epochs": {
+        "1": {
+          "attempted_optimizer_updates": 131,
+          "raw_macro": 0.7530860900878906,
+          "raw_micro": 0.7635080814361572,
+          "successful_optimizer_updates": 131
+        },
+        "2": {
+          "attempted_optimizer_updates": 262,
+          "raw_macro": 0.7524731159210205,
+          "raw_micro": 0.7629704475402832,
+          "successful_optimizer_updates": 262
+        }
+      },
+      "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/checkpoints/best.pt",
+      "checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+      "checkpoint_sidecars": {
+        "best.pt": {
+          "checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+          "hook_source_sha256": "877ca1acc26c54bd0014dced4d6965991dafd11976823035502d7a6d22ff1c65",
+          "state": {
+            "alpha": 0.1,
+            "applied": 0,
+            "calls": 0,
+            "examples": 0,
+            "probability": 0.0,
+            "seed": 42
+          }
+        },
+        "epoch_1.pt": {
+          "checkpoint_sha256": "de0e6ab4da452422023272f4608a7c893a6c0695bd3cc456bef3f140f0abe93a",
+          "hook_source_sha256": "877ca1acc26c54bd0014dced4d6965991dafd11976823035502d7a6d22ff1c65",
+          "state": {
+            "alpha": 0.1,
+            "applied": 0,
+            "calls": 0,
+            "examples": 0,
+            "probability": 0.0,
+            "seed": 42
+          }
+        },
+        "last.pt": {
+          "checkpoint_sha256": "251ce7523691f7b825881fd9fa53fb56ba55dc295491b8fbee02d626a22756b7",
+          "hook_source_sha256": "877ca1acc26c54bd0014dced4d6965991dafd11976823035502d7a6d22ff1c65",
+          "state": {
+            "alpha": 0.1,
+            "applied": 0,
+            "calls": 0,
+            "examples": 0,
+            "probability": 0.0,
+            "seed": 42
+          }
+        }
+      },
+      "decode": {
+        "flip_no_prior_macro": 0.754989743232727,
+        "flip_no_prior_micro": 0.7652553915977478,
+        "macro": 0.7579477429389954,
+        "micro": 0.7661290168762207,
+        "prior_bias_sha256": "4b14713d0a62b7dcb014b04c9a0a71382c542ba567866a0cbe73f089828b3c63",
+        "prior_fit_iterations": 50,
+        "prior_strength": 0.6,
+        "vs_center": {
+          "changed": 785,
+          "corrections": 194,
+          "regressions": 155
+        },
+        "vs_flip_no_prior": {
+          "changed": 616,
+          "corrections": 134,
+          "regressions": 121
+        }
+      },
+      "decode_audit": {
+        "arm": "MS00",
+        "binding": {
+          "autocast": false,
+          "cache": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/val_branch_logits.pt",
+          "cache_format_version": 2,
+          "cache_sha256": "c68c1255db037483ba48fb37496a259e12778a227af4d1be47719adf31b23762",
+          "cache_tta_fusion": "mean_probabilities",
+          "cache_tta_temperature": 1.0,
+          "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/checkpoints/best.pt",
+          "checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+          "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+          "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+          "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+          "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+          "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+          "encoder_precision": "float32",
+          "feature_precision": "float32",
+          "input_resolution": 384,
+          "num_classes": 750,
+          "num_samples": 14880,
+          "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+          "protocol": "rematch750_search_v5",
+          "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+          "split_seed": 42,
+          "training_config_sha256": "f851988f03f7bac101133551d30146e38928cc0c87618f9408da4422eeb39491",
+          "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+        },
+        "covered_classes": 750,
+        "device": "cpu",
+        "evaluation_sha256": "3e93f505619252546e755491689fff01f851cfbe3012020850578a66c4eba253",
+        "identical_decoded_predictions": 14880,
+        "limitation": "Cache decode audit; does not independently rerun image inference or prove platform benefit",
+        "max_bias_difference": 6.517851416087961e-07,
+        "numpy_float64_metrics": {
+          "macro": 0.7579477482392073,
+          "micro": 0.7661290322580645
+        },
+        "prior_iterations": 50,
+        "script_sha256": "fb7a51c0132c84e42b26ef9304f8155920eff381a92af3ab0f3797b4fe422fd3",
+        "source_receipt": {
+          "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+          "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+          "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+          "verified_source_files": 484
+        },
+        "test_data_used": false,
+        "validation_samples": 14880
+      },
+      "delta_vs_l05_pp": {
+        "macro": -0.03173756590449939,
+        "micro": -0.040322580645157924
+      },
+      "prior_strength_scanned": false,
+      "protocol": {
+        "center": "center view only",
+        "decode": "horizontal_flip:mean_probabilities:t=1.4:validation_fitted_prior=0.6"
+      },
+      "reload_center": {
+        "raw_macro": 0.7530860900878906,
+        "raw_micro": 0.7635080814361572,
+        "samples": 14880
+      },
+      "schema_version": 1,
+      "selected_epoch": "1",
+      "temperature_scanned": false,
+      "test_data_used": false,
+      "training_complete": {
+        "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/checkpoints/best.pt",
+        "checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+        "config_sha256": "f851988f03f7bac101133551d30146e38928cc0c87618f9408da4422eeb39491",
+        "smoke": false,
+        "state": {
+          "alpha": 0.1,
+          "applied": 0,
+          "calls": 0,
+          "examples": 0,
+          "probability": 0.0,
+          "seed": 42
+        },
+        "stopped": false
+      },
+      "training_config_sha256": "f851988f03f7bac101133551d30146e38928cc0c87618f9408da4422eeb39491"
+    },
+    "MS01": {
+      "binding": {
+        "autocast": false,
+        "cache": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS01/seed42/val_branch_logits.pt",
+        "cache_format_version": 2,
+        "cache_sha256": "844c3bcffa0f06be356af13bf6a3352c5e3c4d160e680d2f03dba948530aa1af",
+        "cache_tta_fusion": "mean_probabilities",
+        "cache_tta_temperature": 1.0,
+        "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS01/seed42/checkpoints/best.pt",
+        "checkpoint_sha256": "e3530676c08a830575ea5259513af2714a02ebd48c9944f42f77661f27512523",
+        "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+        "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+        "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+        "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+        "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+        "encoder_precision": "float32",
+        "feature_precision": "float32",
+        "input_resolution": 384,
+        "num_classes": 750,
+        "num_samples": 14880,
+        "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+        "protocol": "rematch750_search_v5",
+        "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+        "split_seed": 42,
+        "training_config_sha256": "c4cb849cdec5f56d947c567dec6d4bc1701db2c2af4e36f5b63d7154895e74a5",
+        "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+      },
+      "center": {
+        "macro": 0.7532254457473755,
+        "micro": 0.7633736729621887
+      },
+      "center_epochs": {
+        "1": {
+          "attempted_optimizer_updates": 131,
+          "raw_macro": 0.7532254457473755,
+          "raw_micro": 0.7633736729621887,
+          "successful_optimizer_updates": 131
+        },
+        "2": {
+          "attempted_optimizer_updates": 262,
+          "raw_macro": 0.7532013058662415,
+          "raw_micro": 0.7634408473968506,
+          "successful_optimizer_updates": 262
+        }
+      },
+      "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS01/seed42/checkpoints/best.pt",
+      "checkpoint_sha256": "e3530676c08a830575ea5259513af2714a02ebd48c9944f42f77661f27512523",
+      "checkpoint_sidecars": {
+        "best.pt": {
+          "checkpoint_sha256": "e3530676c08a830575ea5259513af2714a02ebd48c9944f42f77661f27512523",
+          "hook_source_sha256": "877ca1acc26c54bd0014dced4d6965991dafd11976823035502d7a6d22ff1c65",
+          "state": {
+            "alpha": 0.1,
+            "applied": 50017,
+            "calls": 100362,
+            "examples": 200068,
+            "probability": 0.5,
+            "seed": 42
+          }
+        },
+        "epoch_1.pt": {
+          "checkpoint_sha256": "e6d18109f7686555f32acfd3c235cfa7521264781cedc07888dd5cf568f6363a",
+          "hook_source_sha256": "877ca1acc26c54bd0014dced4d6965991dafd11976823035502d7a6d22ff1c65",
+          "state": {
+            "alpha": 0.1,
+            "applied": 50017,
+            "calls": 100362,
+            "examples": 200068,
+            "probability": 0.5,
+            "seed": 42
+          }
+        },
+        "last.pt": {
+          "checkpoint_sha256": "2d634bb403fb573e836168a70bba25a2742786f074d6442730a5e5dda738f42b",
+          "hook_source_sha256": "877ca1acc26c54bd0014dced4d6965991dafd11976823035502d7a6d22ff1c65",
+          "state": {
+            "alpha": 0.1,
+            "applied": 100360,
+            "calls": 200724,
+            "examples": 401437,
+            "probability": 0.5,
+            "seed": 42
+          }
+        }
+      },
+      "decode": {
+        "flip_no_prior_macro": 0.7543507218360901,
+        "flip_no_prior_micro": 0.7652553915977478,
+        "macro": 0.7570945620536804,
+        "micro": 0.7653225660324097,
+        "prior_bias_sha256": "af1c29f914a23b7a7edfb9541d7837b6ce4991c6c0ed23186072d423e01eb51b",
+        "prior_fit_iterations": 50,
+        "prior_strength": 0.6,
+        "vs_center": {
+          "changed": 753,
+          "corrections": 177,
+          "regressions": 148
+        },
+        "vs_flip_no_prior": {
+          "changed": 584,
+          "corrections": 127,
+          "regressions": 126
+        }
+      },
+      "decode_audit": {
+        "arm": "MS01",
+        "binding": {
+          "autocast": false,
+          "cache": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS01/seed42/val_branch_logits.pt",
+          "cache_format_version": 2,
+          "cache_sha256": "844c3bcffa0f06be356af13bf6a3352c5e3c4d160e680d2f03dba948530aa1af",
+          "cache_tta_fusion": "mean_probabilities",
+          "cache_tta_temperature": 1.0,
+          "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS01/seed42/checkpoints/best.pt",
+          "checkpoint_sha256": "e3530676c08a830575ea5259513af2714a02ebd48c9944f42f77661f27512523",
+          "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+          "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+          "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+          "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+          "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+          "encoder_precision": "float32",
+          "feature_precision": "float32",
+          "input_resolution": 384,
+          "num_classes": 750,
+          "num_samples": 14880,
+          "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+          "protocol": "rematch750_search_v5",
+          "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+          "split_seed": 42,
+          "training_config_sha256": "c4cb849cdec5f56d947c567dec6d4bc1701db2c2af4e36f5b63d7154895e74a5",
+          "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+        },
+        "covered_classes": 750,
+        "device": "cpu",
+        "evaluation_sha256": "ee04c984923aceb41e287c4d1d1e0a8af74d2c61bcc6a794dad653545e7ef28d",
+        "identical_decoded_predictions": 14880,
+        "limitation": "Cache decode audit; does not independently rerun image inference or prove platform benefit",
+        "max_bias_difference": 6.655909159380968e-07,
+        "numpy_float64_metrics": {
+          "macro": 0.7570945942765152,
+          "micro": 0.7653225806451613
+        },
+        "prior_iterations": 50,
+        "script_sha256": "fb7a51c0132c84e42b26ef9304f8155920eff381a92af3ab0f3797b4fe422fd3",
+        "source_receipt": {
+          "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+          "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+          "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+          "verified_source_files": 484
+        },
+        "test_data_used": false,
+        "validation_samples": 14880
+      },
+      "delta_vs_l05_pp": {
+        "macro": -0.11705296217371375,
+        "micro": -0.12096774193547377
+      },
+      "prior_strength_scanned": false,
+      "protocol": {
+        "center": "center view only",
+        "decode": "horizontal_flip:mean_probabilities:t=1.4:validation_fitted_prior=0.6"
+      },
+      "reload_center": {
+        "raw_macro": 0.7532254457473755,
+        "raw_micro": 0.7633736729621887,
+        "samples": 14880
+      },
+      "schema_version": 1,
+      "selected_epoch": "1",
+      "temperature_scanned": false,
+      "test_data_used": false,
+      "training_complete": {
+        "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS01/seed42/checkpoints/best.pt",
+        "checkpoint_sha256": "e3530676c08a830575ea5259513af2714a02ebd48c9944f42f77661f27512523",
+        "config_sha256": "c4cb849cdec5f56d947c567dec6d4bc1701db2c2af4e36f5b63d7154895e74a5",
+        "smoke": false,
+        "state": {
+          "alpha": 0.1,
+          "applied": 100360,
+          "calls": 200724,
+          "examples": 401437,
+          "probability": 0.5,
+          "seed": 42
+        },
+        "stopped": false
+      },
+      "training_config_sha256": "c4cb849cdec5f56d947c567dec6d4bc1701db2c2af4e36f5b63d7154895e74a5"
+    }
+  },
+  "baseline_decode": {
+    "macro": 0.7582651238982523,
+    "micro": 0.7665322580645161
+  },
+  "configuration": {
+    "accumulation": 256,
+    "alpha": 0.1,
+    "assets": "/home/lux1/noise/artifacts/stages/repechage/20260921",
+    "backbone_lr": 3e-06,
+    "epochs": 2,
+    "experiment_id": "L05_MIXSTYLE_20260926",
+    "framework_commit": "f050ecb",
+    "gate_macro_pp": 0.3,
+    "head_lr": 0.0001,
+    "image_root": "/home/lux1/noise/train",
+    "microbatch": 4,
+    "output": "outputs/codex/l05_mixstyle",
+    "parent_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+    "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "prior_strength": 0.6,
+    "probability": 0.5,
+    "seed": 42,
+    "temperature": 1.4,
+    "workers": 2
+  },
+  "delivery": {
+    "checked_at": "2026-09-26T23:32:55.565572+08:00",
+    "csv": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+    "csv_sha256": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
+    "kind": "existing_platform_best_fallback_not_new_candidate",
+    "rows": 37444,
+    "validation_command": [
+      "python3",
+      "scripts/check_submission.py",
+      "--test_dir",
+      "/home/lux1/noise/test",
+      "--class-mapping",
+      "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+      "--csv",
+      "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+      "--zip",
+      "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip"
+    ],
+    "validation_exit_code": 0,
+    "validation_output": "Test set contains 37444 images\n\n============================================================\nChecking pred_results.csv...\n============================================================\n  ✅ File name: pred_results.csv\n  ✅ Line count: 37444 (matches test set)\n  ✅ All image names found in test set\n  ✅ No duplicate image names\n  ✅ All test images covered\n  ✅ All labels are 4-digit strings\n  ✅ All labels in range [0000, 0749]\n\n============================================================\nChecking submission.zip...\n============================================================\n  ✅ ZIP contains only pred_results.csv (no directory)\n\n============================================================\n🎉 All checks passed! Submission is ready.\n",
+    "zip": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip",
+    "zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f"
+  },
+  "experiment_id": "L05_MIXSTYLE_20260926",
+  "goal_above_70_verified": false,
+  "implementation_commit": "5dd36407b90fe725682306e5b08a3f49d94ce401",
+  "platform_best": 66.94797564362783,
+  "platform_result": null,
+  "queue_state": {
+    "driver_pid": 86908,
+    "phase": "complete"
+  },
+  "status": "closed_below_promotion_gate",
+  "test_used": false
+}
