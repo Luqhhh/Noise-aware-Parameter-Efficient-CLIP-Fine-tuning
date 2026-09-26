@@ -1,0 +1,19 @@
+{
+  "experiment_id": "L05_LOGIT_PENALTY_20260926",
+  "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+  "parent_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+  "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+  "assets": "/home/lux1/noise/artifacts/stages/repechage/20260921",
+  "control_config": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/configs/MS00.yaml",
+  "control_config_sha256": "f851988f03f7bac101133551d30146e38928cc0c87618f9408da4422eeb39491",
+  "control_result": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/evaluation.json",
+  "control_checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+  "source_feature_config": "/home/lux1/noise-worktrees/l05_nonlinear_head/configs/l05_nonlinear_head/fixed.json",
+  "source_features": "/home/lux1/noise-worktrees/l05_nonlinear_head/outputs/codex/l05_nonlinear_head/features",
+  "output": "outputs/codex/l05_logit_penalty",
+  "initial_penalty_to_gce_ratio": 0.1,
+  "temperature": 1.4,
+  "prior_strength": 0.6,
+  "gate_macro_pp": 0.30,
+  "monitor_interval_seconds": 1800
+}
