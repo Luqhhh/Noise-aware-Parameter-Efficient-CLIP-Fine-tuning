@@ -1,0 +1,26 @@
+{
+  "experiment_id": "L05_RSC_20260927",
+  "pid": 243215,
+  "start_ticks": 6326251,
+  "launched_at": "2026-09-27T03:11:23.452707+08:00",
+  "next_monitor_not_before": "2026-09-27T03:41:23.452707+08:00",
+  "command": [
+    "/usr/bin/python3",
+    "scripts/run_l05_rsc.py",
+    "--config",
+    "configs/l05_rsc/fixed.json",
+    "--phase",
+    "queue"
+  ],
+  "worktree": "/home/lux1/noise-worktrees/l05_rsc",
+  "commit": "5f1d8f48701f859ae9e8638e6dfa44ca49f92600",
+  "preflight": {
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+    "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "verified_source_files": 484
+  },
+  "tests": "4 passed",
+  "training_result": null,
+  "platform_result": null
+}

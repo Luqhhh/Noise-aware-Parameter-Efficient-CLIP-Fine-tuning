@@ -1,0 +1,320 @@
+{
+  "audited_control_decode": {
+    "macro": 0.7579477482392073,
+    "micro": 0.7661290322580645
+  },
+  "audited_decode": {
+    "macro": 0.7578648113094485,
+    "micro": 0.7663306451612903
+  },
+  "baseline": {
+    "macro": 0.7582651238982523,
+    "micro": 0.7665322580645161
+  },
+  "candidate": {
+    "binding": {
+      "autocast": false,
+      "cache": "/home/lux1/noise-worktrees/l05_rsc/outputs/codex/l05_rsc/runs/RC01/seed42/val_branch_logits.pt",
+      "cache_format_version": 2,
+      "cache_sha256": "f27f1cda4eacffab37ab451937f1c0bfc8c3aa8fd583beea8dc7061c25d48cba",
+      "cache_tta_fusion": "mean_probabilities",
+      "cache_tta_temperature": 1.0,
+      "checkpoint": "/home/lux1/noise-worktrees/l05_rsc/outputs/codex/l05_rsc/runs/RC01/seed42/checkpoints/best.pt",
+      "checkpoint_sha256": "9a3f79abf1d363a943c198fbd9c280f7e5da3b759237d3add40e41804304f8ac",
+      "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+      "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+      "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+      "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+      "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "encoder_precision": "float32",
+      "feature_precision": "float32",
+      "input_resolution": 384,
+      "num_classes": 750,
+      "num_samples": 14880,
+      "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+      "protocol": "rematch750_search_v5",
+      "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+      "split_seed": 42,
+      "training_config_sha256": "467c8f80a5a543c03051a710613a4e5fc4e50de6ffcb7dc2ca04d692754d0673",
+      "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+    },
+    "center": {
+      "macro": 0.752591073513031,
+      "micro": 0.7631048560142517
+    },
+    "checkpoint": "/home/lux1/noise-worktrees/l05_rsc/outputs/codex/l05_rsc/runs/RC01/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "9a3f79abf1d363a943c198fbd9c280f7e5da3b759237d3add40e41804304f8ac",
+    "decode": {
+      "flip_no_prior_macro": 0.7524256706237793,
+      "flip_no_prior_micro": 0.7635080814361572,
+      "macro": 0.757864773273468,
+      "micro": 0.7663306593894958,
+      "prior_bias_sha256": "0afee6e5fade95d54eb8ff3ad1478d3ce0e86f12fc19a9a64ea1af16001faaba",
+      "prior_fit_iterations": 50,
+      "prior_strength": 0.6,
+      "vs_center": {
+        "changed": 828,
+        "corrections": 206,
+        "regressions": 158
+      },
+      "vs_flip_no_prior": {
+        "changed": 657,
+        "corrections": 160,
+        "regressions": 118
+      }
+    },
+    "prior_strength_scanned": false,
+    "protocol": {
+      "center": "center view only",
+      "decode": "horizontal_flip:mean_probabilities:t=1.4:validation_fitted_prior=0.6"
+    },
+    "schema_version": 1,
+    "temperature_scanned": false,
+    "test_data_used": false,
+    "training_config_sha256": "467c8f80a5a543c03051a710613a4e5fc4e50de6ffcb7dc2ca04d692754d0673"
+  },
+  "control": {
+    "binding": {
+      "autocast": false,
+      "cache": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/val_branch_logits.pt",
+      "cache_format_version": 2,
+      "cache_sha256": "c68c1255db037483ba48fb37496a259e12778a227af4d1be47719adf31b23762",
+      "cache_tta_fusion": "mean_probabilities",
+      "cache_tta_temperature": 1.0,
+      "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/checkpoints/best.pt",
+      "checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+      "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+      "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+      "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+      "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+      "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "encoder_precision": "float32",
+      "feature_precision": "float32",
+      "input_resolution": 384,
+      "num_classes": 750,
+      "num_samples": 14880,
+      "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+      "protocol": "rematch750_search_v5",
+      "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+      "split_seed": 42,
+      "training_config_sha256": "f851988f03f7bac101133551d30146e38928cc0c87618f9408da4422eeb39491",
+      "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+    },
+    "center": {
+      "macro": 0.7530860900878906,
+      "micro": 0.7635080814361572
+    },
+    "checkpoint": "/home/lux1/noise-worktrees/l05_mixstyle/outputs/codex/l05_mixstyle/runs/MS00/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "fe815e874f581fea56236af848356e8e5ef5e4118145fbb6d41b507dd8d8367a",
+    "decode": {
+      "flip_no_prior_macro": 0.754989743232727,
+      "flip_no_prior_micro": 0.7652553915977478,
+      "macro": 0.7579477429389954,
+      "micro": 0.7661290168762207,
+      "prior_bias_sha256": "4b14713d0a62b7dcb014b04c9a0a71382c542ba567866a0cbe73f089828b3c63",
+      "prior_fit_iterations": 50,
+      "prior_strength": 0.6,
+      "vs_center": {
+        "changed": 785,
+        "corrections": 194,
+        "regressions": 155
+      },
+      "vs_flip_no_prior": {
+        "changed": 616,
+        "corrections": 134,
+        "regressions": 121
+      }
+    },
+    "prior_strength_scanned": false,
+    "protocol": {
+      "center": "center view only",
+      "decode": "horizontal_flip:mean_probabilities:t=1.4:validation_fitted_prior=0.6"
+    },
+    "schema_version": 1,
+    "temperature_scanned": false,
+    "test_data_used": false,
+    "training_config_sha256": "f851988f03f7bac101133551d30146e38928cc0c87618f9408da4422eeb39491"
+  },
+  "delivery": {
+    "checked_at": "2026-09-27T07:39:20.125252+08:00",
+    "csv": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+    "csv_sha256": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
+    "kind": "existing_L05_platform_best_fallback_not_new_candidate",
+    "rows": 37444,
+    "validation_command": [
+      "python3",
+      "scripts/check_submission.py",
+      "--test_dir",
+      "/home/lux1/noise/test",
+      "--class-mapping",
+      "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+      "--csv",
+      "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+      "--zip",
+      "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip"
+    ],
+    "validation_exit_code": 0,
+    "validation_output": "Test set contains 37444 images\n\n============================================================\nChecking pred_results.csv...\n============================================================\n  \u2705 File name: pred_results.csv\n  \u2705 Line count: 37444 (matches test set)\n  \u2705 All image names found in test set\n  \u2705 No duplicate image names\n  \u2705 All test images covered\n  \u2705 All labels are 4-digit strings\n  \u2705 All labels in range [0000, 0749]\n\n============================================================\nChecking submission.zip...\n============================================================\n  \u2705 ZIP contains only pred_results.csv (no directory)\n\n============================================================\n\ud83c\udf89 All checks passed! Submission is ready.\n",
+    "zip": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip",
+    "zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f"
+  },
+  "delta_pp": {
+    "macro": -0.04003125888037973,
+    "micro": -0.02016129032257341
+  },
+  "delta_vs_control_pp": {
+    "macro": -0.00829369297588034,
+    "micro": 0.020161290322584513
+  },
+  "epoch_curve": [
+    {
+      "attempted_updates": 131,
+      "epoch": 1,
+      "macro": 0.751544,
+      "micro": 0.762097,
+      "precision": "log rounded to six decimal places",
+      "successful_updates": 131,
+      "training_seconds": 2616.504515
+    },
+    {
+      "attempted_updates": 262,
+      "epoch": 2,
+      "macro": 0.752591,
+      "micro": 0.763105,
+      "precision": "log rounded to six decimal places",
+      "successful_updates": 262,
+      "training_seconds": 5214.227822
+    }
+  ],
+  "experiment_id": "L05_RSC_20260927",
+  "goal_above_70_verified": false,
+  "independent_audit": {
+    "binding": {
+      "autocast": false,
+      "cache": "/home/lux1/noise-worktrees/l05_rsc/outputs/codex/l05_rsc/runs/RC01/seed42/val_branch_logits.pt",
+      "cache_format_version": 2,
+      "cache_sha256": "f27f1cda4eacffab37ab451937f1c0bfc8c3aa8fd583beea8dc7061c25d48cba",
+      "cache_tta_fusion": "mean_probabilities",
+      "cache_tta_temperature": 1.0,
+      "checkpoint": "/home/lux1/noise-worktrees/l05_rsc/outputs/codex/l05_rsc/runs/RC01/seed42/checkpoints/best.pt",
+      "checkpoint_sha256": "9a3f79abf1d363a943c198fbd9c280f7e5da3b759237d3add40e41804304f8ac",
+      "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+      "content_group_set_sha256": "09dd30b0291d5f2c1fbc7530cadc1a496919021262f7bcc5f6fbeed29ce4e01c",
+      "content_groups_sha256": "a0b99442647f4b3b4877b077ed7d51566b33828663d979cbe6f135d718dbe5c3",
+      "dataset_fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+      "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "encoder_precision": "float32",
+      "feature_precision": "float32",
+      "input_resolution": 384,
+      "num_classes": 750,
+      "num_samples": 14880,
+      "preprocessing": "OpenAI CLIP resize/center-crop/RGB/CLIP normalization with input_resolution=384",
+      "protocol": "rematch750_search_v5",
+      "sample_order_sha256": "0ac9abb3a3b6430c806f4694fe0ea214a1e0da444d6659b2a475f28d72e68eec",
+      "split_seed": 42,
+      "training_config_sha256": "467c8f80a5a543c03051a710613a4e5fc4e50de6ffcb7dc2ca04d692754d0673",
+      "validation_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+    },
+    "evaluation_sha256": "76f18a5e139d36093fe299dd9a1d2481b5f6a9a3d69485fbf797b0030faf1aac",
+    "identical_decoded_predictions": 14880,
+    "limitation": "Cache decode audit, not another independent image-inference pass or platform proof",
+    "max_bias_difference": 6.116277401213566e-07,
+    "numpy_float64_metrics": {
+      "macro": 0.7578648113094485,
+      "micro": 0.7663306451612903
+    },
+    "prior_iterations": 50,
+    "script_sha256": "26688da300aa3be75d283be6b559323d11dabac4728055c86246950232bda3f8",
+    "sidecars": {
+      "best.pt": {
+        "checkpoint_sha256": "9a3f79abf1d363a943c198fbd9c280f7e5da3b759237d3add40e41804304f8ac",
+        "options": {
+          "decision_precision": "float32",
+          "fraction": 0.3333333333333333,
+          "placement": "normalized classifier input",
+          "source_sha256": "a2e3a73c6574730edf88ebb27740fe589efa14211fe81f39434c7d3f44e917dc"
+        },
+        "state": {
+          "calls": 133816,
+          "examples": 535260,
+          "fraction": 0.3333333333333333,
+          "muted_channels": 45764392,
+          "muted_examples": 267628
+        }
+      },
+      "epoch_1.pt": {
+        "checkpoint_sha256": "149a97deff052bdf0a36c05985f7be5e845dc1d2db310aa9dfcc2240478b9b2b",
+        "options": {
+          "decision_precision": "float32",
+          "fraction": 0.3333333333333333,
+          "placement": "normalized classifier input",
+          "source_sha256": "a2e3a73c6574730edf88ebb27740fe589efa14211fe81f39434c7d3f44e917dc"
+        },
+        "state": {
+          "calls": 66908,
+          "examples": 267630,
+          "fraction": 0.3333333333333333,
+          "muted_channels": 22882194,
+          "muted_examples": 133814
+        }
+      },
+      "last.pt": {
+        "checkpoint_sha256": "2b06cde9d89ebea457f05d6174e7479e0421da6d999e72241e8d08ff2805e7b1",
+        "options": {
+          "decision_precision": "float32",
+          "fraction": 0.3333333333333333,
+          "placement": "normalized classifier input",
+          "source_sha256": "a2e3a73c6574730edf88ebb27740fe589efa14211fe81f39434c7d3f44e917dc"
+        },
+        "state": {
+          "calls": 133816,
+          "examples": 535260,
+          "fraction": 0.3333333333333333,
+          "muted_channels": 45764392,
+          "muted_examples": 267628
+        }
+      }
+    },
+    "source_receipt": {
+      "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+      "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+      "verified_source_files": 484
+    },
+    "test_data_used": false
+  },
+  "pass": false,
+  "platform_best": 66.94797564362783,
+  "platform_result": null,
+  "precision_metadata_correction": {
+    "actual_cache_forward": "CUDA AMP float16, driven by train.amp=true; cache stored float32",
+    "cache_generator_sha256": "13f476fe34dec364df4df9dfa3f8330b1e6c35f35b10487e0e3c879a32a25c20",
+    "evidence": "Pinned cache_validation_tta_logits.py lines 80 and 91 and runtime RC01.yaml; same reference protocol as L05 rectangular-view precision audit",
+    "legacy_binding_autocast_false_is_inaccurate": true,
+    "note": "Original binding retained unchanged for provenance; dtype of stored weights/features does not imply autocast disabled"
+  },
+  "recipe": 0.3333333333333333,
+  "selected_epoch": 2,
+  "status": "closed_below_promotion_gate",
+  "test_used": false,
+  "tests": "4 passed",
+  "training_complete": {
+    "checkpoint": "/home/lux1/noise-worktrees/l05_rsc/outputs/codex/l05_rsc/runs/RC01/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "9a3f79abf1d363a943c198fbd9c280f7e5da3b759237d3add40e41804304f8ac",
+    "config_sha256": "467c8f80a5a543c03051a710613a4e5fc4e50de6ffcb7dc2ca04d692754d0673",
+    "reload_center": {
+      "raw_macro": 0.752591073513031,
+      "raw_micro": 0.7631048560142517,
+      "samples": 14880
+    },
+    "smoke": false,
+    "state": {
+      "calls": 133816,
+      "examples": 535260,
+      "fraction": 0.3333333333333333,
+      "muted_channels": 45764392,
+      "muted_examples": 267628
+    },
+    "stopped": false
+  }
+}
