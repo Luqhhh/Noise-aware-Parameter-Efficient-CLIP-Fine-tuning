@@ -1,0 +1,26 @@
+{
+  "experiment_id": "L05_FOURIER_MIX_20260927",
+  "pid": 247990,
+  "start_ticks": 8046243,
+  "launched_at": "2026-09-27T07:56:44.698221+08:00",
+  "next_monitor_not_before": "2026-09-27T08:26:44.698221+08:00",
+  "command": [
+    "/usr/bin/python3",
+    "scripts/run_l05_fourier_mix.py",
+    "--config",
+    "configs/l05_fourier_mix/fixed.json",
+    "--phase",
+    "queue"
+  ],
+  "worktree": "/home/lux1/noise-worktrees/l05_fourier_mix",
+  "commit": "6373a6d2d4851d0d64c2311193a58fe46551c3fb",
+  "preflight": {
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+    "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "verified_source_files": 484
+  },
+  "tests": "4 passed",
+  "training_result": null,
+  "platform_result": null
+}
