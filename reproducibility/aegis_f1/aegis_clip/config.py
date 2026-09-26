@@ -9,8 +9,6 @@ from typing import Any
 
 import yaml
 
-from aegis_clip.degradation import validate_train_degradation
-
 
 class ConfigError(ValueError):
     """Raised when a configuration is ambiguous or internally inconsistent."""
@@ -154,15 +152,6 @@ def validate_config(config: dict[str, Any]) -> None:
     }:
         raise ConfigError(
             "data.train_augmentation must be clip_center_crop or weak_rrc_flip"
-        )
-    try:
-        validate_train_degradation(data.get("train_degradation"))
-    except ValueError as exc:
-        raise ConfigError(str(exc)) from exc
-    if data.get("train_degradation") and model.get("use_cached_training"):
-        raise ConfigError(
-            "data.train_degradation has no effect when use_cached_training is "
-            "set: cached features are precomputed from undegraded pixels"
         )
     if model.get("backbone") != "ViT-B/32":
         raise ConfigError("Only OpenAI CLIP ViT-B/32 is competition-compliant")
