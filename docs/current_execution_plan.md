@@ -30,6 +30,12 @@
 同一 checkpoint 的 Flip/多尺度视角平均不构成集成）。本地 val 上 flip+融合比无 TTA 高
 **+0.15 ~ +0.24pp micro**（`outputs/rematch750/RM_FT/seed42/tta_sweep.json`，10 个融合设置）——
 **低于 +0.30pp 门**，故不优先；待迁移率出来后，可用斜率判断它值不值一个名额。
+⚠️ **出包本身当前被硬拒，不是「直接可做」**：`aegis_clip/cli/infer.py:230-236` 在 config 声明了
+`dataset_manifest` 时，**任何非 global 推理一律拒绝**（含纯 flip TTA），报
+`Rematch first-round inference is global only, without prior` —— 2026-09-26 实测再次触发。
+唯一出路是清 `dataset_manifest` 或改闸门，二者等价于**改推理协议**，按上文第 197 行的既有纪律
+必须「**先改闸门并登记，不要绕过**」。故本条的真实前提是：**须先有一次登记过的协议变更**，
+而不是产出脚本可以直接跑。
 ⚠️ 注意 `--local-view attention_multiscale` 与 `--tta` 是不同的开关，后者只需
 `--acknowledge-tta-risk`；前者另有 `--acknowledge-local-view-risk`，两者不要混为一谈。
 
