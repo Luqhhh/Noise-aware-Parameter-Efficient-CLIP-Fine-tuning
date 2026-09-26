@@ -1,0 +1,33 @@
+{
+  "checked_at": "2026-09-27T03:41:39+08:00",
+  "driver_pid": 243215,
+  "driver_start_ticks": 6326251,
+  "formal_pid": 243331,
+  "formal_updates_observed": 68,
+  "planned_updates": 262,
+  "smoke": {
+    "checkpoint": "/home/lux1/noise-worktrees/l05_rsc/outputs/codex/l05_rsc/runs/RC01_SMOKE/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "a19afabcd70a6c03e7253d8240a975e3866f1c278600bb2a08ab8acfdc57846f",
+    "config_sha256": "5dec54ada64fc7debe9bf6e10b36a6263d5b9fb60ef588855788e4454b215ddf",
+    "reload_center": {
+      "raw_macro": 0.7516136765480042,
+      "raw_micro": 0.761962354183197,
+      "samples": 14880
+    },
+    "smoke": true,
+    "state": {
+      "calls": 4,
+      "examples": 16,
+      "fraction": 0.3333333333333333,
+      "muted_channels": 1368,
+      "muted_examples": 8
+    },
+    "stopped": false
+  },
+  "epoch0_log": [
+    "2026-09-27 03:16:55,964 | INFO | Epoch 0 baseline | samples=14880 | predicted_class_count=746 | raw_micro=0.762970 | raw_macro=0.752497 | trusted_micro=0.762970 | trusted_macro=0.752497 | proxy_micro=0.762970 | proxy_macro=0.752497 | clean_core_micro=0.762970 | clean_core_macro=0.752497 | clean_core_threshold=0.700000 | clean_core_samples=14880 | flip_prediction_agreement=1.000000 | mean_cross_entropy=1.144671 | mean_feature_cosine=0.940758 | mean_feature_drift=0.059242 | inference_mode=none | tta_fusion=none | tta_temperature=1.000000 | prediction_head=linear | validation_covered_classes=750 | head_micro=0.770374 | head_macro=0.770394 | head_classes=250 | medium_micro=0.777445 | medium_macro=0.777297 | medium_classes=250 | tail_micro=0.734130 | tail_macro=0.709800 | tail_classes=250 | selector_metric=raw_macro | selector=0.752497",
+    "2026-09-27 03:18:31,569 | INFO | Initial checkpoint | samples=14880 | predicted_class_count=746 | raw_micro=0.762970 | raw_macro=0.752497 | trusted_micro=0.762970 | trusted_macro=0.752497 | proxy_micro=0.762970 | proxy_macro=0.752497 | clean_core_micro=0.762970 | clean_core_macro=0.752497 | clean_core_threshold=0.700000 | clean_core_samples=14880 | flip_prediction_agreement=1.000000 | mean_cross_entropy=1.144671 | mean_feature_cosine=0.940758 | mean_feature_drift=0.059242 | inference_mode=none | tta_fusion=none | tta_temperature=1.000000 | prediction_head=linear | validation_covered_classes=750 | head_micro=0.770374 | head_macro=0.770394 | head_classes=250 | medium_micro=0.777445 | medium_macro=0.777297 | medium_classes=250 | tail_micro=0.734130 | tail_macro=0.709800 | tail_classes=250 | selector_metric=raw_macro | selector=0.752497"
+  ],
+  "next_monitor_not_before": "2026-09-27T04:12:00+08:00",
+  "formal_result": null
+}
