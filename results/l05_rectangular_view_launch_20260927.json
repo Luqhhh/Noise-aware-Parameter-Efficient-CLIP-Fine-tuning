@@ -1,0 +1,16 @@
+{
+  "pid": 240969,
+  "start_ticks": "5869465",
+  "command": [
+    "/usr/bin/python3",
+    "/home/lux1/noise-worktrees/l05_rectangular_view/scripts/run_l05_rectangular_view.py",
+    "--config",
+    "/home/lux1/noise-worktrees/l05_rectangular_view/configs/l05_rectangular_view/fixed.json"
+  ],
+  "launch_time": "2026-09-27T01:55:28.786484+08:00",
+  "next_monitor_after": "2026-09-27T02:25:28.786484+08:00",
+  "implementation_commit": "559b859ab107fde5bb9aeb44f71acbaa45276575",
+  "status": "launched_no_method_result",
+  "tests": "6 passed",
+  "platform_result": null
+}
