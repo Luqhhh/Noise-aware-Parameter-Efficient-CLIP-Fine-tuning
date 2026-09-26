@@ -8,6 +8,7 @@ import hashlib
 import io
 import json
 import os
+import subprocess
 from pathlib import Path
 import sys
 import time
@@ -238,8 +239,16 @@ def train(cfg, rows, reference, identity):
         config = copy.deepcopy(parent['config'])
         config['model'].update(peft_mode='feature_adapter' if arm=='NH01' else 'frozen',
                                adapter_dim=cfg['adapter_dim'], adapter_scale=cfg['adapter_scale'])
-        config['project'].update(experiment_id=cfg['experiment_id']+'_'+arm,
+        config['project'].update(experiment_id=cfg['experiment_id']+'_'+arm, protocol='l05_nonlinear_head_v1',
                                  parent_kind='same_split_continue', parent_experiment_id='RM_V5_L05_CUDA_LOCAL')
+        config['model']['use_cached_training'] = True
+        config['train'] = {'epochs': cfg['epochs'], 'schedule_epochs': cfg['epochs'],
+                           'batch_size': cfg['batch_size'], 'head_lr': cfg['lr'],
+                           'head_weight_decay': cfg['weight_decay'], 'backbone_lr': 0.,
+                           'init_checkpoint': cfg['parent_checkpoint'], 'amp': False,
+                           'entrypoint': 'scripts/run_l05_nonlinear_head.py --phase train'}
+        config['loss'] = {'name': 'gce', 'gce_q': cfg['gce_q']}
+        config['output']['root'] = str(out)
         state = {k: v for k,v in parent['model_state_dict'].items() if not k.startswith('classifier.')}
         state.update({'classifier.'+k: v.cpu() for k,v in head[1].state_dict().items()})
         if arm == 'NH01':
@@ -332,9 +341,17 @@ def main():
     p.add_argument('--phase', choices=('cache','train','audit'), required=True)
     args = p.parse_args()
     cfg = json.loads(Path(args.config).read_text())
+    os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG', ':4096:8')
     torch.set_num_threads(4)
+    torch.use_deterministic_algorithms(True)
     torch.backends.cudnn.benchmark = False
     rows, reference, identity = preflight(cfg)
+    write_json(Path(cfg['output'])/(args.phase+'_implementation.json'), {
+        'script_sha256': sha256_file(__file__), 'config_sha256': sha256_file(args.config),
+        'git_commit': subprocess.check_output(['git','rev-parse','HEAD'], cwd=ROOT, text=True).strip(),
+        'torch': torch.__version__, 'cuda': torch.version.cuda,
+        'deterministic_algorithms': torch.are_deterministic_algorithms_enabled(),
+        'command': sys.argv, 'pid': os.getpid()})
     {'cache': cache, 'train': train, 'audit': audit}[args.phase](cfg, rows, reference, identity)
 
 if __name__ == '__main__':

@@ -41,3 +41,11 @@ NH00 若单独过 L05 +0.30pp 且 micro 不下降，可作为线性续训候选�
 若两臂关闭，交付已冻结 L05_T14_P060 保底包的重新校验记录，不将旧平台成绩归因于本轮。
 运行：`python3 scripts/run_l05_nonlinear_head.py --config configs/l05_nonlinear_head/fixed.json --phase cache`
 以及同入口 `--phase train`。完整命令、结果与包校验将在运行结束回填。
+
+## 训练前审计
+
+原生验证前 32 张、两路 logits 与冻结缓存最大绝对差均 0。全 14,880 张将 head
+从 AMP 改成 FP32，center/flip 的 max abs 分别 0.008713/0.008394，top1 分别改变
+8/6 张；编码器仍 AMP。两臂同用 FP32 head；最终比较保留原生 L05 为基线，报告
+epoch0 的差异，不把精度差异归因为学习收益。模型/checkpoint 定向测试 23 passed。
+预注册与实现已推送 `d0edf94`，运行输出独立保存。
