@@ -58,3 +58,4 @@ task0_5_final_acceptance/
 # 本机提分搜索（2026-09-23）：运行产物不入库，结论写入 results/ 与 docs/
 artifacts
 outputs/search_20260923/
+/outputs/codex/l05_nonlinear_head/

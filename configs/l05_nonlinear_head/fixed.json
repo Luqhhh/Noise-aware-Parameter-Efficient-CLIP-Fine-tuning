@@ -1,0 +1,22 @@
+{
+  "experiment_id": "L05_NONLINEAR_HEAD_20260926",
+  "parent_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+  "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+  "reference_cache": "/home/lux1/noise/worktrees/rematch750_f05_focus/artifacts/f05_focus_l05/l05_val_branch_logits.pt",
+  "assets": "/home/lux1/noise/artifacts/stages/repechage/20260921",
+  "image_root": "/home/lux1/noise/train",
+  "output": "outputs/codex/l05_nonlinear_head",
+  "seed": 42,
+  "epochs": 20,
+  "batch_size": 1024,
+  "lr": 0.0001,
+  "weight_decay": 0.0001,
+  "gce_q": 0.5,
+  "adapter_dim": 128,
+  "adapter_scale": 0.1,
+  "inference_batch_size": 32,
+  "workers": 2,
+  "temperature": 1.4,
+  "prior_strength": 0.6,
+  "gate_macro_pp": 0.30
+}
