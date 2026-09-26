@@ -1,0 +1,287 @@
+{
+  "baseline_decode": {
+    "macro": 0.7582651238982523,
+    "micro": 0.7665322580645161
+  },
+  "cache_sha256": "2ecc29a87605f200679a3c34064f86a28824edd97d6b22c4f21fbbdfd878c1bd",
+  "candidate_decode": {
+    "macro": 0.7548726290849187,
+    "micro": 0.7628360215053763
+  },
+  "center_without_prior": {
+    "macro": 0.7479744346619215,
+    "micro": 0.7579301075268817
+  },
+  "config": {
+    "assets": "/home/lux1/noise/artifacts/stages/repechage/20260921",
+    "autocast": true,
+    "autocast_dtype": "float16",
+    "batch_size": 32,
+    "crossfit_gate_macro_pp": 0.2,
+    "experiment_id": "L05_RECTANGULAR_VIEW_20260927",
+    "fold_seed": 42,
+    "folds": 3,
+    "gate_macro_pp": 0.3,
+    "image_root": "/home/lux1/noise/train",
+    "long_cap": 576,
+    "monitor_interval_seconds": 1800,
+    "output": "outputs/codex/l05_rectangular_view_v2",
+    "parent_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+    "parent_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "patch_size": 32,
+    "prior_strength": 0.6,
+    "protocol": "l05_rectangular_fullframe_v1",
+    "reference_cache": "/home/lux1/noise/worktrees/rematch750_f05_focus/artifacts/f05_focus_l05/l05_val_branch_logits.pt",
+    "short_edge": 384,
+    "temperature": 1.4,
+    "workers": 2
+  },
+  "corrections": 294,
+  "delivery": {
+    "checked_at": "2026-09-27T03:01:00.467574+08:00",
+    "csv": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+    "csv_sha256": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
+    "kind": "existing_L05_platform_best_fallback_not_new_candidate",
+    "rows": 37444,
+    "validation_command": [
+      "python3",
+      "scripts/check_submission.py",
+      "--test_dir",
+      "/home/lux1/noise/test",
+      "--class-mapping",
+      "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+      "--csv",
+      "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+      "--zip",
+      "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip"
+    ],
+    "validation_exit_code": 0,
+    "validation_output": "Test set contains 37444 images\n\n============================================================\nChecking pred_results.csv...\n============================================================\n  ✅ File name: pred_results.csv\n  ✅ Line count: 37444 (matches test set)\n  ✅ All image names found in test set\n  ✅ No duplicate image names\n  ✅ All test images covered\n  ✅ All labels are 4-digit strings\n  ✅ All labels in range [0000, 0749]\n\n============================================================\nChecking submission.zip...\n============================================================\n  ✅ ZIP contains only pred_results.csv (no directory)\n\n============================================================\n🎉 All checks passed! Submission is ready.\n",
+    "zip": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip",
+    "zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f"
+  },
+  "delta_pp": {
+    "macro": -0.3392494813333591,
+    "micro": -0.3696236559139754
+  },
+  "experiment_id": "L05_RECTANGULAR_VIEW_20260927",
+  "geometry_audit": {
+    "128x576": {
+      "max_abs": 0.0,
+      "samples": 10
+    },
+    "160x576": {
+      "max_abs": 0.0,
+      "samples": 13
+    },
+    "192x576": {
+      "max_abs": 0.0,
+      "samples": 24
+    },
+    "224x576": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "256x576": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "288x576": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "320x576": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "352x576": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "384x384": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "384x416": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "384x448": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "384x480": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "384x512": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "384x544": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "384x576": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "416x384": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "448x384": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "480x384": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "512x384": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "544x384": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "576x128": {
+      "max_abs": 0.0,
+      "samples": 1
+    },
+    "576x192": {
+      "max_abs": 0.0,
+      "samples": 2
+    },
+    "576x224": {
+      "max_abs": 0.0,
+      "samples": 3
+    },
+    "576x256": {
+      "max_abs": 0.0,
+      "samples": 9
+    },
+    "576x288": {
+      "max_abs": 0.0,
+      "samples": 29
+    },
+    "576x320": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "576x352": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "576x384": {
+      "max_abs": 0.0,
+      "samples": 32
+    },
+    "64x576": {
+      "max_abs": 0.0,
+      "samples": 9
+    },
+    "96x576": {
+      "max_abs": 0.0,
+      "samples": 1
+    }
+  },
+  "geometry_counts": {
+    "(128, 576)": 1,
+    "(192, 576)": 2,
+    "(224, 576)": 3,
+    "(256, 576)": 9,
+    "(288, 576)": 29,
+    "(320, 576)": 72,
+    "(352, 576)": 434,
+    "(384, 384)": 1199,
+    "(384, 416)": 263,
+    "(384, 448)": 268,
+    "(384, 480)": 268,
+    "(384, 512)": 997,
+    "(384, 544)": 279,
+    "(384, 576)": 1055,
+    "(416, 384)": 324,
+    "(448, 384)": 422,
+    "(480, 384)": 614,
+    "(512, 384)": 3690,
+    "(544, 384)": 1134,
+    "(576, 128)": 10,
+    "(576, 160)": 13,
+    "(576, 192)": 24,
+    "(576, 224)": 56,
+    "(576, 256)": 79,
+    "(576, 288)": 90,
+    "(576, 320)": 267,
+    "(576, 352)": 354,
+    "(576, 384)": 2914,
+    "(576, 64)": 9,
+    "(576, 96)": 1
+  },
+  "goal_above_70_verified": false,
+  "identity": {
+    "config": "40f9661dd8061cf65be7596540fd4e901c5e43eaff4a09fe24e49762ec6d2155",
+    "format": 1,
+    "manifest": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "parent": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "reference_cache": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc"
+  },
+  "implementation": {
+    "autocast": true,
+    "autocast_dtype": "float16",
+    "command": [
+      "/home/lux1/noise-worktrees/l05_rectangular_view/scripts/run_l05_rectangular_view.py",
+      "--config",
+      "/home/lux1/noise-worktrees/l05_rectangular_view/configs/l05_rectangular_view/fixed.json"
+    ],
+    "commit": "ec7d6acd416de90d98dd7e3332aec86e25000cf9",
+    "config_sha256": "08b9532b8af87fd7e3b0fadcaa12bd36c5ae68d2a5c4ba657da94de193266d8d",
+    "model_source_sha256": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+    "pid": 241818,
+    "script_sha256": "4edc6ab4071d38c561f38c3e322b8bd9f537a50fd469fdcd2532c091718a3cf2",
+    "support_sha256": "8a18105e78836fdd8c00b2428f2ab1fb07d52c8751753fbb436d639cbca03f1e",
+    "torch": "2.12.1+cu126"
+  },
+  "independent_bias_max_difference": 6.637708140910803e-07,
+  "independent_decoded_predictions_identical": 14880,
+  "independent_prior_iterations": 50,
+  "inference_seconds": 100.87763903900486,
+  "limitation": "Same-validation prior fit; independent NumPy decode is not a second full-image inference pass",
+  "model_state_bitwise_unchanged": true,
+  "native_replay": [
+    {
+      "branch": "original_logits",
+      "independent_forward_max_abs": 0.0,
+      "native_reference_max_abs": 0.0
+    },
+    {
+      "branch": "flip_logits",
+      "independent_forward_max_abs": 0.0,
+      "native_reference_max_abs": 0.0
+    }
+  ],
+  "parent_sha256_unchanged": true,
+  "platform_best": 66.94797564362783,
+  "platform_result": null,
+  "preliminary_gate_pass": false,
+  "prior_fit": {
+    "bias_max": 3.1653201580047607,
+    "bias_min": -1.2476236820220947,
+    "damping": 0.5,
+    "final_marginal_l1": 0.0007209401810541749,
+    "final_max_marginal_error": 5.407375283539295e-06,
+    "fitted_max_marginal_error": 5.828100256621838e-06,
+    "initial_marginal_l1": 0.15273085236549377,
+    "iterations": 50,
+    "max_iterations": 50,
+    "target_prior": "uniform",
+    "tolerance": 1e-06
+  },
+  "promotion_pass": false,
+  "regressions": 349,
+  "status": "closed_below_promotion_gate",
+  "test_used": false,
+  "tests": "6 passed",
+  "validation_samples": 14880
+}
