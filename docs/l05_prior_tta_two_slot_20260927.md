@@ -60,7 +60,7 @@ python3 scripts/build_l05_tta_prior_submission_final.py \
 
 | 上传顺序 | ZIP 路径 | ZIP SHA-256 | 平台结果 |
 |---:|---|---|---|
-| 1 | `/home/lux1/noise/outputs/codex/l05_prior_tta_two_slot_20260927/L05_T14_P070_PROBE_20260927/submission.zip` | `ee50dfe3bcf595169d5d1f016be53576ba6668a48837f8541f16faf766dcea93` | 未上传 |
+| 1 | `/home/lux1/noise/outputs/codex/l05_prior_tta_two_slot_20260927/L05_T14_P070_PROBE_20260927/submission.zip` | `ee50dfe3bcf595169d5d1f016be53576ba6668a48837f8541f16faf766dcea93` | **66.88120927251362%**（用户回报） |
 | 2 | `/home/lux1/noise/outputs/codex/l05_prior_tta_two_slot_20260927/L05_T11_P060_PROBE_20260927/submission.zip` | `5569ef0041478f62b66f68f1cde26233f79efb323a1abeae12555ed4a5862c35` | 未上传 |
 
 CSV SHA-256 分别为 `ac5677d65f661cbb82e8e4ab78624765cd17c454a8c08a30d71be849a147c13c`
@@ -71,5 +71,12 @@ CSV SHA-256 分别为 `ac5677d65f661cbb82e8e4ab78624765cd17c454a8c08a30d71be849a
 桌面 ZIP/CSV 的 SHA-256 与原包逐项相同，ZIP 内外 CSV 逐字节一致；上传各目录的
 `submission.zip` 即可。
 完整机器可读结果见[结果文件](../results/l05_prior_tta_two_slot_20260927.json)。
-上传方按既有约定回填 `results/rematch_submission_registry.csv` 的提交 ID、时间、平台阶段及
-本文件平台结果。本机没有平台账号或回执，不能预填分数；两次名额目前尚未实际消耗。
+
+2026-09-27 用户回报桌面目录 `L05_T14_P070_PROBE_20260927` 的平台分数
+**66.88120927251362%**。桌面 ZIP SHA-256 与预冻结包完全一致；按 37,444 张测试图换算为
+**25,043 张正确**，比现役 `L05_T14_P060` 的 **25,068 张 / 66.94797564362783%**
+低 **25 张 / 0.0667663711pp**。该单变量对照表明本次 prior strength 从 0.60 调到 0.70
+没有带来平台收益，保留 P0.60。本地 macro 原先 +0.030893pp，但平台反向；本地 micro
+原先 −0.040323pp，与平台同向。第二包 T1.1/P0.60 仍未收到平台分数。
+用户未提供 submission ID、带时区的上传时间或平台阶段，正式 registry 的回执字段保持空值；
+仅将已回报的分数、关联桌面路径与已核验哈希写入本记录，不补造缺失字段。
