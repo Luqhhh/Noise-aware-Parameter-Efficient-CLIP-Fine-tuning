@@ -1,0 +1,18 @@
+{
+  "configs": [
+    "/home/lux1/noise/worktrees/p75_mechanisms_20260927/outputs/codex/p75_mechanisms_20260927/configs/P75_PATCH_READOUT.yaml",
+    "/home/lux1/noise/worktrees/p75_mechanisms_20260927/outputs/codex/p75_mechanisms_20260927/configs/P75_FULL_SAM.yaml"
+  ],
+  "hard_status": "blocked_pending_per_sample_evidence",
+  "identity": {
+    "control_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "focus_framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+    "oof_sha256": "dada97fc7970266a59c2fc13f7ac5776edc1f4a7a40af0589544c83753ef31f4",
+    "parent_sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+    "stage_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "train_csv_sha256": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "val_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+  },
+  "patch_status": "cpu_smoke_required_before_gpu",
+  "sam_status": "private_overlay_cpu_contract_pending; FP32 differs from AMP control"
+}
