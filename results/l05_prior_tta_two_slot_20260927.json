@@ -1,12 +1,14 @@
 {
   "experiment_id": "L05_PRIOR_TTA_TWO_SLOT_20260927",
-  "status": "prior_probe_scored_temperature_probe_pending",
-  "platform_uploaded_count": 1,
+  "status": "closed_both_probes_below_control",
+  "platform_uploaded_count": 2,
+  "decision": "retain_L05_T14_P060; no_further_sweep_in_this_segment",
   "control": {
     "tag": "L05_T14_P060",
     "temperature": 1.4,
     "prior_strength": 0.6,
     "platform_score_percent": 66.94797564362783,
+    "platform_correct_predictions": 25068,
     "zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f"
   },
   "source": {
@@ -55,8 +57,12 @@
       "prior_bias_sha256": "4bdbbb90c6b1bd1b5c507e1820a5e23eb9c3bfe964ffd0c46a58e394aa57b058",
       "submission_checks": "9/9 passed",
       "zip_csv_bytes_equal": true,
-      "platform_submitted": false,
-      "platform_score_percent": null
+      "platform_submitted": true,
+      "platform_score_percent": 66.74233522059609,
+      "platform_correct_predictions": 24991,
+      "platform_delta_vs_control_pp": -0.20564042303173835,
+      "platform_score_source": "user_reported_with_desktop_directory_20260927",
+      "platform_receipt_completeness": "score_and_desktop_directory_only; submission_id_timestamp_period_not_supplied"
     }
   ]
 }
