@@ -65,6 +65,11 @@ python3 scripts/build_l05_tta_prior_submission_final.py \
 
 CSV SHA-256 分别为 `ac5677d65f661cbb82e8e4ab78624765cd17c454a8c08a30d71be849a147c13c`
 和 `e95b34709695f25c69e47f8946203468d111816527342eff957a4ba4e89c7029`。
+已将两包完整复制到 Windows 桌面：
+`/mnt/c/Users/lqh22/Desktop/L05_T14_P070_PROBE_20260927/` 与
+`/mnt/c/Users/lqh22/Desktop/L05_T11_P060_PROBE_20260927/`。
+桌面 ZIP/CSV 的 SHA-256 与原包逐项相同，ZIP 内外 CSV 逐字节一致；上传各目录的
+`submission.zip` 即可。
 完整机器可读结果见[结果文件](../results/l05_prior_tta_two_slot_20260927.json)。
 上传方按既有约定回填 `results/rematch_submission_registry.csv` 的提交 ID、时间、平台阶段及
 本文件平台结果。本机没有平台账号或回执，不能预填分数；两次名额目前尚未实际消耗。
