@@ -1,0 +1,65 @@
+{
+  "experiment_id": "L05_STOCHASTIC_DEPTH_20260927",
+  "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+  "assets": "/home/lux1/noise/artifacts/stages/repechage/20260921",
+  "parent_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus/local_parent/RM_LP/seed42/checkpoints/best.pt",
+  "parent_sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+  "control_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+  "control_checkpoint_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+  "control_curve": {
+    "2": {
+      "path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/logs/evaluation_epoch_2.json",
+      "sha256": "9b234966e6119ca99fd32da0b0cd7366a64a45bbb0dae9b30e594f708421fa64",
+      "macro": 0.6982665061950684,
+      "micro": 0.7081989049911499
+    },
+    "4": {
+      "path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/logs/evaluation_epoch_4.json",
+      "sha256": "c1cc741b9804a67ba98506d13503640d4582b56ac5db57db66667f4fd16ed527",
+      "macro": 0.7220213413238525,
+      "micro": 0.7325268983840942
+    },
+    "6": {
+      "path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/logs/evaluation_epoch_6.json",
+      "sha256": "09a2709b0b72f0ec5b5db89601407ef18dd52de665f5858861b9f6b07f453a6f",
+      "macro": 0.7375048995018005,
+      "micro": 0.7476478219032288
+    },
+    "8": {
+      "path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/logs/evaluation_epoch_8.json",
+      "sha256": "fd116b65263a2f56c59789d692f88e02e7a1a5de1f9fbae0c66e225d87bc739c",
+      "macro": 0.7412623763084412,
+      "micro": 0.7516801357269287
+    },
+    "10": {
+      "path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/logs/evaluation_epoch_10.json",
+      "sha256": "11f52311fad3e22c7f90a6c84e7730ca09e45b7bce44cff170081d100b98c81f",
+      "macro": 0.7489964365959167,
+      "micro": 0.759475827217102
+    },
+    "12": {
+      "path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/logs/evaluation_epoch_12.json",
+      "sha256": "593b6f142483631936f1daeeaee4acaa39f3905e674b53eadd96b963a4cc5ade",
+      "macro": 0.7510907649993896,
+      "micro": 0.7615591287612915
+    },
+    "14": {
+      "path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/logs/evaluation_epoch_14.json",
+      "sha256": "38e42f4476d945eaf0e9c1c04c9da72312923b983f17bb1d311ca32710aedc8f",
+      "macro": 0.7523583769798279,
+      "micro": 0.7629704475402832
+    },
+    "16": {
+      "path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/logs/evaluation_epoch_16.json",
+      "sha256": "5b01e84310f9b07c5c27d61aa2a457eec34bf8b2b9a9c38a5bc127bb1b8fcdcc",
+      "macro": 0.7524970769882202,
+      "micro": 0.7629704475402832
+    }
+  },
+  "max_drop": 0.1,
+  "seed": 42,
+  "temperature": 1.4,
+  "prior_strength": 0.6,
+  "output": "outputs/codex/l05_stochastic_depth",
+  "monitor_interval_seconds": 1800
+}

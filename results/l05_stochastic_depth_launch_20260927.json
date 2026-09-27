@@ -1,0 +1,29 @@
+{
+  "experiment_id": "L05_STOCHASTIC_DEPTH_20260927",
+  "pid": 251112,
+  "start_ticks": 8896420,
+  "launched_at": "2026-09-27T10:14:02.419442+08:00",
+  "next_monitor_not_before": "2026-09-27T10:44:02.419442+08:00",
+  "command": [
+    "/usr/bin/python3",
+    "scripts/run_l05_stochastic_depth.py",
+    "--config",
+    "configs/l05_stochastic_depth/fixed.json",
+    "--phase",
+    "queue"
+  ],
+  "worktree": "/home/lux1/noise-worktrees/l05_stochastic_depth",
+  "commit": "b11a4eef25774c4e218a2715705de064b41f2f38",
+  "preflight": {
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+    "parent_sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+    "verified_source_files": 484
+  },
+  "shared_lp_binding_verified": true,
+  "planned_formal_epochs": 16,
+  "planned_formal_updates": 2096,
+  "tests": "4 passed",
+  "training_result": null,
+  "platform_result": null
+}
