@@ -11,7 +11,7 @@ from torch.nn import functional as F
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'scripts/p75_runtime'))
-sys.path.insert(0, str(ROOT/'outputs/codex/p75_mechanisms_20260927/framework_sam/reproducibility/aegis_f1'))
+sys.path.insert(0, str(ROOT/'reproducibility/aegis_f1'))
 import p75_sam  # noqa: E402
 
 
