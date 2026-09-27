@@ -1,0 +1,44 @@
+{
+  "experiment_id": "L05_OOF_HARD_FILTER_20260927",
+  "status": "remote_filtered_lp_training_ft_queued_after_data_sync",
+  "code_commit": "0150be3df04bd5b7fe4b16057ce814f815fe10d4",
+  "remote_accelerator": "NVIDIA GeForce RTX 4090 24GB",
+  "remote_environment": {
+    "python": "3.12.3",
+    "torch": "2.12.1+cu130",
+    "torchvision": "0.27.1+cu130",
+    "venv": "/root/autodl-tmp/noise_hf01/venv"
+  },
+  "remote_cpu_protocol_preflight": {
+    "status": "passed",
+    "selected_train_sha256": "259db9dc0b0713183bf090d426493604b9c9ba59e054ef7c17a52de13f7ce4ba",
+    "selection_manifest_sha256": "40a32c779041531341c10c8f344a429c742e982c44bffbd054a87f8e69e52f25"
+  },
+  "filtered_lp": {
+    "experiment_id": "RM_LP_HF01",
+    "started_utc": "2026-09-27T09:02:45Z",
+    "command": "/root/autodl-tmp/noise_hf01/venv/bin/python scripts/run_l05_oof_hard_filter.py train-lp --device cuda:0",
+    "screen": "l05_hf01_lp",
+    "log": "/root/autodl-tmp/noise_hf01/lp_training.log",
+    "first_step_audit": "passed: head_grad=0.090242",
+    "final_result": null
+  },
+  "filtered_l05_ft": {
+    "experiment_id": "RM_V5_L05_HF01",
+    "status": "auto_start_after_training_image_sync_and_lp_completion",
+    "command": "/root/autodl-tmp/noise_hf01/venv/bin/python scripts/run_l05_oof_hard_filter.py train-ft --device cuda:0",
+    "screen": "l05_hf01",
+    "log": "/root/autodl-tmp/noise_hf01/training.log",
+    "final_result": null
+  },
+  "training_image_transfer": {
+    "status": "in_progress",
+    "method": "classwise resumable rsync over SSH",
+    "local_screen": "noise_hf01_transfer",
+    "local_log": "outputs/codex/l05_oof_hard_filter/transfer_classes.log",
+    "verification": "all class transfers successful plus matching source/destination image counts before FT launch"
+  },
+  "half_hour_monitor": "/home/lux1/.local/bin/monitor_noise_hf01.py",
+  "gpu_training_started": true,
+  "submission_available": false
+}
