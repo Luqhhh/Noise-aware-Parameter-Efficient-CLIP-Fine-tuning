@@ -1,7 +1,7 @@
 {
   "experiment_id": "L05_PRIOR_TTA_TWO_SLOT_20260927",
-  "status": "two_audited_packages_ready_for_user_upload",
-  "platform_uploaded": false,
+  "status": "prior_probe_scored_temperature_probe_pending",
+  "platform_uploaded_count": 1,
   "control": {
     "tag": "L05_T14_P060",
     "temperature": 1.4,
@@ -33,7 +33,12 @@
       "prior_bias_sha256": "facdd436ccba930adeaeae54af321e123bfefc3df83740ee857f871cf716771e",
       "submission_checks": "9/9 passed",
       "zip_csv_bytes_equal": true,
-      "platform_score_percent": null
+      "platform_submitted": true,
+      "platform_score_percent": 66.88120927251362,
+      "platform_correct_predictions": 25043,
+      "platform_delta_vs_control_pp": -0.06676637111421257,
+      "platform_score_source": "user_reported_with_desktop_directory_20260927",
+      "platform_receipt_completeness": "score_and_desktop_directory_only; submission_id_timestamp_period_not_supplied"
     },
     {
       "tag": "L05_T11_P060_PROBE_20260927",
@@ -50,6 +55,7 @@
       "prior_bias_sha256": "4bdbbb90c6b1bd1b5c507e1820a5e23eb9c3bfe964ffd0c46a58e394aa57b058",
       "submission_checks": "9/9 passed",
       "zip_csv_bytes_equal": true,
+      "platform_submitted": false,
       "platform_score_percent": null
     }
   ]
