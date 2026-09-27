@@ -1,0 +1,31 @@
+{
+  "experiment_id": "L05_OOF_HARD_FILTER_20260927",
+  "status": "local_filtered_lp_complete_ft_running",
+  "reason_for_local_recovery": "Remote SSH endpoint closed connections and transfer stopped at 235/750 classes; remote LP final state unavailable",
+  "device": "NVIDIA GeForce RTX 4070 Laptop GPU",
+  "branch": "codex/l05_oof_hard_filter",
+  "selected_train_sha256": "259db9dc0b0713183bf090d426493604b9c9ba59e054ef7c17a52de13f7ce4ba",
+  "selection_manifest_sha256": "40a32c779041531341c10c8f344a429c742e982c44bffbd054a87f8e69e52f25",
+  "lp": {
+    "command": "python3 scripts/run_l05_oof_hard_filter.py train-lp --device cuda:0",
+    "epochs_completed": 20,
+    "successful_optimizer_updates": 10360,
+    "best_epoch": 20,
+    "best_raw_macro": 0.626255,
+    "best_raw_micro": 0.636223,
+    "best_checkpoint": "outputs/codex/l05_oof_hard_filter/runs/RM_LP_HF01/seed42/checkpoints/best.pt",
+    "best_checkpoint_sha256": "ae472dd173705145c63b94c14589ae3239fe01084bfe68015a0b4d65e7148b90"
+  },
+  "ft": {
+    "command": "python3 scripts/run_l05_oof_hard_filter.py train-ft --device cuda:0",
+    "status": "running",
+    "screen_session": "l05_hf01_local",
+    "screen_log": "outputs/codex/l05_oof_hard_filter/local_ft_screen.log",
+    "first_step_audit": "passed: head_grad=0.035662, visual_grad=27.837975",
+    "monitor_at_2026_09_27_22_26_local": "epoch 1, successful_optimizer_updates 40",
+    "audit_note": "A second foreground FT was mistakenly started after sandbox screen -ls reported the external session as dead. The second process exited; the original screen process continues. Shared log and progress files may contain interleaved entries and must not be treated as sole result evidence. Audit the final checkpoint independently.",
+    "log": "outputs/codex/l05_oof_hard_filter/runs/RM_V5_L05_HF01/seed42/logs/train.log",
+    "final_result": null
+  },
+  "submission_available": false
+}
