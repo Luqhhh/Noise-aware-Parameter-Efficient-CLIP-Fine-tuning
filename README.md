@@ -1,6 +1,6 @@
 # Noise-Aware Parameter-Efficient CLIP Fine-Tuning
 
-**2026-09-27 最新状态：**用户指定两次平台额度用于现役 L05 的 prior/TTA 参数探针；同一单 checkpoint 的 prior 0.70 与 TTA 温度 1.1 两包已生成，各 37,444 行、9/9 校验、ZIP/CSV 字节一致，**均待用户上传**。已上传现役 L05_T14_P060 仍为平台最佳 **66.94797564362783%**；见[预注册与交付](docs/l05_prior_tta_two_slot_20260927.md)及[结果和 ZIP SHA](results/l05_prior_tta_two_slot_20260927.json)。
+**2026-09-27 最新状态：**现役 L05 的两次 prior/TTA 参数平台探针已闭环：同一单 checkpoint 的 prior 0.70 得 **66.88120927251362%**（较现役 −25 张），TTA 温度 1.1 得 **66.74233522059609%**（−77 张）；两包各 37,444 行、9/9 校验，桌面 ZIP/CSV 哈希与预冻结记录一致。均未晋级，保留 L05_T14_P060 的平台最佳 **66.94797564362783%**，本轮停止追加扫描；见[预注册与交付](docs/l05_prior_tta_two_slot_20260927.md)及[结果和 ZIP SHA](results/l05_prior_tta_two_slot_20260927.json)。
 
 **2026-09-27 最新状态：**本机 L05 随机深度 DP01 完成 16 轮、2,096 次更新，固定 Flip/T1.4/prior0.60 验证 macro/micro **74.3077% / 75.1277%**，相对现役 **−1.5189pp / −1.5255pp**，未过晋级门并关闭。用户要求生成的 DP01 未晋级测试 CSV/ZIP 已通过 9/9 校验，**未上传平台**；现役 L05 包也复核通过。平台最佳仍为 **66.94797564362783%**，70分目标未达；见[预注册与实测](docs/l05_stochastic_depth_prereg_20260927.md)及[结果与路径](results/l05_stochastic_depth_20260927.json)。
 
