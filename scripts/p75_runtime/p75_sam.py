@@ -91,8 +91,7 @@ def full_l05_sam_step(model, optimizer, *, microbatches: list[dict],
             if not math.isfinite(actual_radius) or abs(actual_radius-rho) > 1e-4:
                 raise FloatingPointError('Actual SAM perturbation radius drifted')
         optimizer.zero_grad(set_to_none=not getattr(optimizer, 'is_fused_optimizer', False))
-        from aegis_clip.trainer import _restore_rng_state
-        _restore_rng_state(rng_state, device)
+        restore_rng_state(rng_state, device)
         second_loss_sum = 0.
         for microbatch in microbatches:
             loss = _second_loss(model, microbatch, device)
@@ -130,6 +129,12 @@ def trainer_rng_state(device):
     if device.type == 'cuda':
         state['cuda'] = torch.cuda.get_rng_state(device).clone()
     return state
+
+
+def restore_rng_state(state, device):
+    torch.set_rng_state(state['cpu'])
+    if device.type == 'cuda':
+        torch.cuda.set_rng_state(state['cuda'], device)
 
 
 def equal_rng_state(left, right):
