@@ -1,0 +1,54 @@
+{
+  "experiment_id": "L05_PRIOR_TTA_TWO_SLOT_20260927",
+  "status": "two_audited_packages_ready_for_user_upload",
+  "platform_uploaded": false,
+  "control": {
+    "tag": "L05_T14_P060",
+    "temperature": 1.4,
+    "prior_strength": 0.6,
+    "platform_score_percent": 66.94797564362783,
+    "zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f"
+  },
+  "source": {
+    "checkpoint_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "validation_branch_cache_sha256": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc",
+    "builder_sha256": "238be39ab22970e7e31b88851c539c8dd7ed5249fddef9c261d53dd848565d93",
+    "builder_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+    "prior_fit_data": "current_stage_validation_only",
+    "test_adaptation": false
+  },
+  "packages": [
+    {
+      "tag": "L05_T14_P070_PROBE_20260927",
+      "axis": "prior_strength_only",
+      "temperature": 1.4,
+      "prior_strength": 0.7,
+      "validation_macro": 0.7585740685462952,
+      "validation_micro": 0.7661290168762207,
+      "directory": "/home/lux1/noise/outputs/codex/l05_prior_tta_two_slot_20260927/L05_T14_P070_PROBE_20260927",
+      "prediction_rows": 37444,
+      "csv_sha256": "ac5677d65f661cbb82e8e4ab78624765cd17c454a8c08a30d71be849a147c13c",
+      "zip_sha256": "ee50dfe3bcf595169d5d1f016be53576ba6668a48837f8541f16faf766dcea93",
+      "prior_bias_sha256": "facdd436ccba930adeaeae54af321e123bfefc3df83740ee857f871cf716771e",
+      "submission_checks": "9/9 passed",
+      "zip_csv_bytes_equal": true,
+      "platform_score_percent": null
+    },
+    {
+      "tag": "L05_T11_P060_PROBE_20260927",
+      "axis": "tta_temperature_only",
+      "temperature": 1.1,
+      "prior_strength": 0.6,
+      "validation_macro": 0.7574509382247925,
+      "validation_micro": 0.7652553915977478,
+      "directory": "/home/lux1/noise/outputs/codex/l05_prior_tta_two_slot_20260927/L05_T11_P060_PROBE_20260927",
+      "prediction_rows": 37444,
+      "csv_sha256": "e95b34709695f25c69e47f8946203468d111816527342eff957a4ba4e89c7029",
+      "zip_sha256": "5569ef0041478f62b66f68f1cde26233f79efb323a1abeae12555ed4a5862c35",
+      "prior_bias_sha256": "4bdbbb90c6b1bd1b5c507e1820a5e23eb9c3bfe964ffd0c46a58e394aa57b058",
+      "submission_checks": "9/9 passed",
+      "zip_csv_bytes_equal": true,
+      "platform_score_percent": null
+    }
+  ]
+}

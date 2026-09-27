@@ -1,0 +1,47 @@
+{
+  "experiment_id": "L05_PRIOR_TTA_TWO_SLOT_20260927",
+  "stage": "repechage",
+  "data_version": "20260921",
+  "source_branch": "focus/f05-four-lines",
+  "source_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+  "builder_sha256": "238be39ab22970e7e31b88851c539c8dd7ed5249fddef9c261d53dd848565d93",
+  "checkpoint_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+  "validation_branch_cache_sha256": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc",
+  "control": {
+    "tag": "L05_T14_P060",
+    "temperature": 1.4,
+    "prior_strength": 0.6,
+    "local_macro": 0.7582651376724243,
+    "local_micro": 0.7665322422981262,
+    "platform_score_percent": 66.94797564362783
+  },
+  "arms": [
+    {
+      "tag": "L05_T14_P070_PROBE_20260927",
+      "axis": "prior_strength_only",
+      "temperature": 1.4,
+      "prior_strength": 0.7,
+      "local_macro": 0.7585740685462952,
+      "local_micro": 0.7661290168762207,
+      "validation_prediction_changes_vs_control": 127
+    },
+    {
+      "tag": "L05_T11_P060_PROBE_20260927",
+      "axis": "tta_temperature_only",
+      "temperature": 1.1,
+      "prior_strength": 0.6,
+      "local_macro": 0.7574509382247925,
+      "local_micro": 0.7652553915977478,
+      "validation_prediction_changes_vs_control": 218
+    }
+  ],
+  "inference": {
+    "checkpoint_count": 1,
+    "tta": "horizontal_flip",
+    "fusion": "mean_probabilities",
+    "prior_fit_data": "current_stage_validation_only",
+    "test_adaptation": false
+  },
+  "platform_upload_by": "user",
+  "status": "preregistered_packages_ready_not_uploaded"
+}
