@@ -1,0 +1,69 @@
+{
+  "experiment_id": "L05_OOF_HARD_FILTER_20260927",
+  "status": "cpu_prepared_not_trained",
+  "stage": "repechage",
+  "data_version": "20260921",
+  "confidence_definition": "OOF agreement of normalized class-centroid and ridge-whitened class-centroid top1, ranked by minimum positive margin; margins are not calibrated probabilities",
+  "training_rows": 133815,
+  "rejected_rows": 1338,
+  "retained_rows": 132477,
+  "rejected_fraction": 0.00999887904943392,
+  "retained_classes": 750,
+  "minimum_retained_class_support": 4,
+  "fold_counts": {
+    "0": 26757,
+    "1": 26787,
+    "2": 26769,
+    "3": 26759,
+    "4": 26743
+  },
+  "validation_rows_used_for_scoring": 0,
+  "test_rows_used": 0,
+  "config": {
+    "experiment_id": "L05_OOF_HARD_FILTER_20260927",
+    "data_version": "20260921",
+    "dataset_manifest": "/home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json",
+    "feature_manifest": "/home/lux1/noise/artifacts/stages/repechage/20260921/features/manifest.json",
+    "num_classes": 750,
+    "folds": 5,
+    "seed": 42,
+    "ridge_lambda": 10.0,
+    "max_drop_fraction": 0.01,
+    "max_drop_per_class_fraction": 0.05,
+    "minimum_class_support_for_drop": 20,
+    "minimum_class_size_after_drop": 4,
+    "output": "outputs/codex/l05_oof_hard_filter/cpu_prepare"
+  },
+  "hashes": {
+    "config": "3cbf58f0fa139cc4755590f0b5b9f35675cecb73a7279d5328846cd1b8cc1ad7",
+    "dataset_manifest": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "feature_manifest": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "train_dev": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "val_dev": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "feature_tensor": "21c35d1cce959ca6a547b7d352e7b4c1e491257f03855b40fa8b99cf11df7c64",
+    "feature_paths": "fcb7de523e06342c7ecad36d94b4f360ccd4f87cb402527897b7de4fef43d168",
+    "scores": "dada97fc7970266a59c2fc13f7ac5776edc1f4a7a40af0589544c83753ef31f4",
+    "rejected": "15eac347926e8c714153e455cad95ebcd5311c51a29b89d269eb8370eeb4be80",
+    "train_filtered": "259db9dc0b0713183bf090d426493604b9c9ba59e054ef7c17a52de13f7ce4ba"
+  },
+  "command": "OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python3 scripts/prepare_l05_oof_hard_filter.py --config configs/l05_oof_hard_filter/fixed.json",
+  "branch": "codex/l05_oof_hard_filter",
+  "artifact_paths": {
+    "confidence_scores.csv": "outputs/codex/l05_oof_hard_filter/cpu_prepare/confidence_scores.csv",
+    "rejected.csv": "outputs/codex/l05_oof_hard_filter/cpu_prepare/rejected.csv",
+    "train_filtered.csv": "outputs/codex/l05_oof_hard_filter/cpu_prepare/train_filtered.csv",
+    "manifest.json": "outputs/codex/l05_oof_hard_filter/cpu_prepare/manifest.json"
+  },
+  "independent_audit": {
+    "status": "passed",
+    "removed_classes": 485,
+    "max_removed_class_fraction": 0.05,
+    "validation_content_group_overlap": 0,
+    "training_csv_partition_exact": true,
+    "selected_rows_meet_both_oof_disagreement_rules": true,
+    "tests": "2 passed"
+  },
+  "gpu_training_started": false,
+  "local_model_score": null,
+  "submission_available": false
+}

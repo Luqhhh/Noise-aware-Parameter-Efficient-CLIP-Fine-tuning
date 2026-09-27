@@ -1,0 +1,15 @@
+{
+  "experiment_id": "L05_OOF_HARD_FILTER_20260927",
+  "data_version": "20260921",
+  "dataset_manifest": "/home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json",
+  "feature_manifest": "/home/lux1/noise/artifacts/stages/repechage/20260921/features/manifest.json",
+  "num_classes": 750,
+  "folds": 5,
+  "seed": 42,
+  "ridge_lambda": 10.0,
+  "max_drop_fraction": 0.01,
+  "max_drop_per_class_fraction": 0.05,
+  "minimum_class_support_for_drop": 20,
+  "minimum_class_size_after_drop": 4,
+  "output": "outputs/codex/l05_oof_hard_filter/cpu_prepare"
+}
