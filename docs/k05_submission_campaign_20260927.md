@@ -2,12 +2,14 @@
 
 ## Decision summary
 
-Use a two-part portfolio for the remaining platform opportunities:
+Use both remaining platform opportunities on new information:
 
-1. Keep `L05_T14_P060` as the protected score anchor. Its package is already platform-validated and must not be rebuilt or overwritten.
-2. Spend the exploratory slot only on a format-audited K05 checkpoint that has progressed far enough to provide useful local-to-platform transfer information. Continue training after packaging; do not treat an intermediate submission as the final K05 verdict.
+1. Freeze, infer, and audit the K05 epoch-4 checkpoint as `K05_E04_CENTER`.
+2. Continue the same uninterrupted run, then freeze, infer, and audit the K05 epoch-6 checkpoint as `K05_E06_CENTER`.
 
-This is intentionally more aggressive than the normal promotion gate, but the risk is bounded: the protected L05 package remains available, the experimental package changes only the model checkpoint, and every generated file is hash-bound and independently checked.
+`L05_T14_P060` remains the protected score anchor and rollback artifact, but must not be resubmitted because its exact predictions already have a platform receipt. A duplicate would spend a slot without adding evidence.
+
+This is intentionally more aggressive than the normal promotion gate, but the risk is bounded: both submissions change only the checkpoint along a single training trajectory, every generated file is hash-bound and independently checked, and the platform comparison directly measures whether additional K05 training transfers.
 
 ## Repository and source binding
 
@@ -36,6 +38,23 @@ Protected L05 package hashes:
 - `pred_results.csv`: `51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75`
 - `submission.zip`: `e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f`
 
+## Comparison with the team's other current candidates
+
+| Direction | Audited result versus L05 | New package available? | Decision |
+|---|---:|---:|---|
+| Three-crop TTA | +0.138 pp macro, +0.081 pp micro | No | Below the preregistered promotion gate; useful evidence but not tonight's package |
+| Class-wise vector calibration | -0.212 pp macro, -0.363 pp micro in cross-fit | No | Close; calibration overfit did not transfer to held-out folds |
+| RSC continuation | -0.040 pp macro, -0.020 pp micro | No | Close; below the parent after audit |
+| Fourier amplitude mixing | 0.000 pp after selector retained epoch 0 | No | Close; augmentation did not beat the parent |
+| Stochastic depth | Full run launched; no audited result yet | No | Wait for evidence |
+| OOF hard filtering | Remote filtered-LP/FT queue launched; no audited result yet | No | Wait for evidence |
+
+The comparison leaves K05 as the only independently different, locally running model family that can produce new platform information tonight. Re-submitting the unchanged L05 package has zero information value. The useful strategy is therefore two later, audited K05 checkpoints from one controlled trajectory.
+
+Two existing within-lineage transitions show that local macro deltas have transferred approximately one-for-one to the platform: F05 to L05 center was +0.819 pp locally and +0.919 pp on platform; L05 center to the selected TTA/prior decode was +0.577 pp locally and +0.558 pp on platform. This supports using the local raw-macro gap as a real risk signal. It does not prove the same transfer for the K family, which is precisely the uncertainty the exploratory submission is meant to measure.
+
+Related K-family full-run results also bound expectations: K02 (320px, anchor 0.5) reached 74.7375% macro / 75.7594% micro, and K09 (448px, stronger same-view anchor) reached 75.0306% / 76.0215%. K05 (384px, anchor 0.5) is therefore scientifically plausible but not guaranteed to beat L05; the platform probe is valuable mainly as a cross-family transfer measurement.
+
 ## K05 observed learning curve
 
 | Epoch | Raw macro | Raw micro | Predicted classes | Head macro | Medium macro | Tail macro | Decision |
@@ -52,13 +71,14 @@ Epoch-2 snapshot:
 
 ## Preregistered decision rule for tonight
 
-- Evaluate epoch 4 first.
-- If epoch-4 raw macro is at least 73.5% and raw micro is at least 74.5%, generate the center-only E04 platform package immediately.
-- If either threshold is missed, continue to epoch 6 while the projected package-completion time remains before 23:25 CST.
+- Evaluate epoch 4, freeze it, and generate the center-only E04 package regardless of whether it clears the ordinary promotion gate; label it explicitly as an intermediate information probe.
+- Continue the same run to epoch 6, freeze it, and generate a second center-only E06 package. Do not restart, retune, or alter the data/inference recipe between the two checkpoints.
+- Use 73.5% raw macro and 74.5% raw micro as the interpretation threshold for E04, not as a packaging threshold. Below it, E04 is a learning-curve calibration point rather than a score candidate.
+- Prefer E06 for the later submission if its selector improves; retain E04 as the earlier independent platform point.
 - In all cases require: 37,444 rows, zero corrupt images, labels within the official 750-class mapping, a ZIP containing only the root-level `pred_results.csv`, byte-identical CSV content inside/outside the ZIP, and recorded SHA-256 hashes.
 - K05 rematch inference remains global center-crop only: no TTA, local crop, test-time prior fitting, or checkpoint blend. This keeps the platform observation attributable to K05 training rather than a confounded inference recipe.
 
-The thresholds are looser than the final promotion threshold because this submission has a different purpose: estimate the platform transfer of the K05 family while training continues. They are still strict enough to avoid spending a slot on the clearly undertrained epoch-2 model.
+Epoch 2 remains rejected because it is clearly undertrained. Epochs 4 and 6 are late enough to measure the post-warmup GCE trajectory, while their paired platform scores estimate the marginal value of two additional epochs without changing any other factor.
 
 ## What is still missing
 
@@ -81,5 +101,5 @@ The thresholds are looser than the final promotion threshold because this submis
 
 - Epoch-2 training/validation evidence: verified from the live run logs and saved checkpoint binding.
 - L05 package: locally hash-verified and previously platform-validated.
-- K05 platform package: pending a later checkpoint and submission audit.
+- K05 E04 and E06 platform packages: pending their checkpoint validations and submission audits.
 - K05 platform effectiveness: unverified until the platform receipt is recorded.
