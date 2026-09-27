@@ -1,6 +1,6 @@
 # L05 当前阶段 OOF 低可信硬筛：CPU 前置与训练预注册
 
-状态：CPU 筛样已完成；用户要求暂不做 GPU 实验。没有模型结果或新提交包，实验未完成。
+状态：CPU 筛样与训练协议接入已完成；用户要求暂不做 GPU 实验。没有模型结果或新提交包，实验未完成。
 
 ## 假设与历史边界
 
@@ -35,14 +35,35 @@ CPU 产物不证明模型受益；在 GPU 禁令解除前，不声称实验完�
 均由独立脚本复查通过。两个定向测试通过。
 
 输出路径和 SHA-256 见[CPU 结果记录](../results/l05_oof_hard_filter_cpu_20260927.json)。
-筛后 CSV 尚未接入训练协议：现有 `rematch_search_v4.validate_dataset` 只接受
-原始 `train_dev.csv`，checkpoint 也绑定该 CSV SHA。后续必须先添加有测试的
-筛样血缘路径，并从筛后数据重新训练 LP，不能直接把筛后 CSV 塞进现役 L05 配置。
-这项工程门禁和用户的 GPU 暂停均未解除。
+原框架的筛样血缘门禁现已在独立的固定 runner 中接入，见下节；GPU 暂停仍有效。
+
+## 训练协议接入（CPU 已验证，GPU 未启动）
+
+`scripts/run_l05_oof_hard_filter.py` 从固定代码提交 `f050ecb59e0a885da0b43cdc6c8c316953fb5e7d`
+重建 L05 框架到本方案独立输出目录，覆盖一份带当前阶段硬筛血缘检查的 V4/V5 共享协议，
+生成独立的 `RM_LP_HF01` 和 `RM_V5_L05_HF01` 两份配置。LP 用筛后数据及当前阶段
+官方冻结特征重新训练；FT 沿用本地 L05 CUDA 配方（384px、16 轮、有效 batch 1024、
+从第 5 轮启用局部监督），只允许以本次筛后 LP 为父。两份 checkpoint 绑定筛后 CSV
+与筛样 manifest 的 SHA-256，原始 RM-LP 或现役 L05 权重不能充当本次父 checkpoint。
+
+入口会逐项复核原始 train/val、特征缓存、筛样配置、逐样本分割、删行双路一致性、750 类覆盖、
+训练与验证内容组隔离及官方权重。CPU `prepare` 校验真实资产已通过；两个协议测试验证
+正确 LP 父血缘可接受、旧 LP ID 或错误训练集 SHA 均被拒绝，筛后 CSV 也不可换成别的路径。
+
+GPU 可用且用户解除暂停后，**只在选定空闲设备时**执行：
+
+```bash
+python3 scripts/run_l05_oof_hard_filter.py run --device cuda:0
+```
+
+脚本先做 CPU 预检，再依次训练 `RM_LP_HF01` 与 `RM_V5_L05_HF01`；若 LP 已成功而 FT
+需要单独启动，可执行 `python3 scripts/run_l05_oof_hard_filter.py train-ft --device cuda:0`。
+本次只执行了 `prepare`，没有执行上述训练命令。实际结果和最终提交仍须按前述门槛完成。
 
 ## 复现命令
 
 ```bash
 OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 scripts/prepare_l05_oof_hard_filter.py \
   --config configs/l05_oof_hard_filter/fixed.json
+python3 scripts/run_l05_oof_hard_filter.py prepare
 ```
