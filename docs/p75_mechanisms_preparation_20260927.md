@@ -58,7 +58,8 @@ feature anchor、从第 5 轮开始的 attention-local、学习率、增强与�
 [准备记录](../results/p75_preparation_20260927.json)，只在配置显式
 `model.patch_readout={enabled:true,version:1}` 时挂载。父权重加载只允许**完整缺失**
 新模块参数；候选 checkpoint 严格重载，不接受部分读出状态。读出参数进入原 head 优化器
-组。真实 RM-LP 权重 CPU 首次前向检查：与普通路径 logits 最大绝对差 **9.54×10⁻⁷**、top1
+组。真实 RM-LP 权重在两次 CPU 首次前向检查中，与普通路径的 logits 最大绝对差
+**≤1.67×10⁻⁶**、top1
 完全一致；CPU 单测检查残差梯度、优化器组和错误 checkpoint 拒绝。该初始恒等结果不
 等于完整训练已验证。方案配置与运行入口：
 
