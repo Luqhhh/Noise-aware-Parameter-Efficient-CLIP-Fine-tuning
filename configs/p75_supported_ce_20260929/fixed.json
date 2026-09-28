@@ -1,0 +1,25 @@
+{
+  "experiment_id": "P75_SUPPORTED_CE",
+  "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+  "assets": "/home/lux1/noise/artifacts/stages/repechage/20260921",
+  "parent_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus/local_parent/RM_LP/seed42/checkpoints/best.pt",
+  "parent_sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+  "control_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/RM_V5_L05_CUDA_LOCAL/seed42/checkpoints/best.pt",
+  "control_checkpoint_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+  "reference_validation_cache": "/home/lux1/noise/worktrees/rematch750_f05_focus/artifacts/f05_focus_l05/l05_val_branch_logits.pt",
+  "baseline_submission": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060",
+  "rules": {
+    "label_probability_both_below": 0.30,
+    "maximum_probability_both_below": 0.70,
+    "same_top1": true,
+    "distinct_neighbor_groups": 20,
+    "minimum_label_support": 16,
+    "support_weight": 0.5,
+    "local_restore_enabled": false
+  },
+  "decode": {"fusion": "mean_probabilities", "temperature": 1.4, "prior_strength": 0.6},
+  "gates": {"package_macro_gain": 0.003, "priority_macro_gain": 0.01, "micro_non_decreasing": true},
+  "recall_groups": [[0, 0], [1, 4], [5, 19], [20, null]],
+  "snapshot_scope": "final L05 checkpoint state; no historical learning trajectory",
+  "output": "outputs/codex/p75_supported_ce_20260929"
+}

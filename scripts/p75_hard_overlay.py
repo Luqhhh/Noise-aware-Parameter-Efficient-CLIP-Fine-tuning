@@ -15,7 +15,8 @@ def once(source: str, old: str, new: str) -> str:
 def transform(source: str) -> str:
     source = once(source,
         '    val_dataset = _build_dataset(\n',
-        '    from p75_hard_support import load_support, restore_original_label_loss, local_admission\n'
+        '    from p75_hard_support import (load_support, restore_original_label_loss,\n'
+        '        local_admission, classification_support, record_classification)\n'
         '    hard_support = load_support(config, train_dataset.paths, train_dataset.labels)\n'
         '    if hard_support is not None:\n'
         '        hard_support = hard_support.to(device)\n'
@@ -27,12 +28,14 @@ def transform(source: str) -> str:
     source = once(source,
         '                if cyclic_enabled:\n                    per_sample, cyclic_delta = smoothstep_damped_loss(\n',
         '                per_sample = restore_original_label_loss(\n'
-        '                    per_sample, training_logits, mixed_targets, batch_support)\n'
+        '                    per_sample, training_logits, mixed_targets,\n'
+        '                    classification_support(config, batch_support, epoch))\n'
         '                if cyclic_enabled:\n                    per_sample, cyclic_delta = smoothstep_damped_loss(\n')
     source = once(source,
         '                    global_confidence = F.softmax(\n',
         '                    local_per_sample = restore_original_label_loss(\n'
-        '                        local_per_sample, local_training_logits, targets, batch_support)\n'
+        '                        local_per_sample, local_training_logits, targets,\n'
+        '                        classification_support(config, batch_support, epoch))\n'
         '                    global_confidence = F.softmax(\n')
     source = once(source,
         '                    fallback_mask = global_confidence < attention_local_confidence_gate\n'
@@ -44,9 +47,28 @@ def transform(source: str) -> str:
         '                    )\n',
         '                    admitted = local_admission(\n'
         '                        global_confidence, attention_local_confidence_gate,\n'
-        '                        batch_support, local_inputs)\n'
+        '                        batch_support, local_inputs, restore_enabled=bool(\n'
+        '                            config["loss"].get("hard_support", {}).get("enabled", False) and\n'
+        '                            config["loss"].get("hard_support", {}).get("local_restore_enabled", False)))\n'
         '                    fallback_mask = ~admitted\n'
         '                    local_per_sample = torch.where(admitted, local_per_sample, per_sample)\n')
+    source = once(source,
+        '                per_sample = restore_original_label_loss(\n',
+        '                supported_base_loss = per_sample\n'
+        '                per_sample = restore_original_label_loss(\n')
+    source = once(source,
+        '                if cyclic_enabled:\n                    per_sample, cyclic_delta = smoothstep_damped_loss(\n',
+        '                record_classification(totals, training_logits, mixed_targets,\n'
+        '                    supported_base_loss, per_sample, hard_support[batch_indices]\n'
+        '                    if hard_support is not None else None)\n'
+        '                if cyclic_enabled:\n                    per_sample, cyclic_delta = smoothstep_damped_loss(\n')
+    source = once(source,
+        '        train_metrics = {\n',
+        '        if "supported_ce" in totals:\n'
+        '            atomic_json_dump(dict(epoch=epoch, loss_phase="CE" if epoch <=\n'
+        '                int(config["loss"].get("ce_warmup_epochs", 0)) else "GCE",\n'
+        '                **totals["supported_ce"]), log_dir / f"supported_ce_epoch_{epoch}.json")\n'
+        '        train_metrics = {\n')
     return source
 
 

@@ -1,0 +1,137 @@
+{
+  "base_main_commit": "2a9243a6f3224ad45b757276bb1d1357c111b1af",
+  "baseline_submission": {
+    "csv_sha256": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
+    "directory": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060",
+    "rows": 37444,
+    "submission_checks": "9/9 passed",
+    "zip_csv_identical": true,
+    "zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f"
+  },
+  "branch": "codex/p75_supported_ce_20260929",
+  "candidate_checkpoint": null,
+  "candidate_metrics": null,
+  "candidate_submission": null,
+  "changed_files": [
+    "scripts/p75_runtime/p75_hard_support.py",
+    "scripts/p75_hard_overlay.py",
+    "scripts/p75_supported_ce.py",
+    "scripts/p75_supported_ce_snapshot.py",
+    "scripts/p75_supported_ce_report.py",
+    "scripts/p75_supported_ce_cpu_audit.py",
+    "scripts/run_p75_supported_ce.py",
+    "configs/p75_supported_ce_20260929/fixed.json",
+    "configs/p75_supported_ce_20260929/P75_SUPPORTED_CE.pending.yaml",
+    "tests/test_p75_supported_ce.py",
+    "tests/test_p75_supported_ce_snapshot.py",
+    "tests/test_p75_hard_support.py",
+    ".gitignore",
+    "README.md",
+    "docs/current_execution_plan.md",
+    "docs/p75_supported_ce_preparation_20260929.md",
+    "results/p75_supported_ce_preparation_20260929.json"
+  ],
+  "commands": {
+    "baseline_submission_check": "python3 scripts/check_submission.py --test_dir /home/lux1/noise/test --class-mapping /home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json --csv /home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv --zip /home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip",
+    "cpu_audit": "PYTHONPATH=outputs/codex/p75_supported_ce_20260929/framework/reproducibility/aegis_f1 python3 scripts/p75_supported_ce_cpu_audit.py",
+    "frozen_tests": "PYTHONPATH=outputs/codex/p75_supported_ce_20260929/framework/reproducibility/aegis_f1 python3 -m pytest outputs/codex/p75_supported_ce_20260929/framework/reproducibility/aegis_f1/tests/test_losses.py outputs/codex/p75_supported_ce_20260929/framework/reproducibility/aegis_f1/tests/test_config.py -q",
+    "p75_tests": "python3 -m pytest tests/test_p75_supported_ce.py tests/test_p75_supported_ce_snapshot.py tests/test_p75_hard_support.py tests/test_p75_runner_logs.py tests/test_p75_patch_readout.py tests/test_p75_sam.py -q",
+    "preflight": "python3 scripts/run_p75_supported_ce.py --phase preflight",
+    "prepare": "python3 scripts/run_p75_supported_ce.py --phase prepare"
+  },
+  "cpu_asset_and_decode_audit": {
+    "candidate_metrics": null,
+    "check": "CPU-only incumbent self-comparison and train_dev feature-bank verification",
+    "corrections": 0,
+    "cuda_initialized": false,
+    "feature_check": {
+      "max_norm": 1.0000001192092896,
+      "min_norm": 0.9999998211860657,
+      "neighbor_queries_run": 0,
+      "shape": [
+        133815,
+        512
+      ],
+      "validation_rows_in_bank": 0
+    },
+    "incumbent_metrics": {
+      "macro": 0.7582651238982523,
+      "micro": 0.7665322580645161
+    },
+    "regressions": 0,
+    "validation_rows": 14880
+  },
+  "cpu_tests": {
+    "frozen_loss_and_config": "44 passed in 5.11s",
+    "p75": "44 passed in 6.66s",
+    "total_passed": 88
+  },
+  "decode": {
+    "fusion": "mean_probabilities",
+    "prior_strength": 0.6,
+    "temperature": 1.4
+  },
+  "evidence_scope": "final L05 checkpoint snapshot only; no 16-epoch history or confirmed clean labels",
+  "experiment_id": "P75_SUPPORTED_CE",
+  "gates": {
+    "micro_non_decreasing": true,
+    "package_macro_gain": 0.003,
+    "priority_macro_gain": 0.01
+  },
+  "gpu_snapshot_started": false,
+  "gpu_training_started": false,
+  "identity": {
+    "control_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "data_version": "20260921",
+    "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "feature_paths_sha256": "fcb7de523e06342c7ecad36d94b4f360ccd4f87cb402527897b7de4fef43d168",
+    "feature_tensor_sha256": "21c35d1cce959ca6a547b7d352e7b4c1e491257f03855b40fa8b99cf11df7c64",
+    "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+    "num_classes": 750,
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "parent_sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+    "reference_cache_sha256": "7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc",
+    "split_hashes": {
+      "class_to_idx.json": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+      "full_train.csv": "142d255e86aadc2be4f4f1bee832948b30416c54bdc904159ff096ce8eb278ad",
+      "train_dev.csv": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+      "val_dev.csv": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+    },
+    "stage": "repechage",
+    "stage_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "training_samples": 133815,
+    "validation_samples": 14880
+  },
+  "implementation": {
+    "configs/p75_supported_ce_20260929/fixed.json": "dc7e7329b0d096cd81d442296476c11eeec0e3403a27fb53e61d59f0d28363ca",
+    "scripts/p75_hard_overlay.py": "bb6783d1028ac73124e4c9cfc71ab45ed8b0ccec4ce3c7185664cae3369d4deb",
+    "scripts/p75_runtime/p75_hard_support.py": "1cc692a5c30c668ddf1b3d7a703c55781cc3fef3ea53197a34492e507e1bb044",
+    "scripts/p75_supported_ce.py": "72dd76aa18fcd3f9c637ef44659434af8bb1865d0c4a38a71de30f66c0928947",
+    "scripts/p75_supported_ce_report.py": "9963b14ee0c51b242b3916eaeae5f7b80777df6ea140cf18d26b961e874f9219",
+    "scripts/p75_supported_ce_snapshot.py": "9b6db3ac592ec1bd0216a3590c7ca09dccc68be4027293adaa01563258a90617",
+    "scripts/run_p75_supported_ce.py": "3d0dd341521cd665903324c2cc4182c4d21168d7e13b127216789ea73163af28"
+  },
+  "labels_changed": false,
+  "local_restore_enabled": false,
+  "new_platform_score": null,
+  "oof_recomputed": false,
+  "pending_config_path": "/home/lux1/noise/worktrees/p75_supported_ce_20260929/configs/p75_supported_ce_20260929/P75_SUPPORTED_CE.pending.yaml",
+  "pending_config_sha256": "d7b900de23f082a9786fcad5d38c91da2c5be077d6b35507ea758c6596f6729b",
+  "preparation_path": "/home/lux1/noise/worktrees/p75_supported_ce_20260929/outputs/codex/p75_supported_ce_20260929/preparation.json",
+  "preparation_sha256": "9c1698062ee94f103db92a3d8dbc96e720c955f3a63bd13b5eeacc8d9886dd38",
+  "real_neighbor_queries_run": 0,
+  "rules": {
+    "distinct_neighbor_groups": 20,
+    "label_probability_both_below": 0.3,
+    "local_restore_enabled": false,
+    "maximum_probability_both_below": 0.7,
+    "minimum_label_support": 16,
+    "same_top1": true,
+    "support_weight": 0.5
+  },
+  "samples_removed": false,
+  "status": "implemented_cpu_verified_gpu_not_started",
+  "support_count": null,
+  "teacher_retrained": false,
+  "worktree": "/home/lux1/noise/worktrees/p75_supported_ce_20260929"
+}

@@ -1,0 +1,143 @@
+data:
+  class_mapping: /home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json
+  dataset_manifest: /home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json
+  expected_official_train_samples: 148695
+  expected_test_samples: 37444
+  external_data: false
+  test_root: /home/lux1/noise/test
+  test_usage: inference_only
+  train_augmentation: weak_rrc_flip
+  train_csv: /home/lux1/noise/artifacts/stages/repechage/20260921/train_dev.csv
+  train_root: /home/lux1/noise/train
+  val_csv: /home/lux1/noise/artifacts/stages/repechage/20260921/val_dev.csv
+  validation_overlap_with_training: false
+diagnostics:
+  longtail:
+    enabled: true
+evaluation:
+  batch_size: 32
+  drift_penalty: 0.0
+  evaluate_initial_checkpoint: false
+  inference_batch_size: 32
+  interval_epochs: 2
+  measure_flip_consistency: false
+  record_initial: false
+  selection_policy: best_selector
+  selector_metric: raw_macro
+  tiebreak_metric: raw_micro
+features:
+  manifest_path: /home/lux1/noise/artifacts/stages/repechage/20260921/features/manifest.json
+  paths_path: /home/lux1/noise/artifacts/stages/repechage/20260921/features/image_paths.json
+  tensor_path: /home/lux1/noise/artifacts/stages/repechage/20260921/features/features.pt
+longtail:
+  balanced_softmax_tau: 0.0
+  loss_reweighting: none
+  sampler_mode: none
+loss:
+  ce_warmup_epochs: 2
+  feature_distillation_weight: 2.0
+  gce_q: 0.5
+  mixup_alpha: 0.0
+  mixup_probability: 0.0
+  name: gce
+  attention_local_training:
+    enabled: true
+    crop_size: 285
+    top_patches: 5
+    local_supervision_weight: 0.25
+    consistency_weight: 0.0
+    temperature: 1.0
+    start_epoch: 5
+    confidence_gate: 0.7
+    area_fraction: 0.55
+  hard_support:
+    enabled: false
+    version: 1
+    maximum_weight: 0.5
+    ce_restore_enabled: true
+    local_restore_enabled: false
+    path: /home/lux1/noise/worktrees/p75_supported_ce_20260929/outputs/codex/p75_supported_ce_20260929/selection/support.csv
+    sha256: null
+model:
+  backbone: ViT-B/32
+  feature_dim: 512
+  num_classes: 750
+  official_checkpoint: /home/lux1/.cache/clip/ViT-B-32.pt
+  peft_mode: full_finetune
+  pretrained: openai
+  use_cached_training: false
+  input_resolution: 384
+output:
+  root: /home/lux1/noise/worktrees/p75_supported_ce_20260929/outputs/codex/p75_supported_ce_20260929/runs
+project:
+  data_version: '20260921'
+  experiment_id: P75_SUPPORTED_CE
+  seed: 42
+  stage: repechage
+  protocol: rematch750_search_v5
+  trial_id: P75_SUPPORTED_CE
+  family: L
+  mechanism: supported_original_label_ce
+  parent_kind: shared_lp
+  implementation_status: implemented
+  search:
+    resolution: 384
+    area_fraction: 0.55
+    local_supervision_weight: 0.25
+    local_start_epoch: 5
+    confidence_gate: 0.7
+    micro_batch_candidates:
+    - 4
+    smoke_required: false
+    reference_resolution: 224
+  preparation_identity:
+    stage: repechage
+    data_version: '20260921'
+    stage_manifest_sha256: 484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0
+    split_hashes:
+      train_dev.csv: 615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6
+      val_dev.csv: d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab
+      full_train.csv: 142d255e86aadc2be4f4f1bee832948b30416c54bdc904159ff096ce8eb278ad
+      class_to_idx.json: 6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c
+    parent_sha256: d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b
+    control_sha256: 35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397
+    feature_manifest_sha256: 1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c
+    feature_paths_sha256: fcb7de523e06342c7ecad36d94b4f360ccd4f87cb402527897b7de4fef43d168
+    feature_tensor_sha256: 21c35d1cce959ca6a547b7d352e7b4c1e491257f03855b40fa8b99cf11df7c64
+    official_checkpoint_sha256: 40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af
+    reference_cache_sha256: 7bfcfb08458430ba339f086cb7abb1799f70c8431f77b582ed842509f40672dc
+    framework_commit: f050ecb59e0a885da0b43cdc6c8c316953fb5e7d
+    num_classes: 750
+    training_samples: 133815
+    validation_samples: 14880
+train:
+  amp: true
+  amp_growth_interval: 1000000000
+  amp_initial_scale: 128.0
+  backbone_lr: 1.2e-05
+  backbone_weight_decay: 0.0001
+  batch_size: 4
+  deterministic: true
+  device: cuda:0
+  early_stop_patience: 0
+  epochs: 16
+  head_lr: 0.0004
+  head_weight_decay: 0.0001
+  init_checkpoint: /home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus/local_parent/RM_LP/seed42/checkpoints/best.pt
+  loader_timeout: 120
+  log_every_steps: 20
+  lr_warmup_epochs: 0
+  max_grad_norm: 1.0
+  num_workers: 2
+  pin_memory: true
+  require_finite_gradients: true
+  save_epoch_checkpoints: false
+  schedule_epochs: 16
+  prefetch_factor: 2
+  npu_pin_memory: false
+  optimizer_impl: foreach
+  gradient_norm_impl: foreach
+  grad_accum_steps: 256
+  effective_batch_size: 1024
+trust:
+  enabled: false
