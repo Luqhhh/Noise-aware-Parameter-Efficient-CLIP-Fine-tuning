@@ -91,8 +91,9 @@ def prepare(route):
         head=copy.deepcopy(base)
         head['project'].update(experiment_id='P75_R1_HEAD',trial_id='P75_R1_HEAD',parent_kind='official_clip_head')
         head['project'].pop('parent_experiment_id',None)
-        head['model'].update(peft_mode='frozen',use_cached_training=True,input_resolution=224)
-        head['project']['search']['resolution']=224
+        # Cached features retain their audited 224px manifest. The unused image
+        # path stays configured for 384px, matching the same student's FT binding.
+        head['model'].update(peft_mode='frozen',use_cached_training=True)
         head['loss']['attention_local_training']['enabled']=False
         head['loss']['feature_distillation_weight']=0.
         head['train'].update(device='cpu',epochs=20,schedule_epochs=20,head_lr=.01,
