@@ -1,0 +1,62 @@
+{
+  "status": "passed",
+  "effective_batch": 1024,
+  "local_path_active": true,
+  "updates": [
+    {
+      "first_loss": 2.0803422711323947,
+      "second_loss": 5.817452622577548,
+      "first_gradient_norm": 35.39309107630127,
+      "second_gradient_norm": 83.96439738112096,
+      "preclip_gradient_norm": 83.96439361572266,
+      "actual_radius": 0.049999998124937384,
+      "gsam_alpha": null,
+      "gsam_projection": null
+    },
+    {
+      "first_loss": 1.8938883126247674,
+      "second_loss": 4.121615709271282,
+      "first_gradient_norm": 20.036304734737637,
+      "second_gradient_norm": 93.66247525739979,
+      "preclip_gradient_norm": 93.66246795654297,
+      "actual_radius": 0.050000002954548206,
+      "gsam_alpha": null,
+      "gsam_projection": null
+    }
+  ],
+  "amp": false,
+  "peak_allocated_bytes": 2727412224,
+  "peak_reserved_bytes": 2818572288,
+  "seconds": 133.0430479889983,
+  "candidate_checkpoint_created": false,
+  "experiment_id": "P75_FULL_SAM",
+  "branch": "codex/p75_full_sam_20260928",
+  "worktree": "/home/lux1/noise/worktrees/p75_full_sam_20260928",
+  "config": "/home/lux1/noise/worktrees/p75_full_sam_20260928/configs/p75_full_sam_20260928/P75_FULL_SAM.yaml",
+  "config_sha256": "c5a0d817724a33b7942ce675b5ab1fe3d51b6740d228501b0fc13fd88531cbff",
+  "formal_training": "live_process_verified_at_startup",
+  "launcher": {
+    "supervisor_pid": 107484,
+    "command": [
+      "/usr/bin/python3",
+      "/home/lux1/noise/worktrees/p75_full_sam_20260928/scripts/p75_sam_campaign.py"
+    ],
+    "OMP_NUM_THREADS": 4,
+    "MKL_NUM_THREADS": 4
+  },
+  "best_platform_score_percent": 66.94797564362783,
+  "target_platform_score_percent": 75,
+  "monitor_interval_seconds": 3600,
+  "startup_observation": {
+    "observed_at": "2026-09-28T15:42:28+00:00",
+    "supervisor_pid": 107484,
+    "runner_pid": 107490,
+    "trainer_pid": 107509,
+    "worker_pids": [
+      107525,
+      107526
+    ],
+    "next_hourly_check": "2026-09-28T16:39:59+00:00",
+    "evidence": "host ps: supervisor, runner, trainer and two loader workers live; log confirms parent load; no formal validation result"
+  }
+}
