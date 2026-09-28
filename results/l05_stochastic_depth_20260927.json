@@ -1,0 +1,42 @@
+{
+  "experiment_id": "L05_STOCHASTIC_DEPTH_20260927",
+  "status": "closed_below_gate",
+  "branch": "codex/l05_stochastic_depth",
+  "training": {
+    "epochs": 16,
+    "successful_updates": 2096,
+    "selected_epoch": 16,
+    "checkpoint_sha256": "8d41832d0715fc51df37709aabc6e763407d877df4ae05e56342b512ecaa97b4"
+  },
+  "validation": {
+    "protocol": "horizontal_flip:mean_probabilities:t=1.4:validation_fitted_prior=0.6",
+    "candidate_macro": 0.7430765628814697,
+    "candidate_micro": 0.7512769103050232,
+    "incumbent_macro": 0.7582651238982523,
+    "incumbent_micro": 0.7665322580645161,
+    "macro_delta_pp": -1.5188561016782603,
+    "micro_delta_pp": -1.5255347759492914,
+    "promotion_gate_passed": false,
+    "independent_decode_predictions_matched": 14880
+  },
+  "candidate_submission": {
+    "status": "generated_at_user_request_not_promoted",
+    "directory": "/home/lux1/noise/outputs/codex/l05_stochastic_depth_delivery/DP01_UNPROMOTED_20260927",
+    "prediction_rows": 37444,
+    "csv_sha256": "4649c3c79ac776734c7dbd877c62de22f0905a09969f35e4fc633aacd55ab2f5",
+    "zip_sha256": "955305a385699e04d624c5f3de4f20563e869d2aa7da39edd9241eb0d4f3fe71",
+    "submission_checks": "9/9 passed",
+    "zip_csv_bytes_equal": true,
+    "platform_uploaded": false
+  },
+  "incumbent_submission": {
+    "directory": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060",
+    "submission_checks": "9/9 passed",
+    "platform_score": 0.6694797564362783
+  },
+  "source_results": {
+    "training_and_validation": "outputs/codex/l05_stochastic_depth/result.json",
+    "independent_decode_audit": "outputs/codex/l05_stochastic_depth/runs/DP01/seed42/decode_audit.json",
+    "candidate_submission_manifest": "/home/lux1/noise/outputs/codex/l05_stochastic_depth_delivery/DP01_UNPROMOTED_20260927/manifest.json"
+  }
+}

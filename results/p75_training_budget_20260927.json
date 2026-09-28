@@ -1,0 +1,148 @@
+{
+  "evidence_scope": "current-stage train only",
+  "gate_semantics": "max global softmax below 0.7 substitutes global classification loss for local classification loss; no separate crop quality test",
+  "hard_support_decision": "do_not_launch_without_missing_evidence",
+  "identity": {
+    "control_sha256": "35d17c0c3b9f281e13353959d098c2713def6b7d508d334de5d3a7e769cd2397",
+    "focus_framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+    "oof_sha256": "dada97fc7970266a59c2fc13f7ac5776edc1f4a7a40af0589544c83753ef31f4",
+    "parent_sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+    "stage_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "train_csv_sha256": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "val_csv_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab"
+  },
+  "l05_actual_aggregate_local_gate": [
+    {
+      "actual_active_examples": 94883,
+      "actual_fallback_examples": 38932,
+      "actual_local_activation_rate": 0.7090610170758136,
+      "epoch": 5
+    },
+    {
+      "actual_active_examples": 98692,
+      "actual_fallback_examples": 35123,
+      "actual_local_activation_rate": 0.7375256884504726,
+      "epoch": 6
+    },
+    {
+      "actual_active_examples": 101836,
+      "actual_fallback_examples": 31979,
+      "actual_local_activation_rate": 0.7610208123155102,
+      "epoch": 7
+    },
+    {
+      "actual_active_examples": 104380,
+      "actual_fallback_examples": 29435,
+      "actual_local_activation_rate": 0.7800321339162276,
+      "epoch": 8
+    },
+    {
+      "actual_active_examples": 106547,
+      "actual_fallback_examples": 27268,
+      "actual_local_activation_rate": 0.7962261330941972,
+      "epoch": 9
+    },
+    {
+      "actual_active_examples": 108206,
+      "actual_fallback_examples": 25609,
+      "actual_local_activation_rate": 0.8086238463550424,
+      "epoch": 10
+    },
+    {
+      "actual_active_examples": 109621,
+      "actual_fallback_examples": 24194,
+      "actual_local_activation_rate": 0.8191981466950641,
+      "epoch": 11
+    },
+    {
+      "actual_active_examples": 110533,
+      "actual_fallback_examples": 23282,
+      "actual_local_activation_rate": 0.8260135261368307,
+      "epoch": 12
+    },
+    {
+      "actual_active_examples": 111311,
+      "actual_fallback_examples": 22504,
+      "actual_local_activation_rate": 0.8318275230728992,
+      "epoch": 13
+    },
+    {
+      "actual_active_examples": 111850,
+      "actual_fallback_examples": 21965,
+      "actual_local_activation_rate": 0.8358554721070134,
+      "epoch": 14
+    },
+    {
+      "actual_active_examples": 112179,
+      "actual_fallback_examples": 21636,
+      "actual_local_activation_rate": 0.8383140903486156,
+      "epoch": 15
+    },
+    {
+      "actual_active_examples": 112349,
+      "actual_fallback_examples": 21466,
+      "actual_local_activation_rate": 0.839584500990173,
+      "epoch": 16
+    }
+  ],
+  "lp_proxy_not_l05_training_logits": [
+    {
+      "below_l05_gate_proxy": 8751,
+      "gce_scale_mean": 0.053795408457517624,
+      "lp_label_probability": [
+        0.0,
+        0.01
+      ],
+      "oof_dual_centroid_label_support": 0,
+      "samples": 9117
+    },
+    {
+      "below_l05_gate_proxy": 11450,
+      "gce_scale_mean": 0.1606617271900177,
+      "lp_label_probability": [
+        0.01,
+        0.05
+      ],
+      "oof_dual_centroid_label_support": 13,
+      "samples": 11673
+    },
+    {
+      "below_l05_gate_proxy": 8653,
+      "gce_scale_mean": 0.2698454260826111,
+      "lp_label_probability": [
+        0.05,
+        0.1
+      ],
+      "oof_dual_centroid_label_support": 65,
+      "samples": 8774
+    },
+    {
+      "below_l05_gate_proxy": 22800,
+      "gce_scale_mean": 0.4340956509113312,
+      "lp_label_probability": [
+        0.1,
+        0.3
+      ],
+      "oof_dual_centroid_label_support": 2063,
+      "samples": 22948
+    },
+    {
+      "below_l05_gate_proxy": 36148,
+      "gce_scale_mean": 0.8327575325965881,
+      "lp_label_probability": [
+        0.3,
+        1.000001
+      ],
+      "oof_dual_centroid_label_support": 57228,
+      "samples": 81303
+    }
+  ],
+  "missing_for_per_sample_coupling": [
+    "L05 training-side per-sample logits across epochs",
+    "content-group-excluded nearest-neighbor support",
+    "weak-view agreement for the same training rows"
+  ],
+  "oof_proxy_hard_supported_classes": 530,
+  "oof_proxy_hard_supported_count": 2139,
+  "test_used_for_scoring": false
+}
