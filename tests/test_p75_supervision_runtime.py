@@ -120,6 +120,7 @@ def test_config_generation_uses_fresh_official_head_and_same_student_resume(tmp_
     head,visual=configs['R1_HEAD'],configs['R1']
     assert head['train']['init_checkpoint'] is None
     assert head['model']['peft_mode']=='frozen'
+    assert head['model']['input_resolution']==visual['model']['input_resolution']==384
     assert head['project']['parent_kind']=='official_clip_head'
     assert head['train']['epochs']==20
     assert visual['train']['init_checkpoint'].endswith('P75_R1_HEAD/seed42/checkpoints/last.pt')
@@ -129,14 +130,24 @@ def test_config_generation_uses_fresh_official_head_and_same_student_resume(tmp_
     assert visual['train']['effective_batch_size']==1024
     env=runner.environment()
     subprocess.run([sys.executable,'-c',
-        'from aegis_clip.config import load_config; from aegis_clip.rematch_protocol import validate_dataset; '
-        f'validate_dataset(load_config({str(tmp_path/"configs/R1_HEAD.yaml")!r})); '
-        f'validate_dataset(load_config({str(tmp_path/"configs/R1.yaml")!r}))'],env=env,check=True)
+        'from aegis_clip.config import load_config; '
+        'from aegis_clip.rematch_protocol import validate_dataset, checkpoint_binding; '
+        f'h=load_config({str(tmp_path/"configs/R1_HEAD.yaml")!r}); '
+        f'v=load_config({str(tmp_path/"configs/R1.yaml")!r}); '
+        'validate_dataset(h); validate_dataset(v); '
+        'assert checkpoint_binding(h)==checkpoint_binding(v), "new head must be an admissible visual parent"'],env=env,check=True)
     with pytest.raises(ValueError,match='1,000'):
         runner.prepare('R2')
     summary['coverage_ok']=False
     with pytest.raises(ValueError,match='coverage'):
         runner.prepare('R1')
+    # R2 retains ordinary classification for all classes; its independent gate
+    # is trustworthy confusion scale, not R1's three-channel class coverage.
+    summary['slices']['stable_trusted_confusion']['errors']=1000
+    r2=runner.prepare('R2')['R2']
+    assert r2['loss']['name']=='gce'
+    assert r2['train']['init_checkpoint']==source['parent_checkpoint']
+    assert r2['loss']['supervision_evidence']['route']=='R2'
 
 
 def test_evidence_table_load_and_one_training_step(tmp_path):

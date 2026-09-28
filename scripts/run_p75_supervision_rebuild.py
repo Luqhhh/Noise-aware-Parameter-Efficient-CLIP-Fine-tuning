@@ -60,7 +60,7 @@ def prepare(route):
     summary=read_json(diagnosis/'summary.json')
     if summary['identity']!=identity or not summary['snapshot_manifest_sha256']:
         raise ValueError('Completed current-stage P0 snapshot diagnosis required')
-    if not summary['coverage_ok']:
+    if route=='R1' and not summary['coverage_ok']:
         raise ValueError('Fixed supervision construction failed class coverage; no training config')
     if route=='R2' and summary['slices']['stable_trusted_confusion']['errors']<1000:
         raise ValueError('R2 requires at least 1,000 associated trusted-confusion validation errors')
@@ -91,8 +91,9 @@ def prepare(route):
         head=copy.deepcopy(base)
         head['project'].update(experiment_id='P75_R1_HEAD',trial_id='P75_R1_HEAD',parent_kind='official_clip_head')
         head['project'].pop('parent_experiment_id',None)
-        head['model'].update(peft_mode='frozen',use_cached_training=True,input_resolution=224)
-        head['project']['search']['resolution']=224
+        # Cached features retain their audited 224px manifest. The unused image
+        # path stays configured for 384px, matching the same student's FT binding.
+        head['model'].update(peft_mode='frozen',use_cached_training=True)
         head['loss']['attention_local_training']['enabled']=False
         head['loss']['feature_distillation_weight']=0.
         head['train'].update(device='cpu',epochs=20,schedule_epochs=20,head_lr=.01,
