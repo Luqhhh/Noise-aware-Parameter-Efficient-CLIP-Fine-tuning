@@ -60,7 +60,7 @@ def prepare(route):
     summary=read_json(diagnosis/'summary.json')
     if summary['identity']!=identity or not summary['snapshot_manifest_sha256']:
         raise ValueError('Completed current-stage P0 snapshot diagnosis required')
-    if not summary['coverage_ok']:
+    if route=='R1' and not summary['coverage_ok']:
         raise ValueError('Fixed supervision construction failed class coverage; no training config')
     if route=='R2' and summary['slices']['stable_trusted_confusion']['errors']<1000:
         raise ValueError('R2 requires at least 1,000 associated trusted-confusion validation errors')

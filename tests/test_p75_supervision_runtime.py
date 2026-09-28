@@ -137,6 +137,13 @@ def test_config_generation_uses_fresh_official_head_and_same_student_resume(tmp_
     summary['coverage_ok']=False
     with pytest.raises(ValueError,match='coverage'):
         runner.prepare('R1')
+    # R2 retains ordinary classification for all classes; its independent gate
+    # is trustworthy confusion scale, not R1's three-channel class coverage.
+    summary['slices']['stable_trusted_confusion']['errors']=1000
+    r2=runner.prepare('R2')['R2']
+    assert r2['loss']['name']=='gce'
+    assert r2['train']['init_checkpoint']==source['parent_checkpoint']
+    assert r2['loss']['supervision_evidence']['route']=='R2'
 
 
 def test_evidence_table_load_and_one_training_step(tmp_path):
