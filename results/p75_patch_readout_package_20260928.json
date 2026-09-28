@@ -1,0 +1,56 @@
+{
+  "experiment_id": "P75_PATCH_READOUT",
+  "kind": "unpromoted_information_probe",
+  "stage": "repechage_20260921",
+  "date": "2026-09-28",
+  "branch": "codex/p75_mechanisms_20260927",
+  "authorisation": "User explicitly requested the package after being told the candidate is below the +0.30pp gate; packaged via the runner's new --allow-unpromoted switch, which prints a WARNING and cannot be reached by default.",
+  "gate_status": {
+    "passed": false,
+    "missed_metrics": ["macro"],
+    "decode_macro": 0.7583388090133667,
+    "decode_micro": 0.7666666507720947,
+    "required_macro": 0.7612651238982523,
+    "required_micro": 0.7665322580645161,
+    "macro_shortfall_pp": 0.2926
+  },
+  "package": {
+    "local_dir": "outputs/codex/p75_mechanisms_20260927/deliveries/P75_PATCH_READOUT",
+    "desktop_dir": "/mnt/c/Users/lqh22/Desktop/P75_PATCH_READOUT_unpromoted_20260928_2340",
+    "files": ["pred_results.csv", "submission.zip", "manifest.json", "README.txt"],
+    "csv_sha256": "e4b93e969b92dfcfd21f53e3ebb12a2c4e4351cbfd6c6f688a2c4d56af5c5422",
+    "zip_sha256": "5d16df480584badede8f410294a2ac18b3b644ade49d7c24f106d82966bca2a4",
+    "checkpoint_sha256": "cd8cc13daa7fb319d35a90a5bc118056ba0bba359c9a230ab7dd47ca7e65157a",
+    "rows": 37444,
+    "zip_members": ["pred_results.csv"],
+    "zip_csv_byte_identical": true,
+    "submission_check": "9/9 passed"
+  },
+  "why_it_is_worth_a_slot": {
+    "labels_differing_from_incumbent": 3204,
+    "labels_differing_from_incumbent_pct": 8.5568,
+    "incumbent": "L05_T14_P060 (platform 66.94797564362783%)",
+    "measurement": "Whether an equivalent local score obtained from a different training mechanism transfers equivalently; the platform keeps the historical best, so this cannot displace the incumbent."
+  },
+  "recipe": {
+    "checkpoint": "outputs/codex/p75_mechanisms_20260927/runs/P75_PATCH_READOUT/seed42/checkpoints/best.pt",
+    "selected_epoch": 14,
+    "input_resolution": 384,
+    "patch_readout": "single_head_zero_residual_v1",
+    "tta": "horizontal_flip",
+    "temperature": 1.4,
+    "prior_strength": 0.6,
+    "fusion": "mean_probabilities",
+    "single_checkpoint": true,
+    "test_data_used": false
+  },
+  "compliance": {
+    "single_model": true,
+    "ensemble": false,
+    "test_time_training_or_adaptation": false,
+    "test_set_usage": "deterministic packaging inference only",
+    "external_weights": false
+  },
+  "platform_submission_id": null,
+  "platform_score": null
+}
