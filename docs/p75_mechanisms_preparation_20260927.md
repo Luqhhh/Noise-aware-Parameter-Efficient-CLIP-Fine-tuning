@@ -1,5 +1,10 @@
 # P75 训练机制候选：2026-09-27 仅 CPU 准备
 
+> **2026-09-29 搜索纪律覆盖说明**：本文件保留当时的准备、启动与结果记录，不能作为待跑队列。
+> Patch Readout 已在下文记录关闭，相关邻域搜索冻结；Full SAM 只收尾已启动固定实验，
+> 不衍生 rho/ASAM/GSAM 或联合训练。Hard Support 的代理群体尚不构成可恢复收益证据，
+> 后续先按[主要误差预算门禁](p75_error_budget_policy_20260929.md)归因，再决定是否训练。
+
 状态：**实现与只读/CPU 检查完成；未启动 GPU 训练、未产生新候选 checkpoint、验证分或平台分。**
 分支 `codex/p75_mechanisms_20260927`，基于 `origin/main` 的 `e443a63`，方案身份为
 `P75_HARD_SUPPORT`、`P75_PATCH_READOUT`、`P75_FULL_SAM`。本段遵照用户指令只做准备。
@@ -45,7 +50,7 @@ P75_HARD_SUPPORT 不进入 GPU 队列。** 未重新训练教师、未重建大�
 没有符合证据门禁的支持 CSV 时，训练会 fail closed。后续若已有当前阶段逐样本 L05
 记录、组外近邻与弱视图证据，再按同一训练行生成权重，不在本轮扩展阈值网格。
 
-## 1. P75_PATCH_READOUT：独立完整训练候选，待 GPU
+## 1. P75_PATCH_READOUT：历史准备记录，已关闭
 
 固定 OpenAI CLIP ViT-B/32，同一次视觉 Transformer 前向读取最终 patch token；一个
 线性评分器 softmax 汇聚 patch，经**零初始化**残差映射加入原 CLS 特征，最后仍只走原
@@ -76,7 +81,7 @@ macro ≥现役 +0.30pp 且 micro 不退化时出包，随后仍需 9/9 提交�
 是 macro ≥+1.00pp 且 micro 不退化，0.30–1.00pp 只保留本地候选。不得拿早期第 4 轮
 与现役第 16 轮比较；应看同轮 L05 曲线。单次提升不声明稳定性证明。
 
-## 2. P75_FULL_SAM：完整 L05 目标的私有实现，待 GPU
+## 2. P75_FULL_SAM：历史准备记录，固定实验已启动
 
 现有 focus trainer 的 SAM 完整有效 batch 路径会**拒绝 attention-local**；其第二遍损失
 只有 global + anchor。直接开启 `train.sam` 不构成 L05 完整配方上的 SAM 对照。本方案在
@@ -99,8 +104,8 @@ python3 -m pytest tests/test_p75_sam.py -q
 ```
 
 GPU 入口同 Patch：`python3 scripts/run_p75_full_sam.py --phase train|cache|evaluate|deliver --execute-gpu`。
-用户本轮明确暂不启动 GPU，故未调用。两主线都出现独立、明确正收益后才准备一次联合
-训练；当前没有联合配置，也不提前叠加。
+准备轮用户明确暂不启动 GPU，故当时未调用。原设想是两主线都出现独立正收益后再准备
+联合训练；**2026-09-29 已撤销该自动派生路径**，没有联合配置，后续先满足主要误差预算门禁。
 
 ## 验证边界与保底交付
 
