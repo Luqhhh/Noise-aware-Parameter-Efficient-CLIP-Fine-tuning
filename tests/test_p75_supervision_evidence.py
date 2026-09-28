@@ -62,3 +62,42 @@ def test_promotion_recomputed_from_bound_rows(tmp_path):
     report['full_training_signal']=True
     with pytest.raises(ValueError,match='flags'):
         verify_report(report)
+
+
+def test_end_to_end_diagnosis_keeps_missing_history_and_serializes_overlap(tmp_path,monkeypatch):
+    import p75_supervision_evidence as evidence
+    import p75_supported_ce_report as decoder
+    import json
+    rule=R=dict(original_support_votes=12,alternative_support_votes=16,
+        neighbors=20,weak_label_probability=.3,local_confidence_gate=.7,
+        minimum_trusted_groups=20,minimum_hard_groups=5,primary_error_scale=1000,
+        max_undercovered_class_fraction=.05,minimum_groups_for_channel_coverage=5,
+        confusion_min_each_direction=2,confusion_min_total=6)
+    train=[dict(image_path=f'train/{i}.jpg',label=str(i//20),content_group=f'g{i}') for i in range(40)]
+    val=[dict(image_path=f'train/v{i}.jpg',label=str(i//2),content_group=f'v{i}') for i in range(4)]
+    oof=[dict(**r,centroid_top1=r['label'],ridge_top1=r['label']) for r in train]
+    identity=dict(num_classes=3,split_hashes={'val_dev.csv':'val-sha'},control_sha256='control-sha')
+    source=dict(reference_validation_cache='synthetic')
+    monkeypatch.setattr(evidence,'OUT',tmp_path)
+    monkeypatch.setattr(evidence,'context',lambda:(rule,source,identity,train,val,oof))
+    monkeypatch.setattr(evidence,'lp_proxy',lambda *args:([.5]*40,[.5]*40))
+    payload=dict(paths=[f'v{i}.jpg' for i in range(4)],labels=torch.tensor([0,0,1,1]),
+        validation_csv_sha256='val-sha',checkpoint_sha256='control-sha',
+        original_logits=torch.tensor([[1.,0.,0.]]*4),flip_logits=torch.tensor([[1.,0.,0.]]*4))
+    monkeypatch.setattr(evidence.torch,'load',lambda *args,**kwargs:payload)
+    monkeypatch.setattr(decoder,'predictions',lambda _:np.array([0,1,0,1]))
+    directory=tmp_path/'neighbors'; directory.mkdir()
+    path=directory/'groups.jsonl'
+    with path.open('w') as f:
+        for r in train+val:
+            f.write(json.dumps(dict(**r,votes={r['label']:16},neighbors=[{}]*20))+'\n')
+    evidence.write_json(directory/'manifest.json',dict(identity=identity,files={'groups.jsonl':evidence.sha(path)}))
+    result=evidence.diagnose()
+    assert result['decision']=='incomplete_P0_missing_L05_snapshot'
+    assert result['baseline_errors']==2 and result['original_supported_classes']==2
+    assert result['zero_original_support_classes']==[2]
+    records=evidence.read_rows(tmp_path/'diagnosis_without_snapshot/sample_evidence.csv')
+    assert len(records)==44 and records[0]['training_epoch_local_enabled']==''
+    assert records[0]['center_label_probability']==''
+    assert result['full_training_allowed'] is False
+    assert json.loads((tmp_path/'diagnosis_without_snapshot/summary.json').read_text())['overlaps']==result['overlaps']

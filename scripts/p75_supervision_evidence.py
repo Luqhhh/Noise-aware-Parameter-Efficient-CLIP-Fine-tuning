@@ -313,6 +313,7 @@ def diagnose(snapshot=None):
         row['insufficient_effective_supervision'] = len(independent[label]) < rule['minimum_trusted_groups']
         pred = row['l05_fixed_decode_prediction'] if row['split']=='val' else row['l05_prediction']
         row['stable_trusted_confusion'] = bool(pred is not None and pred != label and row['weak_consistent'] and
+            row['l05_prediction'] == pred and
             row['original_supported'] and tuple(sorted((label,pred))) in edge_set and
             min(trusted,len(trusted_groups[pred])) >= rule['minimum_trusted_groups'])
         # Whole-class association is disclosed, never an estimated recoverable count.
@@ -351,7 +352,8 @@ def diagnose(snapshot=None):
         labels=labels.tolist(), slices=slices, evidence_sha256=sha(destination/'sample_evidence.csv')))
     summary = dict(identity=identity,decision=decision, training_channels=dict(channels),
         training_hard_supported=sum(r['supported_hard'] for r in records[:len(train)]),
-        original_supported_classes=len(trusted_groups), undercovered_classes=undercovered,
+        original_supported_classes=sum(bool(v) for v in trusted_groups.values()), undercovered_classes=undercovered,
+        zero_original_support_classes=[c for c in range(classes) if not trusted_groups[c]],
         coverage_ok=coverage_ok,baseline=paired_counts(labels,val_pred,val_pred),
         baseline_errors=int(wrong.sum()),slices=counts, overlaps=overlap,
         confusion_groups=len(groups),confusion_edges=len(edges),
