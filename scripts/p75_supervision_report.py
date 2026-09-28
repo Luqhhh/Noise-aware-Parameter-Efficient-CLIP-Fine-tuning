@@ -40,7 +40,8 @@ def verify_report(result):
         raw=payload['original_logits'].argmax(1).numpy()
         center=paired_counts(labels,raw,raw)
         control=read_json(result['progress_control_log'])
-        signal=(paired_counts(labels,previous,candidate,mask)['net']>=50 and
+        signal=(int(((base!=labels)&mask).sum())>=1000 and
+            paired_counts(labels,previous,candidate,mask)['net']>=50 and
             paired_counts(labels,previous,candidate,~mask)['net']>=-50 and
             paired_counts(labels,previous,candidate)['net']>0 and
             center['candidate_macro']>=control['raw_macro']-.02)
@@ -109,7 +110,8 @@ def report(cache,checkpoint,config_path,output,earlier_cache=None):
         early.update(l05_epoch6_raw_macro=control['raw_macro'],
             candidate_epoch6_raw_macro=center_metrics['candidate_macro'],
             comparison='center raw macro at equal visual epochs; different head curriculum')
-        signal=(early['target']['net']>=50 and early['outside']['net']>=-50 and
+        signal=(int(((baseline!=labels)&masks[target]).sum())>=1000 and
+            early['target']['net']>=50 and early['outside']['net']>=-50 and
             early['all']['net']>0 and center_metrics['candidate_macro']>=control['raw_macro']-.02)
         bindings.update({str(earlier_cache):sha(earlier_cache),str(control_log):sha(control_log),
             str(previous_checkpoint):sha(previous_checkpoint)})
