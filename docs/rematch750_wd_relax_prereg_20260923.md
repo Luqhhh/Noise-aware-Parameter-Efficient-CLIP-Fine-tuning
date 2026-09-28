@@ -1,4 +1,18 @@
-# REMATCH750 weight-decay relaxation：NPU 预注册与执行交接
+# REMATCH750 weight-decay relaxation：NPU 预注册与执行交接（已归档，NPU 执行停用）
+
+**现行状态：2026-09-29 退出执行清单，不再等待 NPU 或服务器恢复。**
+
+后续仅用本机 CPU/CUDA；本计划不自动转为本机完整训练、参数扫描或多 seed。
+如研究其机制，先满足[当前误差与成本门禁](p75_error_budget_policy_20260929.md)，
+不能以旧实现完成、旧本地门槛或空闲算力作为开训依据。
+本次只撤回待跑安排，没有新实验结果；FULL_DATA_CONTROL 的既有关闭决定继续有效。
+
+下方保存旧准备状态、规格与命令。其中“等待 NPU”“ready_for_npu”和执行方分工
+均为当时记录，**不是当前待办；命令已停用，不执行**。现行边界见
+[当前执行入口](current_execution_plan.md#计算资源与执行边界)。
+
+<details>
+<summary>历史预注册规格与停用命令（仅供追溯）</summary>
 
 日期：2026-09-23
 
@@ -109,3 +123,5 @@ WD00 第一个 optimizer step 后必须核对：
 - 输出路径只位于 `outputs/xjn/rematch750_wd_relax/`。
 
 通过后串行跑完四点。训练结果、checkpoint SHA、逐 epoch 曲线和因子效应由 NPU 执行方回填；在此之前本文件只声明“ready for NPU”，不声明实验有效或有收益。
+
+</details>

@@ -13,6 +13,7 @@
 **阶段切换时只改这一节。**
 
 - 当前阶段、权威状态与下一步：[docs/current_execution_plan.md](docs/current_execution_plan.md)
+- 当前计算资源：**后续仅用本机 CPU/CUDA，NPU 已停用**；旧 NPU 交接、服务器恢复等待与用卡指令均已撤回，资源边界以当前执行入口为准
 - 开始搜索前先读该入口指向的**当前搜索纪律与误差预算**；旧执行记录、已实现候选和历史待跑配置都不构成自动启动任务的依据
 - 本阶段详细的执行记录与固定配方：见该文件顶部「当前执行入口」指向的当轮文档
 
@@ -134,9 +135,9 @@ YAML 由 `common/utils.py:load_config()` 加载。
 
 本项目多人协作，以下约定用于避免重复劳动和丢失经验。**每个实验段都必须遵守。**
 
-**共享 NPU、工作目录与环境：**
+**计算资源、工作目录与环境：**
 
-- **不许占卡，只能选用当时空闲 NPU。** 不设用卡认领流程。
+- 使用当前执行入口指定的本机资源，诊断优先 CPU/已有缓存；训练和推理前只读核对本机 GPU 与已有任务，不抢占，不设用卡认领流程。不要按历史文档连接、探测、排队或恢复已停用的远端资源。
 - **每个队员的每个方案都开新分支，并使用独立工作目录**，分支命名为 `成员名/方案名`；推荐用 `git worktree` 从最新 `origin/main` 创建。不要在他人正在使用的目录切换分支或修改代码。
 - **输出、日志、checkpoint 使用各自独立目录**，按成员、方案、运行标识区分，禁止覆盖他人产物。原始数据共享只读；共享 Python 环境的依赖变更先协调，特殊依赖使用独立环境。
 
@@ -174,6 +175,6 @@ YAML 由 `common/utils.py:load_config()` 加载。
 
 ## 历史
 
-上一阶段（初赛）的完整过程记录在 [docs/current_execution_plan.md](docs/current_execution_plan.md) 的历史部分与 `results/`；阶段经验提炼见 [docs/lessons_learned.md](docs/lessons_learned.md)。
+各阶段的完整过程记录见 [docs/history/README.md](docs/history/README.md) 与 `results/`；当前执行入口只维护现行状态与下一步。阶段经验提炼见 [docs/lessons_learned.md](docs/lessons_learned.md)。
 
 上一阶段的权重与二进制缓存已删除，不可重放。

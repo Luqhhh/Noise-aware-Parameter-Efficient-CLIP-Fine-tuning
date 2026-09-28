@@ -1,29 +1,34 @@
 # 文档索引与状态约定
 
-**核对时间**：2026-09-22
+**核对时间**：2026-09-29
 
 ## 当前权威文档
 
-**阶段相关的一切只在 [current_execution_plan.md](current_execution_plan.md) 一处维护。** 以下文件必须与项目现状同步：
+现行状态、计算资源、搜索纪律与下一步统一见 [current_execution_plan.md](current_execution_plan.md)。
+**后续仅用本机 CPU/CUDA，NPU 不再使用。** 旧交接与长篇沿革移至
+[历史索引](history/README.md)，不再把“待 NPU”“服务器恢复后继续”列为当前任务。
 
 | 文档 | 用途 |
 |---|---|
-| [current_execution_plan.md](current_execution_plan.md) | **当前状态唯一权威入口**：当前阶段、执行入口、下一步 + 历史记录 |
-| [rematch750_execution_20260921.md](rematch750_execution_20260921.md) | 当轮复赛划分、三阶段配置、提交登记与全量重训命令 |
+| [current_execution_plan.md](current_execution_plan.md) | **当前执行权威入口**：状态、资源、固定在途边界与下一步 |
+| [p75_error_budget_policy_20260929.md](p75_error_budget_policy_20260929.md) | 主要误差、可恢复收益与完整训练的前置门禁 |
+| [p75_full_sam_execution_20260928.md](p75_full_sam_execution_20260928.md) | 已启动本机固定实验的收尾与每小时监控，不自动衍生搜索 |
+| [p75_supported_ce_preparation_20260929.md](p75_supported_ce_preparation_20260929.md) | CPU 实现准备与证据边界，不构成开训许可 |
 | [rematch_dataset_20260921.md](rematch_dataset_20260921.md) | 当轮数据集元信息：规模、路径、SHA-256 与迁移状态 |
-| [rematch750_local_comparison_20260922.md](rematch750_local_comparison_20260922.md) | RM_FT / RM_LT 的严格本地成对比较与 logits 血缘 |
-| [rematch750_platform_results_20260922.md](rematch750_platform_results_20260922.md) | RM_FT / RM_LT 两次真实平台分数与策略映射 |
-| [rematch750_ft_lt_blend_research_20260922.md](rematch750_ft_lt_blend_research_20260922.md) | 用户自有 FT94/LT06 融合研究；因禁止集成与收益门槛关闭，未上传 |
 | [lessons_learned.md](lessons_learned.md) | 可迁移经验与方法论教训（**开新实验前建议先读**） |
-| `../README.md` | 项目入口、快速上手、文档地图 |
-| `../CLAUDE.md` | 面向 agent 的工作指引（含协作约定） |
-| `../COMPETITION_RULES_AGENT.md` | 比赛规则全文 |
-| `../results/rematch_submission_registry.csv` | 平台提交登记表 |
+| [../README.md](../README.md) | 项目摘要、快速上手、文档地图 |
+| [../AGENTS.md](../AGENTS.md)、[../CLAUDE.md](../CLAUDE.md) | 面向 agent 的指引、搜索与 Git 约定 |
+| [../COMPETITION_RULES_AGENT.md](../COMPETITION_RULES_AGENT.md) | 比赛规则全文 |
+| [../results/rematch_submission_registry.csv](../results/rematch_submission_registry.csv) | 平台提交登记表 |
 
 ## 历史快照
 
 以下内容记录的是**当时**的预注册方案、阶段性结果或执行上下文，**不得改写成当前结论**。如状态与上方权威文档不一致，以权威文档为准。
 
+- [history/README.md](history/README.md) —— 原执行计划、README 沿革、旧 brief、退出执行清单的 NPU 交接及历史实测；不恢复旧队列
+- [rematch750_execution_20260921.md](rematch750_execution_20260921.md) —— 首轮复赛划分、RM-LP/FT/LT 与旧全量命令，仅供追溯
+- [rematch750_local_comparison_20260922.md](rematch750_local_comparison_20260922.md)、[rematch750_platform_results_20260922.md](rematch750_platform_results_20260922.md) —— 早期 FT/LT 配对与平台证据，不是当前胜者
+- [rematch750_ft_lt_blend_research_20260922.md](rematch750_ft_lt_blend_research_20260922.md) —— 已关闭融合研究，未上传
 - `docs/preliminary_75_*`、`docs/rematch*`、`docs/repechage_prep_20260831.md` —— 各轮预注册与执行方案
 - `docs/superpowers/plans/`、`docs/superpowers/specs/` —— 早期设计文档与实施计划
 - `docs/lqh/`、`docs/phase4_results.md`、`docs/e20_e21_posthoc.md`、`docs/aegis_independent_experiments_2026-07-22.md`、`docs/team_assignments_and_experiment_configs_2026-07-22.md` —— 早期阶段与团队记录
@@ -36,10 +41,10 @@
 
 ## 结果口径
 
-- **本地 noisy validation 只用于安全 gate，平台分数才用于最终排序。** 历史上本地最高分的候选在平台最差。
+- 本地 noisy validation 用于复现、配对归因、分组误差预算与止损；普通本地 accuracy 小涨不能推算平台收益，平台提升只能依据实测声明。
 - Bare、Flip TTA、M1/M3 等是不同推理协议，必须分栏比较，不做跨协议归因。
-- 携带测试集统计量（如测试批拟合的 prior）的结果属于**不同来源协议**，必须单独登记，不得与合规结果混排或充当基线。
-- 未通过预注册 gate 的实验必须保留负结果，但不得生成平台候选。
+- 历史测试批统计量拟合结果须单独登记，不得与合规结果混排或充当基线；当前禁止用测试集预测分布调参。
+- 未通过预注册 gate 的实验保留负结果，不自行晋级或占用平台名额；已关闭或已归档的计划不自动恢复。
 
 **证据状态标记**（用于 `results/` 中的登记行）：
 

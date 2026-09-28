@@ -1,4 +1,18 @@
-# REMATCH750 全量数据对照（FULL00 → FULL01）：预注册与 NPU 交接
+# REMATCH750 全量数据对照（FULL00 → FULL01）：预注册与 NPU 交接（已归档，NPU 执行停用）
+
+**现行状态：2026-09-29 退出执行清单，不再等待 NPU 或服务器恢复。**
+
+后续仅用本机 CPU/CUDA；本计划不自动转为本机完整训练、参数扫描或多 seed。
+如研究其机制，先满足[当前误差与成本门禁](p75_error_budget_policy_20260929.md)，
+不能以旧实现完成、旧本地门槛或空闲算力作为开训依据。
+本次只撤回待跑安排，没有新实验结果；FULL_DATA_CONTROL 的既有关闭决定继续有效。
+
+下方保存旧准备状态、规格与命令。其中“等待 NPU”“ready_for_npu”和执行方分工
+均为当时记录，**不是当前待办；命令已停用，不执行**。现行边界见
+[当前执行入口](current_execution_plan.md#计算资源与执行边界)。
+
+<details>
+<summary>历史预注册规格与停用命令（仅供追溯）</summary>
 
 日期：2026-09-23
 
@@ -200,3 +214,5 @@ FULL01 第一个 optimizer step 后必须核对：
 | 若 FULL00 未被先行产出，FULL01 会在开训前被血缘门拒绝 | runner 默认按 `FULL00 FULL01` 顺序执行；单独跑 FULL01 时预检要求父已存在 |
 | `npu_fused_adamw` / 大 batch 在 NPU 上的既有崩溃记录（`cudaErrorUnknown`） | 沿用 V3 已跑通的 NPU 数值块；失败即停，不自动重启 |
 | 全量训练集更大，首个 epoch 的 warmup 表现在 148,695 张上 | `ce_warmup_epochs: 2` 按 **epoch** 而非 step 计，比例不变 |
+
+</details>

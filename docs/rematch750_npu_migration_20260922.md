@@ -1,5 +1,10 @@
 # REMATCH750 NPU migration (2026-09-22)
 
+> **2026-09-29 历史记录标记**：本文件保留当时的执行、指标与协议；NPU 已停用。
+> 文中旧授权、推荐配置、排队、迁移、补跑与恢复指令均不再执行，也不自动转为本机训练。
+> 原实测数字与结果文件不作改写；当前资源与搜索边界见
+> [当前执行入口](current_execution_plan.md#计算资源与执行边界)。
+
 Status: **two-epoch migration acceptance passed**. Backend implementation was
 pushed in `cb64838`; full dataset parity, cache, 20-epoch LP, two-epoch FT,
 checkpoint reload and CSV/ZIP validation completed. No platform upload.
