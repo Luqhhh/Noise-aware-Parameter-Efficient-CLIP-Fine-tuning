@@ -111,3 +111,25 @@ GPU 入口同 Patch：`python3 scripts/run_p75_full_sam.py --phase train|cache|e
 `/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/`。
 本次**没有新候选预测 CSV/ZIP**；仅上述既有保底包可提交，平台今天两次额度已用完。
 本次只交付代码、CPU 诊断、配置、门禁和可重放命令，不声称训练候选已完成。
+
+## GPU 启动（2026-09-28，用户解除暂停）
+
+用户指令「启动 p75 训练」后，本轮只启动 **P75_PATCH_READOUT** 的 train 阶段；同一张
+GPU 上不并行启动 FULL_SAM（FP32 全批回放，显存与时长都不同量级），后者排队待定。
+
+- **运行器 bug（本轮实测发现并修复）**：两个队列脚本都用 `log.parent.mkdir()` 把捕获日志
+  建在 RUN 里，而 `trainer.train` 见到已存在的 RUN 会直接抛
+  `FileExistsError: Run directory exists: ... Use --overwrite or --resume.`，导致**任何一次
+  全新 `--phase train` 都在第一步之前失败**（06:27 首次启动即复现）。修法是新增
+  `phase_log()`，把阶段 stdout 写到 RUN 旁边（同一实验目录），RUN 仍由 trainer 独占。
+  改动 `scripts/run_p75_patch_readout.py`、`scripts/run_p75_full_sam.py`，新增
+  `tests/test_p75_runner_logs.py`；定向测试 **9 passed**。`run_p75_*.py` 不在
+  `project.p75_implementation_files` 内，冻结身份不变，preflight 仍通过。
+- 启动前检查：preflight 通过；`test_p75_patch_readout.py`/`test_p75_hard_support.py`/
+  `test_p75_sam.py` 7 passed；CPU smoke 最大 logit 误差 9.54e-07、top1 一致；
+  `_gpu_smoke.py` 90 秒 **SMOKE OK**（针对本机历史 `cudaErrorUnknown` 的健康探针）。
+- 实测已启动：screen 会话 `p75_patch`，第一步审计通过（head_grad=0.035027、
+  visual_grad=31.851227），读出模块 `single_head_zero_residual_v1` 已挂载，可训练参数
+  86,098,927；GPU 占用约 3.34 GiB。第 40 次更新时速率约 **20 步/204 秒**（≈131 步/轮）。
+- **本轮没有新候选 checkpoint、验证分、提交包或平台分**；机器可读记录见
+  [启动记录](../results/p75_patch_readout_launch_20260928.json)。

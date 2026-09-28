@@ -51,7 +51,18 @@ def preflight():
     print('Pinned full-loss SAM runtime, stage, config and parent verified')
 
 
+def phase_log(log):
+    """Captured phase stdout lives beside RUN, never inside it.
+
+    ``trainer.train`` refuses to start when RUN already exists, and it owns that
+    directory; creating the capture file inside RUN therefore aborts every fresh
+    ``--phase train`` run before the first step.
+    """
+    return log.parent.parent/log.name
+
+
 def execute(command, log):
+    log = phase_log(log)
     log.parent.mkdir(parents=True, exist_ok=True)
     with log.open('x') as stream:
         subprocess.run([sys.executable, *command], cwd=FRAMEWORK, env=environment(),

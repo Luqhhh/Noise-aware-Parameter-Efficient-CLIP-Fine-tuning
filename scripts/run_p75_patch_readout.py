@@ -64,7 +64,18 @@ def preflight() -> None:
     print('Pinned source, stage assets, config and parent binding verified')
 
 
+def phase_log(log: Path) -> Path:
+    """Captured phase stdout lives beside RUN, never inside it.
+
+    ``trainer.train`` refuses to start when RUN already exists, and it owns that
+    directory; creating the capture file inside RUN therefore aborts every fresh
+    ``--phase train`` run before the first step.
+    """
+    return log.parent.parent/log.name
+
+
 def execute(command: list[str], log: Path) -> None:
+    log = phase_log(log)
     log.parent.mkdir(parents=True, exist_ok=True)
     with log.open('x') as stream:
         subprocess.run([sys.executable, *command], cwd=FRAMEWORK,
