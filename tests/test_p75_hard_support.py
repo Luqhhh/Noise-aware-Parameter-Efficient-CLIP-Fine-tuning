@@ -32,7 +32,7 @@ def test_local_gate_retains_quality_check():
     local = torch.randn(2, 3, 8, 8)
     local[0] = 0
     admitted = local_admission(torch.tensor([.2, .2]), .7,
-                               torch.tensor([.5, .5]), local)
+                               torch.tensor([.5, .5]), local, restore_enabled=True)
     assert admitted.tolist() == [False, True]
     baseline = local_admission(torch.tensor([.2, .8]), .7, None, local)
     assert baseline.tolist() == [False, True]
@@ -46,6 +46,7 @@ def test_support_csv_requires_exact_order_and_hash(tmp_path):
         writer.writerow(['train/a.jpg', 1, .5])
         writer.writerow(['train/b.jpg', 0, 0.])
     config = {'loss': {'hard_support': {'enabled': True, 'version': 1,
+              'ce_restore_enabled': True, 'local_restore_enabled': False,
               'maximum_weight': .5, 'path': str(path), 'sha256': file_sha256(path)}}}
     assert load_support(config, ['a.jpg', 'b.jpg'], [1, 0]).tolist() == [.5, 0.]
     with pytest.raises(ValueError, match='paths'):
