@@ -1,0 +1,88 @@
+{
+  "experiment_id": "K05_SUBMISSION_CAMPAIGN_20260928",
+  "status": "two_new_packages_audited_training_continues",
+  "date": "2026-09-28",
+  "branch": "codex/k05_submission_campaign_20260927",
+  "implementation_commit": "2940a14f3f4b9e607ea38668a163608a1a9015fe",
+  "training_config_sha256": "e2b27bd8104f0e002ff57e49d1f73b3937de993a22c0dfb151da30612b4067c5",
+  "protocol": {
+    "data_version": "20260921",
+    "model": "OpenAI CLIP ViT-B/32",
+    "input_resolution": 384,
+    "peft_mode": "full_finetune",
+    "feature_anchor_weight": 0.5,
+    "seed": 42,
+    "inference": "global_center_crop_only"
+  },
+  "resume_boundary": {
+    "source_epoch": 4,
+    "partial_epoch_5_discarded": true,
+    "native_state_restored": [
+      "model",
+      "optimizer",
+      "scheduler",
+      "amp_scaler",
+      "rng",
+      "data_generator"
+    ],
+    "byte_identical_to_uninterrupted_stream_claimed": false,
+    "resume_helper_sha256": "3ca59a59f14c3eafdf9c4d8e99ea77e2e50b2eac361a0c4519aebb172b675c4f"
+  },
+  "candidates": [
+    {
+      "tag": "K05_E04_CENTER_20260928",
+      "epoch": 4,
+      "validation_macro": 0.7264364957809448,
+      "validation_micro": 0.7360886931419373,
+      "predicted_classes": 746,
+      "checkpoint_sha256": "3a1393e0fb464b90e7722cec90e998061b969ab55231c21bdfe5ee4600b32dd6",
+      "binding_sha256": "3b2bff0f95c6b412c914eaafe64b5864ec9b2b326db3e6fba123f828bb84f96b",
+      "csv_sha256": "b0692d7efb6b87f2be895d2d8c4c23236004298efa887e20062712094e63a3f1",
+      "zip_sha256": "008be8da3d0787d4b5418ed5baa75aaf565e39b2b85c1939b53e9afce6bd4e83",
+      "prediction_rows": 37444,
+      "submission_audit": "passed",
+      "label_changes_vs_l05": 6919,
+      "label_change_fraction_vs_l05": 0.18478261,
+      "platform_submitted": false,
+      "platform_score": null
+    },
+    {
+      "tag": "K05_E06_CENTER_20260928",
+      "epoch": 6,
+      "validation_macro": 0.7394055724143982,
+      "validation_micro": 0.7499327659606934,
+      "predicted_classes": 745,
+      "checkpoint_sha256": "592169c84e6c944e590c2ba093118b0bb2b9dad5038753d56a2a46a7424340e8",
+      "binding_sha256": "eb56c04cad09b8797f5e1544ed62f5a339d214a77380857ac968a73b461bea94",
+      "csv_sha256": "cd59b04acf801b904c293816f3e5905a026f0c549dfc9548d886eb4997fdb77c",
+      "zip_sha256": "b4062f2dca4d4fb0b1414df9219fe0946a9450c537693ddaa0518c1e931c6061",
+      "prediction_rows": 37444,
+      "submission_audit": "passed",
+      "label_changes_vs_e04": 6000,
+      "label_change_fraction_vs_e04": 0.16023929,
+      "label_changes_vs_l05": 6304,
+      "label_change_fraction_vs_l05": 0.16835808,
+      "platform_submitted": false,
+      "platform_score": null
+    }
+  ],
+  "validation_delta_e06_vs_e04_pp": {
+    "macro": 1.29690766334534,
+    "micro": 1.38440728187561
+  },
+  "recommendation": {
+    "required_two_submission_order": [
+      "K05_E06_CENTER_20260928",
+      "K05_E04_CENTER_20260928"
+    ],
+    "conditional_override": "Replace E04 with a stronger fully audited P75 or OOF package if one becomes available before the submission deadline.",
+    "duplicate_guard": "Never submit a candidate with an identical prediction vector to a previously used package."
+  },
+  "continuing_training": {
+    "target_epochs": 16,
+    "latest_observed_epoch": 7,
+    "latest_observed_global_step": 860,
+    "active_at": "2026-09-28T13:58:12+08:00"
+  },
+  "platform_verification": "pending_user_submission_receipts"
+}

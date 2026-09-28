@@ -5,7 +5,7 @@
 Use both remaining platform opportunities on new information:
 
 1. `K05_E04_CENTER_20260928` has been frozen, inferred, and audited as the first genuinely new package.
-2. Resume through the trainer's native full-state path from the last complete epoch-4 checkpoint, then freeze, infer, and audit epoch 6 as `K05_E06_CENTER_20260928`.
+2. `K05_E06_CENTER_20260928` has now also been frozen, inferred, audited, and confirmed different from E04 and the old L05 package.
 
 `L05_T14_P060` remains the protected score anchor and rollback artifact, but must not be resubmitted because its exact predictions already have a platform receipt. A duplicate would spend a slot without adding evidence.
 
@@ -64,10 +64,13 @@ Related K-family full-run results also bound expectations: K02 (320px, anchor 0.
 |---:|---:|---:|---:|---:|---:|---:|---|
 | 2 | 69.9229% | 70.8535% | 746/750 | 71.0909% | 73.1806% | 65.4973% | Reject for platform; save as curve anchor |
 | 4 | 72.6436% | 73.6089% | 746/750 | 73.9456% | 75.3923% | 68.5930% | Package as aggressive information probe; below ordinary promotion gate |
+| 6 | 73.9406% | 74.9933% | 745/750 | 75.7280% | 76.6633% | 69.4303% | Preferred K05 submission; clears the preregistered interpretation threshold |
 
 At epoch 2, K05 is 5.327 percentage points below L05 center on macro and 5.443 points below it on micro. The shortfall is too large for a useful platform probe. Its main weakness is the tail segment, not class collapse: 746/750 classes are still predicted.
 
 Epoch 4 gains **+2.7207 pp macro / +2.7554 pp micro** over epoch 2, confirming that K05 is still learning rapidly, but remains **-2.6061 pp macro / -2.6881 pp micro** below L05 center. Its first test package changes **6,919 / 37,444 predictions (18.478261%)** relative to the previously submitted L05 package, so it is new information rather than a duplicate.
+
+Epoch 6 gains another **+1.2969 pp macro / +1.3844 pp micro** over epoch 4 and improves tail macro by **+0.8373 pp**. It remains about **-1.3091 pp macro / -1.3037 pp micro** below L05 center and predicts one fewer class, so it is still an exploratory platform candidate rather than a proven replacement. Its test vector changes **6,000 / 37,444 labels (16.023929%)** versus E04 and **6,304 / 37,444 (16.835808%)** versus the previously submitted L05 package.
 
 Epoch-2 snapshot:
 
@@ -85,6 +88,17 @@ Epoch-4 snapshot and audited package:
 - Windows delivery: `C:\Users\28639\Documents\New project 3\submission_packages\2026-09-28_K05_E04_CENTER`
 
 The original Windows-host process stopped during epoch 5 without a logged Python exception, before producing another complete epoch checkpoint. On 2026-09-28 the run was resumed from epoch 4 using the trainer's native restore of model, optimizer, scheduler, AMP scaler, RNG, and data-generator state. Resume helper SHA-256: `3ca59a59f14c3eafdf9c4d8e99ea77e2e50b2eac361a0c4519aebb172b675c4f`. The trainer logged `Resumed from epoch 4`; the partial epoch-5 state was discarded and epoch 5 was rerun. Because the OS process and data-loader workers restarted, this is a full saved-state continuation of the same checkpoint lineage, not a claim of byte-for-byte equivalence to the counterfactual uninterrupted stochastic augmentation stream.
+
+Epoch-6 snapshot and audited package:
+
+- Checkpoint SHA-256: `592169c84e6c944e590c2ba093118b0bb2b9dad5038753d56a2a46a7424340e8`
+- Binding SHA-256: `eb56c04cad09b8797f5e1544ed62f5a339d214a77380857ac968a73b461bea94`
+- Prediction CSV SHA-256: `cd59b04acf801b904c293816f3e5905a026f0c549dfc9548d886eb4997fdb77c`
+- Submission ZIP SHA-256: `b4062f2dca4d4fb0b1414df9219fe0946a9450c537693ddaa0518c1e931c6061`
+- Submission audit: 37,444/37,444 images, no duplicates, no missing images, labels in `0000`-`0749`, ZIP contains only root-level `pred_results.csv`
+- Windows delivery: `C:\Users\28639\Documents\New project 3\submission_packages\2026-09-28_K05_E06_CENTER`
+
+Recommended order for today's two required platform observations is **E06 first, E04 second**. E06 has the stronger validation evidence. E04 remains worthwhile only under the user's explicitly aggressive information-gathering policy; if P75 or OOF hard filtering produces a fully audited, stronger package before the deadline, replace E04 rather than adding a third speculative K05 point.
 
 ## Preregistered decision rule for today's two new submissions
 
@@ -119,5 +133,5 @@ Epoch 2 remains rejected because it is clearly undertrained. Epochs 4 and 6 are 
 - Epoch-2 training/validation evidence: verified from the live run logs and saved checkpoint binding.
 - L05 package: locally hash-verified and previously platform-validated.
 - K05 E04 package: locally verified and structurally audited; platform effectiveness remains unverified.
-- K05 E06 package: pending epoch-6 validation, inference, prediction-difference check, and submission audit.
+- K05 E06 package: locally verified, structurally audited, and prediction-distinct from both E04 and L05; platform effectiveness remains unverified.
 - K05 platform effectiveness: unverified until the platform receipt is recorded.
