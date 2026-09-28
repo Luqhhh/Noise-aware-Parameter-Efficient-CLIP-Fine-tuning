@@ -5,11 +5,11 @@
 Use both remaining platform opportunities on new information:
 
 1. `K05_E04_CENTER_20260928` has been frozen, inferred, and audited as the first genuinely new package.
-2. Resume exactly from the last complete epoch-4 state, then freeze, infer, and audit epoch 6 as `K05_E06_CENTER_20260928`.
+2. Resume through the trainer's native full-state path from the last complete epoch-4 checkpoint, then freeze, infer, and audit epoch 6 as `K05_E06_CENTER_20260928`.
 
 `L05_T14_P060` remains the protected score anchor and rollback artifact, but must not be resubmitted because its exact predictions already have a platform receipt. A duplicate would spend a slot without adding evidence.
 
-This is intentionally more aggressive than the normal promotion gate, but the risk is bounded: both candidates change only the checkpoint along a single training trajectory, every generated file is hash-bound and independently checked, and the platform comparison directly measures whether additional K05 training transfers. The two packages may be used together only after confirming that their test prediction vectors differ; a distinct checkpoint alone is not enough.
+This is intentionally more aggressive than the normal promotion gate, but the risk is bounded: both candidates change only the checkpoint along one K05 lineage, every generated file is hash-bound and independently checked, and the platform comparison directly measures whether additional K05 training transfers. The two packages may be used together only after confirming that their test prediction vectors differ; a distinct checkpoint alone is not enough.
 
 ## Repository and source binding
 
@@ -84,12 +84,12 @@ Epoch-4 snapshot and audited package:
 - Submission audit: 37,444/37,444 images, no duplicates, no missing images, labels in `0000`-`0749`, ZIP contains only root-level `pred_results.csv`
 - Windows delivery: `C:\Users\28639\Documents\New project 3\submission_packages\2026-09-28_K05_E04_CENTER`
 
-The original Windows-host process stopped during epoch 5 without a logged Python exception, before producing another complete epoch checkpoint. On 2026-09-28 the run was resumed from epoch 4 using the trainer's native restore of model, optimizer, scheduler, AMP scaler, RNG, and data-generator state. Resume helper SHA-256: `3ca59a59f14c3eafdf9c4d8e99ea77e2e50b2eac361a0c4519aebb172b675c4f`. The trainer logged `Resumed from epoch 4`; no partial epoch-5 state is being presented as continuous evidence.
+The original Windows-host process stopped during epoch 5 without a logged Python exception, before producing another complete epoch checkpoint. On 2026-09-28 the run was resumed from epoch 4 using the trainer's native restore of model, optimizer, scheduler, AMP scaler, RNG, and data-generator state. Resume helper SHA-256: `3ca59a59f14c3eafdf9c4d8e99ea77e2e50b2eac361a0c4519aebb172b675c4f`. The trainer logged `Resumed from epoch 4`; the partial epoch-5 state was discarded and epoch 5 was rerun. Because the OS process and data-loader workers restarted, this is a full saved-state continuation of the same checkpoint lineage, not a claim of byte-for-byte equivalence to the counterfactual uninterrupted stochastic augmentation stream.
 
 ## Preregistered decision rule for today's two new submissions
 
 - Evaluate epoch 4, freeze it, and generate the center-only E04 package regardless of whether it clears the ordinary promotion gate; label it explicitly as an intermediate information probe.
-- Continue the exact epoch-4 resume to epoch 6, freeze it, and generate a second center-only E06 package. Do not retune or alter the data/inference recipe between the two checkpoints.
+- Continue the native full-state epoch-4 resume to epoch 6, freeze it, and generate a second center-only E06 package. Do not retune or alter the data/inference recipe between the two checkpoints.
 - Use 73.5% raw macro and 74.5% raw micro as the interpretation threshold for E04, not as a packaging threshold. Below it, E04 is a learning-curve calibration point rather than a score candidate.
 - Prefer E06 for the later submission if its selector improves; retain E04 as the earlier independent platform point. If E06's test labels are identical to E04, do not spend the second slot: continue to the next completed evaluation checkpoint instead.
 - In all cases require: 37,444 rows, zero corrupt images, labels within the official 750-class mapping, a ZIP containing only the root-level `pred_results.csv`, byte-identical CSV content inside/outside the ZIP, and recorded SHA-256 hashes.
