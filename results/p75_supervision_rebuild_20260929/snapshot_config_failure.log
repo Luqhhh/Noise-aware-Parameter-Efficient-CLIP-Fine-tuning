@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/lux1/noise-worktrees/p75_supervision_rebuild_20260929/scripts/p75_supported_ce_snapshot.py", line 135, in <module>
+    raise SystemExit(main())
+  File "/home/lux1/noise-worktrees/p75_supervision_rebuild_20260929/scripts/p75_supported_ce_snapshot.py", line 131, in main
+    print(export_snapshot(args.batch_size, args.num_workers)['source'])
+  File "/home/lux1/.local/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/lux1/noise-worktrees/p75_supervision_rebuild_20260929/scripts/p75_supported_ce_snapshot.py", line 60, in export_snapshot
+    validate_checkpoint(fixed['control_checkpoint'], original, parent=False)
+  File "/home/lux1/noise-worktrees/p75_supervision_rebuild_20260929/outputs/codex/p75_supported_ce_20260929/framework/reproducibility/aegis_f1/aegis_clip/rematch_protocol.py", line 34, in validate_checkpoint
+    return _v4.validate_checkpoint(path, config, parent=parent)
+  File "/home/lux1/noise-worktrees/p75_supervision_rebuild_20260929/outputs/codex/p75_supported_ce_20260929/framework/reproducibility/aegis_f1/aegis_clip/rematch_search_v4.py", line 370, in validate_checkpoint
+    meta.get("training_config_sha256") == sha256_file(config["_config_path"]),
+KeyError: '_config_path'

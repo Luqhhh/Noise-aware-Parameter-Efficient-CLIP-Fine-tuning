@@ -1,0 +1,20 @@
+{
+  "experiment_id": "P75_SUPERVISION_REBUILD_P0",
+  "neighbors": 20,
+  "original_support_votes": 12,
+  "alternative_support_votes": 16,
+  "weak_label_probability": 0.3,
+  "local_confidence_gate": 0.7,
+  "minimum_trusted_groups": 20,
+  "minimum_hard_groups": 5,
+  "confusion_min_each_direction": 2,
+  "confusion_min_total": 6,
+  "primary_error_scale": 1000,
+  "supplement_error_scale": 200,
+  "neighbor_wall_seconds": 7200,
+  "snapshot_wall_seconds": 5400,
+  "max_undercovered_class_fraction": 0.05,
+  "minimum_groups_for_channel_coverage": 5,
+  "oof_path": "/home/lux1/noise-worktrees/l05_oof_hard_filter/outputs/codex/l05_oof_hard_filter/cpu_prepare/confidence_scores.csv",
+  "oof_sha256": "dada97fc7970266a59c2fc13f7ac5776edc1f4a7a40af0589544c83753ef31f4"
+}

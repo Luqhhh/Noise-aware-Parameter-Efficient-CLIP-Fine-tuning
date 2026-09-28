@@ -1,0 +1,92 @@
+L05 snapshot 1600/133815 elapsed=34.9s
+/home/lux1/.local/lib/python3.10/site-packages/PIL/Image.py:1137: UserWarning: Palette images with Transparency expressed in bytes should be converted to RGBA images
+  warnings.warn(
+L05 snapshot 3200/133815 elapsed=50.0s
+L05 snapshot 4800/133815 elapsed=63.8s
+/home/lux1/.local/lib/python3.10/site-packages/PIL/Image.py:1137: UserWarning: Palette images with Transparency expressed in bytes should be converted to RGBA images
+  warnings.warn(
+L05 snapshot 6400/133815 elapsed=79.1s
+L05 snapshot 8000/133815 elapsed=96.4s
+L05 snapshot 9600/133815 elapsed=113.5s
+L05 snapshot 11200/133815 elapsed=130.3s
+L05 snapshot 12800/133815 elapsed=142.7s
+L05 snapshot 14400/133815 elapsed=159.4s
+L05 snapshot 16000/133815 elapsed=173.7s
+L05 snapshot 17600/133815 elapsed=188.1s
+L05 snapshot 19200/133815 elapsed=201.5s
+/home/lux1/.local/lib/python3.10/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 4 bytes but only got 2.
+  warnings.warn(str(msg))
+/home/lux1/.local/lib/python3.10/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 4 bytes but only got 2.
+  warnings.warn(str(msg))
+L05 snapshot 20800/133815 elapsed=217.7s
+L05 snapshot 22400/133815 elapsed=231.5s
+L05 snapshot 24000/133815 elapsed=248.6s
+L05 snapshot 25600/133815 elapsed=263.0s
+L05 snapshot 27200/133815 elapsed=277.4s
+L05 snapshot 28800/133815 elapsed=299.8s
+L05 snapshot 30400/133815 elapsed=314.3s
+L05 snapshot 32000/133815 elapsed=333.3s
+L05 snapshot 33600/133815 elapsed=349.8s
+L05 snapshot 35200/133815 elapsed=365.2s
+L05 snapshot 36800/133815 elapsed=379.2s
+L05 snapshot 38400/133815 elapsed=393.3s
+L05 snapshot 40000/133815 elapsed=408.1s
+L05 snapshot 41600/133815 elapsed=422.9s
+L05 snapshot 43200/133815 elapsed=440.8s
+L05 snapshot 44800/133815 elapsed=454.8s
+L05 snapshot 46400/133815 elapsed=472.0s
+L05 snapshot 48000/133815 elapsed=485.7s
+L05 snapshot 49600/133815 elapsed=501.6s
+L05 snapshot 51200/133815 elapsed=517.5s
+L05 snapshot 52800/133815 elapsed=533.8s
+L05 snapshot 54400/133815 elapsed=548.6s
+L05 snapshot 56000/133815 elapsed=563.4s
+L05 snapshot 57600/133815 elapsed=579.2s
+L05 snapshot 59200/133815 elapsed=600.2s
+L05 snapshot 60800/133815 elapsed=614.4s
+L05 snapshot 62400/133815 elapsed=630.3s
+L05 snapshot 64000/133815 elapsed=646.7s
+L05 snapshot 65600/133815 elapsed=663.3s
+L05 snapshot 67200/133815 elapsed=680.6s
+L05 snapshot 68800/133815 elapsed=694.0s
+L05 snapshot 70400/133815 elapsed=708.4s
+L05 snapshot 72000/133815 elapsed=724.3s
+L05 snapshot 73600/133815 elapsed=739.5s
+L05 snapshot 75200/133815 elapsed=756.5s
+L05 snapshot 76800/133815 elapsed=773.1s
+L05 snapshot 78400/133815 elapsed=788.0s
+L05 snapshot 80000/133815 elapsed=804.0s
+L05 snapshot 81600/133815 elapsed=822.5s
+L05 snapshot 83200/133815 elapsed=843.5s
+L05 snapshot 84800/133815 elapsed=859.5s
+L05 snapshot 86400/133815 elapsed=877.5s
+L05 snapshot 88000/133815 elapsed=898.0s
+L05 snapshot 89600/133815 elapsed=919.6s
+L05 snapshot 91200/133815 elapsed=936.5s
+L05 snapshot 92800/133815 elapsed=953.1s
+L05 snapshot 94400/133815 elapsed=970.7s
+L05 snapshot 96000/133815 elapsed=984.8s
+L05 snapshot 97600/133815 elapsed=1000.6s
+L05 snapshot 99200/133815 elapsed=1019.3s
+L05 snapshot 100800/133815 elapsed=1034.9s
+L05 snapshot 102400/133815 elapsed=1052.8s
+L05 snapshot 104000/133815 elapsed=1068.4s
+L05 snapshot 105600/133815 elapsed=1084.6s
+L05 snapshot 107200/133815 elapsed=1098.6s
+L05 snapshot 108800/133815 elapsed=1111.6s
+L05 snapshot 110400/133815 elapsed=1127.0s
+L05 snapshot 112000/133815 elapsed=1141.5s
+L05 snapshot 113600/133815 elapsed=1157.4s
+L05 snapshot 115200/133815 elapsed=1172.9s
+L05 snapshot 116800/133815 elapsed=1188.3s
+L05 snapshot 118400/133815 elapsed=1203.7s
+L05 snapshot 120000/133815 elapsed=1222.1s
+L05 snapshot 121600/133815 elapsed=1239.8s
+L05 snapshot 123200/133815 elapsed=1254.4s
+L05 snapshot 124800/133815 elapsed=1268.2s
+L05 snapshot 126400/133815 elapsed=1287.9s
+L05 snapshot 128000/133815 elapsed=1304.2s
+L05 snapshot 129600/133815 elapsed=1321.4s
+L05 snapshot 131200/133815 elapsed=1337.6s
+L05 snapshot 132800/133815 elapsed=1352.7s
+Completed /home/lux1/noise-worktrees/p75_supervision_rebuild_20260929/outputs/codex/p75_supervision_rebuild_20260929/snapshot
