@@ -1,0 +1,73 @@
+{
+  "experiment_id": "P75_PATCH_READOUT",
+  "stage": "repechage_20260921",
+  "date": "2026-09-28",
+  "branch": "codex/p75_mechanisms_20260927",
+  "status": "gpu_training_running",
+  "user_instruction": "启动p75训练 (user lifted the 2026-09-27 GPU pause)",
+  "launch": {
+    "command": "python3 scripts/run_p75_patch_readout.py --phase train --execute-gpu",
+    "screen_session": "p75_patch",
+    "capture_log": "outputs/codex/p75_mechanisms_20260927/launch_patch_readout.log",
+    "phase_log": "outputs/codex/p75_mechanisms_20260927/runs/P75_PATCH_READOUT/p75_train.log",
+    "trainer_log": "outputs/codex/p75_mechanisms_20260927/runs/P75_PATCH_READOUT/seed42/logs/train.log",
+    "started_local": "2026-09-28T12:25:13+08:00",
+    "first_step_audit": {
+      "time": "2026-09-28T12:25:58+08:00",
+      "head_grad": 0.035027,
+      "adapter_grad": 0.0,
+      "visual_grad": 31.851227,
+      "verdict": "passed"
+    },
+    "observed_rate_at_step_40": "20 optimizer updates per 204 s (~131 updates/epoch)"
+  },
+  "runtime": {
+    "device": "NVIDIA GeForce RTX 4070 Laptop GPU 8188 MiB",
+    "gpu_memory_used": "3.34 GiB",
+    "torch": "2.12.1+cu126",
+    "python": "3.10.12",
+    "gpu_health_probe": "_gpu_smoke.py 90 s: SMOKE OK iters=63565 last_grad_norm=0.0484 peak_mem=233MB"
+  },
+  "binding": {
+    "config": "outputs/codex/p75_mechanisms_20260927/configs/P75_PATCH_READOUT.yaml",
+    "config_sha256": "9411f236b70046e70c6af98e15a37aca9927002b27d6b850592b750a2401d57d",
+    "runner": "scripts/run_p75_patch_readout.py",
+    "runner_sha256_after_fix": "859aaf6645cee49c4053708e2fce97c2a9791714d0f36d35709d9376206bee29",
+    "implementation": "scripts/p75_runtime/p75_patch_readout.py",
+    "implementation_sha256": "44f835782663802464b148bccaef90c8c2c2aeab0936409aa35cad977a49543e",
+    "framework_commit": "f050ecb59e0a885da0b43cdc6c8c316953fb5e7d",
+    "parent_checkpoint": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus/local_parent/RM_LP/seed42/checkpoints/best.pt",
+    "parent_sha256": "d5cb8f5265754fd900d3efde23e24fefbcf616c747f2cab13e4dc2201fdd689b",
+    "parent_epoch": 20
+  },
+  "model": {
+    "input_resolution": 384,
+    "epochs": 16,
+    "batch_size": 4,
+    "gradient_accumulation_steps": 256,
+    "effective_batch": 1024,
+    "amp": true,
+    "peft_mode": "full_finetune",
+    "patch_readout": "single_head_zero_residual_v1",
+    "trainable_parameters": 86098927,
+    "total_parameters": 88496623
+  },
+  "blocking_bug_found_and_fixed": {
+    "symptom": "FileExistsError: Run directory exists: .../runs/P75_PATCH_READOUT/seed42. Use --overwrite or --resume.",
+    "cause": "Both queue runners created their capture log inside RUN (log.parent.mkdir) before invoking aegis_clip.cli.train, and trainer.train refuses to start when RUN already exists. Every fresh --phase train aborted before the first step; the CPU preparation rounds never exercised this path.",
+    "fix": "Added phase_log() to scripts/run_p75_patch_readout.py and scripts/run_p75_full_sam.py: captured phase stdout is written beside RUN (same experiment directory), never inside it. The trainer keeps exclusive ownership of RUN.",
+    "files_changed": [
+      "scripts/run_p75_patch_readout.py",
+      "scripts/run_p75_full_sam.py",
+      "tests/test_p75_runner_logs.py"
+    ],
+    "verification": "python3 -m pytest tests/test_p75_patch_readout.py tests/test_p75_hard_support.py tests/test_p75_sam.py tests/test_p75_runner_logs.py -q -> 9 passed",
+    "identity_note": "run_p75_*.py are not listed in project.p75_implementation_files, so this fix does not change the frozen P75 preparation identity; preflight still passes."
+  },
+  "not_started": [
+    "P75_FULL_SAM (same GPU; queued, not launched concurrently)",
+    "P75_PATCH_READOUT cache/evaluate/deliver phases"
+  ],
+  "final_result": null,
+  "submission_available": false
+}

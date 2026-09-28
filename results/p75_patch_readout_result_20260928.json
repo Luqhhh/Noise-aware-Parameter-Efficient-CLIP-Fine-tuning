@@ -1,0 +1,81 @@
+{
+  "experiment_id": "P75_PATCH_READOUT",
+  "stage": "repechage_20260921",
+  "date": "2026-09-28",
+  "branch": "codex/p75_mechanisms_20260927",
+  "status": "closed_below_gate",
+  "verdict": "Fails the preregistered fixed local delivery gate. Decoded macro is 0.0074 pp above the incumbent, net +2/14,880 validation images (184 corrections, 182 regressions). The +0.10 pp center-view advantage visible at epoch 16 does not survive the fixed horizontal_flip + T=1.4 + validation-fitted prior0.60 decode. No package, no platform slot, no parameter scan.",
+  "training": {
+    "command": "python3 scripts/run_p75_patch_readout.py --phase train --execute-gpu",
+    "screen_session": "p75_patch",
+    "started_local": "2026-09-28T12:25:13+08:00",
+    "epochs_completed": 16,
+    "successful_optimizer_updates": 2096,
+    "selected_epoch": 14,
+    "evaluation_every": 2,
+    "wall_clock_hours": 10.8,
+    "crashes": 0
+  },
+  "center_curve_raw_macro_micro": {
+    "2": [0.7009852528572083, 0.7110214829444885],
+    "4": [0.726404, 0.736425],
+    "6": [0.740493, 0.750605],
+    "8": [0.743678, 0.754301],
+    "10": [0.750701, 0.761828],
+    "12": [0.751576, 0.7625],
+    "14": [0.753523, 0.764315],
+    "16": [0.753444, 0.764247]
+  },
+  "l05_same_round_control_raw_macro": {
+    "2": 0.698267, "4": 0.722021, "6": 0.737505, "8": 0.741262,
+    "10": 0.748996, "12": 0.751091, "14": 0.752358, "16": 0.752497
+  },
+  "center_lead_over_l05_macro_pp": {
+    "2": 0.2718, "4": 0.4383, "6": 0.2988, "8": 0.2416,
+    "10": 0.1705, "12": 0.0485, "14": 0.1165, "16": 0.0947
+  },
+  "decoded_result": {
+    "protocol": "horizontal_flip:mean_probabilities:t=1.4:validation_fitted_prior=0.6",
+    "macro": 0.7583388090133667,
+    "micro": 0.7666666507720947,
+    "incumbent_l05_t14_p060_macro": 0.7582651238982523,
+    "incumbent_l05_t14_p060_micro": 0.7665322580645161,
+    "delta_macro_pp": 0.0074,
+    "delta_micro_pp": 0.0134,
+    "gate_macro_required": 0.7612651238982523,
+    "gate_micro_required": 0.7665322580645161,
+    "gate_macro_shortfall_pp": 0.2926,
+    "gate_micro": "passed_marginally"
+  },
+  "paired_validation": {
+    "corrections": 184,
+    "regressions": 182,
+    "net_correct": 2,
+    "validation_samples": 14880,
+    "classes_with_changes": 278,
+    "max_abs_per_class_net": 2,
+    "by_support_segment": {
+      "head": {"classes": 250, "samples": 5855, "corrections": 73, "regressions": 76, "net": -3},
+      "medium": {"classes": 250, "samples": 5012, "corrections": 56, "regressions": 56, "net": 0},
+      "tail": {"classes": 250, "samples": 4013, "corrections": 55, "regressions": 50, "net": 5}
+    }
+  },
+  "interpretation": [
+    "The patch readout is a real, consistently same-signed center-view effect (positive at all eight validation rounds) but it is small (mean +0.21 pp) and it is not what the delivery decode rewards.",
+    "The fixed decode consumed the entire center-view gain: +0.10 pp center over L05 at epoch 14 became +0.007 pp decoded, and the decoded flip/T=1.4/prior0.60 protocol is the preregistered comparator.",
+    "The paired comparison is indistinguishable from zero: net +2 images, no class beyond +/-2, no segment concentration (tail +5, head -3, medium 0).",
+    "Per project discipline this closes the fixed recipe. No stacking onto other mechanisms, no readout-variant scan, no seed replication for a 2-image effect."
+  ],
+  "artifacts": {
+    "checkpoint": "outputs/codex/p75_mechanisms_20260927/runs/P75_PATCH_READOUT/seed42/checkpoints/best.pt",
+    "checkpoint_sha256": "cd8cc13daa7fb319d35a90a5bc118056ba0bba359c9a230ab7dd47ca7e65157a",
+    "evaluation": "outputs/codex/p75_mechanisms_20260927/runs/P75_PATCH_READOUT/seed42/evaluation.json",
+    "evaluation_sha256": "b1c0052059485c8fad7c5ac00343feb657496adce2761dfe91ccb73f942dbdce",
+    "paired_validation": "outputs/codex/p75_mechanisms_20260927/runs/P75_PATCH_READOUT/seed42/paired_validation.json",
+    "paired_validation_sha256": "7a1f50a687db01ca3f37e3cfdb7600dc59dcc6a51634dcf9e2737271eaf978ce",
+    "val_branch_cache_sha256": "902a3a443634a847ce66023b6b711a7cc1009e5b8ae7ee3ce6014dde175b6d89",
+    "training_config_sha256": "9411f236b70046e70c6af98e15a37aca9927002b27d6b850592b750a2401d57d"
+  },
+  "submission_available": false,
+  "platform_score": null
+}

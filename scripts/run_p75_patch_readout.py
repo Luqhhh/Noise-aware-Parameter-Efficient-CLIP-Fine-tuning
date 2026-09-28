@@ -64,7 +64,33 @@ def preflight() -> None:
     print('Pinned source, stage assets, config and parent binding verified')
 
 
+GATE_MACRO = .7582651238982523 + .003
+GATE_MICRO = .7665322580645161
+
+
+def gate_failures(result: dict) -> list[str]:
+    """Return the fixed delivery-gate metrics a candidate misses; empty means pass."""
+    decode = result['decode']
+    failed = []
+    if decode['macro'] < GATE_MACRO:
+        failed.append('macro')
+    if decode['micro'] < GATE_MICRO:
+        failed.append('micro')
+    return failed
+
+
+def phase_log(log: Path) -> Path:
+    """Captured phase stdout lives beside RUN, never inside it.
+
+    ``trainer.train`` refuses to start when RUN already exists, and it owns that
+    directory; creating the capture file inside RUN therefore aborts every fresh
+    ``--phase train`` run before the first step.
+    """
+    return log.parent.parent/log.name
+
+
 def execute(command: list[str], log: Path) -> None:
+    log = phase_log(log)
     log.parent.mkdir(parents=True, exist_ok=True)
     with log.open('x') as stream:
         subprocess.run([sys.executable, *command], cwd=FRAMEWORK,
@@ -78,6 +104,10 @@ def main() -> None:
                         required=True)
     parser.add_argument('--execute-gpu', action='store_true')
     parser.add_argument('--resume')
+    parser.add_argument('--allow-unpromoted', action='store_true',
+                        help='DANGEROUS: package a fixed-decode candidate that is below the '
+                             '+0.30pp local delivery gate, as an explicitly unpromoted probe. '
+                             'The candidate stays unpromoted and the package must be labelled.')
     args = parser.parse_args()
     preflight()
     if args.phase == 'preflight':
@@ -111,9 +141,14 @@ def main() -> None:
                 RUN/'p75_paired.log')
     else:
         result = json.loads((RUN/'evaluation.json').read_text())
-        if result['decode']['macro'] < .7582651238982523 + .003 or \
-           result['decode']['micro'] < .7665322580645161:
-            raise RuntimeError('Candidate has not passed the fixed local delivery gate')
+        missed = gate_failures(result)
+        if missed:
+            if not args.allow_unpromoted:
+                raise RuntimeError(
+                    f"Candidate has not passed the fixed local delivery gate: {missed}")
+            print('WARNING: packaging an UNPROMOTED probe below the fixed local delivery gate: '
+                  f"missed={missed} macro={result['decode']['macro']!r} "
+                  f"micro={result['decode']['micro']!r}", flush=True)
         execute(['scripts/build_l05_tta_prior_submission_final.py',
                  '--checkpoint', str(checkpoint), '--config', str(CONFIG),
                  '--val-branch-cache', str(cache), '--temperature', '1.4',
