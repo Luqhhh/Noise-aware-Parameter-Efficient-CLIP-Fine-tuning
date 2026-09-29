@@ -16,7 +16,7 @@
 | [p75_supported_ce_preparation_20260929.md](p75_supported_ce_preparation_20260929.md) | CPU 实现准备与证据边界，不构成开训许可 |
 | [rematch_dataset_20260921.md](rematch_dataset_20260921.md) | 当轮数据集元信息：规模、路径、SHA-256 与迁移状态 |
 | [lessons_learned.md](lessons_learned.md) | 可迁移经验与方法论教训（**开新实验前建议先读**） |
-| [../README.md](../README.md) | 项目摘要、快速上手、文档地图 |
+| [../README.md](../README.md) | 最简通用项目说明 |
 | [../AGENTS.md](../AGENTS.md)、[../CLAUDE.md](../CLAUDE.md) | 面向 agent 的指引、搜索与 Git 约定 |
 | [../COMPETITION_RULES_AGENT.md](../COMPETITION_RULES_AGENT.md) | 比赛规则全文 |
 | [../results/rematch_submission_registry.csv](../results/rematch_submission_registry.csv) | 平台提交登记表 |
