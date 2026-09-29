@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "experiment_id": "P75_MASK_E6_EXTENSION",
+  "status": "verified_for_publication",
+  "experiment_commit": "654ba2b3381b863b108a55894bec709b2adaa583",
+  "experiment_branch": "codex/p75_mask_e6_execution_20260929",
+  "experiment_branch_push_verified": true,
+  "delivery_branch": "codex/p75_mask_e6_delivery_20260929",
+  "integration_base_commit": "9b08d97ac6edc342fdce94c75273c182418227b9",
+  "integration_mode": "git pull --rebase --autostash origin main",
+  "checks": {
+    "archive_sha256_verified": 49,
+    "frozen_manifest_files_verified": 534,
+    "prediction_rows": 14880,
+    "classes": 750,
+    "all_groups_and_per_class_metrics_recomputed": true,
+    "checkpoint_cache_and_continuation_bindings_verified": true,
+    "paired_training_order_updates_and_lr_verified": true,
+    "successful_final_updates_per_arm": 786,
+    "paired_extension_updates": 524,
+    "used_seconds": 11657.457608794968,
+    "budget_seconds": 21600,
+    "corrected": 24,
+    "regressed": 35,
+    "net": -11,
+    "remaining_proxy_net": 0,
+    "bio_dominant_net": 0,
+    "classes_with_positive_net": 23,
+    "classes_with_negative_net": 34,
+    "classes_with_zero_net": 693,
+    "platform_uploaded": false,
+    "new_full_candidate": false
+  },
+  "tests": {
+    "command": "python3 -m pytest tests/test_p75_pipeline.py tests/test_p75_text_page_runtime.py tests/test_p75_semantic_pair.py -q",
+    "before_merge": {
+      "passed": 22,
+      "failed": 0,
+      "seconds": 4.47
+    },
+    "after_merge": {
+      "passed": 22,
+      "failed": 0,
+      "seconds": 5.14
+    }
+  },
+  "verification_command": "python3 results/p75_mask_e6_execution_20260929/verify_delivery.py --repo /tmp/noise-p75-e6-delivery-20260929 --runtime /home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929",
+  "diff_check_command": "git diff --check --cached",
+  "csv_archive_format": "Original CRLF and SHA256 preserved; directory-local attributes permit CRLF while retaining other whitespace checks.",
+  "incumbent_package": {
+    "csv": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+    "zip": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip",
+    "rows": 37444,
+    "existing_validation": "results/p75_supervision_rebuild_20260929/submission_check.log",
+    "existing_checks_passed": 9,
+    "regenerated": false,
+    "revalidated": false
+  },
+  "scope": {
+    "new_training": false,
+    "new_full_candidate": false,
+    "platform_uploaded": false
+  }
+}

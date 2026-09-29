@@ -33,3 +33,72 @@ python3 scripts/p75_pipeline_service.py --out outputs/codex/p75_mask_e6_executio
 ## 冻结启动门禁
 
 实测10次local更新，测量任务耗时252.583秒；更新区间实测22.319–22.948秒，采用最慢区间×1.2=27.53719秒/更新。两臂验证预留600秒（旧同配方两臂实测合计275.829秒），启动/保存/报告开销预留900秒。连同测量总估算16182.069秒（4.495小时），低于17,280秒门槛；新预算保持21,600秒。22项针对性测试通过。
+
+## 终态
+
+两臂从各自E4恢复，E5和E6各131次更新，至E6累计786次；两臂样本顺序、实际更新和学习率一致。
+E5保存完整状态及统计，E6使用同一固定Flip/T1.4/prior0.60流程，各自拟合验证侧prior。
+全量原标签评价如下，分组重叠，不能相加：
+
+| 验证组 | 张数 | control macro / micro | masked macro / micro | 修正 / 退化 / 净 |
+|---|---:|---:|---:|---:|
+| 全量 | 14,880 | 74.2950% / 75.0672% | 74.2124% / 74.9933% | 24 / 35 / −11 |
+| 命中内容代理 | 132 | 17.9365% / 21.2121% | 9.3651% / 12.8788% | 0 / 11 / −11 |
+| 未命中内容代理 | 14,748 | 74.6967% / 75.5492% | 74.6862% / 75.5492% | 24 / 24 / 0 |
+| 生物主导代理 | 13,600 | 75.3344% / 76.6838% | 75.3279% / 76.6838% | 19 / 19 / 0 |
+
+全量macro差−0.0827pp、micro差−0.0739pp；净−11集中于命中代理组，未命中与生物主导代理均净0。
+全部750类已重算：23类净正、34类净负、693类净0。代理不是真值，复用验证集也不构成独立留出证据。
+本轮未观察到预先指定目标代理上的净改善，判断`close_recipe_no_full_training`；不晋级完整训练。
+B因缺少已有绑定flip特征未启动，无B负结果；没有新平台成绩或新完整候选。
+
+逐样本预测、全部分组和逐类结果见
+[predictions.csv](../results/p75_mask_e6_execution_20260929/A/predictions.csv)、
+[paired.csv](../results/p75_mask_e6_execution_20260929/A/paired.csv)、
+[report.json](../results/p75_mask_e6_execution_20260929/A/report.json)。
+
+任务状态与成本：
+
+```json
+{
+  "status": "local_result",
+  "used_seconds": 11657.457608794968,
+  "preflight_seconds": 252.58251099599875,
+  "cost_gate": {
+    "estimated_seconds": 16182.068930457608,
+    "budget_seconds": 21600,
+    "reserve_fraction": 0.2,
+    "fits": true
+  },
+  "authorization_sha256": "0ea623b919c6b29197f8c31077fa642ce1ba56f7f104d9b7f7f77508bc6489b3",
+  "local_gpu": "NVIDIA GeForce RTX 4070 Laptop GPU, 8188 MiB"
+}
+```
+
+## 发布复核与交付
+
+终态原始提交`654ba2b3381b863b108a55894bec709b2adaa583`已推送到
+`codex/p75_mask_e6_execution_20260929`。发布使用独立目录
+`/tmp/noise-p75-e6-delivery-20260929`、分支`codex/p75_mask_e6_delivery_20260929`，
+从最新`origin/main`开始，先以自动`git pull --rebase --autostash origin main`同步，再合并终态提交。
+README保持现行最简说明，结果只更新本执行记录、当前执行入口和`results/`。
+归档CSV保留原始CRLF及SHA，目录内`.gitattributes`仅允许标准CSV记录终止符，其余空白检查保留。
+
+本次核对49项归档SHA、534项冻结输入/源文件、14,880行身份与顺序、全部分组和750类指标、
+两臂权重/缓存/续接状态绑定、E5/E6批次顺序/更新/学习率、预算终态。22项针对性测试通过。
+详细复核结果见[发布验证记录](../results/p75_mask_e6_execution_20260929/delivery_verification.json)。
+确切复核命令（仅CPU/只读，不启动训练或重编码）：
+
+```bash
+python3 -m pytest tests/test_p75_pipeline.py tests/test_p75_text_page_runtime.py tests/test_p75_semantic_pair.py -q
+python3 results/p75_mask_e6_execution_20260929/verify_delivery.py \
+  --repo /tmp/noise-p75-e6-delivery-20260929 \
+  --runtime /home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929
+git diff --check --cached
+```
+
+现役可提交包继续引用
+`/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv`
+和同目录`submission.zip`，37,444行、9/9既有校验见
+[提交校验日志](../results/p75_supervision_rebuild_20260929/submission_check.log)。
+本段未生成E6完整候选或新的测试提交包，不把验证预测表当作比赛提交；发布后在检查点暂停。

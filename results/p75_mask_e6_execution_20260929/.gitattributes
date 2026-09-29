@@ -1,0 +1,2 @@
+# Preserve standard CSV CRLF terminators and keep other whitespace checks.
+*.csv whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

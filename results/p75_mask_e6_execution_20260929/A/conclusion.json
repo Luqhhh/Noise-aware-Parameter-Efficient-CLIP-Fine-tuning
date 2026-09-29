@@ -1,0 +1,9 @@
+{
+  "status": "local_result",
+  "decision": "close_recipe_no_full_training",
+  "automatic_training_allowed": false,
+  "automatic_platform_upload": false,
+  "concentration_review_required": true,
+  "independent_holdout_evidence": false,
+  "caveat": "23-class-only gains do not promote; review all per-class changes. B negative cannot disprove FT masking."
+}

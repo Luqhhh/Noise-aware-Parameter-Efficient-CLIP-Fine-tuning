@@ -1,0 +1,124 @@
+{
+  "status": "local_result",
+  "used_seconds": 11657.457608794968,
+  "preflight_seconds": 252.58251099599875,
+  "history": [
+    {
+      "argv": [
+        "-m",
+        "aegis_clip.cli.train",
+        "--config",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/control.json",
+        "--resume",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/control_resume_E4.pt"
+      ],
+      "name": "control_E5",
+      "started_unix": 1790682374.8172624,
+      "pid": 259294,
+      "seconds": 3016.554841461999,
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "-m",
+        "aegis_clip.cli.train",
+        "--config",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/masked.json",
+        "--resume",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/masked_resume_E4.pt"
+      ],
+      "name": "masked_E5",
+      "started_unix": 1790685391.6117291,
+      "pid": 263684,
+      "seconds": 2618.852138634,
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "-m",
+        "aegis_clip.cli.train",
+        "--config",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/control.json",
+        "--resume",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/runs/P75_MASK_E6_CONTROL/seed42/checkpoints/last.pt"
+      ],
+      "name": "control_E6",
+      "started_unix": 1790688010.7812393,
+      "pid": 271565,
+      "seconds": 2715.9300790209963,
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "-m",
+        "aegis_clip.cli.train",
+        "--config",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/masked.json",
+        "--resume",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/runs/P75_MASK_E6_MASKED/seed42/checkpoints/last.pt"
+      ],
+      "name": "masked_E6",
+      "started_unix": 1790690726.8893285,
+      "pid": 291271,
+      "seconds": 2804.831847056994,
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "scripts/cache_validation_tta_logits.py",
+        "--checkpoint",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/runs/P75_MASK_E6_CONTROL/seed42/checkpoints/epoch_6.pt",
+        "--config",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/control.json",
+        "--output",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/runs/P75_MASK_E6_CONTROL/seed42/val_epoch_6.pt",
+        "--tta-temperature",
+        "1.4",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "32",
+        "--num-workers",
+        "2"
+      ],
+      "name": "control_decode",
+      "started_unix": 1790693532.0078712,
+      "pid": 296880,
+      "seconds": 117.37737547898723,
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "scripts/cache_validation_tta_logits.py",
+        "--checkpoint",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/runs/P75_MASK_E6_MASKED/seed42/checkpoints/epoch_6.pt",
+        "--config",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/masked.json",
+        "--output",
+        "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/runs/P75_MASK_E6_MASKED/seed42/val_epoch_6.pt",
+        "--tta-temperature",
+        "1.4",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "32",
+        "--num-workers",
+        "2"
+      ],
+      "name": "masked_decode",
+      "started_unix": 1790693649.446887,
+      "pid": 296971,
+      "seconds": 109.65913060499588,
+      "returncode": 0
+    }
+  ],
+  "current": null,
+  "cost_gate": {
+    "estimated_seconds": 16182.068930457608,
+    "budget_seconds": 21600,
+    "reserve_fraction": 0.2,
+    "fits": true
+  },
+  "authorization_sha256": "0ea623b919c6b29197f8c31077fa642ce1ba56f7f104d9b7f7f77508bc6489b3",
+  "local_gpu": "NVIDIA GeForce RTX 4070 Laptop GPU, 8188 MiB"
+}
