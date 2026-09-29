@@ -1,0 +1,37 @@
+{
+  "repository": "https://github.com/WRw5w/aic_new",
+  "commit": "fdb42ee9add3c06650bcdf4c256df32a63b1f5d0",
+  "strategy": "b448_aligned formal v2",
+  "reported_platform_score": 78.8561,
+  "score_stage": "initial",
+  "score_independently_reproduced": false,
+  "historical_assets_downloaded": false,
+  "files": {
+    "README.md": "b0824611fb794aa7231309461c838d44750ebe72e185967e3a1b6995077ca6f9",
+    "docs/REPRODUCE_CHAMPION.md": "ac5eb2989a1407f0444ef5556f804ad0418ba389db0d77d7b63b7f3ad00101ca",
+    "docs/SCORECARD.csv": "75d6caef1a978668e65c8aebcfc320e069c444c0089224812f1e8b04a60a7fcd",
+    "docs/ARTIFACTS.csv": "84047bab87de141e31312fa75c9964fbc5bd7e024f06d9a4fd50d66e2a96035a",
+    "project/finetune_lora.py": "cd9e0ab1d8704dee3aa0afc8cffed7417932f998cdda3f2d87c571e1cf3f7842",
+    "project/robustft/models.py": "0f15d002da25d3d099f2f2303711aae88920424e8a903e3f36a67a70d2e3db43",
+    "project/robustft/denoise.py": "4c07608b40498d63a2d22e76a0a3be7822086ef5bceac566d0b7dec1536aa668",
+    "project/robustft/engine.py": "7922876c73af76fd2c5c93a51c33c3a143871c70b2f7b64b15988121c1c27638",
+    "project/robustft/data.py": "0e634dc726c55059c3ef6b9b7017a116d4711a5287b06855fe30870df20e3395",
+    "project/robustft/features.py": "49c348665ff7cd0feca0b02c498730c6f8a974d819f8ad5bea77b6c37a7e7f94",
+    "project/tools/tta_predict.py": "d14d37a5c653f4f0e5299217126adc4ad4e0839143ac5fdc89f1597491aa6fa5",
+    "project/tools/swa_soup.py": "b1f15da532a2f67af8ce6346dc50a76cefcf44bb0a0abbfa5242341ccfa3dbfe",
+    "project/remote_posembed_exp/RESULTS.md": "0d98496a99f6d95b789a4e134a17978bba4990a4cd14e05bfd9304eff1018e41",
+    "project/runs/aic_b448_aligned_formal_v2_20260713/collected/provenance.submit.json": "5c8ff4652cda36fff26835c68c23995e3b7c7a16acae1b7808e31e45cf735855"
+  },
+  "claimed_reference_checkpoint": {
+    "sha256": "8a349c46647166dcb4c0758f26cc8bde1926dfc7ed3b5b2a57c814b9d0d0c73a",
+    "url": "https://github.com/WRw5w/aic_new/releases/download/handoff-v1-20260816/full.pt",
+    "downloaded": false,
+    "used": false
+  },
+  "overlap_review": {
+    "fetched_origin_main": "f14b4fe2feb584a2dd82a80c7017b74328cebd7b",
+    "existing_b448_implementation": false,
+    "shared_model_primitive": "AdditiveLowRankParametrization",
+    "existing_palm_preparation": "separate strategy; no shared edits or compute"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "experiment_id": "B448_STRATEGY_20260929",
+  "scope": "strategy implementation only; user explicitly prohibited GPU startup",
+  "branch": "codex/historical_aic_b448_20260929",
+  "upstream_commit": "fdb42ee9add3c06650bcdf4c256df32a63b1f5d0",
+  "base_main_commit": "f14b4fe2feb584a2dd82a80c7017b74328cebd7b",
+  "status": "engineering_verified",
+  "cpu_checks": "44 passed",
+  "real_official_cpu_forward": {
+    "image_size": 448,
+    "output_shape": [
+      1,
+      750
+    ],
+    "adapted_modules": 48,
+    "trainable_parameters": 5102593,
+    "cuda_initialized": false
+  },
+  "real_training_started": false,
+  "gpu_started": false,
+  "current_stage_local_score": null,
+  "current_stage_platform_score": null,
+  "new_competition_package": null,
+  "upstream_score": 78.8561,
+  "upstream_score_stage": "initial",
+  "implementation_commit": null,
+  "scheme_push_status": "pending",
+  "main_integration_commit": null,
+  "main_push_status": "pending",
+  "current_valid_package": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/",
+  "existing_package_validation": "results/p75_supervision_rebuild_20260929/submission_check.log; 37444 rows; 9/9; cited, not rerun",
+  "stop_at": "CPU engineering checkpoint; no automatic GPU probe, full training or submission"
+}
