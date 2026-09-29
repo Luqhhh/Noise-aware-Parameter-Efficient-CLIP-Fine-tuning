@@ -100,6 +100,20 @@ def test_original_label_sampler_keeps_sqrt_class_exposure_and_frozen_replay():
     np.testing.assert_array_equal(draws, paired_draws(labels, 2, 13, 2, 96))
 
 
+def test_image_loader_keeps_pixels_when_exif_metadata_is_malformed(tmp_path, monkeypatch):
+    path = tmp_path / "valid_pixels.jpg"
+    Image.new("RGB", (8, 8), (120, 30, 10)).save(path)
+
+    def reject_exif(image):
+        raise SyntaxError("not a TIFF file")
+
+    monkeypatch.setattr(training_utils.ImageOps, "exif_transpose", reject_exif)
+    loaded = training_utils.load_image(path)
+    assert loaded.mode == "RGB" and loaded.size == (8, 8)
+    with Image.open(path) as source:
+        assert loaded.getpixel((0, 0)) == source.convert("RGB").getpixel((0, 0))
+
+
 def test_image_replay_is_independent_of_worker_rng_and_arm(tmp_path):
     image = np.arange(32 * 32 * 3, dtype=np.uint8).reshape(32, 32, 3)
     Image.fromarray(image).save(tmp_path / "a.png")
