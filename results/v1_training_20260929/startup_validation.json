@@ -23,5 +23,17 @@
   "pseudo_labels": 78,
   "targets_preparation_seconds": 10.284095449009328,
   "runtime_status": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/status.json",
-  "submission_delivered": false
+  "submission_delivered": false,
+  "training_started": true,
+  "first_health_observation": {
+    "batch": 223,
+    "batches": 3722,
+    "elapsed_seconds": 61.99726294800348,
+    "epoch": 1,
+    "epoch_seconds": 61.995571965002455,
+    "epochs": 12,
+    "loss": 3.0935047405183047,
+    "optimizer_steps": 220,
+    "status": "training"
+  }
 }
