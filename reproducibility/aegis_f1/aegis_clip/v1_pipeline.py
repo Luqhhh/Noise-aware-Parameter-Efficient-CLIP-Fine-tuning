@@ -8,6 +8,7 @@ import json
 import random
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -190,9 +191,13 @@ def prepare_targets(context, device):
     labels = torch.tensor([int(r["label"]) for r in context.train], device=device)
     groups = {name: i for i, name in enumerate(sorted({r["content_group"] for r in context.train}))}
     group_ids = torch.tensor([groups[r["content_group"]] for r in context.train], device=device)
+    started = time.monotonic()
+    print(f"group-excluded kNN: {len(features)} training rows", flush=True)
     agreement, prediction = knn_signals(features, labels, features, labels, len(context.classes),
         k=cfg["knn_k"], query_groups=group_ids, gallery_groups=group_ids,
         query_chunk=cfg["query_chunk"], gallery_chunk=cfg["gallery_chunk"])
+    knn_seconds = time.monotonic() - started
+    print(f"kNN complete in {knn_seconds:.1f}s; preparing teacher", flush=True)
     initial = class_top_keep(agreement, labels, len(context.classes), cfg["keep_ratio"])
     initial |= agreement >= cfg["high_agreement_floor"]
     teacher = CosineHead(features.shape[1], len(context.classes), dropout=.1).to(device)
@@ -224,7 +229,10 @@ def prepare_targets(context, device):
         original_samples=len(labels), clean_labels_known=False)
     path = Path(context.config["output"]["root"]) / "targets.pt"
     save_artifact(path, targets, context.binding)
-    atomic_json_dump(targets["stats"], path.parent / "target_report.json")
+    coverage = torch.bincount(targets["targets"][targets["weights"] > 0], minlength=len(context.classes))
+    atomic_json_dump(dict(targets["stats"], knn_seconds=knn_seconds,
+        preparation_seconds=time.monotonic() - started, classes_with_targets=int((coverage > 0).sum()),
+        target_counts=coverage.tolist()), path.parent / "target_report.json")
     return path
 
 
@@ -341,10 +349,12 @@ def train_loop(model, loader, targets, cfg, binding, output, *, device="cpu", re
     probabilities = target_probabilities(tensor_targets["targets"], tensor_targets["labels"],
         tensor_targets["original_alpha"], classes, cfg["label_smoothing"])
     current = ema.state if ema else trainable_state(model, cpu=False)
+    run_started = time.monotonic()
     for epoch in range(start, cfg["epochs"] + 1):
         model.train()
         losses, steps = [], 0
-        for images, indices in loader:
+        epoch_started, last_report = time.monotonic(), 0.0
+        for batch, (images, indices) in enumerate(loader, 1):
             images, indices = images.to(device), indices.to(device)
             weights = tensor_targets["weights"][indices]
             permutation = torch.randperm(len(images), device=device)
@@ -366,11 +376,22 @@ def train_loop(model, loader, targets, cfg, binding, output, *, device="cpu", re
                 if ema:
                     ema.update(trainable_state(model, cpu=False))
             losses.append(float(loss.detach()))
+            now = time.monotonic()
+            if batch == 1 or batch == len(loader) or now - last_report >= 60:
+                progress = dict(status="training", epoch=epoch, epochs=cfg["epochs"],
+                    batch=batch, batches=len(loader), optimizer_steps=steps,
+                    loss=float(np.mean(losses)), epoch_seconds=now - epoch_started,
+                    elapsed_seconds=now - run_started)
+                atomic_json_dump(progress, output / "progress.json")
+                print(json.dumps(progress), flush=True)
+                last_report = now
         current = ema.state if ema else trainable_state(model, cpu=False)
         if swa and epoch >= cfg["swa_start"]:
             swa.update(current)
         metric = {}
         if evaluation:
+            atomic_json_dump(dict(status="evaluating", epoch=epoch, epochs=cfg["epochs"],
+                batch=len(loader), batches=len(loader)), output / "progress.json")
             with using_weights(model, current):
                 metric = evaluation(model)
         history.append(dict(epoch=epoch, loss=float(np.mean(losses)), optimizer_steps=steps, metrics=metric))
@@ -400,6 +421,9 @@ def train_loop(model, loader, targets, cfg, binding, output, *, device="cpu", re
         selected_metrics=selected_metrics, optimizer=None, scheduler=None, scaler=None, rng=None)
     final = output / "selected.pt"
     save_artifact(final, payload, binding)
+    atomic_json_dump(dict(status="training_complete", epochs=cfg["epochs"],
+        selected_checkpoint=str(final), elapsed_seconds=time.monotonic() - run_started),
+        output / "progress.json")
     return final
 
 
@@ -455,6 +479,19 @@ def calibrate(context, checkpoint, device):
                     logits_sha256=hashlib.sha256(logits.contiguous().numpy().tobytes()).hexdigest())
     path = Path(context.config["output"]["root"]) / "calibration.pt"
     save_artifact(path, artifact, context.binding)
+    train_counts = torch.bincount(torch.tensor([int(r["label"]) for r in context.train]),
+                                 minlength=len(context.classes))
+    calibrated = logits + bias * context.config["decode"]["bias_strength"]
+    atomic_json_dump(dict(samples=len(rows), partition="val_dev", views=context.config["decode"],
+        raw=accuracy_report(logits, labels, train_counts),
+        calibrated=accuracy_report(calibrated, labels, train_counts),
+        bias_fitted_on_this_split=True, independent_test_score=False, platform_score=None),
+        path.parent / "validation_report.json")
+    with (path.parent / "validation_predictions.csv").open("w", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["image_path", "label", "raw_prediction", "calibrated_prediction"])
+        writer.writerows(zip([r["image_path"] for r in rows], labels.tolist(),
+                            logits.argmax(1).tolist(), calibrated.argmax(1).tolist()))
     return path
 
 

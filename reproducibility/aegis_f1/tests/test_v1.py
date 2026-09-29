@@ -292,7 +292,7 @@ def test_calibrate_and_infer_complete_cpu_workflow_uses_bound_training_bias(tmp_
     context = SimpleNamespace(config=dict(model=dict(image_size=32),
         train=dict(batch_size=2, num_workers=0),
         decode=dict(scales=[32, 40, 48], flip=True, bias_iterations=20, bias_strength=1.),
-        output=dict(root=str(tmp_path / "output"))), calibration=rows,
+        output=dict(root=str(tmp_path / "output"))), calibration=rows, train=rows[::2],
         train_root=train_root, test_root=test_root, classes=["0000", "0001", "0002"],
         binding=dict(stage="synthetic_cpu"), manifest=dict(test_samples=3),
         reference=dict(data=dict(dataset_manifest=str(tmp_path / "dataset_manifest.json"), class_mapping=str(mapping))))
@@ -300,6 +300,14 @@ def test_calibrate_and_infer_complete_cpu_workflow_uses_bound_training_bias(tmp_
     path = pipeline.calibrate(context, checkpoint, "cpu")
     bias = load_artifact(path, context.binding)
     assert bias["test_data_used"] is False and bias["samples"] == 6
+    report = json.loads((path.parent / "validation_report.json").read_text())
+    assert report["samples"] == 6 and report["bias_fitted_on_this_split"] is True
+    assert report["independent_test_score"] is False and report["platform_score"] is None
+    from aegis_clip.v1_pipeline import read_rows
+    predictions = read_rows(path.parent / "validation_predictions.csv")
+    assert [r["image_path"] for r in predictions] == [r["image_path"] for r in rows]
+    actual_micro = np.mean([r["label"] == r["calibrated_prediction"] for r in predictions])
+    assert report["calibrated"]["micro"] == pytest.approx(actual_micro)
     out = pipeline.infer(context, checkpoint, "cpu")
     assert "All checks passed!" in (out / "submission_check.log").read_text()
     manifest = json.loads((out / "manifest.json").read_text())

@@ -167,7 +167,7 @@ def class_top_keep(scores, labels, classes, ratio=0.90):
 
 @torch.no_grad()
 def confident_keep(probs, labels):
-    """Upstream's conservative CL-style threshold rule, not cleanlab package.
+    """The team's conservative CL-style threshold rule.
 
     Classes absent from training cannot acquire a zero threshold and claim
     unrelated samples. Samples clearing no threshold retain their given label.
