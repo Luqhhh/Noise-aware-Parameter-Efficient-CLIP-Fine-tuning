@@ -1,0 +1,8 @@
+group,rows,control_macro,masked_macro,control_micro,masked_micro,F,D,net
+all,14880,,,,,,,
+selected_proxy,132,,,,,,,
+remaining_proxy,14748,,,,,,,
+high_hit_classes,419,,,,,,,
+bio_dominant,13600,,,,,,,
+bio_high_hit,332,,,,,,,
+bio_other_classes,13268,,,,,,,

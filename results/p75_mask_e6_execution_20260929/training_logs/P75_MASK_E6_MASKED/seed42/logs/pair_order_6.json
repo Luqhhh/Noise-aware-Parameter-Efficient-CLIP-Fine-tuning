@@ -1,0 +1,11 @@
+{
+  "attempted_updates": 786,
+  "epoch": 6,
+  "lr": [
+    0.0002777713196082878,
+    8.333139588248634e-06
+  ],
+  "order_sha256": "3734b5f289d7bad753e546b22b096efd4e043c001e31cdd58ec8bb9451d99209",
+  "rows": 133815,
+  "successful_updates": 786
+}

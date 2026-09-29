@@ -1,0 +1,13 @@
+{
+  "experiment_id": "P75_MASK_LP",
+  "status": "proposal",
+  "authorized": false,
+  "budget_seconds": 3600,
+  "blockers": [
+    "New CPU training authorization required",
+    "Fixed center+flip report requires existing bound flip feature cache; no image re-encoding allowed"
+  ],
+  "source_parent": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus/local_parent/RM_LP/seed42/checkpoints/best.pt",
+  "actual_config": "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/B/original_config.json",
+  "config": "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/B/config.json"
+}

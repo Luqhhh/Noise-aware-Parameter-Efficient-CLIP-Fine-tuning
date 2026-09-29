@@ -33,3 +33,25 @@ python3 scripts/p75_pipeline_service.py --out outputs/codex/p75_mask_e6_executio
 ## 冻结启动门禁
 
 实测10次local更新，测量任务耗时252.583秒；更新区间实测22.319–22.948秒，采用最慢区间×1.2=27.53719秒/更新。两臂验证预留600秒（旧同配方两臂实测合计275.829秒），启动/保存/报告开销预留900秒。连同测量总估算16182.069秒（4.495小时），低于17,280秒门槛；新预算保持21,600秒。22项针对性测试通过。
+
+## 终态
+
+**2026-09-29 P75_MASK_E6_EXTENSION E6 配对已完成：**全量净修正-11张，未命中代理净修正0张；判断 `close_recipe_no_full_training`。代理不是真值，无新平台成绩；B因缺少现有绑定flip特征未启动，不自动扩训或上传。 详见[执行记录](p75_mask_e6_execution_20260929.md)。
+
+任务状态与成本：
+
+```json
+{
+  "status": "local_result",
+  "used_seconds": 11657.457608794968,
+  "preflight_seconds": 252.58251099599875,
+  "cost_gate": {
+    "estimated_seconds": 16182.068930457608,
+    "budget_seconds": 21600,
+    "reserve_fraction": 0.2,
+    "fits": true
+  },
+  "authorization_sha256": "0ea623b919c6b29197f8c31077fa642ce1ba56f7f104d9b7f7f77508bc6489b3",
+  "local_gpu": "NVIDIA GeForce RTX 4070 Laptop GPU, 8188 MiB"
+}
+```

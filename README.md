@@ -1,6 +1,6 @@
 # Noise-Aware Parameter-Efficient CLIP Fine-Tuning
 
-**2026-09-29 P75_MASK_E6_EXTENSION 已授权：**新6小时预算已冻结，local步时测量计费252.6秒，保守总成本约4.50小时并通过20%余量门禁；正式两臂由各自E4恢复，后台流程按E5/E6共同边界执行并归档。B因缺少已有绑定flip特征未启动，不重编码补缺。尚无新E6识别结果或平台成绩，不自动C1/C2或上传。现役L05_T14_P060平台仍为 **66.94797564362783%**。实际进度见[执行记录](docs/p75_mask_e6_execution_20260929.md)，旧E4和预算保持不变。
+**2026-09-29 P75_MASK_E6_EXTENSION E6 配对已完成：**全量净修正-11张，未命中代理净修正0张；判断 `close_recipe_no_full_training`。代理不是真值，无新平台成绩；B因缺少现有绑定flip特征未启动，不自动扩训或上传。 详见[执行记录](docs/p75_mask_e6_execution_20260929.md)。
 
 当前为官方确认的复赛 **750 类**，148,695 张训练图、37,444 张测试图；资产来源见[数据集元信息](docs/rematch_dataset_20260921.md)。此前交付与实验指标见[README 状态沿革](docs/history/readme_status_before_local_only_20260929.md)。
 

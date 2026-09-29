@@ -1,0 +1,91 @@
+{
+  "project": {
+    "experiment_id": "P75_MASK_LP",
+    "stage": "repechage",
+    "seed": 42,
+    "data_version": "20260921"
+  },
+  "data": {
+    "class_mapping": "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+    "dataset_manifest": "/home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json",
+    "expected_official_train_samples": 148695,
+    "expected_test_samples": 37444,
+    "external_data": false,
+    "test_root": "/home/lux1/noise/test",
+    "test_usage": "inference_only",
+    "train_augmentation": "clip_center_crop",
+    "train_csv": "/home/lux1/noise/artifacts/stages/repechage/20260921/train_dev.csv",
+    "train_root": "/home/lux1/noise/train",
+    "val_csv": "/home/lux1/noise/artifacts/stages/repechage/20260921/val_dev.csv",
+    "validation_overlap_with_training": false
+  },
+  "features": {
+    "manifest_path": "/home/lux1/noise/artifacts/stages/repechage/20260921/features/manifest.json",
+    "paths_path": "/home/lux1/noise/artifacts/stages/repechage/20260921/features/image_paths.json",
+    "tensor_path": "/home/lux1/noise/artifacts/stages/repechage/20260921/features/features.pt"
+  },
+  "model": {
+    "backbone": "ViT-B/32",
+    "pretrained": "openai",
+    "num_classes": 750,
+    "feature_dim": 512,
+    "peft_mode": "frozen",
+    "use_cached_training": true,
+    "official_checkpoint": "/home/lux1/.cache/clip/ViT-B-32.pt"
+  },
+  "trust": {
+    "enabled": false
+  },
+  "longtail": {
+    "sampler_mode": "none",
+    "loss_reweighting": "none",
+    "balanced_softmax_tau": 0.0
+  },
+  "loss": {
+    "name": "cross_entropy",
+    "gce_q": 0.5,
+    "ce_warmup_epochs": 0,
+    "mixup_alpha": 0.0,
+    "mixup_probability": 0.0,
+    "feature_distillation_weight": 0.0
+  },
+  "train": {
+    "device": "cpu",
+    "deterministic": true,
+    "amp": false,
+    "epochs": 20,
+    "schedule_epochs": 20,
+    "batch_size": 256,
+    "num_workers": 0,
+    "loader_timeout": 120,
+    "pin_memory": false,
+    "head_lr": 0.005,
+    "head_weight_decay": 0.0001,
+    "backbone_lr": 0.0,
+    "backbone_weight_decay": 0.0001,
+    "lr_warmup_epochs": 0,
+    "max_grad_norm": 1.0,
+    "early_stop_patience": 0,
+    "save_epoch_checkpoints": false
+  },
+  "evaluation": {
+    "batch_size": 256,
+    "inference_batch_size": 128,
+    "selector_metric": "raw_macro",
+    "selection_policy": "best_selector",
+    "interval_epochs": 2,
+    "tiebreak_metric": "raw_micro",
+    "drift_penalty": 0.0,
+    "measure_flip_consistency": false,
+    "record_initial": false,
+    "evaluate_initial_checkpoint": false
+  },
+  "output": {
+    "root": "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/B"
+  },
+  "diagnostics": {
+    "longtail": {
+      "enabled": true
+    }
+  }
+}
