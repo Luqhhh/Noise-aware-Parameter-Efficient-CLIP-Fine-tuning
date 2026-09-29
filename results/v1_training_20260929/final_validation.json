@@ -37,7 +37,18 @@
     "v1_minus_l05_macro_pp": -0.092677415847775,
     "v1_minus_l05_micro_pp": -0.11421999282836826
   },
-  "platform_score": null,
+  "platform_score": 69.23405619057793,
+  "platform_score_unit": "percent",
+  "platform_score_source": "user_reported_2026-09-30",
+  "platform_submission_id": null,
+  "platform_package_binding_verified": false,
+  "platform_comparison_to_l05": {
+    "l05_score_percent": 66.94797564362783,
+    "v1_minus_l05_pp": 2.2860805469501,
+    "l05_correct": 25068,
+    "v1_correct_implied": 25924,
+    "v1_minus_l05_correct": 856
+  },
   "checkpoint": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training/selected.pt",
   "csv": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/submission/pred_results.csv",
   "zip": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/submission/submission.zip",
