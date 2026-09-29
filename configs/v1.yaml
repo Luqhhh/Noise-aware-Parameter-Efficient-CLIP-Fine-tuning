@@ -1,7 +1,7 @@
 project:
-  strategy_name: Aegis-Aligned448
+  strategy_name: v1
   strategy_origin: team_original
-  experiment_id: AEGIS_ALIGNED448_SWA_EXPERIMENTAL_20260929
+  experiment_id: V1_20260929
   stage: repechage
   data_version: '20260921'
   seed: 42
@@ -17,7 +17,7 @@ model:
   rank: 32
   alpha: 64.0
 denoise:
-  keep_ratio: 0.9
+  keep_ratio: 0.90
   knn_k: 16
   query_chunk: 128
   gallery_chunk: 8192
@@ -41,16 +41,13 @@ train:
   mixup_alpha: 0.2
   crop_min_scale: 0.8
   ema_decay: 0.999
-  swa_enabled: true
+  swa_enabled: false
   swa_start: 4
 decode:
-  scales:
-  - 448
-  - 512
-  - 576
+  scales: [448, 512, 576]
   flip: true
   bias_source: val_dev
   bias_iterations: 200
   bias_strength: 1.0
 output:
-  root: ../outputs/codex/aegis_aligned448_swa_experimental_20260929
+  root: ../outputs/codex/v1_20260929

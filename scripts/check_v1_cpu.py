@@ -8,8 +8,8 @@ from pathlib import Path
 
 import torch
 
-from aegis_clip.aligned448_pipeline import StageContext, load_recipe
-from aegis_clip.aligned448_strategy import build_classifier
+from aegis_clip.v1_pipeline import StageContext, load_recipe
+from aegis_clip.v1_strategy import build_classifier
 from aegis_clip.runtime import atomic_json_dump
 
 

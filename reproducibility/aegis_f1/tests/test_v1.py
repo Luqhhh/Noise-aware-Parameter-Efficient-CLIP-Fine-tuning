@@ -15,12 +15,12 @@ import torch
 from clip.model import VisionTransformer
 from torch.utils.data import DataLoader, TensorDataset
 
-from aegis_clip.aligned448_pipeline import (
+from aegis_clip.v1_pipeline import (
     Images, image_transform, load_artifact, load_recipe, save_artifact, seed_training,
     train_loop, validate_calibration, validate_rows,
 )
-from aegis_clip.aligned448_strategy import (
-    Aligned448Classifier, WeightAverage, aligned_positions, confident_keep, denoised_targets,
+from aegis_clip.v1_strategy import (
+    V1Classifier, WeightAverage, aligned_positions, confident_keep, denoised_targets,
     fit_training_bias, knn_signals, target_probabilities, trainable_state,
     weighted_mixup_loss,
 )
@@ -41,7 +41,7 @@ def tiny_model(seed=42):
     seed_training(seed)
     visual = VisionTransformer(input_resolution=32, patch_size=8, width=32,
                                layers=2, heads=4, output_dim=16)
-    return Aligned448Classifier(visual, 3, image_size=32, rank=2, alpha=4, blocks=2)
+    return V1Classifier(visual, 3, image_size=32, rank=2, alpha=4, blocks=2)
 
 
 def test_aligned_positions_preserve_cls_and_odd_grid_anchors():
@@ -58,7 +58,7 @@ def test_native_qkv_output_and_mlp_adapters_are_effective_and_frozen_base_stays_
     seed_training(42)
     visual = VisionTransformer(32, 8, 32, 2, 4, 16).float().eval()
     original = copy.deepcopy(visual)
-    model = Aligned448Classifier(visual, 3, image_size=32, rank=2, alpha=4, blocks=2)
+    model = V1Classifier(visual, 3, image_size=32, rank=2, alpha=4, blocks=2)
     images = torch.randn(4, 3, 32, 32)
     model.eval()
     torch.testing.assert_close(model.visual(images), original(images))
@@ -218,7 +218,7 @@ def test_real_training_loop_resume_matches_uninterrupted_ema_swa_and_valid_packa
     for name in a["selected_state"]:
         torch.testing.assert_close(a["selected_state"][name], b["selected_state"][name], rtol=0, atol=0)
     # Reconstruct the frozen initialization, then load selected trainable tensors.
-    from aegis_clip.aligned448_strategy import load_trainable_state
+    from aegis_clip.v1_strategy import load_trainable_state
     inference = tiny_model()
     load_trainable_state(inference, b["selected_state"])
     inference.eval()
@@ -242,10 +242,10 @@ def test_fixed_tta_crops_to_448_at_all_resize_scales_and_does_not_stretch():
 
 
 def test_recipe_swa_is_default_off_and_compute_requires_execute():
-    config = load_recipe(ROOT / "configs/rematch750_aegis_aligned448.yaml")
+    config = load_recipe(ROOT / "configs/v1.yaml")
     assert config["train"]["swa_enabled"] is False
     assert config["model"]["rank"] == 32 and config["model"]["blocks"] == 12
-    run = subprocess.run([sys.executable, "-m", "aegis_clip.cli.aligned448_strategy", "train",
+    run = subprocess.run([sys.executable, "-m", "aegis_clip.cli.v1", "train",
                           "--config", "/nonexistent", "--device", "cuda"], capture_output=True, text=True)
     assert run.returncode == 2 and "require --execute" in run.stderr
 
@@ -263,7 +263,7 @@ def test_image_symlink_escape_fails_without_reading_external_file(tmp_path):
 
 def test_calibrate_and_infer_complete_cpu_workflow_uses_bound_training_bias(tmp_path, monkeypatch):
     from PIL import Image
-    from aegis_clip import aligned448_pipeline as pipeline
+    from aegis_clip import v1_pipeline as pipeline
     train_root, test_root = tmp_path / "train", tmp_path / "test"
     rows = []
     for c in range(3):
@@ -312,7 +312,7 @@ def test_calibrate_and_infer_complete_cpu_workflow_uses_bound_training_bias(tmp_
 
 
 def test_target_pipeline_trains_teacher_on_training_partition_only(tmp_path):
-    from aegis_clip.aligned448_pipeline import prepare_targets
+    from aegis_clip.v1_pipeline import prepare_targets
     rng = torch.Generator().manual_seed(3)
     labels = torch.tensor([0, 0, 0, 1, 1, 1, 2, 2, 2])
     features = torch.eye(3)[labels] + .02 * torch.randn(9, 3, generator=rng)

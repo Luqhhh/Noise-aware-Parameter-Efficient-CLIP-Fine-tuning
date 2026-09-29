@@ -15,10 +15,10 @@ import torch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "reproducibility/aegis_f1"))
 sys.path.insert(0, str(ROOT / "scripts"))
-from aegis_resolution_ladder.core import check_checkpoint, logical_backward, training_utils, sample_weights
-from aegis_resolution_ladder.model import LocalFTClassifier
-from aegis_resolution_ladder.plan import authorize, check_weight_policy, check_split, cost_estimate, json_read, stage_plan
-from aegis_resolution_ladder.runtime import Budget, BudgetExpired, WeightAverage, choose_parent, train, using_weights, write_submission
+from v2.core import check_checkpoint, logical_backward, training_utils, sample_weights
+from v2.model import V2Classifier
+from v2.plan import authorize, check_weight_policy, check_split, cost_estimate, json_read, stage_plan
+from v2.runtime import Budget, BudgetExpired, WeightAverage, choose_parent, train, using_weights, write_submission
 from check_submission import check_csv, check_zip
 
 
@@ -68,7 +68,7 @@ def test_split_rejects_pixel_content_leakage():
 def test_stage_update_budget_resets_each_stage_and_counts_drop_last():
     expected = [(384,10,96,3e-5,5e-4),(448,6,96,1.5e-5,3e-4),(576,4,80,8e-6,2e-4),(576,5,80,4e-6,1.2e-4)]
     import yaml
-    from aegis_resolution_ladder.plan import STAGE_CONFIGS
+    from v2.plan import STAGE_CONFIGS
     files = ["s1_384.yaml","s2_448.yaml","s3_576.yaml","full_576.yaml"]
     for filename, (size, epochs, batch, bb, head) in zip(files, expected):
         cfg = yaml.safe_load((STAGE_CONFIGS / filename).read_text())
@@ -205,7 +205,7 @@ def test_checkpoint_rejects_wrong_phase_manifest_and_partial_parent(field, value
 
 def tiny_model(checkpointing):
     from clip.model import VisionTransformer
-    m = LocalFTClassifier.__new__(LocalFTClassifier)
+    m = V2Classifier.__new__(V2Classifier)
     torch.nn.Module.__init__(m)
     m.visual = VisionTransformer(224,32,64,2,4,32).float()
     m.head = torch.nn.Linear(32,7)
@@ -249,7 +249,7 @@ def test_submission_rejects_invalid_label_types_and_range(tmp_path,predictions):
 
 
 def test_budget_stop_is_explicit(monkeypatch):
-    import aegis_resolution_ladder.runtime as runtime
+    import v2.runtime as runtime
     monkeypatch.setattr(runtime.time,'monotonic',lambda:0)
     b=Budget(1)
     monkeypatch.setattr(runtime.time,'monotonic',lambda:2)
@@ -258,7 +258,7 @@ def test_budget_stop_is_explicit(monkeypatch):
 
 
 def test_prepared_recipe_is_strategy_only_not_author_data_or_cleanup():
-    r=json_read(ROOT/'configs/aegis_resolution_ladder_20260929/recipe.json')
+    r=json_read(ROOT/'configs/v2/recipe.json')
     assert r['strategy_only'] and r['execution_authorized'] is False
     assert r['split_mode']=='frozen_grouped' and r['final_train_policy']=='all_official_rows'
     assert 'dedup_parent' not in r
@@ -272,8 +272,8 @@ def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_
     """Exercise real save/seal/load/initialize flow using ten synthetic images."""
     import csv
     from PIL import Image
-    import aegis_resolution_ladder.runtime as rt
-    from aegis_resolution_ladder.plan import dump, sha, stage_plan
+    import v2.runtime as rt
+    from v2.plan import dump, sha, stage_plan
 
     class TinyClassifier(torch.nn.Module):
         def __init__(self, recipe):
@@ -285,7 +285,7 @@ def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_
 
     stages=('s1_384','s2_448','full_576')
     monkeypatch.setattr(rt,'STAGES',stages)
-    monkeypatch.setattr(rt,'LocalFTClassifier',TinyClassifier)
+    monkeypatch.setattr(rt,'V2Classifier',TinyClassifier)
     monkeypatch.setattr(rt,'device_after_authorization',lambda:torch.device('cpu'))
     monkeypatch.setattr(rt,'amp',nullcontext)
     monkeypatch.setattr(torch.cuda,'get_rng_state_all',lambda:[])

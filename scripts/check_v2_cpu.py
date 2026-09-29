@@ -8,20 +8,20 @@ import torch
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'reproducibility/aegis_f1'))
-from aegis_resolution_ladder.model import LocalFTClassifier
-from aegis_resolution_ladder.plan import json_read, sha
+from v2.model import V2Classifier
+from v2.plan import json_read, sha
 
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--recipe',default=str(ROOT/'configs/aegis_resolution_ladder_20260929/recipe.json'))
+    parser.add_argument('--recipe',default=str(ROOT/'configs/v2/recipe.json'))
     parser.add_argument('--output',required=True)
     args=parser.parse_args()
     torch.set_num_threads(2)
     torch.manual_seed(13)
     assert not torch.cuda.is_initialized()
     r=json_read(args.recipe)
-    model=LocalFTClassifier(r).eval()
+    model=V2Classifier(r).eval()
     with torch.no_grad():
         x=torch.randn(1,3,224,224)
         native=model.visual(x);adapted=model.embed(x)

@@ -1,39 +1,37 @@
 {
-  "experiment_id": "AEGIS_TEAM_STRATEGY_NAMING_20260929",
+  "experiment_id": "STRATEGY_V1_V2_20260929",
   "date": "2026-09-29",
-  "branch": "codex/aegis_team_strategy_naming_20260929",
+  "branch": "codex/strategy_v1_v2_20260929",
   "status": "cpu_verified",
   "strategies": [
     {
       "previous_name": "B448",
-      "name": "Aegis-Aligned448",
-      "origin": "team_original"
+      "name": "v1",
+      "origin": "team_original",
+      "config": "configs/v1.yaml",
+      "entry": "aegis_clip.cli.v1"
     },
     {
       "previous_name": "V13",
-      "name": "Aegis-ResolutionLadder",
-      "origin": "team_original"
+      "name": "v2",
+      "origin": "team_original",
+      "config": "configs/v2/recipe.json",
+      "entry": "v2.plan / v2.runtime"
     }
-  ],
-  "user_requested_removals": [
-    "historical strategy scores",
-    "old verification hashes and records",
-    "source snapshots",
-    "license files and notices"
   ],
   "tests": {
     "passed": 83,
     "log": "tests.log"
   },
   "current_reports": [
-    "aligned448_preflight.json",
-    "aligned448_swa_preflight.json",
-    "aligned448_cpu_forward.json",
-    "resolution_ladder_cpu_forward.json"
+    "v1_preflight.json",
+    "v1_swa_preflight.json",
+    "v1_cpu_forward.json",
+    "v2_cpu_forward.json"
   ],
-  "commands_document": "docs/aegis_team_strategy_naming_20260929.md",
+  "commands_document": "docs/strategy_v1_v2_20260929.md",
   "resolution_ladder": {
-    "plan_path": "/home/lux1/noise/worktrees/aegis_team_strategy_naming_20260929/outputs/codex/aegis_team_strategy_naming_20260929/resolution_ladder_prepared/plan.json",
+    "plan_path": "/home/lux1/noise/worktrees/strategy_v1_v2_20260929/outputs/codex/strategy_v1_v2_20260929/v2_prepared/plan.json",
     "split": {
       "train_rows": 133815,
       "val_rows": 14880,
@@ -60,7 +58,7 @@
         "ema_decay": 0.9995,
         "holdout_independent": true,
         "config": "configs/s1_384.json",
-        "config_sha256": "837d41a304fad8dcc9c7a17ec0e429519e30a13e928f1b64f85b2f43bb4be5ec"
+        "config_sha256": "5502fa6d3412d5a29a22798af954b28a70bde7c363710b35c900ba2e9cf4c7be"
       },
       "s2_448": {
         "image_size": 448,
@@ -81,7 +79,7 @@
         "ema_decay": 0.9995,
         "holdout_independent": true,
         "config": "configs/s2_448.json",
-        "config_sha256": "94d1d3242de5a5105038f97e5aafaefece08323ea4f9a1ddb1fa25b0a83b8286"
+        "config_sha256": "247c6b7a5f96e7c07be6f6ed630edbb8ca9b0283c4e792e7f33d3afe4d85becc"
       },
       "s3_576": {
         "image_size": 576,
@@ -102,7 +100,7 @@
         "ema_decay": 0.9995,
         "holdout_independent": true,
         "config": "configs/s3_576.json",
-        "config_sha256": "787686f7a90a11348a72288125fb2ed4520742173686961fdb6ef4dd59d85b39"
+        "config_sha256": "7a044f95c907cd21f097b248e129175a453b066b0aec01a9c15b69b374a30275"
       },
       "full_576": {
         "image_size": 576,
@@ -125,7 +123,7 @@
         "train_policy": "all_official_rows",
         "independent_validation": false,
         "config": "configs/full_576.json",
-        "config_sha256": "3f73c86be4c2fe00a48d0475c3345b181afe4a1f4be5ef26185ad95012fc8b1b"
+        "config_sha256": "ea9743f5480de4ccc5d788ce2040a576393561a5a251b7683c30669436ade11b"
       }
     },
     "total_updates": 38266,
@@ -133,22 +131,19 @@
   },
   "numeric_recipe_equivalence": {
     "passed": true,
-    "compared_stages": [
+    "v1_sections": [
+      "source",
+      "model",
+      "denoise",
+      "train",
+      "decode"
+    ],
+    "v2_stages": [
       "s1_384",
       "s2_448",
       "s3_576",
       "full_576"
-    ],
-    "fields": [
-      "augment",
-      "sampler",
-      "training parameters",
-      "view and batch parameters"
     ]
-  },
-  "documentation_links": {
-    "passed": true,
-    "broken": []
   },
   "current_submission": {
     "path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060",
@@ -161,5 +156,6 @@
   "project_training_started": false,
   "local_metrics": null,
   "platform_metrics": null,
+  "previous_history_removal_preserved": true,
   "main_sync_mode": "automatic: git pull --rebase --autostash origin main; merge --autostash; no manual stash pop"
 }
