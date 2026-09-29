@@ -22,7 +22,8 @@ def load_image(path: Path, decode_cap: int = 0) -> Image.Image:
         im.load()
         try:
             im = ImageOps.exif_transpose(im)
-        except (ValueError, TypeError, OSError):
+        except (ValueError, TypeError, OSError, SyntaxError):
+            # Pillow can parse the pixels while rejecting malformed EXIF/TIFF metadata.
             pass
         return im.convert('RGB').copy()
 

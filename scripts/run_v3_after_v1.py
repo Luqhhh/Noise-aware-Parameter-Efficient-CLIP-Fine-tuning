@@ -1,4 +1,4 @@
-"""Wait for checked v1 delivery, then run the fixed bounded v3 pair locally."""
+"""Wait for checked v1 delivery, then run the fixed v3 pair locally."""
 from __future__ import annotations
 
 import argparse
@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import time
@@ -46,7 +47,14 @@ def check_v1(path):
 
 
 def gpu_busy():
-    command = ["nvidia-smi", "--query-compute-apps=pid", "--format=csv,noheader,nounits"]
+    # User services do not inherit the interactive WSL PATH.
+    binary = Path("/usr/lib/wsl/lib/nvidia-smi")
+    if not binary.is_file():
+        found = shutil.which("nvidia-smi")
+        if found is None:
+            raise FileNotFoundError("nvidia-smi is unavailable for the GPU-idle check")
+        binary = Path(found)
+    command = [str(binary), "--query-compute-apps=pid", "--format=csv,noheader,nounits"]
     result = subprocess.run(command, capture_output=True, text=True, check=True)
     return bool(result.stdout.strip())
 
