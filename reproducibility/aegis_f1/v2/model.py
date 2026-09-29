@@ -9,7 +9,7 @@ from aegis_clip.model import interpolate_visual_positional_embedding
 from .plan import require, sha
 
 
-class LocalFTClassifier(nn.Module):
+class V2Classifier(nn.Module):
     def __init__(self, recipe):
         super().__init__()
         import clip

@@ -1,5 +1,5 @@
 {
-  "experiment_id": "AEGIS_RESOLUTION_LADDER_20260929",
+  "experiment_id": "V2_20260929",
   "data_version": "20260921",
   "execution_authorized": false,
   "num_classes": 750,
@@ -29,7 +29,7 @@
   "final_train_policy": "all_official_rows",
   "strategy_only": true,
   "initial_parent": "official_openai",
-  "strategy_name": "Aegis-ResolutionLadder",
+  "strategy_name": "v2",
   "strategy_origin": "team_original",
   "implementation_notes": [
     "Team-designed resolution/LR ladder, implemented within the Aegis project.",
@@ -40,5 +40,5 @@
     "Final five-epoch full-data stage includes former holdout; no independent validation, one raw last checkpoint.",
     "User enabled training-side EMA on 2026-09-29; dev stages inherit the selected single raw/EMA state, final inference uses raw last."
   ],
-  "strategy_revision": "aegis_resolution_ladder_v1"
+  "strategy_revision": "v2_recipe_1"
 }

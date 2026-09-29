@@ -1,4 +1,4 @@
-"""Stage-bound Aegis-Aligned448 target preparation, training, calibration, and inference."""
+"""Stage-bound v1 target preparation, training, calibration, and inference."""
 from __future__ import annotations
 
 import contextlib
@@ -18,7 +18,7 @@ from torch.nn import functional as F
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms as T
 
-from aegis_clip.aligned448_strategy import (
+from aegis_clip.v1_strategy import (
     CosineHead, WeightAverage, accuracy_report, build_classifier, class_top_keep,
     denoised_targets, fit_training_bias, knn_signals, load_trainable_state,
     target_probabilities, trainable_state, using_weights, weighted_mixup_loss,
@@ -38,14 +38,14 @@ def load_recipe(path, source_root=None):
     path = Path(path).resolve()
     config = yaml.safe_load(path.read_text())
     if set(config) != {"project", "source", "model", "denoise", "train", "decode", "output"}:
-        raise ValueError("Unexpected Aegis-Aligned448 recipe sections")
+        raise ValueError("Unexpected v1 recipe sections")
     if config["project"]["stage"] != "repechage":
         raise ValueError("This adapter is scoped to the current rematch stage")
     m, d, t = config["model"], config["denoise"], config["train"]
     if (m["backbone"] != "ViT-B/32" or m["pretrained"] != "openai"
             or m["image_size"] % 32 or m["image_size"] < 32
             or not 1 <= m["blocks"] <= 12 or m["rank"] < 1 or m["alpha"] <= 0):
-        raise ValueError("Invalid Aegis-Aligned448 OpenAI CLIP architecture")
+        raise ValueError("Invalid v1 OpenAI CLIP architecture")
     if config["source"]["partition"] not in ("train_dev", "full_train"):
         raise ValueError("Unsupported training partition")
     if config["decode"]["bias_source"] != "val_dev":
@@ -136,8 +136,8 @@ class StageContext:
             official_checkpoint_sha256=official_weight_hash(self.reference),
             recipe_sha256=fingerprint(recipe),
             implementation_sha256=fingerprint({name: sha256_file(ROOT / name) for name in (
-                "reproducibility/aegis_f1/aegis_clip/aligned448_strategy.py",
-                "reproducibility/aegis_f1/aegis_clip/aligned448_pipeline.py",
+                "reproducibility/aegis_f1/aegis_clip/v1_strategy.py",
+                "reproducibility/aegis_f1/aegis_clip/v1_pipeline.py",
                 "reproducibility/aegis_f1/aegis_clip/model.py",
                 "reproducibility/aegis_f1/aegis_clip/submission.py")}))
 
@@ -145,7 +145,7 @@ class StageContext:
         return dict(status="implementation_ready", training_started=False, gpu_started=False,
             binding=self.binding, classes=len(self.classes), train_samples=len(self.train),
             val_samples=len(self.val), feature_source="audited current-stage 224 center cache",
-            strategy_name="Aegis-Aligned448", strategy_origin="team_original",
+            strategy_name="v1", strategy_origin="team_original",
             local_score=None, platform_score=None,
             rule_risk="same-trajectory SWA research only" if self.config["train"]["swa_enabled"] else None)
 
@@ -481,7 +481,7 @@ def infer(context, checkpoint, device):
     logits += calibration["bias"] * context.config["decode"]["bias_strength"]
     predictions = [(name, context.classes[index]) for name, index in zip(names, logits.argmax(1).tolist())]
     out = Path(context.config["output"]["root"]) / "submission"
-    create_submission(predictions, names, out, checkpoint, inference_mode="aegis_aligned448_fixed_multiscale_flip",
+    create_submission(predictions, names, out, checkpoint, inference_mode="v1_fixed_multiscale_flip",
         tta_risk_acknowledged=True, valid_labels=set(context.classes), space_after_comma=True,
         extra_manifest=dict(binding=context.binding, decoder=context.config["decode"],
             calibration_sha256=sha256_file(Path(context.config["output"]["root"]) / "calibration.pt"),

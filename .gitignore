@@ -1,3 +1,9 @@
+# Private v1/v2 strategy outputs.
+/outputs/codex/v1_20260929/
+/outputs/codex/v1_swa_20260929/
+/outputs/codex/v2/
+/outputs/codex/strategy_v1_v2_20260929/
+
 # Python
 # Private fixed-pair runtime, checkpoints, logs and submissions
 /outputs/codex/palm_v13_prepare_20260929/

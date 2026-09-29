@@ -13,7 +13,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
-STAGE_CONFIGS = ROOT / "configs/aegis_resolution_ladder_20260929/stages"
+STAGE_CONFIGS = ROOT / "configs/v2/stages"
 STAGES = ("s1_384", "s2_448", "s3_576", "full_576")
 
 
@@ -218,7 +218,7 @@ def prepare(recipe_path, output):
         if path.is_file():
             plan["inputs"][str(path)] = sha(path)
     plan["inputs"][str(ROOT / "reproducibility/aegis_f1/aegis_clip/model.py")] = sha(ROOT / "reproducibility/aegis_f1/aegis_clip/model.py")
-    plan["inputs"][str(ROOT / "reproducibility/aegis_f1/aegis_clip/aligned448_strategy.py")] = sha(ROOT / "reproducibility/aegis_f1/aegis_clip/aligned448_strategy.py")
+    plan["inputs"][str(ROOT / "reproducibility/aegis_f1/aegis_clip/v1_strategy.py")] = sha(ROOT / "reproducibility/aegis_f1/aegis_clip/v1_strategy.py")
     dump(output / "plan.json", plan)
     return plan
 
@@ -227,7 +227,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("prepare")
-    p.add_argument("--recipe", default=str(ROOT / "configs/aegis_resolution_ladder_20260929/recipe.json"))
+    p.add_argument("--recipe", default=str(ROOT / "configs/v2/recipe.json"))
     p.add_argument("--output", required=True)
     p = sub.add_parser("verify")
     p.add_argument("--plan", required=True)

@@ -1,4 +1,4 @@
-"""Training helpers for the team-designed Aegis-ResolutionLadder strategy."""
+"""Training helpers for the team-designed v2 strategy."""
 from __future__ import annotations
 import math
 import random

@@ -20,10 +20,10 @@ import zipfile
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler
-from aegis_clip.aligned448_strategy import WeightAverage, using_weights
+from aegis_clip.v1_strategy import WeightAverage, using_weights
 
 from .core import build_view, check_checkpoint, logical_backward, training_utils, sample_weights
-from .model import LocalFTClassifier
+from .model import V2Classifier
 from .plan import (ROOT, STAGES, authorize, check_stage_weight_policy, dump, json_read, require, sha,
                    verify_prepared)
 
@@ -149,7 +149,7 @@ def initialize_model(plan, workspace, stage, device):
     parent_path = None if index == 0 else workspace / "runs" / STAGES[index - 1] / "best.pt"
     payload = None if parent_path is None else read_checkpoint(parent_path, plan, STAGES[index - 1])
     # Fresh s1 official model; subsequent stages load ALL tensors strictly.
-    model = LocalFTClassifier(plan["recipe"])
+    model = V2Classifier(plan["recipe"])
     if payload is not None:
         model.load_state_dict(choose_parent(payload), strict=True)
     return model.to(device), dict(path="official_openai" if parent_path is None else str(parent_path),
@@ -335,7 +335,7 @@ def infer(plan_path, authorization, output):
     workspace = Path(plan_path).resolve().parent
     cp = workspace / "runs/full_576/last.pt"
     payload = read_checkpoint(cp, plan, "full_576")
-    require(payload["epoch"] == 4 and payload["metrics"]["chosen"] == "raw", "Aegis-ResolutionLadder inference requires final raw last epoch")
+    require(payload["epoch"] == 4 and payload["metrics"]["chosen"] == "raw", "v2 inference requires final raw last epoch")
     root = Path(plan["recipe"]["test_root"])
     with (Path(plan["recipe"]["stage_artifacts"]) / "test_manifest.csv").open(newline="") as f:
         files = sorted(Path(r["image_path"]).name for r in csv.DictReader(f))
@@ -343,7 +343,7 @@ def infer(plan_path, authorization, output):
     actual = sorted(p.name for p in root.iterdir() if p.is_file())
     require(actual == files, "Missing or extra test images")
     device = device_after_authorization()
-    model = LocalFTClassifier(plan["recipe"]).to(device)
+    model = V2Classifier(plan["recipe"]).to(device)
     model.load_state_dict(payload["model"], strict=True); model.eval()
     TestDataset = InferenceDataset
     sums = np.zeros((len(files), plan["recipe"]["num_classes"]), np.float32)

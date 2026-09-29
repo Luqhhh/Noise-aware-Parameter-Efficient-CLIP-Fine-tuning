@@ -1,4 +1,4 @@
-"""Aegis-Aligned448 primitives for the team-designed noise-robust strategy.
+"""v1 primitives for the team-designed noise-robust strategy.
 
 No timm dependency or historical fitted assets: the visual tower comes directly
 from the SHA-verified official OpenAI checkpoint. All functions also run on CPU.
@@ -45,7 +45,7 @@ class CosineHead(nn.Module):
             @ F.normalize(self.weight, dim=-1).t())
 
 
-class Aligned448Classifier(nn.Module):
+class V1Classifier(nn.Module):
     def __init__(self, visual: nn.Module, classes: int, *, image_size=448,
                  rank=32, alpha=64.0, blocks=12):
         super().__init__()
@@ -103,7 +103,7 @@ def build_classifier(official_checkpoint, classes, model_config, device="cpu"):
             or visual.class_embedding.numel() != 768
             or tuple(visual.proj.shape) != (768, 512)):
         raise ValueError("Unexpected official ViT-B/32 architecture")
-    model = Aligned448Classifier(visual, classes, image_size=model_config["image_size"],
+    model = V1Classifier(visual, classes, image_size=model_config["image_size"],
                            rank=model_config["rank"], alpha=model_config["alpha"],
                            blocks=model_config["blocks"])
     del clip_model

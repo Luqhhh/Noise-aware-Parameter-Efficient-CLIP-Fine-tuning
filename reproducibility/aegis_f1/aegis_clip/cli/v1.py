@@ -1,4 +1,4 @@
-"""Implement/inspect the team-designed Aegis-Aligned448 strategy; compute requires an explicit flag."""
+"""Implement/inspect the team-designed v1 strategy; compute requires an explicit flag."""
 from __future__ import annotations
 
 import argparse
@@ -23,7 +23,7 @@ def main():
         parser.error("--resume is only valid for train")
     if args.action in ("calibrate", "infer") and not args.checkpoint:
         parser.error("Specify one explicit --checkpoint")
-    from aegis_clip.aligned448_pipeline import StageContext, load_recipe, prepare_targets, train, calibrate, infer
+    from aegis_clip.v1_pipeline import StageContext, load_recipe, prepare_targets, train, calibrate, infer
     from aegis_clip.runtime import atomic_json_dump
     context = StageContext(load_recipe(args.config, args.source_root))
     if args.action == "preflight":

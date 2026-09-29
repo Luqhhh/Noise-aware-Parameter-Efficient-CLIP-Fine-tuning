@@ -1,28 +1,28 @@
-# 当前执行入口：Aegis团队策略工程已交付，E6沿原授权执行（2026-09-29）
+# 当前执行入口：v1/v2团队策略工程已交付，E6沿原授权执行（2026-09-29）
 
-## 最新命名检查点：AEGIS_TEAM_STRATEGY_NAMING_20260929
+## 最新命名检查点：STRATEGY_V1_V2_20260929
 
-用户明确确认两条策略均由本队自主设计，按当前Aegis工程统一命名：
-`B448` → **Aegis-Aligned448**，`V13` → **Aegis-ResolutionLadder**。
+用户明确确认两条策略均由本队自主设计，按用户建议统一命名为v1、v2：
+`B448` → **v1**，`V13` → **v2**。
 代码包、CLI、配置、阶段名、测试和文档同步采用项目名称；旧称仅用于名称映射。
 按用户追加要求删除这两条策略的历史分数、旧校验哈希、来源快照和许可证记录。
 本次CPU验证独立生成，官方权重及当前输入绑定继续校验。
-具体命令、当前验证和交付状态见[命名记录](aegis_team_strategy_naming_20260929.md)。
+具体命令、当前验证和交付状态见[命名记录](strategy_v1_v2_20260929.md)。
 
-## 策略工程：AEGIS_RESOLUTION_LADDER_20260929
+## 策略工程：V2_20260929
 
-**Aegis-ResolutionLadder** 已实现强增强、soft CE、类频次平方根倒数采样、
+**v2** 已实现强增强、soft CE、类频次平方根倒数采样、
 384→448→576分辨率/LR阶梯及最后全量续训。使用当前官方CLIP及固定组隔离划分。
 训练侧EMA沿用户既有指令启用：0.9995、每逻辑批次更新、每段重置，dev选择并继承单份raw/EMA权重；
 最后固定全量第5轮raw提交，无独立验证分。状态 `engineering_ready / not_started`。
-新local、平台分和GPU成本均未测。配置及当前入口见[工程记录](aegis_resolution_ladder_20260929.md)。
+新local、平台分和GPU成本均未测。配置及当前入口见[工程记录](v2.md)。
 
-## 策略工程：AEGIS_ALIGNED448_20260929
+## 策略工程：V1_20260929
 
-**Aegis-Aligned448** 已实现448 aligned、12层QKV+MLP LoRA、CL-style筛选/共识伪标签、
+**v1** 已实现448 aligned、12层QKV+MLP LoRA、CL-style筛选/共识伪标签、
 mixup/EMA、可选单轨迹SWA、六视角TTA及训练侧冻结bias。SWA默认关闭，研究配置独立。
 状态 `engineering_ready / not_started`，未产生新local或平台分。
-配置及当前入口见[工程记录](aegis_aligned448_20260929.md)。
+配置及当前入口见[工程记录](v1.md)。
 本段只进行改名与CPU验证，后续训练仍遵守现有授权和搜索/成本门禁；其他在途工作按原协议执行。
 
 ## 最新授权执行：P75_MASK_E6_EXTENSION
