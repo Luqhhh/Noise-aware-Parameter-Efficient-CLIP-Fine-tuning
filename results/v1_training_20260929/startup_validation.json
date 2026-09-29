@@ -13,5 +13,15 @@
   "pipeline_time_cap_hours": 8,
   "local_score": null,
   "platform_score": null,
-  "status": "launch_ready"
+  "status": "running",
+  "stage": "train",
+  "started_at": "2026-09-29T23:19:38+08:00",
+  "unit": "noise-v1-train-20260929.service",
+  "training_code_commit": "1d03957",
+  "train_samples_used": 119074,
+  "classes_with_targets": 750,
+  "pseudo_labels": 78,
+  "targets_preparation_seconds": 10.284095449009328,
+  "runtime_status": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/status.json",
+  "submission_delivered": false
 }
