@@ -1,6 +1,6 @@
 # Noise-Aware Parameter-Efficient CLIP Fine-Tuning
 
-**2026-09-29 内容污染三项离线统计完成，本段不训练：**复用冻结CLIP评分与L05快照，train_dev命中1,246/133,815（0.9311%），分布423类，23类命中率≥5%；低/中/高原标签概率688/215/343张，候选GCE最终中心logit梯度L1份额1.8922%。这些是代理与观察关联，尚未证明有害捷径或平台收益；未重扫图像、人工核验或修改规则。历史语义mask配对第4轮全量micro均73.6962%，修正24/退化24、剩余代理净+8；第6轮主要判断未完成，不能判机制无效或自动续训。已有单学生诊断CSV/ZIP为37,444行、9/9校验；本段无新候选或平台成绩，SAM未操作。现役L05_T14_P060平台仍为 **66.94797564362783%**。见[离线报告](docs/p75_content_contamination_analysis_20260929.md)、[配对记录](docs/p75_semantic_mask_pair_20260929.md)及[当前执行入口](docs/current_execution_plan.md)。
+**2026-09-29 P75_SUPERVISION_PIPELINE 工程交付，A/B 仍为 proposal：**实现独立 E4→E6 续接、CPU 缓存 LP 配对、固定分组评估和投入门禁；工程测试与恢复协议检查见[交付记录](docs/p75_supervision_pipeline_20260929.md)。未启动训练、修改旧预算或上传平台。A 尚需新授权及 local 实测成本；B 尚需新授权和已绑定翻转特征缓存，不能重编码补缺。旧 E4 全量修正24/退化24、未命中代理净+8，E6主判断仍未完成；内容代理不是真值。无新候选/平台成绩，SAM未操作。现役 L05_T14_P060 平台仍为 **66.94797564362783%**；既有37,444行、9/9校验未重复执行。见[旧离线统计](docs/p75_content_contamination_analysis_20260929.md)、[配对记录](docs/p75_semantic_mask_pair_20260929.md)及[当前执行入口](docs/current_execution_plan.md)。
 
 当前为官方确认的复赛 **750 类**，148,695 张训练图、37,444 张测试图；资产来源见[数据集元信息](docs/rematch_dataset_20260921.md)。此前交付与实验指标见[README 状态沿革](docs/history/readme_status_before_local_only_20260929.md)。
 

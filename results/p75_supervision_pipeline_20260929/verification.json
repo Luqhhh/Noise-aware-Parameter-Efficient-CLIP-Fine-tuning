@@ -1,0 +1,36 @@
+{
+  "experiment": "P75_SUPERVISION_PIPELINE",
+  "status": "proposal",
+  "implementation_status": "engineering_ready",
+  "tests_passed": 21,
+  "resume_protocol_checks_passed": [
+    "control",
+    "masked"
+  ],
+  "training_started": false,
+  "new_model_metrics": null,
+  "new_package": null,
+  "platform_measured": false,
+  "primary_experiment_status": "proposal",
+  "blockers_A": [
+    "Separate new authorization",
+    "Measured local-branch timing and full validation cost with >=20% reserve"
+  ],
+  "blockers_B": [
+    "Separate new authorization",
+    "Existing bound validation flip features; standard stage directory only has center cache"
+  ],
+  "actual_A_input_epoch": 4,
+  "actual_A_input_updates": 524,
+  "remaining_A_updates_per_arm": 262,
+  "group_counts": {
+    "selected_proxy": 132,
+    "high_hit_classes": 419,
+    "bio_dominant": 13600,
+    "bio_high_hit": 332,
+    "bio_other_classes": 13268
+  },
+  "directory": "/home/lux1/noise/worktrees/p75_supervision_pipeline_20260929/outputs/codex/p75_supervision_pipeline_20260929_final",
+  "historical_E4_untouched": true,
+  "historical_budget_untouched": true
+}
