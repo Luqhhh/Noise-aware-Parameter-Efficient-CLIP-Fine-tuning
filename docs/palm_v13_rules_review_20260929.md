@@ -1,5 +1,9 @@
 # V13 策略规则复核与修正
 
+**历史检查点**：下文记录的是此前关闭EMA的保守实现，不是官方对EMA违规的认定。
+用户随后明确“启用ema”，当前执行配置与计划已由[EMA启用记录](palm_v13_ema_enablement_20260929.md)替代。
+以下命令和49项结果仅对应当时的方案分支；当前提交格式要求继续由新配置执行。
+
 实验标识 `P75_RESOLUTION_LADDER_RULES_REVIEW`，复核对象为 `P75_RESOLUTION_LADDER`。
 依据当前 [CLAUDE.md](../CLAUDE.md) 和 [完整规则](../COMPETITION_RULES_AGENT.md)；
 这是仓库规则审查，不声称已获得组委会对本实现的单独认证。

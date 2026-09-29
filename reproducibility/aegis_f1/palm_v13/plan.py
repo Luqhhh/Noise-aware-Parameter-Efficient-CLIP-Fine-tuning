@@ -70,7 +70,10 @@ def stage_plan(cfg, train_rows, val_rows, parent):
                 steps_per_epoch=n, total_updates=n * epochs, train_rows=train_rows,
                 val_rows=val_rows, lr_backbone=cfg["train"]["lr_backbone"], lr_head=cfg["train"]["lr_head"],
                 warmup_steps=max(int(cfg["train"]["warmup_epochs"] * n), 1),
-                parent=parent, optimizer_reset=True, scheduler_reset=True, weight_averaging=False,
+                parent=parent, optimizer_reset=True, scheduler_reset=True,
+                ema_enabled=cfg["train"].get("ema_enabled", True),
+                ema_reset=cfg["train"].get("ema_enabled", True),
+                ema_decay=cfg["train"].get("ema_decay"),
                 holdout_independent=parent is not None and train_rows < cfg["data"]["expected_train_images"])
 
 
@@ -78,7 +81,7 @@ def cost_estimate(stage, seconds_per_update, validation_seconds, overhead_second
     values = (seconds_per_update, validation_seconds, overhead_seconds)
     require(all(isinstance(v, (int, float)) and math.isfinite(v) for v in values) and seconds_per_update > 0 and overhead_seconds > 0 and validation_seconds >= 0,
             "Finite measured update/overhead costs and nonnegative validation cost required")
-    # validation_seconds is ONE full raw holdout evaluation per epoch.
+    # validation_seconds covers ALL configured raw/EMA holdout passes per epoch.
     return stage["total_updates"] * seconds_per_update + stage["epochs"] * validation_seconds + overhead_seconds
 
 
@@ -102,25 +105,35 @@ def authorize(plan_path, authorization, operation, stage=None):
     return a
 
 
-def check_raw_policy(recipe):
-    require(recipe.get("parent_policy") == "best_raw_on_holdout" and
-            recipe.get("final_weights") == "raw" and recipe.get("weight_averaging") is False,
-            "Project rules require raw-only parent/final weights; EMA/SWA remain unconfirmed")
+def check_weight_policy(recipe):
+    enabled, decay = recipe.get("ema_enabled"), recipe.get("ema_decay")
+    require(isinstance(enabled, bool) and isinstance(decay, (int, float)) and
+            math.isfinite(decay) and 0 < decay < 1,
+            "Explicit EMA toggle and finite decay in (0, 1) required")
+    expected = "best_chosen_on_holdout" if enabled else "best_raw_on_holdout"
+    require(recipe.get("parent_policy") == expected and recipe.get("final_weights") == "raw" and
+            "weight_averaging" not in recipe,
+            "EMA/parent policy mismatch or unsupported final/legacy weight policy")
+
+
+def check_stage_weight_policy(cfg, recipe):
+    train = cfg["train"]
+    require(train.get("ema_enabled") is recipe["ema_enabled"] and
+            train.get("ema_decay") == recipe["ema_decay"] and "weight_averaging" not in train,
+            "Stage EMA configuration differs from the prepared recipe")
 
 
 def verify_prepared(plan_path):
     plan_path = Path(plan_path)
     p = json_read(plan_path)
-    check_raw_policy(p["recipe"])
+    check_weight_policy(p["recipe"])
     verify_vendor()
     for name, digest in p["inputs"].items():
         require(sha(name) == digest, f"Frozen input changed: {name}")
     for name, entry in p["stages"].items():
         config = plan_path.parent / entry["config"]
         require(sha(config) == entry["config_sha256"], f"Stage config changed: {name}")
-        train = json_read(config)["train"]
-        require(train.get("weight_averaging") is False and "ema_decay" not in train,
-                "Prepared stage must disable weight averaging")
+        check_stage_weight_policy(json_read(config), p["recipe"])
     return p
 
 
@@ -128,7 +141,7 @@ def prepare(recipe_path, output):
     recipe_path, output = Path(recipe_path).resolve(), Path(output).resolve()
     require(not output.exists(), "Refusing to overwrite a prepared experiment")
     recipe = json_read(recipe_path)
-    check_raw_policy(recipe)
+    check_weight_policy(recipe)
     source = verify_vendor()
     require(recipe["source_commit"] == source["commit"], "Source revision mismatch")
     require(recipe["execution_authorized"] is False and recipe["num_classes"] == 750 and
@@ -197,8 +210,8 @@ def prepare(recipe_path, output):
         cfg["model"] = dict(backbone="ViT-B/32", official_checkpoint=recipe["official_checkpoint"], head="linear", dropout=0.0, freeze_first_blocks=0, train_last_blocks=0)
         cfg["train"]["output_dir"] = "runs/" + name
         cfg["train"]["seed"] = recipe["seed"]  # source main reads train.seed, not root seed
-        cfg["train"].pop("ema_decay", None)  # upstream reference only; no averaged weights in local execution
-        cfg["train"]["weight_averaging"] = False
+        cfg["train"]["ema_enabled"] = recipe["ema_enabled"]
+        cfg["train"]["ema_decay"] = recipe["ema_decay"]
         cfg["local_replay"] = dict(micro_batch_size=recipe["micro_batch_size"],
                                    gradient_checkpointing=recipe["gradient_checkpointing"], final_stage=i == 3)
         config = output / "configs" / (name + ".json")
@@ -214,6 +227,7 @@ def prepare(recipe_path, output):
             plan["inputs"][str(path)] = sha(path)
     plan["inputs"][str(VENDOR / "provenance.json")] = sha(VENDOR / "provenance.json")
     plan["inputs"][str(ROOT / "reproducibility/aegis_f1/aegis_clip/model.py")] = sha(ROOT / "reproducibility/aegis_f1/aegis_clip/model.py")
+    plan["inputs"][str(ROOT / "reproducibility/aegis_f1/aegis_clip/b448_strategy.py")] = sha(ROOT / "reproducibility/aegis_f1/aegis_clip/b448_strategy.py")
     dump(output / "plan.json", plan)
     return plan
 

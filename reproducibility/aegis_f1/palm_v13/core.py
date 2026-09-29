@@ -49,5 +49,15 @@ def check_checkpoint(payload, plan, stage):
     require(0 <= payload.get("epoch", -1) < plan["stages"][stage]["epochs"] and
             payload.get("global_step") == (payload["epoch"] + 1) * plan["stages"][stage]["steps_per_epoch"],
             "Wrong checkpoint update endpoint")
-    require(payload.get("metrics", {}).get("chosen") == "raw" and "ema" not in payload,
-            "Only raw checkpoints are allowed; averaged weights remain unconfirmed")
+    enabled = plan["recipe"]["ema_enabled"]
+    chosen = payload.get("metrics", {}).get("chosen")
+    require(payload.get("ema_enabled") is enabled and
+            chosen in (("raw", "ema") if enabled else ("raw",)), "Checkpoint EMA/selection policy mismatch")
+    if enabled:
+        model, ema = payload.get("model", {}), payload.get("ema", {})
+        require(bool(model) and model.keys() == ema.keys() and
+                all(model[k].shape == ema[k].shape for k in model), "Incomplete EMA model state")
+        require(payload.get("ema_decay") == plan["recipe"]["ema_decay"] and
+                payload.get("ema_updates") == payload["global_step"], "Wrong EMA decay/update endpoint")
+    else:
+        require("ema" not in payload and payload.get("ema_updates") == 0, "EMA state present in a disabled stage")
