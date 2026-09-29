@@ -149,3 +149,16 @@ def test_continuation_selection_preserves_evaluated_file(tmp_path):
     finally:
         if before is None: sys.modules.pop('aegis_clip.checkpoint',None)
         else: sys.modules['aegis_clip.checkpoint']=before
+
+
+def test_measured_probe_time_is_not_reset_by_execution(tmp_path,monkeypatch):
+    import run_p75_pipeline_a as execution
+    probe=tmp_path/'timing.json'; probe.write_text(json.dumps({'seconds':1000,'returncode':0}))
+    record=dict(measured_cost=dict(seconds_per_local_update=30,validation_seconds=300,overhead_seconds=300),
+                preflight_probe=dict(path=str(probe),sha256=sha(probe)))
+    monkeypatch.setattr(execution,'verify',lambda root:None)
+    monkeypatch.setattr(execution,'authorize',lambda *args:record)
+    monkeypatch.setattr(execution,'idle_gpu',lambda:pytest.fail('Cost rejection must precede GPU launch'))
+    # Without the already spent 1000s this would fit 80% of 21600s; with it, it must fail.
+    with pytest.raises(ValueError,match='20% reserve'):
+        execution.run(tmp_path,tmp_path/'approval.json')

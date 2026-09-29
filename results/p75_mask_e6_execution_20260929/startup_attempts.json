@@ -1,0 +1,9 @@
+[
+  {
+    "unit": "p75-e6-cost-probe-20260929",
+    "status": "failed_before_training",
+    "reason": "systemd PATH lacked nvidia-smi",
+    "cuda_tasks_started": false,
+    "budget_charged_seconds": 0
+  }
+]

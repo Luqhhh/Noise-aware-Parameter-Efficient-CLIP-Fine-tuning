@@ -1,0 +1,80 @@
+{
+  "experiment_id": "P75_MASK_E6_EXTENSION",
+  "status": "proposal",
+  "authorized": false,
+  "budget_seconds": 21600,
+  "arms": {
+    "control": {
+      "resume": "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/control_resume_E4.pt",
+      "exists": true,
+      "evaluated_checkpoint_sha256": "959312b7da0b439196d9861009254e8a9b321410084b10750e411b8da7846049",
+      "sha256": "223d9cf201882e628bd1c1eda63267faa12c51258c5fc523e01c50c3e316e4f8",
+      "state": {
+        "epoch": 4,
+        "updates": 524,
+        "remaining_updates_to_e6": 262,
+        "scheduler": {
+          "base_lrs": [
+            0.0004,
+            1.2e-05
+          ],
+          "last_epoch": 524,
+          "_step_count": 525,
+          "_is_initial": false,
+          "_get_lr_called_within_step": false,
+          "_last_lr": [
+            0.0003420071426749364,
+            1.0260214280248091e-05
+          ],
+          "lr_lambdas": [
+            null,
+            null
+          ]
+        },
+        "worker_rng_restored": false
+      },
+      "config": "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/control.json",
+      "original_resume": "/home/lux1/noise-worktrees/p75_semantic_mask_pair_20260929/outputs/codex/p75_semantic_mask_pair_20260929/runs/P75_SEMANTIC_CONTROL/seed42/checkpoints/last.pt",
+      "historical_best": "/home/lux1/noise-worktrees/p75_semantic_mask_pair_20260929/outputs/codex/p75_semantic_mask_pair_20260929/runs/P75_SEMANTIC_CONTROL/seed42/checkpoints/best.pt",
+      "historical_best_sha256": "666edf8b18beae9d19b3a2d94797af83b145d1b914205063a3a08a9966091e31"
+    },
+    "masked": {
+      "resume": "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/masked_resume_E4.pt",
+      "exists": true,
+      "evaluated_checkpoint_sha256": "8508dc5fa1d3fbe6eb55d6bcae3d929eb6f23887a1bad034142462e8ef6355af",
+      "sha256": "20938e9128dc04822c53dbbea4dd3a958c819c8563919abf1f99cbad215fa851",
+      "state": {
+        "epoch": 4,
+        "updates": 524,
+        "remaining_updates_to_e6": 262,
+        "scheduler": {
+          "base_lrs": [
+            0.0004,
+            1.2e-05
+          ],
+          "last_epoch": 524,
+          "_step_count": 525,
+          "_is_initial": false,
+          "_get_lr_called_within_step": false,
+          "_last_lr": [
+            0.0003420071426749364,
+            1.0260214280248091e-05
+          ],
+          "lr_lambdas": [
+            null,
+            null
+          ]
+        },
+        "worker_rng_restored": false
+      },
+      "config": "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/masked.json",
+      "original_resume": "/home/lux1/noise-worktrees/p75_semantic_mask_pair_20260929/outputs/codex/p75_semantic_mask_pair_20260929/runs/P75_SEMANTIC_MASKED/seed42/checkpoints/last.pt",
+      "historical_best": "/home/lux1/noise-worktrees/p75_semantic_mask_pair_20260929/outputs/codex/p75_semantic_mask_pair_20260929/runs/P75_SEMANTIC_MASKED/seed42/checkpoints/best.pt",
+      "historical_best_sha256": "74502f4c66981e28a18dc54d0243fd38d7b89fb6e95896f192d7e20f68b1b4a8"
+    }
+  },
+  "blockers": [
+    "New training authorization and measured local-branch cost estimate required"
+  ],
+  "worker_limitation": "Main RNG and generator restored; DataLoader workers restart in both arms at identical boundaries. No uninterrupted-view equivalence claimed."
+}

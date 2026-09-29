@@ -1,0 +1,14 @@
+{
+  "status": "engineering_ready",
+  "authorized": true,
+  "cost_gate": {
+    "estimated_seconds": 16182.068930457608,
+    "budget_seconds": 21600,
+    "reserve_fraction": 0.2,
+    "fits": true
+  },
+  "formal_training_started": false,
+  "estimated_hours": 4.4950191473493355,
+  "tests_passed": 22,
+  "probe_budget_seconds": 252.58251099599875
+}

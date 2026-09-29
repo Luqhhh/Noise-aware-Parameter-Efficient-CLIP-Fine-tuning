@@ -1,0 +1,7 @@
+{
+  "status": "proposal",
+  "authorized": true,
+  "training_started": false,
+  "blocker": "No existing bound OpenAI validation flip feature cache found in current-stage artifacts or local output/worktree asset names; center cache alone cannot satisfy frozen final decoder",
+  "not_a_negative_result": true
+}
