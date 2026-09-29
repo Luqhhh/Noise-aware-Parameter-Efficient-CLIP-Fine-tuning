@@ -1,0 +1,165 @@
+{
+  "experiment_id": "AEGIS_TEAM_STRATEGY_NAMING_20260929",
+  "date": "2026-09-29",
+  "branch": "codex/aegis_team_strategy_naming_20260929",
+  "status": "cpu_verified",
+  "strategies": [
+    {
+      "previous_name": "B448",
+      "name": "Aegis-Aligned448",
+      "origin": "team_original"
+    },
+    {
+      "previous_name": "V13",
+      "name": "Aegis-ResolutionLadder",
+      "origin": "team_original"
+    }
+  ],
+  "user_requested_removals": [
+    "historical strategy scores",
+    "old verification hashes and records",
+    "source snapshots",
+    "license files and notices"
+  ],
+  "tests": {
+    "passed": 83,
+    "log": "tests.log"
+  },
+  "current_reports": [
+    "aligned448_preflight.json",
+    "aligned448_swa_preflight.json",
+    "aligned448_cpu_forward.json",
+    "resolution_ladder_cpu_forward.json"
+  ],
+  "commands_document": "docs/aegis_team_strategy_naming_20260929.md",
+  "resolution_ladder": {
+    "plan_path": "/home/lux1/noise/worktrees/aegis_team_strategy_naming_20260929/outputs/codex/aegis_team_strategy_naming_20260929/resolution_ladder_prepared/plan.json",
+    "split": {
+      "train_rows": 133815,
+      "val_rows": 14880,
+      "overlapping_content_groups": 0,
+      "val_rows_in_overlapping_groups": 0
+    },
+    "stages": {
+      "s1_384": {
+        "image_size": 384,
+        "epochs": 10,
+        "logical_batch_size": 96,
+        "steps_per_epoch": 1393,
+        "total_updates": 13930,
+        "train_rows": 133815,
+        "val_rows": 14880,
+        "lr_backbone": 3e-05,
+        "lr_head": 0.0005,
+        "warmup_steps": 1393,
+        "parent": "official_openai",
+        "optimizer_reset": true,
+        "scheduler_reset": true,
+        "ema_enabled": true,
+        "ema_reset": true,
+        "ema_decay": 0.9995,
+        "holdout_independent": true,
+        "config": "configs/s1_384.json",
+        "config_sha256": "837d41a304fad8dcc9c7a17ec0e429519e30a13e928f1b64f85b2f43bb4be5ec"
+      },
+      "s2_448": {
+        "image_size": 448,
+        "epochs": 6,
+        "logical_batch_size": 96,
+        "steps_per_epoch": 1393,
+        "total_updates": 8358,
+        "train_rows": 133815,
+        "val_rows": 14880,
+        "lr_backbone": 1.5e-05,
+        "lr_head": 0.0003,
+        "warmup_steps": 696,
+        "parent": "s1_384",
+        "optimizer_reset": true,
+        "scheduler_reset": true,
+        "ema_enabled": true,
+        "ema_reset": true,
+        "ema_decay": 0.9995,
+        "holdout_independent": true,
+        "config": "configs/s2_448.json",
+        "config_sha256": "94d1d3242de5a5105038f97e5aafaefece08323ea4f9a1ddb1fa25b0a83b8286"
+      },
+      "s3_576": {
+        "image_size": 576,
+        "epochs": 4,
+        "logical_batch_size": 80,
+        "steps_per_epoch": 1672,
+        "total_updates": 6688,
+        "train_rows": 133815,
+        "val_rows": 14880,
+        "lr_backbone": 8e-06,
+        "lr_head": 0.0002,
+        "warmup_steps": 668,
+        "parent": "s2_448",
+        "optimizer_reset": true,
+        "scheduler_reset": true,
+        "ema_enabled": true,
+        "ema_reset": true,
+        "ema_decay": 0.9995,
+        "holdout_independent": true,
+        "config": "configs/s3_576.json",
+        "config_sha256": "787686f7a90a11348a72288125fb2ed4520742173686961fdb6ef4dd59d85b39"
+      },
+      "full_576": {
+        "image_size": 576,
+        "epochs": 5,
+        "logical_batch_size": 80,
+        "steps_per_epoch": 1858,
+        "total_updates": 9290,
+        "train_rows": 148695,
+        "val_rows": 0,
+        "lr_backbone": 4e-06,
+        "lr_head": 0.00012,
+        "warmup_steps": 557,
+        "parent": "s3_576",
+        "optimizer_reset": true,
+        "scheduler_reset": true,
+        "ema_enabled": true,
+        "ema_reset": true,
+        "ema_decay": 0.9995,
+        "holdout_independent": false,
+        "train_policy": "all_official_rows",
+        "independent_validation": false,
+        "config": "configs/full_576.json",
+        "config_sha256": "3f73c86be4c2fe00a48d0475c3345b181afe4a1f4be5ef26185ad95012fc8b1b"
+      }
+    },
+    "total_updates": 38266,
+    "verify_passed": true
+  },
+  "numeric_recipe_equivalence": {
+    "passed": true,
+    "compared_stages": [
+      "s1_384",
+      "s2_448",
+      "s3_576",
+      "full_576"
+    ],
+    "fields": [
+      "augment",
+      "sampler",
+      "training parameters",
+      "view and batch parameters"
+    ]
+  },
+  "documentation_links": {
+    "passed": true,
+    "broken": []
+  },
+  "current_submission": {
+    "path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060",
+    "rows": 37444,
+    "checks": "9/9",
+    "validation_source": "results/p75_supervision_rebuild_20260929/submission_check.log",
+    "regenerated": false
+  },
+  "gpu_started": false,
+  "project_training_started": false,
+  "local_metrics": null,
+  "platform_metrics": null,
+  "main_sync_mode": "automatic: git pull --rebase --autostash origin main; merge --autostash; no manual stash pop"
+}

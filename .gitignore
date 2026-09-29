@@ -92,3 +92,8 @@ outputs/search_20260923/
 
 /outputs/codex/palm_v13_rules_20260929/
 /outputs/codex/palm_v13_ema_20260929/
+
+# Private outputs for canonical Aegis team strategies.
+/outputs/codex/aegis_aligned448*/
+/outputs/codex/aegis_resolution_ladder*/
+/outputs/codex/aegis_team_strategy_naming_20260929/
