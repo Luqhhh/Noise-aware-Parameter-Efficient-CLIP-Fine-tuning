@@ -1,6 +1,6 @@
 # Noise-Aware Parameter-Efficient CLIP Fine-Tuning
 
-**2026-09-29 P75_MASK_E6_EXTENSION 已授权：**新6小时预算已冻结，local步时测量计费252.6秒，保守总成本约4.50小时并通过20%余量门禁；正式两臂由各自E4恢复，后台流程按E5/E6共同边界执行并归档。B因缺少已有绑定flip特征未启动，不重编码补缺。尚无新E6识别结果或平台成绩，不自动C1/C2或上传。现役L05_T14_P060平台仍为 **66.94797564362783%**。实际进度见[执行记录](docs/p75_mask_e6_execution_20260929.md)，旧E4和预算保持不变。
+**2026-09-29 P75_RESOLUTION_LADDER 策略工程准备完成：**已迁移强增强、soft CE、平方根倒数采样、384→448→576学习率阶梯与最终全量续训，使用本项目原始图像和固定组隔离验证；45项CPU检查通过，真实官方CLIP的224输出一致、三个目标分辨率前向通过。未启动GPU实验，新local/platform成绩均未测，参考仓库76.5890%不是本项目成绩。现役L05_T14_P060平台仍为 **66.94797564362783%**。配置、命令与停止边界见[策略工程记录](docs/palm_v13_strategy_preparation_20260929.md)；既有E6执行仍按[原记录](docs/p75_mask_e6_execution_20260929.md)管理。
 
 当前为官方确认的复赛 **750 类**，148,695 张训练图、37,444 张测试图；资产来源见[数据集元信息](docs/rematch_dataset_20260921.md)。此前交付与实验指标见[README 状态沿革](docs/history/readme_status_before_local_only_20260929.md)。
 

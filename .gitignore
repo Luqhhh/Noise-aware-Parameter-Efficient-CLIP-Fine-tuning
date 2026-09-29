@@ -1,5 +1,6 @@
 # Python
 # Private fixed-pair runtime, checkpoints, logs and submissions
+/outputs/codex/palm_v13_prepare_20260929/
 /outputs/codex/p75_semantic_mask_pair_20260929/
 __pycache__/
 *.pyc
