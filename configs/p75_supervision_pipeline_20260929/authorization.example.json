@@ -1,0 +1,14 @@
+{
+  "approved": false,
+  "experiment_id": "P75_MASK_E6_EXTENSION",
+  "manifest_sha256": "REPLACE_ONLY_AFTER_SEPARATE_EXPLICIT_USER_AUTHORIZATION",
+  "budget_seconds": 21600,
+  "user_instruction": "",
+  "measured_cost": {
+    "seconds_per_local_update": null,
+    "validation_seconds": null,
+    "overhead_seconds": null
+  },
+  "local_step_measurement_source": null,
+  "validation_measurement_source": null
+}

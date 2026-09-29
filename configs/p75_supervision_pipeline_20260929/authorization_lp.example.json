@@ -1,0 +1,11 @@
+{
+  "approved": false,
+  "experiment_id": "P75_MASK_LP",
+  "manifest_sha256": "REPLACE_ONLY_AFTER_SEPARATE_EXPLICIT_USER_AUTHORIZATION",
+  "budget_seconds": 3600,
+  "user_instruction": "",
+  "existing_flip_features": {
+    "path": "EXISTING_CURRENT_STAGE_BOUND_VALIDATION_FLIP_FEATURES_ONLY",
+    "sha256": "REQUIRED"
+  }
+}

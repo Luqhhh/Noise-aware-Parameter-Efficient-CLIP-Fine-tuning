@@ -1,0 +1,6 @@
+{
+  "status": "proposal",
+  "local_result": null,
+  "platform_result": null,
+  "decision": "Await separate authorization and all preflight gates; no automatic C1/C2 or platform upload"
+}
