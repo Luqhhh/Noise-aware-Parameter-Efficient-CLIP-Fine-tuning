@@ -1,0 +1,60 @@
+{
+  "experiment_id": "P75_RESOLUTION_LADDER",
+  "status": "main_integration_verified",
+  "strategy_only": true,
+  "integration_directory": "/home/lux1/noise/worktrees/palm_v13_main_integration_20260929",
+  "scheme_commit": "2a2f5d7d176db93b437abaed18ed2a039d473485",
+  "main_parent_commit": "17eb035da9176ad8f0d266bc5e46a09fe314b77d",
+  "conflicts_resolved": [
+    "README.md",
+    "docs/current_execution_plan.md"
+  ],
+  "preserved_records": [
+    "B448_STRATEGY_20260929",
+    "P75_MASK_E6_EXTENSION"
+  ],
+  "cpu_tests_passed": 45,
+  "cpu_forward": {
+    "status": "cpu_forward_passed",
+    "gpu_started": false,
+    "training_started": false,
+    "native224_max_absolute_difference": 0.0,
+    "resolution_logits_shapes": {
+      "384": [
+        1,
+        750
+      ],
+      "448": [
+        1,
+        750
+      ],
+      "576": [
+        1,
+        750
+      ]
+    },
+    "all_parameters_fp32": true,
+    "trainable_parameters": 88233966,
+    "official_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "local_metrics": null,
+    "platform_metrics": null
+  },
+  "prepared_split": {
+    "train_rows": 133815,
+    "val_rows": 14880,
+    "overlapping_content_groups": 0,
+    "val_rows_in_overlapping_groups": 0
+  },
+  "plan_path": "/home/lux1/noise/worktrees/palm_v13_main_integration_20260929/outputs/codex/palm_v13_prepare_20260929/main_prepared/plan.json",
+  "plan_sha256": "8b9564b3c6b0cdaddcc49de5c9f9f94108b1b46c9486d86857f18e2c36ad7a52",
+  "gpu_started": false,
+  "project_training_started": false,
+  "local_metrics": null,
+  "platform_metrics": null,
+  "command": "PYTHONPATH=reproducibility/aegis_f1 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=2 python3 -m pytest tests/test_palm_v13_strategy.py reproducibility/aegis_f1/tests/test_model.py -q",
+  "initial_main_parent_commit": "3c5d6f43f73ea0a44859bac66fe132d6c1ec9d36",
+  "upstream_changes_during_push": [
+    "results/b448_strategy_20260929/delivery.json",
+    "results/b448_strategy_20260929/main_integration_verification.json"
+  ]
+}

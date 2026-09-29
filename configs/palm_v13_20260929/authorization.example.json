@@ -1,0 +1,12 @@
+{
+  "authorized": false,
+  "operation": "train",
+  "stage": "s1_384",
+  "plan_sha256": "REPLACE_AFTER_REVIEW",
+  "max_seconds": null,
+  "measured_seconds_per_update": null,
+  "measured_validation_seconds": null,
+  "measured_overhead_seconds": null,
+  "estimated_seconds": null,
+  "note": "Proposal only. Requires a later user-authorized GPU experiment, cost measurements and a finite budget. Never consumed by prepare or CPU tests."
+}
