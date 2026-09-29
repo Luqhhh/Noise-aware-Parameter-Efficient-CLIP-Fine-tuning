@@ -19,7 +19,6 @@ sys.path.insert(0, str(ROOT / "reproducibility/aegis_f1"))
 from v2 import training_utils
 from v2.core import logical_backward
 from v2.plan import dump, sha
-from v2.runtime import Budget
 from v3.core import (PairedImages, isolated_cpu_rng, mix_supervision, paired_draws,
                      weighted_backward)
 from v3.plan import ARMS, check_recipe, frozen_groups, normalize_targets, verify, write_rows
@@ -174,53 +173,28 @@ def test_recipe_cannot_silently_expand_the_fixed_pair(field, value):
         check_recipe(recipe)
 
 
-@pytest.mark.parametrize("steps", [0, 3])
-def test_false_authorization_never_queries_cuda(tmp_path, monkeypatch, steps):
+def test_false_authorization_never_queries_cuda(tmp_path, monkeypatch):
     auth = tmp_path / "authorization.json"
     dump(auth, dict(authorized=False))
     monkeypatch.setattr(torch.cuda, "is_available", lambda: pytest.fail("Unauthorized CUDA query"))
     monkeypatch.setattr(torch.cuda, "is_bf16_supported", lambda: pytest.fail("Unauthorized CUDA query"))
     with pytest.raises(ValueError, match="not authorized"):
-        run_pair(tmp_path / "missing_plan.json", auth, steps)
+        run_pair(tmp_path / "missing_plan.json", auth)
     assert not torch.cuda.is_initialized()
 
 
-@pytest.mark.parametrize("budget,passes", [(42, False), (43, True)])
-def test_pair_authorization_counts_both_arms_validation_and_twenty_percent_reserve(tmp_path, monkeypatch, budget, passes):
+def test_pair_authorization_binds_operation_and_plan_without_cost_gate(tmp_path, monkeypatch):
     from v3.plan import authorize
-    plan_path, cost_path, auth_path = [tmp_path / name for name in ("plan.json", "cost.json", "auth.json")]
+    plan_path, auth_path = [tmp_path / name for name in ("plan.json", "auth.json")]
     dump(plan_path, {})
     plan = dict(total_updates=20, recipe=dict(epochs=2))
     monkeypatch.setattr("v3.plan.verify", lambda path: plan)
-    dump(cost_path, dict(status="measured_probe", plan_sha256=sha(plan_path), updates_per_arm=5,
-                         seconds_per_update=.5, validation_seconds_per_arm_epoch=3, overhead_seconds=4,
-                         includes_decode_augmentation_wait=True, includes_full_raw_ema_validation=True,
-                         includes_checkpoint_write=True, usable_as_parent=False))
-    dump(auth_path, dict(authorized=True, operation="train", plan_sha256=sha(plan_path), max_seconds=budget,
-                         cost_report=str(cost_path), cost_report_sha256=sha(cost_path)))
-    # 20*.5 + 2 arms*2 epochs*3 + (2+1)*4 = 34 seconds before reserve.
-    if passes:
-        assert authorize(plan_path, auth_path, "train")[1] == plan
-    else:
-        with pytest.raises(ValueError, match="20%"):
-            authorize(plan_path, auth_path, "train")
-
-
-def test_pair_authorization_rejects_incomplete_probe_and_changed_cost_evidence(tmp_path, monkeypatch):
-    from v3.plan import authorize
-    plan_path, cost_path, auth_path = [tmp_path / name for name in ("plan.json", "cost.json", "auth.json")]
-    dump(plan_path, {})
-    monkeypatch.setattr("v3.plan.verify", lambda path: dict(total_updates=20, recipe=dict(epochs=2)))
-    dump(cost_path, dict(status="measured_probe", plan_sha256=sha(plan_path), updates_per_arm=5,
-                         includes_decode_augmentation_wait=True, includes_full_raw_ema_validation=False,
-                         includes_checkpoint_write=True, usable_as_parent=False))
-    auth = dict(authorized=True, operation="train", plan_sha256=sha(plan_path), max_seconds=100,
-                cost_report=str(cost_path), cost_report_sha256=sha(cost_path))
+    auth = dict(authorized=True, operation="train", plan_sha256=sha(plan_path))
     dump(auth_path, auth)
-    with pytest.raises(ValueError, match="Incomplete measured probe"):
-        authorize(plan_path, auth_path, "train")
-    dump(cost_path, {})
-    with pytest.raises(ValueError, match="Bound measured pair cost"):
+    assert authorize(plan_path, auth_path, "train")[1] == plan
+    auth["plan_sha256"] = "other"
+    dump(auth_path, auth)
+    with pytest.raises(ValueError, match="bind"):
         authorize(plan_path, auth_path, "train")
 
 
@@ -306,7 +280,7 @@ def cpu_pair(tmp_path, monkeypatch):
         with isolated_cpu_rng(13):
             model = TinyClassifier()
         results[arm] = fit_arm(model, plan, workspace, cfg, rows, val, draws, supervision,
-                               arm, run_root / arm, torch.device("cpu"), Budget(60))
+                               arm, run_root / arm, torch.device("cpu"))
     dump(run_root / "status.json", dict(status="complete", plan_sha256=sha(workspace / "plan.json")))
     monkeypatch.setattr("v3.report.verify", lambda path: plan)
     return workspace, run_root, results

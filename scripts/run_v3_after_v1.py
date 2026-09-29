@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
-import math
 import os
 from pathlib import Path
 import subprocess
@@ -52,28 +51,12 @@ def gpu_busy():
     return bool(result.stdout.strip())
 
 
-def train_estimate(plan, cost):
-    if cost["status"] != "measured_probe" or cost["plan_sha256"] != plan["sha256"]:
-        raise ValueError("Invalid v3 cost report")
-    values = [cost[k] for k in ("seconds_per_update", "validation_seconds_per_arm_epoch", "overhead_seconds")]
-    if not all(isinstance(x, (int, float)) and math.isfinite(x) and x > 0 for x in values):
-        raise ValueError("Invalid v3 cost report")
-    return plan["total_updates"] * values[0] + 2 * plan["epochs"] * values[1] + (plan["epochs"] + 1) * values[2]
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--v1-status", required=True)
     parser.add_argument("--plan", required=True)
     parser.add_argument("--output", required=True)
-    parser.add_argument("--wait-hours", type=float, default=8)
-    parser.add_argument("--probe-hours", type=float, default=2)
-    parser.add_argument("--train-hours", type=float, default=8)
-    parser.add_argument("--infer-hours", type=float, default=2)
     args = parser.parse_args()
-    if any(not math.isfinite(x) or x <= 0 for x in
-           (args.wait_hours, args.probe_hours, args.train_hours, args.infer_hours)):
-        parser.error("All time limits must be finite and positive")
     from v2.plan import sha
     from v3.plan import verify
 
@@ -85,11 +68,9 @@ def main():
                PYTHONUNBUFFERED="1", OMP_NUM_THREADS="2", MKL_NUM_THREADS="2", CUDA_VISIBLE_DEVICES="0")
     status_path = output / "status.json"
     status = dict(status="waiting_for_v1", stage="wait", v1_status=str(v1_status), plan=str(plan_path),
-                  started_at=utc_now(), runner_pid=os.getpid(), train_budget_seconds=args.train_hours * 3600,
-                  automatic_retry=False, platform_score=None)
+                  started_at=utc_now(), runner_pid=os.getpid(), automatic_retry=False, platform_score=None)
     dump(status_path, status)
     child = None
-    started = time.monotonic()
 
     def update(**fields):
         status.update(fields, heartbeat_at=utc_now())
@@ -114,48 +95,23 @@ def main():
 
     try:
         while True:
-            if time.monotonic() - started > args.wait_hours * 3600:
-                raise TimeoutError("v1 did not finish within the handoff wait budget")
             completed = check_v1(v1_status)
             if completed and not gpu_busy():
                 break
             update(stage="wait_for_gpu" if completed else "wait_for_v1",
                    v1_completed=bool(completed), gpu_busy=bool(completed))
             time.sleep(30)
-        plan = verify(plan_path)
+        verify(plan_path)
         plan_sha = sha(plan_path)
-        plan_info = dict(sha256=plan_sha, total_updates=plan["total_updates"], epochs=plan["recipe"]["epochs"])
         update(stage="v1_checked", v1_completed=True, v1_submission=completed["zip"], plan_sha256=plan_sha)
-        probe_budget = args.probe_hours * 3600
-        probe_auth = output / "probe_authorization.json"
-        dump(probe_auth, dict(authorized=True, operation="probe", plan_sha256=plan_sha,
-                              max_seconds=probe_budget, estimated_seconds=probe_budget * .6,
-                              source="user_requested_v1_then_v3_20260930"))
-        run("probe", [sys.executable, "-u", "-m", "v3.runtime", "probe", "--plan", str(plan_path),
-                      "--authorization", str(probe_auth), "--steps", "5"])
-        cost_path = plan_path.parent / "runs/probe/cost_report.json"
-        cost = read(cost_path)
-        estimate = train_estimate(plan_info, cost)
-        train_budget = args.train_hours * 3600
-        update(stage="cost_gate", measured_train_estimate_seconds=estimate,
-               cost_report=str(cost_path), cost_report_sha256=sha(cost_path))
-        if estimate > .8 * train_budget:
-            update(status="cost_gate_stopped", stage="cost_gate", reason="Measured pair exceeds 80% of finite training budget",
-                   training_started=False, completed_at=utc_now())
-            return
-        if gpu_busy():
-            raise RuntimeError("Another CUDA process began after the v3 probe; preserving its GPU slot")
         train_auth = output / "train_authorization.json"
         dump(train_auth, dict(authorized=True, operation="train", plan_sha256=plan_sha,
-                              max_seconds=train_budget, estimated_seconds=estimate,
-                              cost_report=str(cost_path), cost_report_sha256=sha(cost_path),
                               source="user_requested_v1_then_v3_20260930"))
         run("train", [sys.executable, "-u", "-m", "v3.runtime", "train", "--plan", str(plan_path),
                       "--authorization", str(train_auth)])
         submission = plan_path.parent / "submission"
         run("infer", [sys.executable, "-u", "-m", "v3.delivery", "--plan", str(plan_path),
-                      "--output", str(submission), "--max-seconds", str(args.infer_hours * 3600),
-                      "--device", "cuda", "--execute"])
+                      "--output", str(submission), "--device", "cuda", "--execute"])
         package = read(submission / "report.json")
         update(status="completed", stage="delivered", csv=str(submission / "pred_results.csv"),
                zip=str(submission / "submission.zip"), delivery=package, completed_at=utc_now())
