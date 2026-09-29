@@ -1,6 +1,6 @@
 """Explicitly gated local GPU operations. Import/--help does not initialize CUDA.
 
-Stage initialization transfers weights only; optimizer, scheduler and EMA reset.
+Stage initialization transfers raw weights only; optimizer and scheduler reset.
 Partial stages are saved for audit, never accepted as completed parent models.
 No background runner, implicit resume, ensemble, prior fitting or test labels.
 """
@@ -71,9 +71,9 @@ def read_checkpoint(path, plan, stage):
 
 
 def choose_parent(payload):
-    chosen = payload["metrics"]["chosen"]
-    require(chosen in ("raw", "ema"), "Unknown parent weights")
-    return payload["model" if chosen == "raw" else "ema"]
+    require(payload["metrics"]["chosen"] == "raw" and "ema" not in payload,
+            "Only raw parent weights are allowed; EMA remains unconfirmed")
+    return payload["model"]
 
 
 def records_and_split(workspace):
@@ -159,6 +159,8 @@ def train(plan_path, authorization, stage, probe_steps=0):
     plan = verify_prepared(plan_path)
     workspace = Path(plan_path).resolve().parent
     cfg = json_read(workspace / plan["stages"][stage]["config"])
+    require(cfg["train"].get("weight_averaging") is False and "ema_decay" not in cfg["train"],
+            "Stage execution must disable weight averaging")
     records, split = records_and_split(workspace)
     final = cfg["local_replay"]["final_stage"]
     require(not final or not probe_steps, "Probe dev stages; final V13 has no independent holdout")
@@ -185,7 +187,6 @@ def train(plan_path, authorization, stage, probe_steps=0):
     optimizer = reference.build_optimizer(model, cfg["train"])
     scheduler = reference.build_scheduler(optimizer, cfg["train"]["epochs"], cfg["train"]["warmup_epochs"],
                                           len(train_loader), cfg["train"]["min_lr_ratio"])
-    ema = reference.ModelEMA(model, cfg["train"]["ema_decay"])
     binding = dict(experiment_id=plan["experiment_id"], data_version=plan["data_version"], source_commit=plan["source_commit"],
                    official_sha256=plan["recipe"]["official_sha256"], manifest_sha256=sha(workspace / "train_manifest.csv"),
                    workspace=str(workspace), stage=stage, stage_config_sha256=plan["stages"][stage]["config_sha256"],
@@ -194,7 +195,7 @@ def train(plan_path, authorization, stage, probe_steps=0):
     epoch = -1
 
     def payload(metrics):
-        return dict(model=cpu_state(model), ema={k: v.detach().cpu().clone() for k, v in ema.state.items()},
+        return dict(model=cpu_state(model),
                     optimizer=optimizer.state_dict(), scheduler=scheduler.state_dict(),
                     rng=dict(python=random.getstate(), numpy=np.random.get_state(), torch=torch.get_rng_state(),
                              cuda=torch.cuda.get_rng_state_all(), sampler=generator.get_state()),
@@ -220,7 +221,7 @@ def train(plan_path, authorization, stage, probe_steps=0):
                 optimizer.zero_grad(set_to_none=True)
                 loss = logical_backward(model, images, targets, cfg["local_replay"]["micro_batch_size"], amp)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), cfg["train"]["grad_clip"])
-                optimizer.step(); scheduler.step(); ema.update(model)
+                optimizer.step(); scheduler.step()
                 updates += 1; loss_sum += loss
                 if probe_steps:
                     torch.cuda.synchronize(); seconds.append(time.monotonic() - start)
@@ -230,19 +231,13 @@ def train(plan_path, authorization, stage, probe_steps=0):
                     break
             del images, targets
             evaluation_start = time.monotonic()
-            raw_metrics, ema_metrics, score = None, None, 0.0
+            raw_metrics, score = None, 0.0
             chosen = "raw"
             if val_loader is not None:
                 raw_metrics, predictions, truth = evaluate(model, val_loader, plan["recipe"]["num_classes"], device, budget)
-                raw = cpu_state(model)
-                model.load_state_dict(ema.state, strict=True)
-                ema_metrics, ema_predictions, _ = evaluate(model, val_loader, plan["recipe"]["num_classes"], device, budget)
-                model.load_state_dict(raw, strict=True)
-                chosen = "ema" if ema_metrics["macro_accuracy"] >= raw_metrics["macro_accuracy"] else "raw"
-                metrics = ema_metrics if chosen == "ema" else raw_metrics
-                score = metrics["macro_accuracy"] + .5 * metrics["accuracy"]
+                score = raw_metrics["macro_accuracy"] + .5 * raw_metrics["accuracy"]
                 np.savez_compressed(destination / f"holdout_epoch{epoch}.npz", indices=np.asarray(split["val"]),
-                                    labels=np.asarray(truth), raw=np.asarray(predictions), ema=np.asarray(ema_predictions))
+                                    labels=np.asarray(truth), raw=np.asarray(predictions))
             validation_seconds = time.monotonic() - evaluation_start
             if probe_steps:
                 require(len(seconds) >= 3, "At least three probe updates required")
@@ -264,7 +259,7 @@ def train(plan_path, authorization, stage, probe_steps=0):
                      dataloader_wait_included=True, elapsed_seconds=elapsed, peak_allocated_bytes=torch.cuda.max_memory_allocated(),
                      complete_holdout_rows=len(split["val"]), parent=parent, plan_sha256=sha(plan_path)))
                 return
-            entry = dict(epoch=epoch, chosen=chosen, val=raw_metrics, val_ema=ema_metrics,
+            entry = dict(epoch=epoch, chosen=chosen, val=raw_metrics,
                          selection_score=score, train_loss=loss_sum / len(train_loader),
                          validation_is_independent=not final, validation_seconds=validation_seconds)
             history.append(entry)
@@ -306,7 +301,7 @@ def write_submission(output, files, predictions, classes):
     with csv_path.open("w", newline="") as f:
         for name, label in zip(files, predictions):
             require(Path(name).name == name and "," not in name and "\n" not in name and "\r" not in name, "Unsafe test filename")
-            f.write(f"{name},{int(label):04d}\n")
+            f.write(f"{name}, {int(label):04d}\n")
     with zipfile.ZipFile(output / "submission.zip", "w", zipfile.ZIP_DEFLATED) as z:
         z.write(csv_path, arcname="pred_results.csv")
 

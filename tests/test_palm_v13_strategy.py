@@ -17,8 +17,8 @@ sys.path.insert(0, str(ROOT / "reproducibility/aegis_f1"))
 sys.path.insert(0, str(ROOT / "scripts"))
 from palm_v13.core import check_checkpoint, logical_backward, reference, sample_weights
 from palm_v13.model import LocalFTClassifier
-from palm_v13.plan import authorize, check_split, cost_estimate, json_read, stage_plan, verify_vendor
-from palm_v13.runtime import Budget, BudgetExpired, train, write_submission
+from palm_v13.plan import authorize, check_raw_policy, check_split, cost_estimate, json_read, stage_plan, verify_vendor
+from palm_v13.runtime import Budget, BudgetExpired, choose_parent, train, write_submission
 from check_submission import check_csv, check_zip
 
 
@@ -76,7 +76,7 @@ def test_stage_update_budget_resets_each_stage_and_counts_drop_last():
         s = stage_plan(cfg, 148695 if size == 576 and epochs == 5 else 133815, 14880, "official")
         assert (s["image_size"],s["epochs"],s["logical_batch_size"],s["lr_backbone"],s["lr_head"]) == (size,epochs,batch,bb,head)
         assert s["total_updates"] == s["train_rows"] // batch * epochs
-        assert s["optimizer_reset"] and s["scheduler_reset"] and s["ema_reset"]
+        assert s["optimizer_reset"] and s["scheduler_reset"] and s["weight_averaging"] is False
 
 
 def test_cosine_scheduler_uses_actual_logical_updates():
@@ -119,7 +119,7 @@ def checkpoint_fixture():
     plan = dict(experiment_id="strategy",data_version="20260921",source_commit="source",
                 recipe=dict(official_sha256="official",num_classes=750),
                 inputs={"/workspace/train_manifest.csv":"manifest"}, stages={"s1_384":stage})
-    payload = dict(epoch=2,global_step=9,num_classes=750,image_size=384,
+    payload = dict(epoch=2,global_step=9,num_classes=750,image_size=384,metrics=dict(chosen="raw"),
                    binding=dict(experiment_id="strategy",data_version="20260921",source_commit="source",official_sha256="official",
                                 manifest_sha256="manifest",stage="s1_384",complete=True,completed_epochs=10,stage_config_sha256="config"))
     return payload, plan
@@ -128,6 +128,27 @@ def checkpoint_fixture():
 def test_complete_selected_earlier_epoch_is_valid_parent():
     payload, plan = checkpoint_fixture()
     check_checkpoint(payload, plan, "s1_384")
+
+
+def test_averaged_checkpoint_cannot_be_a_stage_parent():
+    payload, plan = checkpoint_fixture()
+    payload["model"] = {"weight": torch.tensor([1.])}
+    assert choose_parent(payload) is payload["model"]
+    payload["ema"] = {"weight": torch.tensor([2.])}
+    payload["metrics"]["chosen"] = "ema"
+    with pytest.raises(ValueError, match="raw"):
+        choose_parent(payload)
+    with pytest.raises(ValueError, match="raw"):
+        check_checkpoint(payload, plan, "s1_384")
+
+
+@pytest.mark.parametrize("field,value", [("parent_policy","best_chosen_on_holdout"),("final_weights","ema"),("weight_averaging",True)])
+def test_raw_policy_rejects_legacy_and_averaged_execution(field, value):
+    recipe = dict(parent_policy="best_raw_on_holdout", final_weights="raw", weight_averaging=False)
+    check_raw_policy(recipe)
+    recipe[field] = value
+    with pytest.raises(ValueError, match="raw-only"):
+        check_raw_policy(recipe)
 
 
 @pytest.mark.parametrize("field,value", [("data_version","old"),("complete",False),("manifest_sha256","other"),("completed_epochs",9)])
@@ -168,6 +189,7 @@ def test_native_224_parity_and_interpolated_384_gradient_checkpointing():
 def test_csv_zip_delivers_exact_names_and_four_digit_labels(tmp_path):
     out=tmp_path/'submission';files=['a.jpg','b.png'];names=set(files)
     write_submission(out,files,np.array([0,749]),750)
+    assert (out/'pred_results.csv').read_bytes() == b'a.jpg, 0000\nb.png, 0749\n'
     assert check_csv(out/'pred_results.csv',names,750)[0]
     assert check_zip(out/'submission.zip')[0]
     with zipfile.ZipFile(out/'submission.zip') as z:
@@ -196,6 +218,7 @@ def test_prepared_recipe_is_strategy_only_not_author_data_or_cleanup():
     assert r['split_mode']=='frozen_grouped' and r['final_train_policy']=='all_official_rows'
     assert 'dedup_parent' not in r
     assert r['official_train_rows']==148695
+    check_raw_policy(r)
 
 
 def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_path, monkeypatch):
@@ -233,7 +256,8 @@ def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_
         w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
     dump(tmp_path/'split.json',dict(train=list(range(8)),val=[8,9]))
     plan=dict(experiment_id='synthetic_cpu',data_version='20260921',source_commit='reference',
-              recipe=dict(num_classes=2,official_sha256='official',seed=13),
+              recipe=dict(num_classes=2,official_sha256='official',seed=13,
+                          parent_policy='best_raw_on_holdout',final_weights='raw',weight_averaging=False),
               inputs={str(manifest):sha(manifest)},stages={})
     for i,name in enumerate(stages):
         cfg=dict(data=dict(train_dir=str(images),manifest='train_manifest.csv',split='split.json',image_size=32,
@@ -241,7 +265,7 @@ def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_
                  augment=dict(rrc_scale=[.35,1.],color_jitter=.5,rand_augment=True,rand_augment_ops=2,rand_augment_magnitude=7,
                               random_erase=.3,mixup=.2,cutmix=1.,mix_prob=.8,label_smoothing=.15),
                  train=dict(epochs=2 if i==0 else 1,seed=13,lr_backbone=3e-5,lr_head=5e-4,llrd_gamma=1.,
-                            weight_decay=.15,warmup_epochs=.5,min_lr_ratio=.02,ema_decay=.9995,grad_clip=1.,log_every=200),
+                            weight_decay=.15,warmup_epochs=.5,min_lr_ratio=.02,weight_averaging=False,grad_clip=1.,log_every=200),
                  local_replay=dict(final_stage=i==2,micro_batch_size=2))
         config=tmp_path/(name+'.json');dump(config,cfg)
         spec=stage_plan(cfg,10 if i==2 else 8,0 if i==2 else 2,None)
@@ -259,8 +283,10 @@ def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_
         check_checkpoint(payload,plan,name)
         assert payload['global_step']==plan['stages'][name]['total_updates']
         assert payload['scheduler']['last_epoch']==payload['global_step']
-    assert len(evaluations)==6  # raw+EMA for three dev epochs; none for all-data stage
+        assert 'ema' not in payload and payload['metrics']['chosen']=='raw'
+    assert len(evaluations)==3  # one raw evaluation per dev epoch; none for all-data stage
     final=torch.load(tmp_path/'runs/v13_final/last.pt',map_location='cpu',weights_only=False)
     assert final['metrics']['chosen']=='raw' and final['metrics']['val'] is None
     assert final['binding']['parent']['path'].endswith('s2_448/best.pt')
+    assert final['binding']['parent']['weights']=='raw'
     assert not torch.cuda.is_initialized()

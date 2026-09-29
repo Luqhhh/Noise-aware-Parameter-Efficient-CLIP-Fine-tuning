@@ -1,0 +1,115 @@
+{
+  "experiment_id": "P75_RESOLUTION_LADDER_RULES_REVIEW",
+  "strategy_experiment_id": "P75_RESOLUTION_LADDER",
+  "status": "engineering_verified_rules_corrected",
+  "assessment_scope": "Current repository rules; no independent organizer certification of this implementation",
+  "experiment_status": "not_started",
+  "gpu_started": false,
+  "project_training_started": false,
+  "local_metrics": null,
+  "platform_metrics": null,
+  "branch": "codex/palm_v13_rules_20260929",
+  "base_commit": "10dd4df98838320309a51b9ba3858153db9ddf6d",
+  "rule_sources": [
+    "CLAUDE.md",
+    "COMPETITION_RULES_AGENT.md",
+    "docs/repechage_prep_20260831.md",
+    "docs/current_execution_plan.md"
+  ],
+  "findings_fixed": [
+    {
+      "finding": "Intermediate stage selection could transfer EMA weights",
+      "rule_status": "EMA/SWA/weight averaging remain unconfirmed; conservative project policy excludes them from formal paths",
+      "fix": "All stages train/select/transfer raw weights only; no EMA states; old averaged recipes/checkpoints rejected"
+    },
+    {
+      "finding": "Submission CSV omitted the space after comma required by CLAUDE.md",
+      "fix": "Exact filename, 0001 format with LF; CPU test asserts bytes and ZIP equality"
+    }
+  ],
+  "rule_checks": {
+    "backbone": "OpenAI official CLIP ViT-B/32",
+    "official_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "data_version": "20260921",
+    "external_training_data_or_fitted_assets": false,
+    "train_rows": 148695,
+    "classes": 750,
+    "parent_policy": "best_raw_on_holdout",
+    "weight_averaging": false,
+    "final_weights": "raw",
+    "final_checkpoint": "v13_final/last.pt, fixed fifth epoch",
+    "final_stage_independent_validation": false,
+    "test_usage": "deterministic inference only; no fitting, gradients or hyperparameter selection",
+    "views": [
+      "resize576",
+      "center",
+      "flip",
+      "resize806.4"
+    ],
+    "tta_policy": "Repository records user-confirmed organizer allowance on 2026-08-31 for single-checkpoint deterministic multiscale/flip TTA",
+    "submission_format": "filename, 0001; no header; ZIP contains identical pred_results.csv only",
+    "gpu_authorization": false,
+    "training_cost_measured": false
+  },
+  "tests": {
+    "total_passed": 49,
+    "strategy_checks_passed": 30,
+    "existing_model_checks_passed": 19,
+    "command": "PYTHONPATH=reproducibility/aegis_f1 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=2 python3 -m pytest tests/test_palm_v13_strategy.py reproducibility/aegis_f1/tests/test_model.py -q",
+    "cuda_initialized": false,
+    "synthetic_stage_chain_only": true
+  },
+  "plan_path": "/home/lux1/noise/worktrees/palm_v13_rules_20260929/outputs/codex/palm_v13_rules_20260929/prepared/plan.json",
+  "plan_sha256": "d2dde5727bf6155dfea66c70d2dbec17c48f728aa7e5bff91d7dc9bde7f8a17d",
+  "prepared_split": {
+    "train_rows": 133815,
+    "val_rows": 14880,
+    "overlapping_content_groups": 0,
+    "val_rows_in_overlapping_groups": 0
+  },
+  "prepared_stage_rule_checks": {
+    "s1_384": {
+      "weight_averaging": false,
+      "config_sha256": "e33bb5c6b58fb6dbeb7e4cf3b0bf88a048cb60f4945d80ffa410d4b5c84c4d70"
+    },
+    "s2_448": {
+      "weight_averaging": false,
+      "config_sha256": "ba7f1ba383f812a11e28adb2b736ab84ee747c55406d1a2e07ffcdebe1f31970"
+    },
+    "s3_576": {
+      "weight_averaging": false,
+      "config_sha256": "2f9457c4c1c71f29f6e14f534c379442c9fd4ef8eded7e72cfbbac311ad03170"
+    },
+    "v13_final": {
+      "weight_averaging": false,
+      "config_sha256": "3c37d3e160892ba328955adbb20c00c366d620cbbdac6a9b60f7dc770093237c"
+    }
+  },
+  "total_planned_updates": 38266,
+  "supersedes_for_execution": [
+    "results/palm_v13_strategy_preparation_20260929.json",
+    "results/palm_v13_strategy_main_integration_20260929.json"
+  ],
+  "current_submission": {
+    "path": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060",
+    "rows": 37444,
+    "checks": "9/9",
+    "zip_csv_bytes_equal": true,
+    "csv_sha256": "51e0efe7178528d23993a44351069d2829b0cd3669c195a77d8d879e66776a75",
+    "zip_sha256": "e788f07636b80abb61685335cd8df108803863ea36ffbde8b353f8e8317fcd7f",
+    "platform_percent": 66.94797564362783
+  },
+  "changed_files": [
+    ".gitignore",
+    "configs/palm_v13_20260929/recipe.json",
+    "reproducibility/aegis_f1/palm_v13/core.py",
+    "reproducibility/aegis_f1/palm_v13/plan.py",
+    "reproducibility/aegis_f1/palm_v13/reference.py",
+    "reproducibility/aegis_f1/palm_v13/runtime.py",
+    "tests/test_palm_v13_strategy.py",
+    "docs/current_execution_plan.md",
+    "docs/palm_v13_strategy_preparation_20260929.md",
+    "docs/palm_v13_rules_review_20260929.md",
+    "results/palm_v13_rules_review_20260929.json"
+  ]
+}
