@@ -17,8 +17,8 @@ sys.path.insert(0, str(ROOT / "reproducibility/aegis_f1"))
 sys.path.insert(0, str(ROOT / "scripts"))
 from palm_v13.core import check_checkpoint, logical_backward, reference, sample_weights
 from palm_v13.model import LocalFTClassifier
-from palm_v13.plan import authorize, check_raw_policy, check_split, cost_estimate, json_read, stage_plan, verify_vendor
-from palm_v13.runtime import Budget, BudgetExpired, choose_parent, train, write_submission
+from palm_v13.plan import authorize, check_weight_policy, check_split, cost_estimate, json_read, stage_plan, verify_vendor
+from palm_v13.runtime import Budget, BudgetExpired, WeightAverage, choose_parent, train, using_weights, write_submission
 from check_submission import check_csv, check_zip
 
 
@@ -76,7 +76,8 @@ def test_stage_update_budget_resets_each_stage_and_counts_drop_last():
         s = stage_plan(cfg, 148695 if size == 576 and epochs == 5 else 133815, 14880, "official")
         assert (s["image_size"],s["epochs"],s["logical_batch_size"],s["lr_backbone"],s["lr_head"]) == (size,epochs,batch,bb,head)
         assert s["total_updates"] == s["train_rows"] // batch * epochs
-        assert s["optimizer_reset"] and s["scheduler_reset"] and s["weight_averaging"] is False
+        assert s["optimizer_reset"] and s["scheduler_reset"] and s["ema_enabled"] and s["ema_reset"]
+        assert s["ema_decay"] == .9995
 
 
 def test_cosine_scheduler_uses_actual_logical_updates():
@@ -117,9 +118,10 @@ def test_authorization_requires_exact_plan_and_budget(tmp_path):
 def checkpoint_fixture():
     stage = dict(epochs=10, steps_per_epoch=3, image_size=384, config_sha256="config")
     plan = dict(experiment_id="strategy",data_version="20260921",source_commit="source",
-                recipe=dict(official_sha256="official",num_classes=750),
+                recipe=dict(official_sha256="official",num_classes=750,ema_enabled=False,ema_decay=.9995),
                 inputs={"/workspace/train_manifest.csv":"manifest"}, stages={"s1_384":stage})
     payload = dict(epoch=2,global_step=9,num_classes=750,image_size=384,metrics=dict(chosen="raw"),
+                   ema_enabled=False,ema_updates=0,
                    binding=dict(experiment_id="strategy",data_version="20260921",source_commit="source",official_sha256="official",
                                 manifest_sha256="manifest",stage="s1_384",complete=True,completed_epochs=10,stage_config_sha256="config"))
     return payload, plan
@@ -130,25 +132,69 @@ def test_complete_selected_earlier_epoch_is_valid_parent():
     check_checkpoint(payload, plan, "s1_384")
 
 
-def test_averaged_checkpoint_cannot_be_a_stage_parent():
+def test_ema_parent_requires_enabled_matching_recipe_and_state():
     payload, plan = checkpoint_fixture()
     payload["model"] = {"weight": torch.tensor([1.])}
     assert choose_parent(payload) is payload["model"]
     payload["ema"] = {"weight": torch.tensor([2.])}
     payload["metrics"]["chosen"] = "ema"
-    with pytest.raises(ValueError, match="raw"):
+    with pytest.raises(ValueError, match="EMA"):
         choose_parent(payload)
-    with pytest.raises(ValueError, match="raw"):
+    with pytest.raises(ValueError, match="EMA"):
         check_checkpoint(payload, plan, "s1_384")
+    plan["recipe"]["ema_enabled"] = True
+    payload.update(ema_enabled=True,ema_decay=.9995,ema_updates=9)
+    assert choose_parent(payload) is payload["ema"]
+    check_checkpoint(payload,plan,"s1_384")
 
 
-@pytest.mark.parametrize("field,value", [("parent_policy","best_chosen_on_holdout"),("final_weights","ema"),("weight_averaging",True)])
-def test_raw_policy_rejects_legacy_and_averaged_execution(field, value):
-    recipe = dict(parent_policy="best_raw_on_holdout", final_weights="raw", weight_averaging=False)
-    check_raw_policy(recipe)
+@pytest.mark.parametrize("field,value", [("parent_policy","best_raw_on_holdout"),("final_weights","ema"),
+    ("weight_averaging",True),("ema_decay",float('nan')),("ema_decay",1.),("ema_enabled","true")])
+def test_weight_policy_rejects_inconsistent_or_invalid_ema_configuration(field, value):
+    recipe = dict(parent_policy="best_chosen_on_holdout",final_weights="raw",ema_enabled=True,ema_decay=.9995)
+    check_weight_policy(recipe)
     recipe[field] = value
-    with pytest.raises(ValueError, match="raw-only"):
-        check_raw_policy(recipe)
+    with pytest.raises(ValueError):
+        check_weight_policy(recipe)
+
+
+@pytest.mark.parametrize('field,value',[('ema_updates',8),('ema_decay',.9),('ema',{})])
+def test_checkpoint_rejects_incomplete_or_mismatched_ema_state(field,value):
+    payload,plan=checkpoint_fixture()
+    plan['recipe']['ema_enabled']=True
+    payload.update(model={'weight':torch.tensor([1.])},ema={'weight':torch.tensor([2.])},
+                   ema_enabled=True,ema_decay=.9995,ema_updates=9)
+    payload['metrics']['chosen']='ema'
+    payload[field]=value
+    with pytest.raises(ValueError,match='EMA'):
+        check_checkpoint(payload,plan,'s1_384')
+
+
+def test_ema_accumulator_is_an_independent_single_trajectory_state():
+    state={'weight':torch.tensor([1.,3.])}
+    ema=WeightAverage(state,decay=.5)
+    state['weight'].copy_(torch.tensor([3.,7.]))
+    ema.update(state)
+    torch.testing.assert_close(ema.state['weight'],torch.tensor([2.,5.]))
+    state['weight'].copy_(torch.tensor([5.,9.]))
+    ema.update(state)
+    torch.testing.assert_close(ema.state['weight'],torch.tensor([3.5,7.]))
+    torch.testing.assert_close(state['weight'],torch.tensor([5.,9.]))
+    assert ema.count==2
+
+
+def test_ema_evaluation_restores_raw_weights_after_budget_failure():
+    model=torch.nn.Linear(2,2).train()
+    raw={k:v.detach().clone() for k,v in model.state_dict().items()}
+    averaged={k:v+1 for k,v in raw.items()}
+    with pytest.raises(BudgetExpired):
+        with using_weights(model,averaged):
+            for key,value in model.state_dict().items():
+                torch.testing.assert_close(value,averaged[key])
+            raise BudgetExpired('synthetic evaluation budget')
+    assert model.training
+    for key,value in model.state_dict().items():
+        torch.testing.assert_close(value,raw[key],rtol=0,atol=0)
 
 
 @pytest.mark.parametrize("field,value", [("data_version","old"),("complete",False),("manifest_sha256","other"),("completed_epochs",9)])
@@ -218,10 +264,12 @@ def test_prepared_recipe_is_strategy_only_not_author_data_or_cleanup():
     assert r['split_mode']=='frozen_grouped' and r['final_train_policy']=='all_official_rows'
     assert 'dedup_parent' not in r
     assert r['official_train_rows']==148695
-    check_raw_policy(r)
+    check_weight_policy(r)
+    assert r['ema_enabled'] and r['ema_decay']==.9995
 
 
-def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_path, monkeypatch):
+@pytest.mark.parametrize('ema_enabled',[False,True])
+def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_path, monkeypatch,ema_enabled):
     """Exercise real save/seal/load/initialize flow using ten synthetic images."""
     import csv
     from PIL import Image
@@ -257,7 +305,8 @@ def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_
     dump(tmp_path/'split.json',dict(train=list(range(8)),val=[8,9]))
     plan=dict(experiment_id='synthetic_cpu',data_version='20260921',source_commit='reference',
               recipe=dict(num_classes=2,official_sha256='official',seed=13,
-                          parent_policy='best_raw_on_holdout',final_weights='raw',weight_averaging=False),
+                          parent_policy='best_chosen_on_holdout' if ema_enabled else 'best_raw_on_holdout',
+                          final_weights='raw',ema_enabled=ema_enabled,ema_decay=.9995),
               inputs={str(manifest):sha(manifest)},stages={})
     for i,name in enumerate(stages):
         cfg=dict(data=dict(train_dir=str(images),manifest='train_manifest.csv',split='split.json',image_size=32,
@@ -265,28 +314,60 @@ def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_
                  augment=dict(rrc_scale=[.35,1.],color_jitter=.5,rand_augment=True,rand_augment_ops=2,rand_augment_magnitude=7,
                               random_erase=.3,mixup=.2,cutmix=1.,mix_prob=.8,label_smoothing=.15),
                  train=dict(epochs=2 if i==0 else 1,seed=13,lr_backbone=3e-5,lr_head=5e-4,llrd_gamma=1.,
-                            weight_decay=.15,warmup_epochs=.5,min_lr_ratio=.02,weight_averaging=False,grad_clip=1.,log_every=200),
+                            weight_decay=.15,warmup_epochs=.5,min_lr_ratio=.02,ema_enabled=ema_enabled,ema_decay=.9995,grad_clip=1.,log_every=200),
                  local_replay=dict(final_stage=i==2,micro_batch_size=2))
         config=tmp_path/(name+'.json');dump(config,cfg)
         spec=stage_plan(cfg,10 if i==2 else 8,0 if i==2 else 2,None)
         spec.update(config=config.name,config_sha256=sha(config));plan['stages'][name]=spec
     path=tmp_path/'plan.json';dump(path,plan)
     evaluations=[]
+    evaluation_states=[]
     actual_evaluate=rt.evaluate
     def observed_evaluate(*args):
         evaluations.append(1)
-        return actual_evaluate(*args)
+        evaluation_states.append(rt.cpu_state(args[0]))
+        metrics,predictions,truth=actual_evaluate(*args)
+        # Controlled scores exercise EMA selection without claiming real accuracy.
+        if ema_enabled:
+            metrics=dict(metrics,macro_accuracy=1. if len(evaluations)%2==0 else 0.)
+        return metrics,predictions,truth
     monkeypatch.setattr(rt,'evaluate',observed_evaluate)
-    for name in stages:
+    initialized=[]
+    actual_initialize=rt.initialize_model
+    def observed_initialize(*args):
+        model,parent=actual_initialize(*args)
+        initialized.append(rt.cpu_state(model))
+        return model,parent
+    monkeypatch.setattr(rt,'initialize_model',observed_initialize)
+    averages=[]
+    class ObservedAverage(WeightAverage):
+        def __init__(self,*args):
+            super().__init__(*args)
+            assert self.count==0
+            averages.append(self)
+    monkeypatch.setattr(rt,'WeightAverage',ObservedAverage)
+    for index,name in enumerate(stages):
         rt.train(path,'synthetic_cpu_only',name)
         payload=torch.load(tmp_path/'runs'/name/'last.pt',map_location='cpu',weights_only=False)
         check_checkpoint(payload,plan,name)
         assert payload['global_step']==plan['stages'][name]['total_updates']
         assert payload['scheduler']['last_epoch']==payload['global_step']
-        assert 'ema' not in payload and payload['metrics']['chosen']=='raw'
-    assert len(evaluations)==3  # one raw evaluation per dev epoch; none for all-data stage
+        assert payload['ema_enabled'] is ema_enabled
+        assert ('ema' in payload) is ema_enabled
+        assert payload['ema_updates']==(payload['global_step'] if ema_enabled else 0)
+        if name!='v13_final':
+            assert payload['metrics']['chosen']==('ema' if ema_enabled else 'raw')
+            raw_state=evaluation_states[-2 if ema_enabled else -1]
+            for key,value in payload['model'].items():
+                torch.testing.assert_close(value,raw_state[key],rtol=0,atol=0)
+        if index:
+            parent=torch.load(tmp_path/'runs'/stages[index-1]/'best.pt',map_location='cpu',weights_only=False)
+            for key,value in initialized[index].items():
+                torch.testing.assert_close(value,choose_parent(parent)[key],rtol=0,atol=0)
+    assert len(evaluations)==(6 if ema_enabled else 3)  # final all-data stage never evaluates
+    assert len(averages)==(3 if ema_enabled else 0)
     final=torch.load(tmp_path/'runs/v13_final/last.pt',map_location='cpu',weights_only=False)
     assert final['metrics']['chosen']=='raw' and final['metrics']['val'] is None
     assert final['binding']['parent']['path'].endswith('s2_448/best.pt')
-    assert final['binding']['parent']['weights']=='raw'
+    assert final['binding']['parent']['weights']==('ema' if ema_enabled else 'raw')
     assert not torch.cuda.is_initialized()

@@ -1,6 +1,7 @@
 """Explicitly gated local GPU operations. Import/--help does not initialize CUDA.
 
-Stage initialization transfers raw weights only; optimizer and scheduler reset.
+Stage initialization transfers one selected raw/EMA state; optimizer, scheduler
+and EMA reset. Final inference always uses the raw last checkpoint.
 Partial stages are saved for audit, never accepted as completed parent models.
 No background runner, implicit resume, ensemble, prior fitting or test labels.
 """
@@ -19,10 +20,11 @@ import zipfile
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler
+from aegis_clip.b448_strategy import WeightAverage, using_weights
 
 from .core import build_view, check_checkpoint, logical_backward, reference, sample_weights
 from .model import LocalFTClassifier
-from .plan import (ROOT, STAGES, authorize, dump, json_read, require, sha,
+from .plan import (ROOT, STAGES, authorize, check_stage_weight_policy, dump, json_read, require, sha,
                    verify_prepared)
 
 
@@ -71,9 +73,12 @@ def read_checkpoint(path, plan, stage):
 
 
 def choose_parent(payload):
-    require(payload["metrics"]["chosen"] == "raw" and "ema" not in payload,
-            "Only raw parent weights are allowed; EMA remains unconfirmed")
-    return payload["model"]
+    chosen = payload["metrics"]["chosen"]
+    require(chosen in ("raw", "ema"), "Unknown parent weight selection")
+    if chosen == "ema":
+        require(payload.get("ema_enabled") is True and isinstance(payload.get("ema"), dict),
+                "EMA parent selected without an enabled complete EMA state")
+    return payload["model" if chosen == "raw" else "ema"]
 
 
 def records_and_split(workspace):
@@ -159,8 +164,7 @@ def train(plan_path, authorization, stage, probe_steps=0):
     plan = verify_prepared(plan_path)
     workspace = Path(plan_path).resolve().parent
     cfg = json_read(workspace / plan["stages"][stage]["config"])
-    require(cfg["train"].get("weight_averaging") is False and "ema_decay" not in cfg["train"],
-            "Stage execution must disable weight averaging")
+    check_stage_weight_policy(cfg, plan["recipe"])
     records, split = records_and_split(workspace)
     final = cfg["local_replay"]["final_stage"]
     require(not final or not probe_steps, "Probe dev stages; final V13 has no independent holdout")
@@ -187,6 +191,8 @@ def train(plan_path, authorization, stage, probe_steps=0):
     optimizer = reference.build_optimizer(model, cfg["train"])
     scheduler = reference.build_scheduler(optimizer, cfg["train"]["epochs"], cfg["train"]["warmup_epochs"],
                                           len(train_loader), cfg["train"]["min_lr_ratio"])
+    # Reuse the existing single-trajectory accumulator on the model's FP32 state.
+    ema = WeightAverage(model.state_dict(), cfg["train"]["ema_decay"]) if cfg["train"]["ema_enabled"] else None
     binding = dict(experiment_id=plan["experiment_id"], data_version=plan["data_version"], source_commit=plan["source_commit"],
                    official_sha256=plan["recipe"]["official_sha256"], manifest_sha256=sha(workspace / "train_manifest.csv"),
                    workspace=str(workspace), stage=stage, stage_config_sha256=plan["stages"][stage]["config_sha256"],
@@ -195,12 +201,17 @@ def train(plan_path, authorization, stage, probe_steps=0):
     epoch = -1
 
     def payload(metrics):
-        return dict(model=cpu_state(model),
+        snapshot = dict(model=cpu_state(model),
                     optimizer=optimizer.state_dict(), scheduler=scheduler.state_dict(),
                     rng=dict(python=random.getstate(), numpy=np.random.get_state(), torch=torch.get_rng_state(),
                              cuda=torch.cuda.get_rng_state_all(), sampler=generator.get_state()),
                     binding=dict(binding), config=cfg, epoch=epoch, global_step=updates, metrics=metrics, history=history,
-                    num_classes=plan["recipe"]["num_classes"], image_size=cfg["data"]["image_size"])
+                    num_classes=plan["recipe"]["num_classes"], image_size=cfg["data"]["image_size"],
+                    ema_enabled=ema is not None, ema_decay=ema.decay if ema is not None else None,
+                    ema_updates=ema.count if ema is not None else 0)
+        if ema is not None:
+            snapshot["ema"] = {k: v.detach().cpu().clone() for k, v in ema.state.items()}
+        return snapshot
 
     try:
         for epoch in range(cfg["train"]["epochs"]):
@@ -222,6 +233,8 @@ def train(plan_path, authorization, stage, probe_steps=0):
                 loss = logical_backward(model, images, targets, cfg["local_replay"]["micro_batch_size"], amp)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), cfg["train"]["grad_clip"])
                 optimizer.step(); scheduler.step()
+                if ema is not None:
+                    ema.update(model.state_dict())
                 updates += 1; loss_sum += loss
                 if probe_steps:
                     torch.cuda.synchronize(); seconds.append(time.monotonic() - start)
@@ -231,13 +244,21 @@ def train(plan_path, authorization, stage, probe_steps=0):
                     break
             del images, targets
             evaluation_start = time.monotonic()
-            raw_metrics, score = None, 0.0
+            raw_metrics, ema_metrics, score = None, None, 0.0
             chosen = "raw"
             if val_loader is not None:
                 raw_metrics, predictions, truth = evaluate(model, val_loader, plan["recipe"]["num_classes"], device, budget)
-                score = raw_metrics["macro_accuracy"] + .5 * raw_metrics["accuracy"]
+                predictions_by_state = dict(raw=np.asarray(predictions))
+                if ema is not None:
+                    # Context restores raw weights even if evaluation hits the budget.
+                    with using_weights(model, ema.state):
+                        ema_metrics, ema_predictions, _ = evaluate(model, val_loader, plan["recipe"]["num_classes"], device, budget)
+                    predictions_by_state["ema"] = np.asarray(ema_predictions)
+                    chosen = "ema" if ema_metrics["macro_accuracy"] >= raw_metrics["macro_accuracy"] else "raw"
+                selected_metrics = ema_metrics if chosen == "ema" else raw_metrics
+                score = selected_metrics["macro_accuracy"] + .5 * selected_metrics["accuracy"]
                 np.savez_compressed(destination / f"holdout_epoch{epoch}.npz", indices=np.asarray(split["val"]),
-                                    labels=np.asarray(truth), raw=np.asarray(predictions))
+                                    labels=np.asarray(truth), **predictions_by_state)
             validation_seconds = time.monotonic() - evaluation_start
             if probe_steps:
                 require(len(seconds) >= 3, "At least three probe updates required")
@@ -257,9 +278,10 @@ def train(plan_path, authorization, stage, probe_steps=0):
                      measured_checkpoint_seconds=checkpoint_seconds, measured_setup_seconds=setup_seconds,
                      measured_overhead_seconds=setup_seconds+checkpoint_writes*checkpoint_seconds,
                      dataloader_wait_included=True, elapsed_seconds=elapsed, peak_allocated_bytes=torch.cuda.max_memory_allocated(),
-                     complete_holdout_rows=len(split["val"]), parent=parent, plan_sha256=sha(plan_path)))
+                     complete_holdout_rows=len(split["val"]), validation_passes=2 if ema is not None else 1,
+                     ema_enabled=ema is not None, parent=parent, plan_sha256=sha(plan_path)))
                 return
-            entry = dict(epoch=epoch, chosen=chosen, val=raw_metrics,
+            entry = dict(epoch=epoch, chosen=chosen, val=raw_metrics, val_ema=ema_metrics,
                          selection_score=score, train_loss=loss_sum / len(train_loader),
                          validation_is_independent=not final, validation_seconds=validation_seconds)
             history.append(entry)

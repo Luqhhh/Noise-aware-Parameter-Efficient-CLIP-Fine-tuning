@@ -17,8 +17,9 @@
   "num_workers": 2,
   "prefetch_factor": 2,
   "gradient_checkpointing": true,
-  "parent_policy": "best_raw_on_holdout",
-  "weight_averaging": false,
+  "parent_policy": "best_chosen_on_holdout",
+  "ema_enabled": true,
+  "ema_decay": 0.9995,
   "final_weights": "raw",
   "views": [
     "resize576",
@@ -36,6 +37,6 @@
     "Use original images and project-native OpenAI CLIP; no JPEG cache or Hugging Face model/dependency.",
     "Reference hyperparameters are starting values, not measured optima on this project. Microbatch2/activation checkpointing still need local CUDA cost/memory validation.",
     "Final five-epoch full-data stage includes former holdout. It has no independent local validation score; final inference uses one raw last checkpoint.",
-    "Project rules leave EMA/SWA/weight averaging unconfirmed. Every stage trains, selects and transfers raw weights only."
+    "User explicitly enabled training-side EMA on 2026-09-29. Dev stages compare raw/EMA and transfer the selected single state; final inference still uses raw last."
   ]
 }
