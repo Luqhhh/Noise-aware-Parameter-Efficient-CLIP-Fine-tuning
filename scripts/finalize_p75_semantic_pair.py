@@ -106,7 +106,11 @@ def finish(expected_head):
         raise RuntimeError('Integration worktree is not on main')
     print('Main integration uses automatic mode: pull --rebase --autostash; no manual stash pop.',flush=True)
     command(['git','pull','--rebase','--autostash','origin','main'],MAIN)
-    command(['git','merge','--no-ff',BRANCH,'-m','Merge verified bounded semantic masking pair'],MAIN)
+    command(['git','fetch','origin',BRANCH],MAIN)
+    fetched=subprocess.check_output(['git','rev-parse','FETCH_HEAD'],cwd=MAIN,text=True).strip()
+    if fetched!=branch_commit:
+        raise RuntimeError('Remote experiment branch moved; integrate manually')
+    command(['git','merge','--no-ff',branch_commit,'-m','Merge verified bounded semantic masking pair'],MAIN)
     command([sys.executable,'scripts/verify_p75_semantic_pair.py','--archive','results/p75_semantic_mask_pair_20260929'],MAIN)
     command([sys.executable,'-m','pytest','tests/test_p75_text_page_runtime.py','tests/test_p75_semantic_pair.py','-q'],MAIN)
     command(['git','diff','--check'],MAIN)
