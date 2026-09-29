@@ -1,0 +1,60 @@
+# Aegis-Aligned448：团队自主设计的噪声鲁棒策略
+
+正式名称 **Aegis-Aligned448**，工程标识 `AEGIS_ALIGNED448_20260929`，旧称 `B448`。
+用户于2026-09-29明确确认本策略由本队自主设计。历史团队仓库是实现和交接载体；
+此前“上游策略”“外部策略复现”的归属表述已更正。名称映射和本次核验见
+[团队策略命名记录](aegis_team_strategy_naming_20260929.md)。
+
+本策略已完成工程实现及CPU检查，真实项目训练状态仍为 `not_started`。
+按用户要求移除历史分数、旧校验哈希、来源快照和许可证记录；本次验证独立生成。
+
+## 策略与当前项目协议
+
+| 环节 | 固定实现 |
+|---|---|
+| 初始化 | SHA256校验的OpenAI官方CLIP ViT-B/32；冻结骨干，仅训练适配器和头 |
+| 分辨率 | 448；7×7→14×14位置网格，bilinear / align_corners=True / 无antialias，CLS保持 |
+| PEFT | 12层的合并QKV、attention output和MLP两个投影；rank32 / alpha64，48处注入，包含K |
+| 头 | 归一化cosine classifier、可学习logit scale；teacher头仅用于学生初始化 |
+| 初筛 | 当前阶段224 center冻结特征；每类kNN top90%或agreement≥0.7，排除同内容组邻居 |
+| 置信学习 | 20轮teacher；每类原标签概率均值作阈值，最高越阈类一致时保留，未越阈样本保留 |
+| 伪标签 | 仅回收筛除样本，teacher=kNN且pmax≥0.7、margin≥0.2；权重pmax×sqrt(margin) |
+| 权重与mixup | 保留样本权重0.2+0.8×agreement×sqrt(p_label)×sqrt(margin)；未回收样本置零，混合前分别加权监督 |
+| 训练 | RandAugment(2,7)、裁剪0.8–1、flip、mixup0.2、LS0.1、EMA0.999、12轮；LoRA LR2e-4、head LR1e-3、OneCycle |
+| SWA | 默认关闭；独立研究配置可计算同一轨迹第4–12轮EMA权重的在线均值 |
+| 推理 | 短边resize448/512/576，center crop回448，各加flip，共六视角，平均logits |
+| 均衡bias | 在训练侧val_dev的六视角logits上拟合后冻结；不拟合测试预测分布 |
+| 交付 | 单份selected checkpoint、绑定bias、确定性推理及CSV/ZIP校验 |
+
+数据、映射、特征、训练目标、代码、recipe和官方权重摘要共同绑定。
+默认配置为 [rematch750_aegis_aligned448.yaml](../configs/rematch750_aegis_aligned448.yaml)，
+研究配置为 [rematch750_aegis_aligned448_swa_experimental.yaml](../configs/rematch750_aegis_aligned448_swa_experimental.yaml)。
+两者仍须后续按当前搜索及成本门禁决策；计算子命令要求显式 `--execute`。
+
+## 工程验证与重放
+
+本次改名后的CPU测试、官方模型前向和数据绑定核验见[命名记录](aegis_team_strategy_naming_20260929.md)。
+
+当前CPU入口在仓库根目录执行，报告写入新的独立目录：
+
+```bash
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.aligned448_strategy preflight --config configs/rematch750_aegis_aligned448.yaml --report outputs/codex/aegis_aligned448_20260929/preflight.json
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=reproducibility/aegis_f1 python3 scripts/check_aegis_aligned448_cpu.py --config configs/rematch750_aegis_aligned448.yaml --report outputs/codex/aegis_aligned448_20260929/official_cpu_forward.json
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 python3 -m pytest reproducibility/aegis_f1/tests/test_aligned448_strategy.py reproducibility/aegis_f1/tests/test_model.py reproducibility/aegis_f1/tests/test_submission.py -q
+```
+
+未来另行获准后，`aegis_clip.cli.aligned448_strategy` 的 `targets / train / calibrate / infer`
+使用上述配置，计算入口显式添加 `--device cuda --execute`。
+标准输出目录为 `outputs/codex/aegis_aligned448_20260929/`，研究版为
+`outputs/codex/aegis_aligned448_swa_experimental_20260929/`。
+生成目标后再绑定训练；每轮保存raw/EMA/SWA、optimizer、OneCycle、GradScaler及RNG状态。
+校准和推理读取 `training/selected.pt`，最终包位于 `submission/`。
+原始图像共享只读，文件存在时拒绝覆盖；仅允许CPU/CUDA。
+
+可将 `source.partition` 改为 `full_train`，但须新建输出目录、重新构建本阶段目标并重新训练；
+此时val_dev属于训练池，不报告独立验证分。源码和名字变更后需重新准备绑定清单。
+
+本段无新赛事预测包，现役包为
+`/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/{pred_results.csv,submission.zip}`，
+37,444行、9/9校验来源见[既有校验](../results/p75_supervision_rebuild_20260929/submission_check.log)。
+改名不产生新的local或平台成绩，不启动训练。

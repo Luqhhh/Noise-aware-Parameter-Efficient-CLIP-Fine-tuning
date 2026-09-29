@@ -1,0 +1,76 @@
+# Aegis-ResolutionLadder：团队自主设计的分辨率与学习率阶梯
+
+正式名称 **Aegis-ResolutionLadder**，工程标识 `AEGIS_RESOLUTION_LADDER_20260929`，旧称 `V13`，
+此前工程标识为 `P75_RESOLUTION_LADDER`。用户于2026-09-29明确确认本策略由本队自主设计。
+历史团队仓库保存实现和交接记录；此前“外部策略迁移”的归属表述已更正。
+名称映射及本次核验见[团队策略命名记录](aegis_team_strategy_naming_20260929.md)。
+
+当前状态为 `engineering_ready / not_started`，尚未启动GPU实验。
+按用户要求移除历史分数、旧校验哈希、来源快照和许可证记录；本次验证独立生成。
+
+## 当前固定策略
+
+使用SHA256校验的OpenAI官方CLIP ViT-B/32，全视觉塔和512→750线性头训练，
+FP32参数、BF16训练、Aegis位置编码插值，初始化不下载权重、不新增依赖。
+RRC `[0.35,1.0]`、flip、ColorJitter0.5、RandAugment2/7、RandomErasing0.3；
+smoothing0.15、Mixup0.2/CutMix1.0、混合概率0.8下的soft CE。
+样本权重为当前训练类频次的平方根倒数，有放回采样；类总权重与频次平方根成正比。
+AdamW WD0.15，bias/一维参数不衰减，每段重建optimizer和warmup+cosine。
+
+训练侧EMA按用户既有指令启用：衰减0.9995，每逻辑更新执行一次，每段从所选父权重重置。
+dev阶段以macro比较raw/EMA（相等选EMA），再按所选状态的 `macro + 0.5×micro` 选择epoch。
+每段完成全部轮数后才封存父模型；下一段严格继承其中一份状态。
+权重平均复用 `aegis_clip.aligned448_strategy.WeightAverage / using_weights`。
+前三段使用固定内容组隔离的133,815 train_dev / 14,880 val_dev，decoded-RGB内容组交集为0。
+最后一段纳入全部148,695张官方训练图，含此前验证图；不验证或选模，最终固定第5轮raw `last.pt`。
+不读取旧阶段任务权重、排除清单或改标签。固定参数如下，仍须后续实测本机GPU成本：
+
+| 段 | 分辨率 | 轮数 | 训练行数 | 逻辑批次 | 骨干/头LR | warmup轮数 | 更新次数 |
+|---|---:|---:|---:|---:|---|---:|---:|
+| s1_384 | 384 | 10 | 133,815 | 96 | 3e-5 / 5e-4 | 1.0 | 13,930 |
+| s2_448 | 448 | 6 | 133,815 | 96 | 1.5e-5 / 3e-4 | 0.5 | 8,358 |
+| s3_576 | 576 | 4 | 133,815 | 80 | 8e-6 / 2e-4 | 0.4 | 6,688 |
+| full_576 | 576 | 5 | 148,695 | 80 | 4e-6 / 1.2e-4 | 0.3 | 9,290 |
+
+共38,266次逻辑更新，drop_last=True；min_lr_ratio=0.02、grad clip1.0。
+当前micro batch2、2个worker、activation checkpointing。
+完整逻辑批次只混合一次，micro batch按行数累积均值损失，每逻辑批次只更新一次optimizer/scheduler/EMA。
+
+## 当前入口与验证
+
+主配置为 [recipe.json](../configs/aegis_resolution_ladder_20260929/recipe.json)，
+四段配置为 [stages/](../configs/aegis_resolution_ladder_20260929/stages/)，
+代码包为 [aegis_resolution_ladder/](../reproducibility/aegis_f1/aegis_resolution_ladder/)。
+执行直接读取本项目配置，输入和源码按当前版本绑定。
+
+以下命令在仓库根目录执行，使用CPU和新的独立输出目录：
+
+```bash
+PYTHONPATH=reproducibility/aegis_f1 CUDA_VISIBLE_DEVICES='' python3 -m aegis_resolution_ladder.plan prepare --output outputs/codex/aegis_resolution_ladder_20260929/prepared
+PYTHONPATH=reproducibility/aegis_f1 CUDA_VISIBLE_DEVICES='' python3 -m aegis_resolution_ladder.plan verify --plan outputs/codex/aegis_resolution_ladder_20260929/prepared/plan.json
+CUDA_VISIBLE_DEVICES='' python3 scripts/check_aegis_resolution_ladder_cpu.py --output outputs/codex/aegis_resolution_ladder_20260929/cpu_forward.json
+PYTHONPATH=reproducibility/aegis_f1 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=2 python3 -m pytest tests/test_aegis_resolution_ladder.py reproducibility/aegis_f1/tests/test_model.py -q
+```
+
+prepare绑定官方数据审计、类别映射、manifest、split、当前配置、源码和官方权重SHA256，拒绝覆盖。
+源码和名字变更后须重新prepare，旧plan和授权摘要不用于当前入口。
+
+本次CPU测试、官方模型前向和重新准备的清单核验见[命名记录](aegis_team_strategy_naming_20260929.md)。
+工程检查不是识别准确率或GPU性能证据。
+
+## 执行与交付边界
+
+`aegis_resolution_ladder.runtime` 提供 probe / train / infer。
+[授权模板](../configs/aegis_resolution_ladder_20260929/authorization.example.json)仍为 authorized=false；
+入口要求operation、stage和plan SHA256一致，并需测得的完整成本留20%预算余量。
+probe仅3–10次更新，包含解码/增强、DataLoader等待、raw+EMA完整验证和checkpoint写入。
+未完成段不能作为父权重，不自动恢复或启动下一段。
+
+最终推理读取 `runs/full_576/last.pt`，固定四视图 `resize576,center,flip,resize806.4`，
+同一checkpoint的概率等权聚合。不拟合测试分布、prior或温度；输出 `文件名, 0001` 格式CSV和相同字节ZIP，
+调用现有750类提交检查器。全量段没有独立本地分，平台成绩仅在实际回报后登记。
+
+本段无新预测包。现役包为
+`/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/{pred_results.csv,submission.zip}`，
+37,444行、9/9校验及ZIP/CSV一致性来源见[既有提交校验](../results/p75_supervision_rebuild_20260929/submission_check.log)。
+平台现役仍为66.94797564362783%。本次改名不启动GPU、训练或上传。
