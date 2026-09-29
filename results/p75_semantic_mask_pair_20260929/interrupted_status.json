@@ -1,0 +1,35 @@
+{
+  "status": "running",
+  "started_unix": 1790657447.1500144,
+  "used_seconds": 7238.574542078,
+  "history": [
+    {
+      "name": "control_train_to_4",
+      "argv": [
+        "-m",
+        "aegis_clip.cli.train",
+        "--config",
+        "/home/lux1/noise-worktrees/p75_semantic_mask_pair_20260929/configs/p75_semantic_mask_pair_20260929/control.json"
+      ],
+      "start_unix": 1790657447.2133315,
+      "allowance_seconds": 9900.0,
+      "log": "/home/lux1/noise-worktrees/p75_semantic_mask_pair_20260929/outputs/codex/p75_semantic_mask_pair_20260929/logs/control_train_to_4.log",
+      "pid": 203155,
+      "returncode": 0,
+      "seconds": 7238.574542078
+    }
+  ],
+  "current": {
+    "name": "masked_train_to_4",
+    "argv": [
+      "-m",
+      "aegis_clip.cli.train",
+      "--config",
+      "/home/lux1/noise-worktrees/p75_semantic_mask_pair_20260929/configs/p75_semantic_mask_pair_20260929/masked.json"
+    ],
+    "start_unix": 1790664841.3579302,
+    "allowance_seconds": 12561.425457922,
+    "log": "/home/lux1/noise-worktrees/p75_semantic_mask_pair_20260929/outputs/codex/p75_semantic_mask_pair_20260929/logs/masked_train_to_4.log",
+    "pid": 217213
+  }
+}

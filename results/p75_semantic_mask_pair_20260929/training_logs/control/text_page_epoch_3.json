@@ -1,0 +1,15 @@
+{
+  "enabled": false,
+  "epoch": 3,
+  "loss_phase": "GCE",
+  "text_page_remaining_pmax_sum": 96615.12133842707,
+  "text_page_remaining_py_sum": 88836.84179751575,
+  "text_page_remaining_raw_classification_sum": 62672.83571577072,
+  "text_page_remaining_rows": 132569.0,
+  "text_page_remaining_sqrt_py_sum": 101232.581653893,
+  "text_page_selected_pmax_sum": 266.61996244452894,
+  "text_page_selected_py_sum": 155.63546828355175,
+  "text_page_selected_raw_classification_sum": 1836.2627228498459,
+  "text_page_selected_rows": 1246.0,
+  "text_page_selected_sqrt_py_sum": 327.86863869428635
+}
