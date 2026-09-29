@@ -1,0 +1,36 @@
+{
+  "experiment": "P75_SEMANTIC_CONTENT_PROBE",
+  "phase": "A_content_acceptance_and_automatic_table",
+  "authorization": "user_specific_use_confirmation_20260929",
+  "files": {
+    "acceptance_acceptance_report.json": "1aa7bda3ea54b4e7ea0cade2a8f0912b0b35e9a8acedf321a69050b0dda715a3",
+    "acceptance_cases.json": "8c71f137da03cd441f82414f39d3b631a8ba5a00d11ac7f37d0a66d1c7ad8109",
+    "acceptance_observations.json": "1c9b54d1df8e91193f6e6ee7a6d0e958acf35cf649e18ea93ccd6a09fcdaefa4",
+    "acceptance_protocol.json": "88e592f8ea66a51c80b0061e75036cfffcd9f3c4d985f451f251d0f6c20d3195",
+    "development_development_cases.json": "67fcab9facb0c1b102af1f950dd0f958e24f57727ae61430c7821a6a3c0de5ce",
+    "development_development_observations.json": "114ed8a9ebbd40a1483b28fd8e88b8b415a9be9c589a491831b45a96b9188ca1",
+    "development_development_summary.json": "8ddbb8bd582543b450f03f561bb7f3f1978a10e46a3cf095ae7977f820cd5784",
+    "development_text_features.pt": "eb0b4ba603d72f0db1468988c4493679e5515abd6dd24cea43c4c3745c7b42bd",
+    "development_training_scores.csv.gz": "b1759fbc5774f83d72ba3e2103231b0b1b65d130c028be269b40d91690fdf190",
+    "frozen_class_coverage.csv": "9fe3c6af7de41cff05ca94a2e8204a11a8d4f2fed28deb7bc166a791c5972d74",
+    "frozen_selection.jsonl.gz": "425ef2a01ca869b3bcc70adfd71135b58db9c404a645fbb61c133fe5b64b22d1",
+    "frozen_summary.json": "36e2f9e31a77ca9b5ad897b9ca721b92cd28567fee1751878782af7d8d50d412",
+    "review_image_identity.json": "fa4c3fe53a7e2b88c61c4f4fd9cf3b4726c03039992616195ec21ebe610ca55f",
+    "verification.json": "c09ab81570fa55c219a13c2132a745841230ac1a89a0f5b4bd83385a2a6ef619"
+  },
+  "sources": {
+    "scripts/p75_semantic_acceptance.py": "5208b69cc07c71b04d79120c4d8d468a21c961b59594432574e6ff10502b96df",
+    "scripts/p75_semantic_cache_preflight.py": "8bb19d386a3147f8441172a3a8a043d0c6e9a10d39aa15fb3f4ac131a9fb33f2",
+    "scripts/p75_semantic_content_probe.py": "894a3eff7ef6f2f650a3822e6fcfd33c0ae6cb761e2522fb4511c1badc131586",
+    "scripts/p75_semantic_freeze.py": "c39198caaed567cbeeefd1c61fff48dd4eae68426909d5b20bd108991dcf0684",
+    "scripts/verify_p75_semantic_content.py": "aebd5e5a984ab37f9fad533ac6c7b21a5b835b7076aa54afe9e227bf4ebc9aad",
+    "scripts/p75_text_page_runtime.py": "62a67fc86762f8c029f4dc1f510865e1e8701b7a76d9f82d6a08148c8ad8cb65",
+    "scripts/p75_text_page_overlay.py": "efaca3170141d6a94a81d299d45df86d0fa84c9838331fc23a16a618695f2b96",
+    "configs/p75_semantic_content_probe_20260929/development.json": "df3f22717e9105afa50799662b0f7adcaf6509bc81b49edb04f01e6b5567d793",
+    "configs/p75_semantic_content_probe_20260929/frozen_rule.json": "491828779a37184f01c186b7c7afecd003625252f5f7095c64660ffff5dfcdb4",
+    "results/p75_semantic_content_preflight_20260929/cache_compatibility.json": "97e9bd03e457ecb534ad57aeb7dfba603f888d93fea109cec710bf668d832f99"
+  },
+  "local_images": "/home/lux1/noise-worktrees/p75_semantic_content_preflight_20260929/outputs/codex/p75_semantic_content_probe_20260929",
+  "training_started": false,
+  "new_submission_created": false
+}

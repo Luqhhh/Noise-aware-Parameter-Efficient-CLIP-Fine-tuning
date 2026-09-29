@@ -1,0 +1,290 @@
+[
+  {
+    "review_id": "A01",
+    "visible_content": "map panels",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A02",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A03",
+    "visible_content": "geographic distribution map grid",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A04",
+    "visible_content": "text/numeric table",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A05",
+    "visible_content": "world distribution map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A06",
+    "visible_content": "animal footprint identification diagram",
+    "appearance_should_be_retained": true,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A07",
+    "visible_content": "geographic distribution map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A08",
+    "visible_content": "text-only paper page",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A09",
+    "visible_content": "text with biological anatomical illustration",
+    "appearance_should_be_retained": true,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A10",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A11",
+    "visible_content": "spectral plots",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A12",
+    "visible_content": "geographic distribution map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A13",
+    "visible_content": "abstract branching graph without organism appearance",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A14",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A15",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A16",
+    "visible_content": "geographic map with logos",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A17",
+    "visible_content": "bar charts",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A18",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A19",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A20",
+    "visible_content": "small map image",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A21",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A22",
+    "visible_content": "page of biological/floral schematic diagrams",
+    "appearance_should_be_retained": true,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A23",
+    "visible_content": "geographic outline map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A24",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A25",
+    "visible_content": "geographic map with tiny interface icons",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A26",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A27",
+    "visible_content": "text-only paper page",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A28",
+    "visible_content": "line plots",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A29",
+    "visible_content": "bar charts",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A30",
+    "visible_content": "botanical/anatomical cross-section illustration",
+    "appearance_should_be_retained": true,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A31",
+    "visible_content": "phylogenetic branching chart with text only",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A32",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A33",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A34",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A35",
+    "visible_content": "text/numeric table",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A36",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A37",
+    "visible_content": "biological anatomical illustrations with scale bars",
+    "appearance_should_be_retained": true,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A38",
+    "visible_content": "text/numeric table",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A39",
+    "visible_content": "handbag product",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A40",
+    "visible_content": "statistical plot",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A41",
+    "visible_content": "text-only book page",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A42",
+    "visible_content": "biological body-part line illustration",
+    "appearance_should_be_retained": true,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A43",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A44",
+    "visible_content": "packaged commercial product",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A45",
+    "visible_content": "text with biological tissue/cell drawings",
+    "appearance_should_be_retained": true,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A46",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A47",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  },
+  {
+    "review_id": "A48",
+    "visible_content": "geographic map",
+    "appearance_should_be_retained": false,
+    "manual_training_use": false
+  }
+]

@@ -1,0 +1,100 @@
+{
+  "status": "accepted_frozen_proxy_table_not_training_result",
+  "rule_sha256": "491828779a37184f01c186b7c7afecd003625252f5f7095c64660ffff5dfcdb4",
+  "descriptions_sha256": "df3f22717e9105afa50799662b0f7adcaf6509bc81b49edb04f01e6b5567d793",
+  "acceptance_sha256": "1aa7bda3ea54b4e7ea0cade2a8f0912b0b35e9a8acedf321a69050b0dda715a3",
+  "selection_sha256": "39b2cd9e8d94d1fd114c7f0a7581297528ecae49a82d8d4ddf6f5e3d06bbf5de",
+  "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+  "text_sha256": "eb0b4ba603d72f0db1468988c4493679e5515abd6dd24cea43c4c3745c7b42bd",
+  "evidence_sha256": "6c89d11fb29e85c8f4c8270217892246efd81deed45858a310987b41a3e02dcc",
+  "groups": {
+    "train_remaining": {
+      "rows": 132569,
+      "original_label_errors": 12447,
+      "sqrt_py_sum": 115800.85575802316,
+      "logit_gradient_l1_sum": 24537.297530047854,
+      "py_lt_001": 5094,
+      "py_ge_07": 108806,
+      "mean_sqrt_py": 0.8735138362514853,
+      "py_quantiles": [
+        4.576654610843889e-09,
+        0.8179453611373901,
+        0.9437682628631592,
+        0.9839620590209961,
+        0.9999918937683105
+      ],
+      "final_logit_l1_share": 0.9810776202065873
+    },
+    "train_selected": {
+      "rows": 1246,
+      "original_label_errors": 577,
+      "sqrt_py_sum": 612.5498565105487,
+      "logit_gradient_l1_sum": 473.25925431849527,
+      "py_lt_001": 229,
+      "py_ge_07": 343,
+      "mean_sqrt_py": 0.49161304695870683,
+      "py_quantiles": [
+        5.789634815300815e-05,
+        0.02188240084797144,
+        0.2033689320087433,
+        0.7385935336351395,
+        0.9966166615486145
+      ],
+      "final_logit_l1_share": 0.018922379793412724
+    },
+    "val_remaining": {
+      "rows": 14748,
+      "original_label_errors": 3373,
+      "sqrt_py_sum": 11089.663045541844,
+      "logit_gradient_l1_sum": 3921.195812970986,
+      "py_lt_001": 1178,
+      "py_ge_07": 9113,
+      "mean_sqrt_py": 0.751943520853122,
+      "py_quantiles": [
+        8.023297581871702e-09,
+        0.34403979778289795,
+        0.8663307726383209,
+        0.9775404632091522,
+        0.9999550580978394
+      ],
+      "final_logit_l1_share": 0.9916452410623287
+    },
+    "val_selected": {
+      "rows": 132,
+      "original_label_errors": 101,
+      "sqrt_py_sum": 35.04132305127945,
+      "logit_gradient_l1_sum": 33.03665908756154,
+      "py_lt_001": 59,
+      "py_ge_07": 15,
+      "mean_sqrt_py": 0.2654645685702989,
+      "py_quantiles": [
+        1.6355190382455476e-05,
+        0.0016675952065270394,
+        0.0161289619281888,
+        0.09149370528757572,
+        0.9938197731971741
+      ],
+      "final_logit_l1_share": 0.008354758937671378
+    }
+  },
+  "selected_training_classes": 423,
+  "selected_training_content_groups": 1233,
+  "emptied_training_classes": [],
+  "min_remaining_per_class": 4,
+  "training_selected_types": {
+    "a product photograph of clothing": 55,
+    "a geographic map": 782,
+    "a scanned scientific paper containing only text": 262,
+    "a table of data containing only text and numbers": 59,
+    "a statistical graph without any animals or plants": 88
+  },
+  "training_started": false,
+  "manual_case_flags_used_for_selection": false,
+  "limitations": [
+    "Proxy not confirmed open-set labels; unselected set remains mixed.",
+    "Final center snapshot only; no historical training gradient or harmful parameter-gradient claim.",
+    "Logit-gradient L1 is 2*sqrt(py)*(1-py), not parameter-gradient norm.",
+    "Limited training-only visual acceptance does not prove full-population precision or platform gain.",
+    "Training control/masked pair has not been executed."
+  ]
+}

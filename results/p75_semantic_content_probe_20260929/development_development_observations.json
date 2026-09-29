@@ -1,0 +1,198 @@
+[
+  {
+    "review_id": "D01",
+    "visible_content": "anatomical skull illustration",
+    "development_only": true,
+    "protect_appearance": true,
+    "training_use": false
+  },
+  {
+    "review_id": "D02",
+    "visible_content": "microscope tissue section",
+    "development_only": true,
+    "protect_appearance": true,
+    "training_use": false
+  },
+  {
+    "review_id": "D03",
+    "visible_content": "text-only paper page",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D04",
+    "visible_content": "text/numeric table",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D05",
+    "visible_content": "histogram panels",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D06",
+    "visible_content": "text-only checklist",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D07",
+    "visible_content": "text-only paper page",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D08",
+    "visible_content": "insect scientific illustration",
+    "development_only": true,
+    "protect_appearance": true,
+    "training_use": false
+  },
+  {
+    "review_id": "D09",
+    "visible_content": "biological specimen sheet",
+    "development_only": true,
+    "protect_appearance": true,
+    "training_use": false
+  },
+  {
+    "review_id": "D10",
+    "visible_content": "pressed plant specimen",
+    "development_only": true,
+    "protect_appearance": true,
+    "training_use": false
+  },
+  {
+    "review_id": "D11",
+    "visible_content": "geographic map",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D12",
+    "visible_content": "close-up anatomical tissue/organ",
+    "development_only": true,
+    "protect_appearance": true,
+    "training_use": false
+  },
+  {
+    "review_id": "D13",
+    "visible_content": "page containing monkey photograph and text",
+    "development_only": true,
+    "protect_appearance": true,
+    "training_use": false
+  },
+  {
+    "review_id": "D14",
+    "visible_content": "geographic map",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D15",
+    "visible_content": "life-cycle diagram with organism photographs",
+    "development_only": true,
+    "protect_appearance": true,
+    "training_use": false
+  },
+  {
+    "review_id": "D16",
+    "visible_content": "text-only page",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D17",
+    "visible_content": "text-only references page",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D18",
+    "visible_content": "histogram",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D19",
+    "visible_content": "text/numeric coordinate table",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D20",
+    "visible_content": "two geographic maps",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D21",
+    "visible_content": "saddle pad product",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D22",
+    "visible_content": "spectrogram panels; no visible organism",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D23",
+    "visible_content": "clothing product on human model",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D24",
+    "visible_content": "botanical scientific illustration",
+    "development_only": true,
+    "protect_appearance": true,
+    "training_use": false
+  },
+  {
+    "review_id": "D25",
+    "visible_content": "text/numeric table",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D26",
+    "visible_content": "specimen photograph montage and text",
+    "development_only": true,
+    "protect_appearance": true,
+    "training_use": false
+  },
+  {
+    "review_id": "D27",
+    "visible_content": "line plot",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  },
+  {
+    "review_id": "D28",
+    "visible_content": "clothing products on mannequins",
+    "development_only": true,
+    "protect_appearance": false,
+    "training_use": false
+  }
+]

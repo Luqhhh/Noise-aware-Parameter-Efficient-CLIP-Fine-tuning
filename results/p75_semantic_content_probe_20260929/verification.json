@@ -1,0 +1,9 @@
+{
+  "reviewed_images_checked": 76,
+  "existing_runtime_real_table_loaded": true,
+  "training_rows": 133815,
+  "classification_masked_rows": 1246,
+  "automatic_rule_checked_for_all_rows": 148695,
+  "observations_used_as_training_labels": false,
+  "training_started": false
+}

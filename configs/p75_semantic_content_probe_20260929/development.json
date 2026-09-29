@@ -1,0 +1,9 @@
+{
+ "experiment": "P75_SEMANTIC_CONTENT_PROBE",
+ "status": "development_not_frozen",
+ "authorization": {"source":"user_message", "date":"2026-09-29", "quote":"不用咨询组委会，这是合规的", "scope":"official CLIP generic content scoring for current-stage automatic training-side screening"},
+ "seed":20260929,
+ "B":["a photograph of an animal", "a photograph of a bird", "a photograph of an insect", "a photograph of a fish", "a photograph of a reptile", "a photograph of a plant", "a close-up photograph of a flower", "a close-up photograph of leaves", "a photograph of fruit", "a photograph of mushrooms", "a close-up of an animal body part", "a microscope image of an organism"],
+ "A":["a preserved biological specimen", "a pressed plant specimen on a herbarium sheet", "an anatomical illustration of an animal", "a scientific drawing of a plant", "a scientific drawing of an animal", "a page with photographs of plants and text", "a page with photographs of animals and text", "an illustration of the life cycle of an organism", "a microscope image of biological tissue", "a close-up photograph of a biological organ"],
+ "N":["a page of printed text without any pictures", "a scanned scientific paper containing only text", "a geographic map", "a table of data containing only text and numbers", "a product photograph of clothing", "a statistical graph without any animals or plants"]
+}
