@@ -1,0 +1,32 @@
+{
+  "kind": "development_synthetic_false_negative",
+  "training_use": false,
+  "font_path": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+  "font_sha256": "690243adfefe0ce154b547db6205794bd30ac4277275179517a90994f4980648",
+  "font_size": 12,
+  "size": [
+    600,
+    768
+  ],
+  "text": "The specimen description and distribution are provided here.",
+  "x": 30,
+  "y_range": [
+    35,
+    720,
+    18
+  ],
+  "rule_sha256": "767a2cdc39e0b1089eecdca7f4fa40a27a9a07b51a447a406a7851b5749233f8",
+  "metrics": {
+    "selected": false,
+    "reason": "lines",
+    "white_fraction": 0.88751953125,
+    "colored_fraction": 0.0,
+    "ink_fraction": 0.09115234375,
+    "glyphs": 1950,
+    "non_glyph_ink_fraction": 0.006499535747446661,
+    "lines": 39,
+    "ink_on_lines_fraction": 0.935933147632312,
+    "line_spacing_cv": 0.0
+  },
+  "interpretation": "A real rendered text page is missed. This demonstrates low recall; rule remains frozen, no threshold search."
+}
