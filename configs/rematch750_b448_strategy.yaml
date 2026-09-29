@@ -1,0 +1,51 @@
+project:
+  experiment_id: B448_STRATEGY_20260929
+  stage: repechage
+  data_version: '20260921'
+  seed: 42
+source:
+  root: /home/lux1/noise
+  reference_config: configs/rematch750_lp.yaml
+  partition: train_dev
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  image_size: 448
+  blocks: 12
+  rank: 32
+  alpha: 64.0
+denoise:
+  keep_ratio: 0.90
+  knn_k: 16
+  query_chunk: 128
+  gallery_chunk: 8192
+  high_agreement_floor: 0.7
+  teacher_epochs: 20
+  teacher_batch_size: 8192
+  teacher_lr: 0.005
+  minimum_weight: 0.2
+  pseudo_threshold: 0.7
+  pseudo_margin: 0.2
+  pseudo_soft_alpha: 0.0
+train:
+  epochs: 12
+  batch_size: 32
+  num_workers: 2
+  amp: true
+  lora_lr: 0.0002
+  head_lr: 0.001
+  grad_clip: 1.0
+  label_smoothing: 0.1
+  mixup_alpha: 0.2
+  crop_min_scale: 0.8
+  ema_decay: 0.999
+  swa_enabled: false
+  swa_start: 4
+decode:
+  scales: [448, 512, 576]
+  flip: true
+  bias_source: val_dev
+  bias_iterations: 200
+  bias_strength: 1.0
+output:
+  root: ../outputs/codex/b448_strategy_20260929

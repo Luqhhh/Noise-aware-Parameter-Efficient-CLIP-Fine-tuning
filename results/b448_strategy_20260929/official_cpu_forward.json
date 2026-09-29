@@ -1,0 +1,25 @@
+{
+  "adapted_modules": 48,
+  "backbone": "OpenAI official CLIP ViT-B/32",
+  "binding": {
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "data_version": "20260921",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "implementation_sha256": "3fc6650ae8f345e96b1234cb335f918241d6a697575a42d223604d4b8331ad3d",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "recipe_sha256": "2f0656dcdace1cf58c522fd0f8f6152e8ec23bd25e31ca791110509217014cac",
+    "stage": "repechage"
+  },
+  "cuda_initialized": false,
+  "device": "cpu",
+  "elapsed_seconds": 6.004,
+  "image_size": 448,
+  "output_shape": [
+    1,
+    750
+  ],
+  "status": "passed",
+  "trainable_parameters": 5102593,
+  "training_started": false
+}
