@@ -29,10 +29,14 @@ python3 scripts/run_p75_semantic_pair.py prepare
 python3 -m pytest tests/test_p75_text_page_runtime.py -q
 python3 scripts/run_p75_semantic_pair.py verify
 python3 scripts/run_p75_semantic_pair.py run
+# 可独立等待上述已启动任务；不执行GPU任务，不重置预算。
+python3 scripts/finalize_p75_semantic_pair.py --expected-head <启动收尾器时的方案提交SHA>
 ```
 
 配置位于 `configs/p75_semantic_mask_pair_20260929/{control,masked}.json`；私有运行、日志及预算状态位于 `outputs/codex/p75_semantic_mask_pair_20260929/`。源码及输入哈希在该目录manifest.json，逐子任务命令、用时、返回码在status.json。
 
 ## 实测状态
 
-启动前6项分类屏蔽测试通过，两臂当前阶段训练协议校验通过。此处尚无配对训练结果；完成后填写实测与交付信息，不能将准备检查写成训练收益。
+启动前6项分类屏蔽测试通过，两臂当前阶段训练协议校验通过；另3项超时清理、失败状态、分组计数检查通过。2026-09-29 12:50本机启动control；首20次优化更新无跳步、训练233.24秒。此处尚无配对验证结果，不能将准备检查写成训练收益。
+
+长任务收尾器只在已有训练/缓存/出包状态完成后进行CPU报告与校验，不启动额外GPU作业。逐张报告、源哈希、配对顺序/更新/学习率审计和9项提交校验通过后，自动提交推送方案，再在main集成目录使用`git pull --rebase --autostash origin main`同步、合并、重新校验并推送；不执行手动stash pop。工作区出现并发改动、校验失败或合并冲突时停止自动收尾，不强推、不重跑。最终状态记录在`delivery_status.json`。
