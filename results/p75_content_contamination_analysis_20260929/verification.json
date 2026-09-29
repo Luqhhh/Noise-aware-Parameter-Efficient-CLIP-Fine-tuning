@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "pytest",
+        "tests/test_p75_content_contamination_analysis.py",
+        "-q"
+      ],
+      "exit_code": 0,
+      "stdout": "........                                                                 [100%]\n8 passed in 0.05s"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/verify_p75_semantic_content.py",
+        "--archive",
+        "results/p75_semantic_content_probe_20260929"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"passed\",\n  \"table_rows\": 148695,\n  \"train_selected\": 1246,\n  \"validation_selected\": 132,\n  \"acceptance_cases\": 48,\n  \"development_overlap\": 0,\n  \"review_image_bytes_verified\": false,\n  \"existing_mask_adapter_loaded\": true,\n  \"training_started\": false\n}"
+    }
+  ],
+  "deterministic_replay_byte_equal": {
+    "summary.json": true,
+    "class_statistics.csv": true,
+    "selected_supervision.csv": true,
+    "manifest.json": true
+  },
+  "replay_elapsed_seconds": 5.607,
+  "joined_rows": 148695,
+  "tests_passed": 8,
+  "training_started_this_analysis": false,
+  "gpu_used_this_analysis": false,
+  "source_revision": "bd5122f50abf35badf0fa394cd4f04ae690455482fa4c709e0aec51e8db309d7"
+}

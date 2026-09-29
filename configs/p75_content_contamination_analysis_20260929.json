@@ -1,0 +1,15 @@
+{
+  "experiment": "P75_CONTENT_CONTAMINATION_ANALYSIS",
+  "scope": "CPU-only analysis of existing current-stage archives; no image review or training",
+  "content_score": "sN - max(sB, sA); retain the existing biological-appearance protection group",
+  "diagnostic_margin_thresholds": [0.0, 0.05, 0.1],
+  "diagnostic_top_fractions": [0.005, 0.05, 0.1, 0.2],
+  "confidence_boundaries": [0.3, 0.7],
+  "class_rate_boundaries": [0.01, 0.05, 0.1, 0.2, 0.3],
+  "concentration_top_classes": [10, 50, 100],
+  "validation_class_slice_minimum_training_rate": 0.05,
+  "validation_bio_dominant_proxy": "sB >= max(sA, sN); not clean-photo ground truth",
+  "gce_q": 0.5,
+  "selection": "Only the existing frozen margin >= 0.05 membership is a detector selection. Other thresholds/ranks describe the distribution; they create no new mask and have no content acceptance.",
+  "training_decision": "Deliver the three offline diagnostics and stop. No automatic paired training, detector revision, relabeling or platform upload."
+}

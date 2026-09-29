@@ -1,0 +1,21 @@
+{
+  "inputs": {
+    "results/p75_semantic_content_probe_20260929/manifest.json": "776c315c5fc32a33e09d88c60a1a2600a207b61015fdf4d5a36f278487014fea",
+    "results/p75_semantic_content_probe_20260929/frozen_selection.jsonl.gz": "425ef2a01ca869b3bcc70adfd71135b58db9c404a645fbb61c133fe5b64b22d1",
+    "results/p75_semantic_content_probe_20260929/frozen_summary.json": "36e2f9e31a77ca9b5ad897b9ca721b92cd28567fee1751878782af7d8d50d412",
+    "results/p75_supervision_rebuild_20260929/sample_evidence.csv.gz": "6c89d11fb29e85c8f4c8270217892246efd81deed45858a310987b41a3e02dcc",
+    "results/p75_supervision_rebuild_20260929/summary.json": "9171db437b68d44a894d57a9aa94ad6d7793206906e54c65245d78b6591e2de1",
+    "configs/p75_content_contamination_analysis_20260929.json": "94ebe2a4dbfb6e2bfdad3b746f1ef68ba0335b395bd5e7a83549e343d880c894",
+    "configs/p75_semantic_content_probe_20260929/frozen_rule.json": "491828779a37184f01c186b7c7afecd003625252f5f7095c64660ffff5dfcdb4",
+    "configs/p75_semantic_content_probe_20260929/development.json": "df3f22717e9105afa50799662b0f7adcaf6509bc81b49edb04f01e6b5567d793",
+    "scripts/analyze_p75_content_contamination.py": "bd5122f50abf35badf0fa394cd4f04ae690455482fa4c709e0aec51e8db309d7"
+  },
+  "outputs": {
+    "class_statistics.csv": "2c25ccbc31ccaa12e4e888efa540f3e09a73b48960c00ad5d1c2aedd17a719bd",
+    "selected_supervision.csv": "b58324328d0f17053b0e2f3921cdc3feb19e687f209a3143fb4a42154f04ba74",
+    "summary.json": "df31ca71ea4622e5899187fddc77da854823a27e2036d886b69dbfe62baa060e"
+  },
+  "joined_rows": 148695,
+  "duplicate_or_missing_paths": 0,
+  "training_started_this_analysis": false
+}
