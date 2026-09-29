@@ -1,0 +1,20 @@
+{
+  "stage": "development_training_only",
+  "descriptions_sha256": "df3f22717e9105afa50799662b0f7adcaf6509bc81b49edb04f01e6b5567d793",
+  "preflight_sha256": "97e9bd03e457ecb534ad57aeb7dfba603f888d93fea109cec710bf668d832f99",
+  "text_sha256": "eb0b4ba603d72f0db1468988c4493679e5515abd6dd24cea43c4c3745c7b42bd",
+  "scores_sha256": "f1804575cfe1f635fcef26163edfe19e3be4e2491568f5d3cbbf84d9381c73b8",
+  "training_rows": 133815,
+  "review_rows": 28,
+  "margin_quantiles": [
+    -0.15528558194637299,
+    -0.07014751434326172,
+    -0.037492552399635316,
+    -0.023179595172405303,
+    0.04842652291059462,
+    0.11992104351520538
+  ],
+  "positive_margin_rows": 3144,
+  "validation_scored": false,
+  "mask_created": false
+}

@@ -1,0 +1,21 @@
+{
+  "status": "passed_limited_content_acceptance",
+  "sample_size": 48,
+  "selected_reviewed": 36,
+  "visible_appearance_false_positives": [],
+  "protected_appearance_cases": [
+    "A06",
+    "A09",
+    "A22",
+    "A30",
+    "A37",
+    "A42",
+    "A45"
+  ],
+  "protected_appearance_selected": 0,
+  "full_field_of_view_reviewed": true,
+  "development_group_overlap": 0,
+  "reviewer": "assistant visual content review; not expert species adjudication",
+  "training_use_of_manual_decisions": false,
+  "limitation": "Small, deliberately stratified check; not a precision estimate or clean-label truth. Complement remains mixed. Crop coverage assessed only for sampled cases."
+}

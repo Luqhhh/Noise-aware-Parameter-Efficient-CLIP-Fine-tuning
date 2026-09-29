@@ -9,6 +9,9 @@ outputs/**/*.pt
 # Local pixel-only P75 scan and image previews
 /outputs/codex/p75_text_page_mask_20260929/
 
+# Semantic content development previews and caches
+/outputs/codex/p75_semantic_content_probe_20260929/
+
 # Local audit snapshots can contain environment details and private paths.
 outputs/preliminary_no_sweep/
 outputs/stage_readiness/

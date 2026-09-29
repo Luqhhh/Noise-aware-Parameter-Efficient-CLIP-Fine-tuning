@@ -1,0 +1,10 @@
+{
+  "rule_sha256": "491828779a37184f01c186b7c7afecd003625252f5f7095c64660ffff5dfcdb4",
+  "descriptions_sha256": "df3f22717e9105afa50799662b0f7adcaf6509bc81b49edb04f01e6b5567d793",
+  "development_cases_sha256": "67fcab9facb0c1b102af1f950dd0f958e24f57727ae61430c7821a6a3c0de5ce",
+  "training_selected_count": 1246,
+  "acceptance_rows": 48,
+  "development_group_overlap": 0,
+  "validation_used": false,
+  "manual_training_labels": false
+}

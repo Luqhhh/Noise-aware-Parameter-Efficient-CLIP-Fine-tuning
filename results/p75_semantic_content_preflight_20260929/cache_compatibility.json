@@ -1,0 +1,72 @@
+{
+  "status": "cache_compatibility_passed",
+  "rule_approval": "user_confirmed_specific_use_20260929",
+  "text_encoder_executed": false,
+  "content_scores_created": false,
+  "training_weights_created": false,
+  "gpu_used": false,
+  "training_started": false,
+  "numeric_check": {
+    "min_cosine": 0.99999,
+    "max_l2_error": 0.0045,
+    "note": "CPU/CUDA values are not bitwise identical. Initial coordinate 1e-4 and L2 .001 checks were unnecessarily stricter than cosine>=.99999; corrected L2 bound to sqrt(2*(1-.99999)), rounded upward to .0045. These tolerances check alignment, not detector accuracy; retain actual differences."
+  },
+  "feature_shape": [
+    148695,
+    512
+  ],
+  "feature_dtype": "torch.float32",
+  "norm_min": 0.9999997019767761,
+  "norm_max": 1.000000238418579,
+  "visual_projection_shape": [
+    768,
+    512
+  ],
+  "text_projection_shape": [
+    512,
+    512
+  ],
+  "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+  "feature_tensor_sha256": "21c35d1cce959ca6a547b7d352e7b4c1e491257f03855b40fa8b99cf11df7c64",
+  "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+  "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+  "cache_artifact_scope": "unverified",
+  "scope_note": "Generic unverified field is retained; explicit current-stage binding and numerical probes checked here, not overwritten.",
+  "source_hashes": {
+    "script": "8bb19d386a3147f8441172a3a8a043d0c6e9a10d39aa15fb3f4ac131a9fb33f2",
+    "installed_clip_model.py": "9902cbe5ee90a1da2aa3e6f043e8a23dc1f8831193b963785c9af03d5c7bef2c"
+  },
+  "probe_seed": 20260929,
+  "probes": [
+    {
+      "image_path": "train/0558/c914c3dc47ec4d2d94bdbeb066ca8de9.jpg",
+      "file_sha256": "4a64611c95b9e9f8666707f7a7456197943adea81eb3c97444f9e7fc9a172770",
+      "cosine": 0.9999999403953552,
+      "max_abs_error": 0.00011628400534391403,
+      "l2_error": 0.0005340150673873723
+    },
+    {
+      "image_path": "train/0426/85b7c19a69e242f79b10486f51f07a8f.jpg",
+      "file_sha256": "805c342d30d762a87ec9641690d02cab454b249e1797d176db826984bf329042",
+      "cosine": 0.9999988079071045,
+      "max_abs_error": 0.00027785077691078186,
+      "l2_error": 0.0016024888027459383
+    },
+    {
+      "image_path": "train/0678/1a04544be37e483994c8bdf1f902cad6.jpg",
+      "file_sha256": "6dfa443cc1e3724bc9bd20334a4f01e62ba5201327f5467d567bcd1e5d6dbdf6",
+      "cosine": 0.9999998211860657,
+      "max_abs_error": 0.00012211501598358154,
+      "l2_error": 0.0007017366006039083
+    },
+    {
+      "image_path": "train/0212/ee33c1c314fd4e73b602e0b4691d813a.jpg",
+      "file_sha256": "a56e6cbfd7889bba433ea776f2ef95bcf1fb8c6db363c75784051803c72685eb",
+      "cosine": 1.0000001192092896,
+      "max_abs_error": 6.631389260292053e-05,
+      "l2_error": 0.0004028497205581516
+    }
+  ],
+  "limitation": "Four image-only numerical probes support cache compatibility, not semantic detector quality or rule permission. Cached 224px center crops omit full-image content.",
+  "elapsed_seconds": 3.6526166319963522
+}

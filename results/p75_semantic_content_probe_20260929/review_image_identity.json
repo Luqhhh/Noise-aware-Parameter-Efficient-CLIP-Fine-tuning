@@ -1,0 +1,458 @@
+[
+  {
+    "phase": "development",
+    "review_id": "D01",
+    "image_path": "train/0398/79ab705cb7a14229b52c4199b8fdaac7.jpg",
+    "sha256": "5f18ccfe93df3b5f2290340de4d2871622857b18126df6c55988caf04073585c"
+  },
+  {
+    "phase": "development",
+    "review_id": "D02",
+    "image_path": "train/0669/cc80e0b8cf644f18bdad6733e9b1d9db.jpg",
+    "sha256": "ef9580c34ceb1214f63b2270e8bb99602afea6c09716758182c9bbb4b5bad1a4"
+  },
+  {
+    "phase": "development",
+    "review_id": "D03",
+    "image_path": "train/0636/e73eb17feed047998e0391959c688897.jpg",
+    "sha256": "95372f295d081acd2dbda40ce621085d5e8b45a1ee9e05c93ee5cd4f5268076f"
+  },
+  {
+    "phase": "development",
+    "review_id": "D04",
+    "image_path": "train/0168/743f41b19ff64cd584b13fb0b747bf25.jpg",
+    "sha256": "96ff57a18336e6de2ba5f2ca7e92ede928a8b4e8da42aef13e79dfafefa804d0"
+  },
+  {
+    "phase": "development",
+    "review_id": "D05",
+    "image_path": "train/0475/58e3b584604f4a66bd8519aee798e7ff.jpg",
+    "sha256": "62b319a989f13bc3d49a312a841a0341b0e6eecd404b51c1eb88503180587785"
+  },
+  {
+    "phase": "development",
+    "review_id": "D06",
+    "image_path": "train/0478/75df5396bcd745a2970e2885c1d653d6.jpg",
+    "sha256": "8eaba91ae20cd60d7510271d3f5b007cca6e035d13e3f81ae7216ed4184678d3"
+  },
+  {
+    "phase": "development",
+    "review_id": "D07",
+    "image_path": "train/0013/340c8f9ba2b84a7e8aa5abe9ddcf799f.jpg",
+    "sha256": "973c40dcedbc4f785171accd26b8932095a1b26e69fc28fb62cf23523ba73b64"
+  },
+  {
+    "phase": "development",
+    "review_id": "D08",
+    "image_path": "train/0339/f2531873074b45b09a1d487520c48b16.jpg",
+    "sha256": "b712cb5b1707fbef41d1042206f73cfd6250014e0d8a1be8becd05b1417caf71"
+  },
+  {
+    "phase": "development",
+    "review_id": "D09",
+    "image_path": "train/0330/a5dba04d22854d4f80dc79c5d801fbf5.jpg",
+    "sha256": "af21081458229c058216b002860fc8de9427a3c1c08b60f8592225dbbb7d0d9a"
+  },
+  {
+    "phase": "development",
+    "review_id": "D10",
+    "image_path": "train/0487/a4b146b8820046a891ecb22e18461bc5.jpg",
+    "sha256": "7ffa974d814607b995a5e92b1e9b387c32e0d9b0e201136f559a79b4e234607e"
+  },
+  {
+    "phase": "development",
+    "review_id": "D11",
+    "image_path": "train/0450/15381a7f188d4bb6912cce123c1e5403.jpg",
+    "sha256": "a4eb699caf4f50909b19bace71c5edc4196aefe277de9bf91af097cea9277549"
+  },
+  {
+    "phase": "development",
+    "review_id": "D12",
+    "image_path": "train/0539/da92b7179438417b9bb0067810ec6556.jpg",
+    "sha256": "f8ee163f4bd3f71ea0cec9bcd95c612dd759a288dc198f45a2aa6f1343711a5f"
+  },
+  {
+    "phase": "development",
+    "review_id": "D13",
+    "image_path": "train/0146/6211341c73f44348a1197d18a8f613d5.jpg",
+    "sha256": "9c97b0fd913eabecbae2b2f596b9df08e1e68c4baff2789fb3ed3933286bad91"
+  },
+  {
+    "phase": "development",
+    "review_id": "D14",
+    "image_path": "train/0738/700d72665f2743fe94d3c93d486e572c.jpg",
+    "sha256": "b1d654954c63c3c6a0f7585ea8d63d68291748bb07d7a98fef1ef3ce70b54eec"
+  },
+  {
+    "phase": "development",
+    "review_id": "D15",
+    "image_path": "train/0745/8618c402a9674492b24696f7d628fb41.jpg",
+    "sha256": "d6777fa4851b734915d4bd47b671d5d9eacf13568cd74cbd33093c25f498cb48"
+  },
+  {
+    "phase": "development",
+    "review_id": "D16",
+    "image_path": "train/0475/009d288f3b814745ab35f044da10485b.jpg",
+    "sha256": "7f4249a564dd5d18745773e70a893bb15234d7caaae646b2098b2e4a95db65f3"
+  },
+  {
+    "phase": "development",
+    "review_id": "D17",
+    "image_path": "train/0162/cefdbab700c041fcb7b301ae5288a456.jpg",
+    "sha256": "3b41ccd65ef823ab5cb2d272c81715fc640637307da29d6dec0a8b5401d0b81d"
+  },
+  {
+    "phase": "development",
+    "review_id": "D18",
+    "image_path": "train/0253/47a4146edca343a8a9e7a4a0852411bf.jpg",
+    "sha256": "b18c96185b37b517697efaee1e4eba9524878a01901973d7c6a691abb3381db4"
+  },
+  {
+    "phase": "development",
+    "review_id": "D19",
+    "image_path": "train/0446/e80b725cacab4f348069256714949a32.jpg",
+    "sha256": "25652f996ab4ba4db3ed53a045545b1077abe7a2968cae98bfe56cb36b83698e"
+  },
+  {
+    "phase": "development",
+    "review_id": "D20",
+    "image_path": "train/0167/d5d8eb543c9344dcaf290bf7dffd8286.jpg",
+    "sha256": "44eecacea898e6c680fdbaf70c33c84d70b9bfde7a5a524eae8b6c9bb3f958c9"
+  },
+  {
+    "phase": "development",
+    "review_id": "D21",
+    "image_path": "train/0098/91319891c6d44e8a8737819df51ed851.jpg",
+    "sha256": "d7a2704330ad54824dbd1ab93a849af1a4b0e65cf8501d11dffdb9cefff51ee6"
+  },
+  {
+    "phase": "development",
+    "review_id": "D22",
+    "image_path": "train/0309/490cbdad977242dbad114787fbdf702d.jpg",
+    "sha256": "d1057ee4264bab38ce9fb8d6194ff7e4b7546ffc02d7a851b15c8ae3841fd9b2"
+  },
+  {
+    "phase": "development",
+    "review_id": "D23",
+    "image_path": "train/0005/a337c2ed2d954e76822b474b8ad4908e.jpg",
+    "sha256": "4a0227d3bdf3f26ec1fb48f299d8b84a402dafba774d0f641252fb0f2464ddf1"
+  },
+  {
+    "phase": "development",
+    "review_id": "D24",
+    "image_path": "train/0101/34b87f7ef640421894720e518d1a2775.jpg",
+    "sha256": "b17b49093a8802b94de7537dc1c39a50be264a8b712a3a9edf6c7585c1916535"
+  },
+  {
+    "phase": "development",
+    "review_id": "D25",
+    "image_path": "train/0074/506b0643b2a845dd86f52563494e965e.jpg",
+    "sha256": "2ca750067571e69e53a5db7b106de034403113bcf2679308500ecfafde11d4fd"
+  },
+  {
+    "phase": "development",
+    "review_id": "D26",
+    "image_path": "train/0728/9cd1b69de1d24a4aadf1def514d1f8fd.jpg",
+    "sha256": "247ad944b55f0600ba74fe19d2a437186209c81496ab8192af8608c62759aed2"
+  },
+  {
+    "phase": "development",
+    "review_id": "D27",
+    "image_path": "train/0339/61ab501344864bf7b486218007d3d5aa.jpg",
+    "sha256": "a5f51e6f435a4be70acd2ff439485835948c3657e647c9b228c5a007babd9f13"
+  },
+  {
+    "phase": "development",
+    "review_id": "D28",
+    "image_path": "train/0078/cbe728ffa8a3414880b91521fbe9561d.jpg",
+    "sha256": "154b844e9e58dd30b16ffacd3653bbced6033e506ce34df2de0be9a4d12b54ee"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A01",
+    "image_path": "train/0383/98090a9d919d455182601fd003ca6d24.jpg",
+    "sha256": "4708254e1f08b73c89d07be31a429ffc06e3a58480ee495d01dfbf240728f636"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A02",
+    "image_path": "train/0149/fd3a55bf2ca94b0e956bf10bf0db23bd.jpg",
+    "sha256": "9eb4760cf99eb1a98ab678b7336e7d1460adbaa36e0cf1255a1550017911e926"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A03",
+    "image_path": "train/0242/1cc86162533148d0a71d0510ef5e07b7.jpg",
+    "sha256": "101dc39a70fb4b88b349cd0a9fb6689fc8f1f7063617c5d3b38ae15895574b22"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A04",
+    "image_path": "train/0286/7b5efc9ebc6c47cdab30f73a2a6cd40b.jpg",
+    "sha256": "ed740450649462f9b5bb260174b5e152b96637f860536a6d4c7be2e1c8e1a51c"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A05",
+    "image_path": "train/0575/d1fa8ad68d2a4423904ebbee4917cc3f.jpg",
+    "sha256": "28793588166ba0c4becc2d8e81475e87e54bafcff135bd49b42f08b3ad317758"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A06",
+    "image_path": "train/0093/529757586edf465fbf163a03635fd821.jpg",
+    "sha256": "662b29dccf7cc5bbff4a6967eb9ba43b3116115d21eea1395eb16ef44cdfe935"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A07",
+    "image_path": "train/0686/f40f5454c4d54c3f934eb118278f6761.jpg",
+    "sha256": "47004de4a4936c7910625dc8e03b1a681da7abc46219b7a9e6d7217b536cb96a"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A08",
+    "image_path": "train/0100/2618a3e1dfa641009760034337eba690.jpg",
+    "sha256": "cc1d126ec8eca4212ccfe6382080fcbadb69e79b84cfc84829e44b6a2d2ac80c"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A09",
+    "image_path": "train/0274/3cf31ec314734cf186d7e7d42f27f508.jpg",
+    "sha256": "1df5e8715648a029b331538ea8cfb961c5c548bbe4e8b92936a9e6f19cb20941"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A10",
+    "image_path": "train/0207/a39f875202f94157b22accbc1c7cb82a.jpg",
+    "sha256": "3708d7dd21c2b0eb23f76d8d2c67ecb9faa902ff12347627b07c8521d970cbbf"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A11",
+    "image_path": "train/0715/6dd299fd09ce4548bfd0bf958bc6a853.jpg",
+    "sha256": "42411a3e8dbbaf333995bd049f012185ca336a56b6f0d977e8f193df9c04e419"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A12",
+    "image_path": "train/0674/d6060f31d2214f04a8e1220406c62dac.jpg",
+    "sha256": "1c21f41f4697e64e9128f1d0b7ea245398dde79b967d2787ab3f25a161c080a3"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A13",
+    "image_path": "train/0396/77c1928d469b47f18eb742248933d7d3.jpg",
+    "sha256": "b9f7906cf74a522a1123a808789b36dbf53e4beda3952a8eb2a907bf07c759ee"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A14",
+    "image_path": "train/0171/ddd30350d4fb4fd0b8a1bce6e579a452.jpg",
+    "sha256": "151c21d8071c847e953d5bf1cef0bb88b37577d14b87369d2c65b4b3ff70afdc"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A15",
+    "image_path": "train/0602/5d6519db1f50499c8c6ca701b4b0771f.jpg",
+    "sha256": "07faa572b4d696966e29e14930c236f5d3c521ef1d45fc19af5d10ab3e0d33d0"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A16",
+    "image_path": "train/0633/40406e5743e04a969eee06e8a8c3ce8d.jpg",
+    "sha256": "154e1f737f43c4e86a119979b5471ffc0af3a7fa21e204bb7d81d6e7636965f5"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A17",
+    "image_path": "train/0065/834b0ee9523043a9abc256fc71986679.jpg",
+    "sha256": "695ea87ba730a2f722b29bfc822d97feb3395e28601ea069b890d81b89f22202"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A18",
+    "image_path": "train/0627/9190600927f442d5ab10846966e845c2.jpg",
+    "sha256": "c519aa3d145ce03aa4366feff4785c3270c7a35a5a556f94fdc9a6f0fb116972"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A19",
+    "image_path": "train/0429/12fe599d406b47e1bbe82a75058cde04.jpg",
+    "sha256": "f3358d56bc366b512b6e4f94b10d9e2a7f47b3565c06a3235c6460cca9e8c0a3"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A20",
+    "image_path": "train/0550/d68d4f1cbeb14e7080c38477e85d6cef.jpg",
+    "sha256": "c700da529c44a645ff78b1219bad12ea6423329062bcdc04412f4f00b37707bb"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A21",
+    "image_path": "train/0738/1ba7a424a03f4f15bc7685777a052596.jpg",
+    "sha256": "fc9368479b1c871aad346d20fbb64d89959c88cf69f52aa8ed419a9d99cad1c1"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A22",
+    "image_path": "train/0403/055cdba8b08c43d59d325746bba3617d.jpg",
+    "sha256": "cb2120836c7342b737dc05f74676f270b23280276cb0ea1a8dafad5af284f8b4"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A23",
+    "image_path": "train/0460/17192750dc3e4b31bf80e8ed16888c3c.jpg",
+    "sha256": "0905d89853a69cafa98212bf7581a1a9e3e6f65d5f558348c5a8f6633127a1e6"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A24",
+    "image_path": "train/0092/e2e12b70aa7840109ccdec1ecb68a056.jpg",
+    "sha256": "34f169c258ac0ba9fe08ced995cfc6e5d71f3528b50a85ed31f73f94dcc69135"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A25",
+    "image_path": "train/0483/7090a897492b4bcca78766b1ad9523fd.jpg",
+    "sha256": "edae4edf41a38d1ce0ca7d42b3d66986de801581c89c7f7edbe8637d4a4fbc33"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A26",
+    "image_path": "train/0241/ade4a745d1074b33acb4798393c87fd5.jpg",
+    "sha256": "3531d8a5a30504110ad4079e6c29de5fa0b06d36fa149b69a76a5db2a4e325ff"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A27",
+    "image_path": "train/0096/73831fb7888e40aa99d6ed9c9ca59a4e.jpg",
+    "sha256": "820611b3cc32cce5344a565a1d4da4f4d5294204ca94bc1ec31dca5d309ea712"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A28",
+    "image_path": "train/0424/2f0eebbce10e4926aacbcf41b2cd9b93.jpg",
+    "sha256": "bd394a6d2968c4765fb5fcff080388c29abdb36d2042bee8c8b68da9cb18a048"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A29",
+    "image_path": "train/0053/c8eec15855d5483b959b5038717bbbab.jpg",
+    "sha256": "df83c2fa6c1439d120731f0a7104654c75b220ee50453f6f2d57c2c52a66ebb7"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A30",
+    "image_path": "train/0274/7aa2cef291ee424c9a1a1748d9629b36.jpg",
+    "sha256": "cf472dfc6aef3c969223075879e3f7c4216fb98ae2ae3132b9bd23013eb93375"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A31",
+    "image_path": "train/0366/482ab9f3a2b1405382c50489c3039caf.jpg",
+    "sha256": "cefeb6f3fadff58659b64f4b51e707dde38ea9a33b7f9387f78a67fe9a25cbdc"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A32",
+    "image_path": "train/0667/fbe090be149749e28226de36f5679d42.jpg",
+    "sha256": "6559ef9aae78965a51cb06a49a7c83c6bdb479d73881fbd8001e6ea8c58ef597"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A33",
+    "image_path": "train/0490/4c704bb418064f7b8fbf7bf51ab2f124.jpg",
+    "sha256": "f374eb82d3834e1c81ecdf61f8e73878569a6746722b6e30f33e5fc4a28c0fbf"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A34",
+    "image_path": "train/0531/bd94263d338f4d67b93973d074ebbf2b.jpg",
+    "sha256": "5be6c1b6cdef5b36b761e636c6e3c0abf5a7e86272749f860e1e2561ec4dae6c"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A35",
+    "image_path": "train/0054/5ce702fd6f4341fd9cbe136ba87f36cf.jpg",
+    "sha256": "bd2fd2f45023cd2ab395ce2165723dfbc9368ffe93624d8b25a871fb25643bc7"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A36",
+    "image_path": "train/0220/05316fbbf0194bf3a8bc263c6a07b893.jpg",
+    "sha256": "279aa07d3819f304ebd9d94f8e28b6ace78bb9777b49a86491d7fc83cb5b1adb"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A37",
+    "image_path": "train/0560/e60f4cb9a3f44157affba97b5c48408e.jpg",
+    "sha256": "4f9c2a0d6f6ddbf552089f2d88a2f6f224c301aed3fe63b16e3f91341fb8c4c4"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A38",
+    "image_path": "train/0350/277a0dcae6d4426ca75ab697fb0cf55d.jpg",
+    "sha256": "0a2c86262d44450d0d4d759c03afcaa8a0c2c7974916a5356abe065834ae9ddb"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A39",
+    "image_path": "train/0120/6a0471f5a9264b3e8f0e8cc6fa884b16.jpg",
+    "sha256": "586b84062de70784665bd6b2e72ff5e01f6ea74fa0d7a04f6e7ec3ef5b9d7b35"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A40",
+    "image_path": "train/0560/95ce1be819f44579885567fa45849ad1.jpg",
+    "sha256": "16a11522b7379c6cb5ae467bcc28943ad623fe9670eaad82164bcebfd1b2d5a6"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A41",
+    "image_path": "train/0737/332d1db8681e4730ae201698fa2a4b44.jpg",
+    "sha256": "ae16976543b7ea27e2d55d94f5d239712712d95450639bbb1260b35ea94371a9"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A42",
+    "image_path": "train/0485/154d94a34c264e2c8b0ad1108d4a75bf.jpg",
+    "sha256": "7d4aa73305355b48fc823c31f5b8211e7d3b8011e8eff440f9fd5673717bd132"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A43",
+    "image_path": "train/0726/f55e0d2d3ddd4e4fa1c6489afb6546ff.jpg",
+    "sha256": "4edfd3154b2d6fd6475184af179f649081f85e2f6c844cb4bae17e2132a6e32c"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A44",
+    "image_path": "train/0369/59f1bd47f1f34cf2afdad57d7cc15348.jpg",
+    "sha256": "78874f09fe4536508692890228b27e39f3b10ef1a734515d4d91a591b76bfcf6"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A45",
+    "image_path": "train/0274/13cfc62ce82544e0b2fb17eaa14d8287.jpg",
+    "sha256": "ae6a3bec27f6ecf85a06dfc0c8d88768fb2e7d9f2ebe6101bfd6f37e333a7e7e"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A46",
+    "image_path": "train/0535/7a05b12e6059440bafd8a0ed06863b3e.jpg",
+    "sha256": "8fa9671af55df3decc19cb0e8d171e2abf7a13a19278db547e3d43bdfe39d41f"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A47",
+    "image_path": "train/0001/87a372ebdf014181ba7a950634a52f96.jpg",
+    "sha256": "5df55cd0e95c27bba9b04439b38dd696f3649e1ff14e7f91ebaaf9b38457c7b9"
+  },
+  {
+    "phase": "acceptance",
+    "review_id": "A48",
+    "image_path": "train/0256/872ba10b574d464180432f2baab1a0ad.jpg",
+    "sha256": "9da99b9dda03b0c77f6ff87f7a716bdfc479671a6ff6c284aca8755bcd091572"
+  }
+]

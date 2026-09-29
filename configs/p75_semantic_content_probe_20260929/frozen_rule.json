@@ -1,0 +1,14 @@
+{
+ "experiment":"P75_SEMANTIC_CONTENT_PROBE",
+ "revision":"semantic_content_v1",
+ "descriptions_sha256":"df3f22717e9105afa50799662b0f7adcaf6509bc81b49edb04f01e6b5567d793",
+ "rule":"sN - max(sB, sA) >= 0.05",
+ "minimum_margin":0.05,
+ "group_reduction":"maximum cosine similarity; normalize both image and text features",
+ "interpretation":"suspected no-target proxy; not noise probability or confirmed wrong label",
+ "development_basis":"28 training cases checked before freeze: 18 non-appearance-content examples and 10 protected appearance examples. At 0.05, 15/18 positives selected and 0/10 protected selected. These are deliberately selected development cases, not accuracy estimates.",
+ "known_misses":"Three text-only development cases below margin 0.05 retained. No quota is imposed.",
+ "acceptance":{"seed":20260930,"selected_random":24,"selected_boundary":12,"protected_challenges":12,"excluded_development_content_groups":true,"stop_on_visible_biological_appearance_in_any_selected_case":true,"no_individual_whitelist":true},
+ "validation_access":"only after independent acceptance passes; same frozen rule, no adjustment from validation outcomes",
+ "formal_training":"not started in detector acceptance stage; reuse existing global/local mask adapter after a passed checkpoint"
+}
