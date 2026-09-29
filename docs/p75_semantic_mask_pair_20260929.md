@@ -40,3 +40,32 @@ python3 scripts/finalize_p75_semantic_pair.py --expected-head <启动收尾器�
 启动前6项分类屏蔽测试通过，两臂当前阶段训练协议校验通过；另3项超时清理、失败状态、分组计数检查通过。2026-09-29 12:50本机启动control；首20次优化更新无跳步、训练233.24秒。此处尚无配对验证结果，不能将准备检查写成训练收益。
 
 长任务收尾器只在已有训练/缓存/出包状态完成后进行CPU报告与校验，不启动额外GPU作业。逐张报告、源哈希、配对顺序/更新/学习率审计和9项提交校验通过后，自动提交推送方案，再在main集成目录使用`git pull --rebase --autostash origin main`同步、合并、重新校验并推送；不执行手动stash pop。工作区出现并发改动、校验失败或合并冲突时停止自动收尾，不强推、不重跑。最终状态记录在`delivery_status.json`。
+
+## 已验证结果
+
+四轮配对评估完成，六轮主判断未完成。预算计费累计16261.78秒；无预算追加。
+
+# P75 semantic masking pair
+
+Original-label accuracy; selected and remaining groups are content proxies, not clean truth.
+
+| Epoch | Proxy | Rows | Control macro | Masked macro | Control micro | Masked micro | Fixed | Damaged | Net |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 4 | all | 14880 | 72.941563% | 72.941270% | 73.696237% | 73.696237% | 24 | 24 | 0 |
+| 4 | selected_proxy | 132 | 17.619048% | 10.000000% | 20.454545% | 14.393939% | 2 | 10 | -8 |
+| 4 | remaining_proxy | 14748 | 73.330574% | 73.388627% | 74.172769% | 74.227014% | 22 | 14 | 8 |
+
+Slice macro averages only classes present in that slice.
+
+Content groups are automatic proxies, not clean labels.
+Same used validation split, not an independent test.
+Shared RM-LP parent head already saw original supervision.
+No automatic full-training or platform promotion.
+
+局部分支后的完整配对未完成，不能用四轮结果否定机制。其余代理净修正8张；该数字仍是含噪标签代理结果，不自动晋级完整训练或占用平台名额。
+
+本次训练调度器中断后，用户明确要求只做四轮评估与诊断出包。恢复时保留原状态，补记masked任务开始至恢复时刻的保守墙钟耗时（含空闲中断间隔）；原退出码未知，未伪造成功退出，未重置预算、未续训第5–6轮。恢复入口：`python3 scripts/close_p75_semantic_pair_e4.py`；先冻结同轮次配对报告再出包。
+
+诊断单学生包：`/home/lux1/noise-worktrees/p75_semantic_mask_pair_20260929/outputs/codex/p75_semantic_mask_pair_20260929/deliveries/P75_SEMANTIC_MASKED_E4/pred_results.csv`、`/home/lux1/noise-worktrees/p75_semantic_mask_pair_20260929/outputs/codex/p75_semantic_mask_pair_20260929/deliveries/P75_SEMANTIC_MASKED_E4/submission.zip`。9/9校验通过；未上传平台。逐张预测、分组训练期统计、顺序/更新数审计、执行命令与用时均归档。报告中的相对L05结果仅为现役参考，主对照为同轮次control。
+
+复核：`python3 scripts/verify_p75_semantic_pair.py --archive results/p75_semantic_mask_pair_20260929`。方案结果提交、main合并并重新校验推送后暂停，不自动扩训。
