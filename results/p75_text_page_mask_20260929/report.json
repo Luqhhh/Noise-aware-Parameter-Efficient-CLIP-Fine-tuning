@@ -1,0 +1,76 @@
+{
+  "experiment": "P75_TEXT_PAGE_MASK_V1",
+  "scan_sha256": "c3a6c2fac1b9a618b8bae8bb36c870f7848490e21bf2888fb589553f05725299",
+  "evidence_sha256": "6c89d11fb29e85c8f4c8270217892246efd81deed45858a310987b41a3e02dcc",
+  "p0_summary_sha256": "9171db437b68d44a894d57a9aa94ad6d7793206906e54c65245d78b6591e2de1",
+  "groups": {
+    "train_not_detected_proxy": {
+      "rows": 133815,
+      "original_label_errors": 13024,
+      "low_py_001": 5323,
+      "low_py_03": 13481,
+      "high_py_07": 109149,
+      "sqrt_py_sum": 116413.40561453362,
+      "logit_gradient_l1_sum": 25010.556784366338,
+      "py_quantiles": {
+        "min": 4.576654610843889e-09,
+        "p25": 0.8120197951793671,
+        "median": 0.9427160620689392,
+        "p75": 0.9837350249290466,
+        "max": 0.9999918937683105
+      },
+      "mean_sqrt_py": 0.8699578194861086,
+      "final_logit_l1_share": 1.0
+    },
+    "train_detected_text_proxy": {
+      "rows": 0,
+      "py_quantiles": null,
+      "mean_sqrt_py": null,
+      "final_logit_l1_share": 0.0
+    },
+    "val_not_detected_proxy": {
+      "rows": 14880,
+      "original_label_errors": 3474,
+      "low_py_001": 1237,
+      "low_py_03": 3594,
+      "high_py_07": 9128,
+      "sqrt_py_sum": 11124.70436859312,
+      "logit_gradient_l1_sum": 3954.2324720585466,
+      "py_quantiles": {
+        "min": 8.023297581871702e-09,
+        "p25": 0.33032066375017166,
+        "median": 0.8626906871795654,
+        "p75": 0.9772535562515259,
+        "max": 0.9999550580978394
+      },
+      "mean_sqrt_py": 0.7476279817602903,
+      "final_logit_l1_share": 1.0
+    },
+    "val_detected_text_proxy": {
+      "rows": 0,
+      "py_quantiles": null,
+      "mean_sqrt_py": null,
+      "final_logit_l1_share": 0.0
+    }
+  },
+  "selected_train_classes": 0,
+  "emptied_classes": [],
+  "review_ids": [],
+  "training_started": false,
+  "detector_gate": "failed_empty_selection",
+  "limitations": [
+    "Detected text proxy is not confirmed open-set truth.",
+    "Not-detected complement is mixed and is not a clean/effective-target validation set.",
+    "No semantic mapping and no replacement labels. Numerical classes are unchanged.",
+    "Final center-view snapshots cannot reconstruct training history or parameter-gradient harm.",
+    "2*sqrt(py)*(1-py) is the per-example GCE logit-gradient L1 at q=.5, not parameter-gradient norm.",
+    "Only a whole fixed detector may pass/fail review; no per-image manual whitelist/blacklist."
+  ],
+  "pixel_rejection_reasons": {
+    "background": 121614,
+    "small": 25928,
+    "components": 1062,
+    "ink_fraction": 76,
+    "lines": 15
+  }
+}

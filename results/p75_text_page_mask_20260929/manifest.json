@@ -1,0 +1,33 @@
+{
+  "experiment": "P75_TEXT_PAGE_MASK_V1",
+  "status": "detector_failed_empty_selection",
+  "training_started": false,
+  "gpu_used": false,
+  "source_worktree": "/home/lux1/noise-worktrees/p75_text_page_mask_20260929",
+  "local_output": "/home/lux1/noise-worktrees/p75_text_page_mask_20260929/outputs/codex/p75_text_page_mask_20260929",
+  "files": {
+    "class_coverage.csv": "90cdd7dbe2f76a388cfc1da64ec25414b2dddb8f34d87f9798d2307edd89d602",
+    "pixels.jsonl.gz": "fd4380f47fdcceb266acf1c73078725f2025086bc12da2d560fb07b0b4a3c5c5",
+    "protocol.json": "08186776899642fb0082a7b05d2d8639b268b5976b08dbd6d9f183c1c0dd9882",
+    "report.json": "f1c30a4066a6af12a2d2733a151e7522d0eeebb671eaadaf649638e0b3f84c0c",
+    "report.md": "f14125f0872cd634523b3231c50c339b67e58602a5e90b677c6b7f5750328790",
+    "review_manifest.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "scan_summary.json": "c3a6c2fac1b9a618b8bae8bb36c870f7848490e21bf2888fb589553f05725299",
+    "selected_snapshot.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "synthetic_probe.json": "99581999c49dfbec52de49a275d674bb84fe77f7185f39b146c85485a71aa915",
+    "validation.json": "98437e9da690b48f398bcc1e73aea90ee2daab28a3689d93534326c934668e84"
+  },
+  "implementation": {
+    "configs/p75_text_page_mask_20260929/detector.json": "767a2cdc39e0b1089eecdca7f4fa40a27a9a07b51a447a406a7851b5749233f8",
+    "scripts/p75_text_page_detector.py": "7e5069bcf6bc1eb079404655d457f2c45da8feba590723de3a5ffa85a978ddce",
+    "scripts/p75_text_page_overlay.py": "efaca3170141d6a94a81d299d45df86d0fa84c9838331fc23a16a618695f2b96",
+    "scripts/p75_text_page_report.py": "1bcb0eafea6006a345e69e5b6f12b3a318b5c4a84e53532ca35cf68075e0a56c",
+    "scripts/p75_text_page_runtime.py": "62a67fc86762f8c029f4dc1f510865e1e8701b7a76d9f82d6a08148c8ad8cb65"
+  },
+  "incumbent_submission": {
+    "csv": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/pred_results.csv",
+    "zip": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060/submission.zip",
+    "validation_source": "results/p75_supervision_rebuild_20260929/submission_check.log",
+    "existing_checks": "9/9; 37444 rows; unchanged incumbent, not a new candidate"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "command": "python3 -m pytest tests/test_p75_text_page_detector.py tests/test_p75_text_page_runtime.py tests/test_p75_text_page_report.py -q",
+  "passed": 12,
+  "elapsed_seconds": 8.8,
+  "scope": "CPU implementation and synthetic integration checks; no actual training",
+  "full_scan_rows": 148695,
+  "full_scan_selected": 0,
+  "p0_val_errors": 3474
+}

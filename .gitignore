@@ -6,6 +6,9 @@ __pycache__/
 # Large binary checkpoints (track all other output files)
 outputs/**/*.pt
 
+# Local pixel-only P75 scan and image previews
+/outputs/codex/p75_text_page_mask_20260929/
+
 # Local audit snapshots can contain environment details and private paths.
 outputs/preliminary_no_sweep/
 outputs/stage_readiness/

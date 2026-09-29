@@ -1,0 +1,41 @@
+{
+  "rule": {
+    "id": "P75_TEXT_PAGE_MASK_V1",
+    "scope": "dense near-monochrome text pages only; not a general no-target or label-noise detector",
+    "max_side": 768,
+    "min_side": 256,
+    "white_level": 210,
+    "min_white_fraction": 0.7,
+    "max_colored_fraction": 0.005,
+    "chroma_threshold": 35,
+    "ink_level": 160,
+    "min_ink_fraction": 0.025,
+    "max_ink_fraction": 0.25,
+    "min_glyphs": 200,
+    "glyph_max_height_fraction": 0.035,
+    "glyph_max_width_fraction": 0.06,
+    "max_non_glyph_ink_fraction": 0.02,
+    "line_occupancy_fraction": 0.08,
+    "min_lines": 12,
+    "max_line_height_fraction": 0.035,
+    "min_ink_on_lines_fraction": 0.95,
+    "max_line_spacing_cv": 0.6,
+    "review_seed": 20260929,
+    "review_limit": 16,
+    "scan_timeout_seconds": 3600,
+    "training_gate": "fail fixed detector if any reviewed selected image clearly contains useful biological appearance; never remove individual false positives and proceed",
+    "training_budget": "at most one control and one masked run to epoch 6 of unchanged 16-epoch schedule; same legal RM-LP parent; 6 GPU hours total including validation; no automatic full training"
+  },
+  "rule_sha256": "767a2cdc39e0b1089eecdca7f4fa40a27a9a07b51a447a406a7851b5749233f8",
+  "script_sha256": "7e5069bcf6bc1eb079404655d457f2c45da8feba590723de3a5ffa85a978ddce",
+  "splits": {
+    "train_dev.csv": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "val_dev.csv": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "class_to_idx.json": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c"
+  },
+  "selection_uses_labels": false,
+  "selection_uses_predictions": false,
+  "human_training_labels": false,
+  "rows": 148695,
+  "started_utc": "2026-09-29T03:41:52Z"
+}
