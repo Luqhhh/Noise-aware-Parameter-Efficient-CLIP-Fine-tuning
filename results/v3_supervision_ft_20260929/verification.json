@@ -1,0 +1,97 @@
+{
+  "experiment_id": "V3_SUPERVISION_FT_20260929",
+  "strategy_name": "v3",
+  "status": "engineering_ready",
+  "experiment_status": "not_started",
+  "checked_at_utc": "2026-09-29T16:14:47.479013+00:00",
+  "branch": "codex/v3_supervision_ft_20260929",
+  "base_commit": "63307eacb8fc15c2b7f4f2759ae170e142b7b309",
+  "worktree": "/home/lux1/noise/worktrees/v3_supervision_ft_20260929",
+  "prepared_plan": "/home/lux1/noise/worktrees/v3_supervision_ft_20260929/outputs/codex/v3_supervision_ft_20260929/prepared_r4/plan.json",
+  "tests": {
+    "passed": 119,
+    "failed": 0,
+    "errors": 0,
+    "seconds": 9.713,
+    "v3_cases": 36,
+    "execution_environment": "local_host_CPU_with_CUDA_VISIBLE_DEVICES_empty",
+    "multiprocess_test_note": "Sandbox IPC hung; owned tests interrupted and rerun on local CPU."
+  },
+  "official_cpu_forward": {
+    "status": "official_cpu_forward_passed",
+    "plan_sha256": "f4872aa1f745a3a4189a9214f0ce3f60da7b8c44effeba4ec49b2b1b1e7936a1",
+    "logits_shape": [
+      1,
+      750
+    ],
+    "trainable_parameters": 88233966,
+    "same_initial_weights": true,
+    "initial_model_sha256": "1095bab4f55b749f6b37aa2feda3d0cd712b756c1e535f1a99ff5f209a4beba0",
+    "gpu_started": false,
+    "training_started": false,
+    "cuda_initialized": false,
+    "local_metrics": null,
+    "platform_metrics": null
+  },
+  "prepared": {
+    "train_rows": 133815,
+    "val_rows": 14880,
+    "content_group_overlap": 0,
+    "classes": 750,
+    "supervision": {
+      "original_kept": 118996,
+      "pseudo": 78,
+      "active": 119074,
+      "zero_weight": 14741,
+      "clean_labels_known": false
+    },
+    "tail_classes": 75,
+    "few_support_classes": 1,
+    "steps_per_epoch": 1393,
+    "updates_per_arm": 2786,
+    "total_updates": 5572,
+    "frozen_inputs": 37
+  },
+  "commands": [
+    "env CUDA_VISIBLE_DEVICES= PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 -m v3.plan prepare --output outputs/codex/v3_supervision_ft_20260929/prepared_r4",
+    "env CUDA_VISIBLE_DEVICES= PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 python3 -m v3.plan verify --plan outputs/codex/v3_supervision_ft_20260929/prepared_r4/plan.json",
+    "env CUDA_VISIBLE_DEVICES= PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 scripts/check_v3_cpu.py --plan outputs/codex/v3_supervision_ft_20260929/prepared_r4/plan.json --output outputs/codex/v3_supervision_ft_20260929/official_cpu_forward_r4.json",
+    "env CUDA_VISIBLE_DEVICES= PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 -m pytest tests/test_v3.py tests/test_v2.py reproducibility/aegis_f1/tests/test_v1.py reproducibility/aegis_f1/tests/test_model.py reproducibility/aegis_f1/tests/test_submission.py -q --junitxml=outputs/codex/v3_supervision_ft_20260929/cpu_tests.xml > outputs/codex/v3_supervision_ft_20260929/tests.log 2>&1"
+  ],
+  "main_integration_mode": "automatic_autostash",
+  "gpu_started": false,
+  "official_data_training_started": false,
+  "synthetic_CPU_training_tests_only": true,
+  "GPU_cost": null,
+  "local_metrics": null,
+  "platform_metrics": null,
+  "new_submission": null,
+  "automatic_ladder": false,
+  "automatic_full_training": false,
+  "active_submission": {
+    "directory": "/home/lux1/noise/worktrees/rematch750_f05_focus/outputs/f05_focus_l05/L05_T14_P060",
+    "csv": "pred_results.csv",
+    "zip": "submission.zip",
+    "rows": 37444,
+    "checks": "9/9 (existing record)",
+    "verification_source": "results/p75_supervision_rebuild_20260929/submission_check.log",
+    "rechecked_in_this_segment": false
+  },
+  "implementation_files": [
+    "configs/v3/recipe.json",
+    "configs/v3/authorization.example.json",
+    "reproducibility/aegis_f1/v3/__init__.py",
+    "reproducibility/aegis_f1/v3/core.py",
+    "reproducibility/aegis_f1/v3/plan.py",
+    "reproducibility/aegis_f1/v3/report.py",
+    "reproducibility/aegis_f1/v3/runtime.py",
+    "scripts/check_v3_cpu.py",
+    "tests/test_v3.py",
+    "docs/v3.md",
+    "docs/current_execution_plan.md",
+    "docs/README.md",
+    ".gitignore",
+    "results/v3_supervision_ft_20260929/verification.json",
+    "results/v3_supervision_ft_20260929/tests.log"
+  ]
+}

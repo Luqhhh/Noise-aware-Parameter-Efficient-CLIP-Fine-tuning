@@ -14,6 +14,7 @@
 | [strategy_v1_v2_20260929.md](strategy_v1_v2_20260929.md) | 团队自主策略的正式命名、当前验证及交付 |
 | [v1.md](v1.md) | v1：噪声筛选、LoRA与固定推理 |
 | [v2.md](v2.md) | v2：分辨率/LR阶梯与全量续训 |
+| [v3.md](v3.md) | v3：v1监督＋v2全微调的固定384配对，工程交付、GPU未启动 |
 | [p75_error_budget_policy_20260929.md](p75_error_budget_policy_20260929.md) | 主要误差、可恢复收益与完整训练的前置门禁 |
 | [p75_full_sam_execution_20260928.md](p75_full_sam_execution_20260928.md) | 已启动本机固定实验的收尾与每小时监控，不自动衍生搜索 |
 | [p75_supported_ce_preparation_20260929.md](p75_supported_ce_preparation_20260929.md) | CPU 实现准备与证据边界，不构成开训许可 |
