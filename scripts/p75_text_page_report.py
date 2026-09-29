@@ -99,7 +99,7 @@ def main():
     (args.out/'selected_snapshot.json').write_text(json.dumps(joined,indent=2)+'\n')
     (args.out/'review_manifest.json').write_text(json.dumps(review,indent=2)+'\n')
     with (args.out/'class_coverage.csv').open('w') as f:
-        writer=csv.DictWriter(f,fieldnames=['class','train_rows','selected','remaining']);writer.writeheader()
+        writer=csv.DictWriter(f,fieldnames=['class','train_rows','selected','remaining'],lineterminator='\n');writer.writeheader()
         for i,c in enumerate(classes): writer.writerow(dict({'class':i},train_rows=c['train_rows'],selected=c['selected'],remaining=c['train_rows']-c['selected']))
     # Verify previews against the official preprocessing, when hits exist.
     if review:
