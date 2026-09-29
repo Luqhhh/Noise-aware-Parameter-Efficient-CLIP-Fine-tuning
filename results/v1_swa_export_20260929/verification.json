@@ -1,0 +1,24 @@
+{
+  "experiment_id": "V1_SWA_EXPORT_20260929",
+  "strategy": "v1",
+  "status": "engineering_ready_not_evaluated",
+  "cpu_tests_passed": 68,
+  "default_weight_source": "ema",
+  "default_epoch_window": [
+    4,
+    12
+  ],
+  "posthoc_matches_online_swa": true,
+  "synthetic_export_calibrate_infer_passed": true,
+  "synthetic_submission_rows": 3,
+  "synthetic_submission_checks_passed": 9,
+  "original_checkpoints_unchanged": true,
+  "source_binding_matches_running_v1": true,
+  "real_incomplete_window_rejected": true,
+  "production_swa_checkpoint_created": false,
+  "new_gpu_computation": false,
+  "local_score": null,
+  "platform_score": null,
+  "entry": "aegis_clip.cli.v1 export-swa",
+  "source_config": "/home/lux1/noise/worktrees/v1_train_20260929/configs/v1_train_20260929.yaml"
+}
