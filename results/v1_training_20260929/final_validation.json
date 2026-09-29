@@ -1,0 +1,50 @@
+{
+  "experiment_id": "V1_TRAIN_20260929",
+  "strategy": "v1",
+  "strategy_origin": "team_original",
+  "status": "completed_delivered",
+  "stage": "repechage",
+  "data_version": "20260921",
+  "config": "configs/v1_train_20260929.yaml",
+  "training_code_commit": "1d03957",
+  "started_at": "2026-09-29T15:19:38.252555+00:00",
+  "completed_at": "2026-09-29T19:37:09.363993+00:00",
+  "elapsed_seconds": 15452.491597001994,
+  "train_rows": 133815,
+  "target_rows_used": 119074,
+  "classes": 750,
+  "epochs": 12,
+  "selected_weights": "epoch_12_ema",
+  "validation_rows": 14880,
+  "epoch_12_center_ema": {
+    "macro": 0.7533848285675049,
+    "micro": 0.7631720304489136
+  },
+  "final_six_view_raw": {
+    "macro": 0.7539074420928955,
+    "micro": 0.7633064389228821,
+    "correct": 11358
+  },
+  "final_six_view_calibrated": {
+    "macro": 0.7573382258415222,
+    "micro": 0.7653898000717163,
+    "correct": 11389,
+    "bias_fitted_on_val_dev": true
+  },
+  "incumbent_l05_fixed_local": {
+    "macro": 0.758265,
+    "micro": 0.766532,
+    "v1_minus_l05_macro_pp": -0.092677415847775,
+    "v1_minus_l05_micro_pp": -0.11421999282836826
+  },
+  "platform_score": null,
+  "checkpoint": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training/selected.pt",
+  "csv": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/submission/pred_results.csv",
+  "zip": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/submission/submission.zip",
+  "submission_rows": 37444,
+  "submission_checks_passed": 9,
+  "zip_internal_csv_equals_external": true,
+  "csv_sha256": "16af9924f67595c0a52497c0cb7f4356a7814328452e28ed2207171045cf7501",
+  "zip_sha256": "502ff67a815c193124eb154a7bcd93c1489e76b0bf4766d6b358743faab6e736",
+  "submission_check_command": "python3 scripts/check_submission.py --test_dir test --class-mapping artifacts/stages/repechage/20260921/class_to_idx.json --csv worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/submission/pred_results.csv --zip worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/submission/submission.zip"
+}
