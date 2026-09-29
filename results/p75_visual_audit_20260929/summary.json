@@ -1,0 +1,680 @@
+{
+  "strata": {
+    "control_agreement": {
+      "population": 11406,
+      "sampled": 40,
+      "status_counts": {
+        "original_supported_model_wrong": 0,
+        "original_label_problem": 0,
+        "cannot_determine": 40
+      },
+      "phenomena": {
+        "ambiguous_structure": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "crop_major_loss": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "crop_part_loss": {
+          "sample_count": 14,
+          "estimated_population_count": 3992.1
+        },
+        "human_context": {
+          "sample_count": 1,
+          "estimated_population_count": 285.15
+        },
+        "limited_anatomy": {
+          "sample_count": 11,
+          "estimated_population_count": 3136.65
+        },
+        "montage": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "multiple_object_types": {
+          "sample_count": 3,
+          "estimated_population_count": 855.45
+        },
+        "multiple_objects": {
+          "sample_count": 7,
+          "estimated_population_count": 1996.05
+        },
+        "non_organism_graphic": {
+          "sample_count": 1,
+          "estimated_population_count": 285.15
+        },
+        "occlusion": {
+          "sample_count": 4,
+          "estimated_population_count": 1140.6
+        },
+        "severe_blur": {
+          "sample_count": 2,
+          "estimated_population_count": 570.3
+        },
+        "small_detail": {
+          "sample_count": 4,
+          "estimated_population_count": 1140.6
+        },
+        "soft_detail": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "specimen_or_diagram": {
+          "sample_count": 3,
+          "estimated_population_count": 855.45
+        },
+        "text_overlay": {
+          "sample_count": 16,
+          "estimated_population_count": 4562.4
+        },
+        "wide_scene": {
+          "sample_count": 1,
+          "estimated_population_count": 285.15
+        }
+      }
+    },
+    "model_plurality": {
+      "population": 842,
+      "sampled": 40,
+      "status_counts": {
+        "original_supported_model_wrong": 0,
+        "original_label_problem": 0,
+        "cannot_determine": 40
+      },
+      "phenomena": {
+        "ambiguous_structure": {
+          "sample_count": 2,
+          "estimated_population_count": 42.1
+        },
+        "crop_major_loss": {
+          "sample_count": 1,
+          "estimated_population_count": 21.05
+        },
+        "crop_part_loss": {
+          "sample_count": 15,
+          "estimated_population_count": 315.75
+        },
+        "human_context": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "limited_anatomy": {
+          "sample_count": 10,
+          "estimated_population_count": 210.5
+        },
+        "montage": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "multiple_object_types": {
+          "sample_count": 2,
+          "estimated_population_count": 42.1
+        },
+        "multiple_objects": {
+          "sample_count": 5,
+          "estimated_population_count": 105.25
+        },
+        "non_organism_graphic": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "occlusion": {
+          "sample_count": 7,
+          "estimated_population_count": 147.35
+        },
+        "severe_blur": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "small_detail": {
+          "sample_count": 6,
+          "estimated_population_count": 126.3
+        },
+        "soft_detail": {
+          "sample_count": 3,
+          "estimated_population_count": 63.15
+        },
+        "specimen_or_diagram": {
+          "sample_count": 2,
+          "estimated_population_count": 42.1
+        },
+        "text_overlay": {
+          "sample_count": 7,
+          "estimated_population_count": 147.35
+        },
+        "wide_scene": {
+          "sample_count": 1,
+          "estimated_population_count": 21.05
+        }
+      }
+    },
+    "original_plurality": {
+      "population": 241,
+      "sampled": 16,
+      "status_counts": {
+        "original_supported_model_wrong": 0,
+        "original_label_problem": 0,
+        "cannot_determine": 16
+      },
+      "phenomena": {
+        "ambiguous_structure": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "crop_major_loss": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "crop_part_loss": {
+          "sample_count": 4,
+          "estimated_population_count": 60.25
+        },
+        "human_context": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "limited_anatomy": {
+          "sample_count": 4,
+          "estimated_population_count": 60.25
+        },
+        "montage": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "multiple_object_types": {
+          "sample_count": 2,
+          "estimated_population_count": 30.125
+        },
+        "multiple_objects": {
+          "sample_count": 1,
+          "estimated_population_count": 15.0625
+        },
+        "non_organism_graphic": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "occlusion": {
+          "sample_count": 1,
+          "estimated_population_count": 15.0625
+        },
+        "severe_blur": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "small_detail": {
+          "sample_count": 2,
+          "estimated_population_count": 30.125
+        },
+        "soft_detail": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0
+        },
+        "specimen_or_diagram": {
+          "sample_count": 2,
+          "estimated_population_count": 30.125
+        },
+        "text_overlay": {
+          "sample_count": 6,
+          "estimated_population_count": 90.375
+        },
+        "wide_scene": {
+          "sample_count": 1,
+          "estimated_population_count": 15.0625
+        }
+      }
+    },
+    "third_plurality": {
+      "population": 1390,
+      "sampled": 64,
+      "status_counts": {
+        "original_supported_model_wrong": 0,
+        "original_label_problem": 0,
+        "cannot_determine": 64
+      },
+      "phenomena": {
+        "ambiguous_structure": {
+          "sample_count": 6,
+          "estimated_population_count": 130.3125
+        },
+        "crop_major_loss": {
+          "sample_count": 2,
+          "estimated_population_count": 43.4375
+        },
+        "crop_part_loss": {
+          "sample_count": 22,
+          "estimated_population_count": 477.8125
+        },
+        "human_context": {
+          "sample_count": 1,
+          "estimated_population_count": 21.71875
+        },
+        "limited_anatomy": {
+          "sample_count": 26,
+          "estimated_population_count": 564.6875
+        },
+        "montage": {
+          "sample_count": 1,
+          "estimated_population_count": 21.71875
+        },
+        "multiple_object_types": {
+          "sample_count": 12,
+          "estimated_population_count": 260.625
+        },
+        "multiple_objects": {
+          "sample_count": 4,
+          "estimated_population_count": 86.875
+        },
+        "non_organism_graphic": {
+          "sample_count": 3,
+          "estimated_population_count": 65.15625
+        },
+        "occlusion": {
+          "sample_count": 3,
+          "estimated_population_count": 65.15625
+        },
+        "severe_blur": {
+          "sample_count": 1,
+          "estimated_population_count": 21.71875
+        },
+        "small_detail": {
+          "sample_count": 6,
+          "estimated_population_count": 130.3125
+        },
+        "soft_detail": {
+          "sample_count": 3,
+          "estimated_population_count": 65.15625
+        },
+        "specimen_or_diagram": {
+          "sample_count": 5,
+          "estimated_population_count": 108.59375
+        },
+        "text_overlay": {
+          "sample_count": 21,
+          "estimated_population_count": 456.09375
+        },
+        "wide_scene": {
+          "sample_count": 2,
+          "estimated_population_count": 43.4375
+        }
+      }
+    },
+    "tied": {
+      "population": 1001,
+      "sampled": 40,
+      "status_counts": {
+        "original_supported_model_wrong": 0,
+        "original_label_problem": 0,
+        "cannot_determine": 40
+      },
+      "phenomena": {
+        "ambiguous_structure": {
+          "sample_count": 2,
+          "estimated_population_count": 50.05
+        },
+        "crop_major_loss": {
+          "sample_count": 2,
+          "estimated_population_count": 50.05
+        },
+        "crop_part_loss": {
+          "sample_count": 14,
+          "estimated_population_count": 350.35
+        },
+        "human_context": {
+          "sample_count": 2,
+          "estimated_population_count": 50.05
+        },
+        "limited_anatomy": {
+          "sample_count": 18,
+          "estimated_population_count": 450.45
+        },
+        "montage": {
+          "sample_count": 1,
+          "estimated_population_count": 25.025
+        },
+        "multiple_object_types": {
+          "sample_count": 4,
+          "estimated_population_count": 100.1
+        },
+        "multiple_objects": {
+          "sample_count": 2,
+          "estimated_population_count": 50.05
+        },
+        "non_organism_graphic": {
+          "sample_count": 2,
+          "estimated_population_count": 50.05
+        },
+        "occlusion": {
+          "sample_count": 3,
+          "estimated_population_count": 75.075
+        },
+        "severe_blur": {
+          "sample_count": 2,
+          "estimated_population_count": 50.05
+        },
+        "small_detail": {
+          "sample_count": 5,
+          "estimated_population_count": 125.125
+        },
+        "soft_detail": {
+          "sample_count": 3,
+          "estimated_population_count": 75.075
+        },
+        "specimen_or_diagram": {
+          "sample_count": 6,
+          "estimated_population_count": 150.15
+        },
+        "text_overlay": {
+          "sample_count": 8,
+          "estimated_population_count": 200.2
+        },
+        "wide_scene": {
+          "sample_count": 6,
+          "estimated_population_count": 150.15
+        }
+      }
+    }
+  },
+  "weighted": {
+    "all_validation": {
+      "population": 14880,
+      "status_estimated_counts": {
+        "original_supported_model_wrong": 0.0,
+        "original_label_problem": 0.0,
+        "cannot_determine": 14880.0
+      },
+      "phenomena": {
+        "ambiguous_structure": {
+          "sample_count": 10,
+          "estimated_population_count": 222.46249999999998,
+          "weighted_fraction": 0.014950436827956987
+        },
+        "crop_major_loss": {
+          "sample_count": 5,
+          "estimated_population_count": 114.5375,
+          "weighted_fraction": 0.007697412634408602
+        },
+        "crop_part_loss": {
+          "sample_count": 69,
+          "estimated_population_count": 5196.262500000001,
+          "weighted_fraction": 0.34921118951612906
+        },
+        "human_context": {
+          "sample_count": 4,
+          "estimated_population_count": 356.91875,
+          "weighted_fraction": 0.023986475134408602
+        },
+        "limited_anatomy": {
+          "sample_count": 69,
+          "estimated_population_count": 4422.5375,
+          "weighted_fraction": 0.2972135416666667
+        },
+        "montage": {
+          "sample_count": 2,
+          "estimated_population_count": 46.74375,
+          "weighted_fraction": 0.003141381048387097
+        },
+        "multiple_object_types": {
+          "sample_count": 23,
+          "estimated_population_count": 1288.4,
+          "weighted_fraction": 0.08658602150537635
+        },
+        "multiple_objects": {
+          "sample_count": 19,
+          "estimated_population_count": 2253.2875000000004,
+          "weighted_fraction": 0.1514306115591398
+        },
+        "non_organism_graphic": {
+          "sample_count": 6,
+          "estimated_population_count": 400.35625,
+          "weighted_fraction": 0.02690566196236559
+        },
+        "occlusion": {
+          "sample_count": 18,
+          "estimated_population_count": 1443.2437499999999,
+          "weighted_fraction": 0.0969921875
+        },
+        "severe_blur": {
+          "sample_count": 5,
+          "estimated_population_count": 642.0687499999999,
+          "weighted_fraction": 0.0431497815860215
+        },
+        "small_detail": {
+          "sample_count": 23,
+          "estimated_population_count": 1552.4624999999999,
+          "weighted_fraction": 0.10433215725806451
+        },
+        "soft_detail": {
+          "sample_count": 9,
+          "estimated_population_count": 203.38125000000002,
+          "weighted_fraction": 0.013668094758064518
+        },
+        "specimen_or_diagram": {
+          "sample_count": 18,
+          "estimated_population_count": 1186.4187500000003,
+          "weighted_fraction": 0.07973244287634411
+        },
+        "text_overlay": {
+          "sample_count": 58,
+          "estimated_population_count": 5456.41875,
+          "weighted_fraction": 0.36669480846774194
+        },
+        "wide_scene": {
+          "sample_count": 11,
+          "estimated_population_count": 514.85,
+          "weighted_fraction": 0.03460013440860215
+        }
+      }
+    },
+    "original_label_errors": {
+      "population": 3474,
+      "status_estimated_counts": {
+        "original_supported_model_wrong": 0.0,
+        "original_label_problem": 0.0,
+        "cannot_determine": 3474.0
+      },
+      "phenomena": {
+        "ambiguous_structure": {
+          "sample_count": 10,
+          "estimated_population_count": 222.46249999999998,
+          "weighted_fraction": 0.06403641335636154
+        },
+        "crop_major_loss": {
+          "sample_count": 5,
+          "estimated_population_count": 114.5375,
+          "weighted_fraction": 0.03296991940126655
+        },
+        "crop_part_loss": {
+          "sample_count": 55,
+          "estimated_population_count": 1204.1625,
+          "weighted_fraction": 0.3466213298791019
+        },
+        "human_context": {
+          "sample_count": 3,
+          "estimated_population_count": 71.76875,
+          "weighted_fraction": 0.02065882268278641
+        },
+        "limited_anatomy": {
+          "sample_count": 58,
+          "estimated_population_count": 1285.8875,
+          "weighted_fraction": 0.37014608520437536
+        },
+        "montage": {
+          "sample_count": 2,
+          "estimated_population_count": 46.74375,
+          "weighted_fraction": 0.013455310880829015
+        },
+        "multiple_object_types": {
+          "sample_count": 20,
+          "estimated_population_count": 432.95000000000005,
+          "weighted_fraction": 0.12462579159470352
+        },
+        "multiple_objects": {
+          "sample_count": 12,
+          "estimated_population_count": 257.2375,
+          "weighted_fraction": 0.0740464881980426
+        },
+        "non_organism_graphic": {
+          "sample_count": 5,
+          "estimated_population_count": 115.20625,
+          "weighted_fraction": 0.03316242084052965
+        },
+        "occlusion": {
+          "sample_count": 14,
+          "estimated_population_count": 302.64375,
+          "weighted_fraction": 0.08711679620034543
+        },
+        "severe_blur": {
+          "sample_count": 3,
+          "estimated_population_count": 71.76875,
+          "weighted_fraction": 0.02065882268278641
+        },
+        "small_detail": {
+          "sample_count": 19,
+          "estimated_population_count": 411.8625,
+          "weighted_fraction": 0.11855569948186528
+        },
+        "soft_detail": {
+          "sample_count": 9,
+          "estimated_population_count": 203.38125000000002,
+          "weighted_fraction": 0.058543825561312615
+        },
+        "specimen_or_diagram": {
+          "sample_count": 15,
+          "estimated_population_count": 330.96875,
+          "weighted_fraction": 0.09527022164651698
+        },
+        "text_overlay": {
+          "sample_count": 42,
+          "estimated_population_count": 894.01875,
+          "weighted_fraction": 0.2573456390328152
+        },
+        "wide_scene": {
+          "sample_count": 10,
+          "estimated_population_count": 229.7,
+          "weighted_fraction": 0.06611974668969488
+        }
+      }
+    },
+    "agreement_controls": {
+      "population": 11406,
+      "status_estimated_counts": {
+        "original_supported_model_wrong": 0.0,
+        "original_label_problem": 0.0,
+        "cannot_determine": 11406.0
+      },
+      "phenomena": {
+        "ambiguous_structure": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0,
+          "weighted_fraction": 0.0
+        },
+        "crop_major_loss": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0,
+          "weighted_fraction": 0.0
+        },
+        "crop_part_loss": {
+          "sample_count": 14,
+          "estimated_population_count": 3992.1,
+          "weighted_fraction": 0.35
+        },
+        "human_context": {
+          "sample_count": 1,
+          "estimated_population_count": 285.15,
+          "weighted_fraction": 0.024999999999999998
+        },
+        "limited_anatomy": {
+          "sample_count": 11,
+          "estimated_population_count": 3136.65,
+          "weighted_fraction": 0.275
+        },
+        "montage": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0,
+          "weighted_fraction": 0.0
+        },
+        "multiple_object_types": {
+          "sample_count": 3,
+          "estimated_population_count": 855.45,
+          "weighted_fraction": 0.075
+        },
+        "multiple_objects": {
+          "sample_count": 7,
+          "estimated_population_count": 1996.05,
+          "weighted_fraction": 0.175
+        },
+        "non_organism_graphic": {
+          "sample_count": 1,
+          "estimated_population_count": 285.15,
+          "weighted_fraction": 0.024999999999999998
+        },
+        "occlusion": {
+          "sample_count": 4,
+          "estimated_population_count": 1140.6,
+          "weighted_fraction": 0.09999999999999999
+        },
+        "severe_blur": {
+          "sample_count": 2,
+          "estimated_population_count": 570.3,
+          "weighted_fraction": 0.049999999999999996
+        },
+        "small_detail": {
+          "sample_count": 4,
+          "estimated_population_count": 1140.6,
+          "weighted_fraction": 0.09999999999999999
+        },
+        "soft_detail": {
+          "sample_count": 0,
+          "estimated_population_count": 0.0,
+          "weighted_fraction": 0.0
+        },
+        "specimen_or_diagram": {
+          "sample_count": 3,
+          "estimated_population_count": 855.45,
+          "weighted_fraction": 0.075
+        },
+        "text_overlay": {
+          "sample_count": 16,
+          "estimated_population_count": 4562.4,
+          "weighted_fraction": 0.39999999999999997
+        },
+        "wide_scene": {
+          "sample_count": 1,
+          "estimated_population_count": 285.15,
+          "weighted_fraction": 0.024999999999999998
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Observations are from one assistant reviewer, not human/expert ground truth.",
+    "Flags overlap and describe visible content only, not causal errors, noise rates or recoverable gain.",
+    "Weighted estimates account for the stratified sample design; small strata samples and subjective flags remain uncertain.",
+    "All original-label status uncertainty is retained; no clean accuracy or corrected labels are produced.",
+    "References are random current-stage training groups, with unverified labels; not extra adjudicated query cases.",
+    "Full-size crop followups qualify blind wording without changing frozen sample or labels."
+  ],
+  "cached_counterfactual": {
+    "rule": "Replace with unique neighbor plurality; preserve L05 on ties",
+    "corrections": 241,
+    "regressions": 2433,
+    "net": -2192,
+    "baseline_micro": 0.7665322580645161,
+    "hypothetical_micro": 0.6192204301075269,
+    "candidate": false,
+    "training": false
+  },
+  "hashes": {
+    "adjudications.jsonl": "a628bd4e328274f7f2c905c8ce485a3a0fb1f8b8f5edc2e7ffd2fc60048d544b",
+    "blind_lock.json": "a6b955985966c10787c49eb6e28e2b4d4b01537365299f7e9bed7c8a770aeb5b",
+    "blind_observations.jsonl": "c339f1208b6db91cd93b5f9421f7ae64d32ace4a145b9d3e91f3138e466206f8",
+    "cases.json": "a2ecea4e22cbee4a928102099cfe577d5192469e41a890174792b95504aae27a",
+    "detail_followup.json": "62ff72e2e49b10e6d67414cead02b5711ef690d26f6370fee9bb0ce7d73bc51d",
+    "protocol.json": "2a67c08b6e23d883ed10e675438876d0f610960c01bfc5cb3beaed028bb6d186",
+    "reference_manifest.json": "4b6263cfc483d9169c74db6704005a036330e3ce12c4143e4806a73f874014bc",
+    "reference_observations.tsv": "7b5989bbcdac0e7f6c3fcea66942ca3540504f7a481003ae8f3ef3ed5f70b6a2"
+  },
+  "recheck_sha256": "ad27986a355cef60a5a0568aa5dbcaff08b38a9f7c18085f3c0de2b6ec938faf"
+}
