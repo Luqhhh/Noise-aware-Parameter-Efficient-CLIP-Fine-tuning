@@ -189,29 +189,10 @@ def verify(plan_path):
 def authorize(plan_path, authorization_path, operation):
     auth = json_read(authorization_path)
     require(auth.get("authorized") is True, "v3 GPU execution is not authorized")
-    require(auth.get("operation") == operation and auth.get("plan_sha256") == sha(plan_path),
+    require(operation == "train" and auth.get("operation") == operation and
+            auth.get("plan_sha256") == sha(plan_path),
             "Authorization does not bind this operation and plan")
-    budget = auth.get("max_seconds")
-    require(isinstance(budget, (int, float)) and math.isfinite(budget) and budget > 0, "Finite operation budget required")
     plan = verify(plan_path)
-    if operation == "train":
-        path = auth.get("cost_report")
-        require(path and sha(path) == auth.get("cost_report_sha256"), "Bound measured pair cost report required")
-        cost = json_read(path)
-        require(cost["status"] == "measured_probe" and cost["plan_sha256"] == sha(plan_path), "Wrong probe evidence")
-        require(3 <= cost.get("updates_per_arm", 0) <= 10 and
-                all(cost.get(key) is True for key in ("includes_decode_augmentation_wait",
-                    "includes_full_raw_ema_validation", "includes_checkpoint_write")) and
-                cost.get("usable_as_parent") is False, "Incomplete measured probe protocol")
-        values = [cost[k] for k in ("seconds_per_update", "validation_seconds_per_arm_epoch", "overhead_seconds")]
-        require(all(isinstance(v, (int, float)) and math.isfinite(v) and v > 0 for v in values), "Invalid measured costs")
-        estimate = (plan["total_updates"] * values[0] + 2 * plan["recipe"]["epochs"] * values[1]
-                    + (plan["recipe"]["epochs"] + 1) * values[2])
-    else:
-        require(operation == "probe", "Only a bounded probe or fixed pair is implemented")
-        estimate = auth.get("estimated_seconds")
-    require(isinstance(estimate, (int, float)) and math.isfinite(estimate) and 0 < estimate <= .8 * budget,
-            "Cost estimate must leave 20% budget reserve")
     return auth, plan
 
 

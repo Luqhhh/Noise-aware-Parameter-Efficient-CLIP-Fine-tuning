@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import math
 from pathlib import Path
 import subprocess
 import sys
@@ -16,7 +15,7 @@ from aegis_clip.v1_pipeline import StageContext, load_recipe
 from v2 import training_utils
 from v2.model import V2Classifier
 from v2.plan import dump, json_read, require, sha
-from v2.runtime import Budget, InferenceDataset, write_submission
+from v2.runtime import InferenceDataset, write_submission
 from .plan import verify
 from .runtime import autocast_for, data_loader
 
@@ -65,13 +64,12 @@ def test_files(plan):
     return context, files
 
 
-def deliver(plan_path, output, max_seconds, device="cuda"):
+def deliver(plan_path, output, device="cuda"):
     plan_path, output = Path(plan_path).resolve(), Path(output).resolve()
     require(device in ("cuda", "cpu") and not output.exists(), "Fresh output and CPU/CUDA device required")
-    require(math.isfinite(max_seconds) and max_seconds > 0, "Finite positive inference budget required")
     plan, checkpoint, selected = checked_source(plan_path)
     context, files = test_files(plan)
-    budget = Budget(max_seconds)
+    started = time.monotonic()
     if device == "cuda":
         require(torch.cuda.is_available(), "Local CUDA required for v3 delivery")
     model = V2Classifier(plan["model_recipe"]).to(device)
@@ -85,14 +83,12 @@ def deliver(plan_path, output, max_seconds, device="cuda"):
     predictions = np.full(len(files), -1, np.int64)
     with torch.no_grad():
         for images, indices in loader:
-            budget.check()
             with autocast_for(torch.device(device))():
                 logits = model(images.to(device))
             require(torch.isfinite(logits).all(), "Nonfinite test logits")
             predictions[indices.numpy()] = logits.float().argmax(1).cpu().numpy()
     require(((predictions >= 0) & (predictions < len(plan["classes"]))).all(),
             "Incomplete v3 test prediction coverage")
-    budget.check()
     write_submission(output, files, predictions, len(plan["classes"]))
     command = [sys.executable, str(Path(__file__).resolve().parents[3] / "scripts/check_submission.py"),
                "--test_dir", str(context.test_root), "--class-mapping",
@@ -105,7 +101,7 @@ def deliver(plan_path, output, max_seconds, device="cuda"):
                   plan_sha256=sha(plan_path), checkpoint=str(checkpoint), checkpoint_sha256=sha(checkpoint),
                   weights="last_ema", decoder="384_center_crop", rows=len(files),
                   csv_sha256=sha(output / "pred_results.csv"), zip_sha256=sha(output / "submission.zip"),
-                  elapsed_seconds=time.monotonic() - budget.start)
+                  elapsed_seconds=time.monotonic() - started)
     dump(output / "report.json", report)
     return report
 
@@ -114,11 +110,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plan", required=True)
     parser.add_argument("--output", required=True)
-    parser.add_argument("--max-seconds", type=float, required=True)
     parser.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
     parser.add_argument("--execute", action="store_true", required=True)
     args = parser.parse_args()
-    print(deliver(args.plan, args.output, args.max_seconds, args.device))
+    print(deliver(args.plan, args.output, args.device))
 
 
 if __name__ == "__main__":

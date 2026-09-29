@@ -78,7 +78,7 @@ def fixture(tmp_path, monkeypatch):
 def test_v3_supervision_selected_exports_one_checked_package(tmp_path, monkeypatch):
     plan_path, _ = fixture(tmp_path, monkeypatch)
     output = tmp_path / "submission"
-    report = delivery.deliver(plan_path, output, 60, "cpu")
+    report = delivery.deliver(plan_path, output, "cpu")
     assert report["status"] == "package_ready" and report["arm"] == "v1_supervision"
     assert report["rows"] == 2 and report["weights"] == "last_ema"
     assert (output / "pred_results.csv").read_text().splitlines() == ["a.png, 0000", "b.png, 0001"]

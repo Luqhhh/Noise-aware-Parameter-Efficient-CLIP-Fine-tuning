@@ -1,9 +1,5 @@
 {
   "authorized": false,
-  "operation": "probe",
-  "plan_sha256": null,
-  "max_seconds": null,
-  "estimated_seconds": null,
-  "cost_report": null,
-  "cost_report_sha256": null
+  "operation": "train",
+  "plan_sha256": null
 }
