@@ -49,3 +49,5 @@ def check_checkpoint(payload, plan, stage):
     require(0 <= payload.get("epoch", -1) < plan["stages"][stage]["epochs"] and
             payload.get("global_step") == (payload["epoch"] + 1) * plan["stages"][stage]["steps_per_epoch"],
             "Wrong checkpoint update endpoint")
+    require(payload.get("metrics", {}).get("chosen") == "raw" and "ema" not in payload,
+            "Only raw checkpoints are allowed; averaged weights remain unconfirmed")

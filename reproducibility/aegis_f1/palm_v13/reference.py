@@ -141,20 +141,6 @@ def build_optimizer(model: nn.Module, cfg: dict):
         eps=1e-8,
     )
 
-class ModelEMA:
-    def __init__(self, model: nn.Module, decay: float):
-        self.decay = decay
-        self.state = {k: v.detach().clone().float() for k, v in model.state_dict().items()}
-
-    @torch.no_grad()
-    def update(self, model: nn.Module):
-        for key, value in model.state_dict().items():
-            stored = self.state[key]
-            if stored.dtype.is_floating_point:
-                stored.mul_(self.decay).add_(value.detach().float(), alpha=1.0 - self.decay)
-            else:
-                stored.copy_(value)
-
 def one_hot(labels: torch.Tensor, num_classes: int, smoothing: float) -> torch.Tensor:
     target = torch.full((labels.size(0), num_classes), smoothing / num_classes, device=labels.device)
     target.scatter_(1, labels.unsqueeze(1), 1.0 - smoothing + smoothing / num_classes)
