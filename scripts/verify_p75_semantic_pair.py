@@ -20,6 +20,21 @@ def verify(archive):
     for path,expected in run['files'].items():
         if sha(path)!=expected: raise ValueError(f'Runtime/source/input changed: {path}')
     report=json.loads((archive/'report.json').read_text())
+    execution=json.loads((archive/'execution_status.json').read_text())
+    used=sum(e['seconds'] for e in execution['history'])
+    if abs(used-execution['used_seconds'])>1e-6 or used>run['budget_seconds'] or execution['current'] is not None:
+        raise ValueError('Budget/state reconciliation mismatch')
+    if str(execution['matched_epoch']) not in report['epochs']:
+        raise ValueError('Delivered epoch lacks paired report')
+    if execution.get('closure_source_sha256'):
+        root=Path(__file__).resolve().parents[1]
+        if sha(root/'scripts/close_p75_semantic_pair_e4.py')!=execution['closure_source_sha256']:
+            raise ValueError('Closure implementation changed')
+        recovered=[e for e in execution['history'] if e.get('recovered_after_supervisor_exit')]
+        if len(recovered)!=1 or recovered[0]['returncode'] is not None:
+            raise ValueError('Unknown child exit code must remain unknown')
+        if execution['matched_epoch']!=4 or report['primary_complete']:
+            raise ValueError('Four-epoch closure misreported as primary completion')
     for epoch,value in report['epochs'].items():
         with gzip.open(archive/f'paired_epoch_{epoch}.csv.gz','rt') as f:
             rows=list(csv.DictReader(f))

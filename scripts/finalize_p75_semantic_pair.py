@@ -31,6 +31,8 @@ def finish(expected_head):
     report(ARCHIVE)
     shutil.copy2(OUT/'manifest.json',ARCHIVE/'run_manifest.json')
     shutil.copy2(OUT/'status.json',ARCHIVE/'execution_status.json')
+    if (OUT/'interrupted_status.json').exists():
+        shutil.copy2(OUT/'interrupted_status.json',ARCHIVE/'interrupted_status.json')
     epoch=state['matched_epoch']
     package=OUT/f'deliveries/P75_SEMANTIC_MASKED_E{epoch}'
     for arm in ('control','masked'):
@@ -40,6 +42,9 @@ def finish(expected_head):
             if source.suffix in ('.json','.jsonl','.csv'):
                 shutil.copy2(source,target/source.name)
     shutil.copy2(package/'manifest.json',ARCHIVE/'submission_manifest.json')
+    if state.get('closure_source_sha256'):
+        if sha(ROOT/'scripts/close_p75_semantic_pair_e4.py')!=state['closure_source_sha256']:
+            raise ValueError('Closure source changed')
     config=json.loads((CONFIGS/'masked.json').read_text())
     with (ARCHIVE/'submission_check.log').open('x') as f:
         subprocess.run([sys.executable,str(ROOT/'scripts/check_submission.py'),'--test_dir',config['data']['test_root'],
@@ -55,12 +60,12 @@ def finish(expected_head):
     result=json.loads((ARCHIVE/'report.json').read_text())
     values=result['epochs'][str(epoch)]['same_epoch_pair']
     full,remaining,selected=[values[k] for k in ('all','remaining_proxy','selected_proxy')]
-    completion='六轮配对完成' if epoch==6 else '预算内仅完成四轮配对，六轮主判断未完成'
+    completion='六轮配对完成' if epoch==6 else '四轮配对评估完成，六轮主判断未完成'
     conclusion=(f"其余代理净修正{remaining['net']}张；"+
         ('未观察到该组净改善，不扩大固定方案。' if remaining['net']<=0 else
          '该数字仍是含噪标签代理结果，不自动晋级完整训练或占用平台名额。'))
     if epoch!=6: conclusion='局部分支后的完整配对未完成，不能用四轮结果否定机制。'+conclusion
-    statement=(f"**2026-09-29 语义屏蔽{completion}：**同RM-LP父权重，仅取消自动命中1,246张训练图的全局/局部分类项。"
+    statement=(f"**2026-09-29 语义屏蔽{completion}：**同RM-LP父权重，取消自动命中1,246张训练图的分类项；四轮时局部分支尚未启用。"
         f"第{epoch}轮全量macro/micro：control {full['control_macro']:.4%}/{full['control_micro']:.4%}，"
         f"masked {full['masked_macro']:.4%}/{full['masked_micro']:.4%}；修正{full['corrected']}、退化{full['regressed']}、"
         f"净{full['net']}张。{conclusion}单学生诊断CSV/ZIP共37,444行、9/9校验通过；无新平台成绩，SAM未操作。"
@@ -72,8 +77,9 @@ def finish(expected_head):
     parts[1]=statement
     readme.write_text('\n\n'.join(parts))
     record=ROOT/'docs/p75_semantic_mask_pair_20260929.md'
-    record.write_text(record.read_text()+f"\n## 已验证结果\n\n{completion}。GPU子任务累计{state['used_seconds']:.2f}秒；无预算追加。\n\n"+
-        (ARCHIVE/'report.md').read_text()+f"\n{conclusion}\n\n"
+    record.write_text(record.read_text()+f"\n## 已验证结果\n\n{completion}。预算计费累计{state['used_seconds']:.2f}秒；无预算追加。\n\n"+
+        (ARCHIVE/'report.md').read_text()+f"\n{conclusion}\n\n"+
+        ("本次训练调度器中断后，用户明确要求只做四轮评估与诊断出包。恢复时保留原状态，补记masked任务开始至恢复时刻的保守墙钟耗时（含空闲中断间隔）；原退出码未知，未伪造成功退出，未重置预算、未续训第5–6轮。恢复入口：`python3 scripts/close_p75_semantic_pair_e4.py`；先冻结同轮次配对报告再出包。\n\n" if state.get('closure_reason') else "")+
         f"诊断单学生包：`{package}/pred_results.csv`、`{package}/submission.zip`。9/9校验通过；未上传平台。"
         "逐张预测、分组训练期统计、顺序/更新数审计、执行命令与用时均归档。报告中的相对L05结果仅为现役参考，主对照为同轮次control。\n\n"
         "复核：`python3 scripts/verify_p75_semantic_pair.py --archive results/p75_semantic_mask_pair_20260929`。"
