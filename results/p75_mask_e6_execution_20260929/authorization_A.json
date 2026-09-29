@@ -1,0 +1,19 @@
+{
+  "approved": true,
+  "experiment_id": "P75_MASK_E6_EXTENSION",
+  "manifest_sha256": "bbe62ba9577b7537fd702f3d27fef2b0903da3a6aba1c422df9ca95c7c173892",
+  "budget_seconds": 21600,
+  "user_instruction": "授权启动",
+  "scope": "A new bounded E4-to-E6 pair, including one discarded local timing probe; no historical budget reset, no C1/C2 or platform upload",
+  "measured_cost": {
+    "seconds_per_local_update": 27.537187823400018,
+    "validation_seconds": 600,
+    "overhead_seconds": 900
+  },
+  "preflight_probe": {
+    "path": "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/cost_probe/status.json",
+    "sha256": "2063673920ce9948e282acac59a7bd98da808c4753e64e9a8de227454affe6fb"
+  },
+  "local_step_measurement_source": "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/cost_probe/status.json",
+  "validation_measurement_source": "/home/lux1/noise/results/p75_semantic_mask_pair_20260929/execution_status.json"
+}

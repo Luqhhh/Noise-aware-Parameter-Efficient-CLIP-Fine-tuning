@@ -1,0 +1,8 @@
+{
+  "approved": true,
+  "experiment_id": "P75_MASK_E6_EXTENSION",
+  "manifest_sha256": "bbe62ba9577b7537fd702f3d27fef2b0903da3a6aba1c422df9ca95c7c173892",
+  "budget_seconds": 21600,
+  "user_instruction": "授权启动",
+  "scope": "A new bounded E4-to-E6 pair, including one discarded local timing probe; no historical budget reset, no C1/C2 or platform upload"
+}

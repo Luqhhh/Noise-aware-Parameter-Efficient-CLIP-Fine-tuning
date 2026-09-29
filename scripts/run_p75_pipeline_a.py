@@ -102,7 +102,15 @@ def execute(root, argv, name, state, cap, stop=None):
 def run(root,authorization):
     verify(root); record=authorize(root,authorization,'A')
     require(set(record['measured_cost'])=={'seconds_per_local_update','validation_seconds','overhead_seconds'},'Unexpected cost/budget override')
-    gate=cost_gate(**record['measured_cost'])
+    probe=record.get('preflight_probe')
+    spent=0.
+    if probe:
+        require(sha(probe['path'])==probe['sha256'],'Preflight timing record changed')
+        measured=json.loads(Path(probe['path']).read_text())
+        spent=float(measured['seconds'])
+        require(measured['returncode']==0 and 0<spent<21600,'Invalid measured preflight charge')
+    costs=dict(record['measured_cost']); costs['overhead_seconds']+=spent
+    gate=cost_gate(**costs)
     require(gate['fits'],'Cannot fit both E6 endpoints and evaluation with 20% reserve')
     require(record.get('local_step_measurement_source') and record.get('validation_measurement_source'), 'Cost evidence required')
     # Do not benchmark by silently starting a training step under proposal authorization.
@@ -112,7 +120,7 @@ def run(root,authorization):
     for arm in ('control','masked'):
         best=root/f'A/runs/P75_MASK_E6_{arm.upper()}/seed42/checkpoints/best.pt'
         require(sha(best)==manifest['arms'][arm]['historical_best_sha256'],'Historical selection input changed')
-    state=dict(status='running',used_seconds=0.,history=[],current=None,cost_gate=gate,authorization_sha256=sha(authorization),
+    state=dict(status='running',used_seconds=spent,preflight_seconds=spent,history=[],current=None,cost_gate=gate,authorization_sha256=sha(authorization),
         local_gpu=subprocess.check_output(['nvidia-smi','--query-gpu=name,memory.total','--format=csv,noheader'],text=True).strip())
     write(root/'A/status.json',state)
     audit=[]; started=None
@@ -129,7 +137,8 @@ def run(root,authorization):
             run_dir=root/f'A/runs/P75_MASK_E6_{arm.upper()}/seed42'
             execute(root,['scripts/cache_validation_tta_logits.py','--checkpoint',str(run_dir/'checkpoints/epoch_6.pt'),
                 '--config',manifest['arms'][arm]['config'],'--output',str(run_dir/'val_epoch_6.pt'),
-                '--device','cuda:0','--batch-size','32','--num-workers','2'],f'{arm}_decode',state,21600)
+                '--tta-temperature','1.4','--device','cuda:0','--batch-size','32','--num-workers','2'],f'{arm}_decode',state,21600)
+        torch.set_num_threads(4)
         started=time.monotonic(); decoded=[]; bindings={}
         def expired(signum, frame):
             raise TimeoutError('Evaluation wall-clock cap reached')

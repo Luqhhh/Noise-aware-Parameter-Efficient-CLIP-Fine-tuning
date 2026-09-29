@@ -1,0 +1,30 @@
+{
+  "status": "measured",
+  "argv": [
+    "/usr/bin/python3",
+    "-m",
+    "aegis_clip.cli.train",
+    "--config",
+    "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/cost_probe/config.json",
+    "--resume",
+    "/home/lux1/noise/worktrees/p75_mask_e6_execution_20260929/outputs/codex/p75_mask_e6_execution_20260929/A/cost_probe/resume_E4.pt"
+  ],
+  "budget_source": "new A 21600 seconds",
+  "weight_reuse_forbidden": true,
+  "config_sha256": "b8f1ff37ce17757f9fe168e63e2070c74f716bdbd9bff8e0758c22cee48adc41",
+  "source_sha256": "93403664a2d95631f71bfb74b856e84060a9d6a46cba08962eeed00f5146daa9",
+  "started_unix": 1790681836.793461,
+  "pid": 258713,
+  "seconds": 252.58251099599875,
+  "returncode": 0,
+  "seconds_per_local_update": 27.537187823400018,
+  "measured_intervals": [
+    22.771093431001646,
+    22.947656519500015,
+    22.319122191001952
+  ],
+  "margin_multiplier": 1.2,
+  "progress_sha256": "6f8a7f33e097e187cf189241c102971c146012e07d0135d61a359aaeac31268f",
+  "completed_probe_updates": 10,
+  "final_weights_not_a_valid_E5": true
+}
