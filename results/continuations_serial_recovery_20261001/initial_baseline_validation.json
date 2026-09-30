@@ -1,0 +1,10 @@
+{
+  "rows": 14880,
+  "classes": 750,
+  "logits_finite": true,
+  "optimizer_updates_before_baseline": 0,
+  "baseline": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001/run/baseline.npz",
+  "sha256": "d77a02ea3e5214cfc33afb5e7f58958c1b4315d0446fc937a61aa51d9592ac7c",
+  "training_attempt_status": "incomplete",
+  "successful_training_updates": 74
+}

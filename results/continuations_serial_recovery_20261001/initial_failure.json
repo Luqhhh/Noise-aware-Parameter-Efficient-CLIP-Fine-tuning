@@ -1,0 +1,36 @@
+{
+  "status": "failed",
+  "runner_pid": 85846,
+  "started_at": "2026-09-30T18:09:39.826549+00:00",
+  "jobs": [],
+  "automatic_retry": false,
+  "test_usage": "inference_only",
+  "platform_upload": false,
+  "current_stage": "train",
+  "current_experiment": "WFT448_DEV",
+  "child_pid": 85849,
+  "log": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001/train.log",
+  "heartbeat_at": "2026-09-30T18:18:09.917647+00:00",
+  "evaluation_progress.json": {
+    "batch": 465,
+    "batches": 465,
+    "elapsed_seconds": 479.6821121129997,
+    "phase": "untrained_parent_baseline",
+    "rows": 14880,
+    "scale": 576,
+    "status": "evaluating",
+    "view": 3,
+    "views": 3
+  },
+  "training_progress.json": {
+    "batch": 1,
+    "batches": 3722,
+    "elapsed_seconds": 1.4702756169990607,
+    "epoch": 1,
+    "loss": 1.4064276218414307,
+    "optimizer_updates": 1,
+    "status": "training"
+  },
+  "error": "WFT448_DEV train failed (1); see /home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001/train.log",
+  "failed_at": "2026-09-30T18:18:19.257638+00:00"
+}

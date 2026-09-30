@@ -1,0 +1,6 @@
+{
+  "automatically_resumed": false,
+  "error": "Nonfinite gradient norm",
+  "optimizer_updates": 74,
+  "status": "incomplete"
+}

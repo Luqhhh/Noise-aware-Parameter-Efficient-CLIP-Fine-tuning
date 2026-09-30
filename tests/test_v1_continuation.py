@@ -14,7 +14,7 @@ from aegis_clip.v1_strategy import V1Classifier, trainable_state, weighted_mixup
 from aegis_clip.v1_pipeline import load_artifact
 from v1_continuation.model import convert_parent
 from v1_continuation.plan import FIXED, PARENT_FILES, compatible_parent_code, load_config, validate_support
-from v1_continuation.runtime import fit, mixed_backward, optimizer_for, comparison, scheduler_for
+from v1_continuation.runtime import fit, mixed_backward, logical_update, optimizer_for, comparison, scheduler_for
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -82,6 +82,51 @@ def test_global_weighted_mixup_gradients_equal_micro_accumulation_including_shor
     assert actual == pytest.approx(float(expected.detach()),abs=1e-6)
     for a,b in zip(model.parameters(),micro.parameters()):
         torch.testing.assert_close(a.grad,b.grad,rtol=1e-5,atol=1e-7)
+
+
+class OverflowScaler:
+    def __init__(self, fail_forever=False):
+        self.value=4.;self.attempts=0;self.steps=0;self.fail_forever=fail_forever
+    def get_scale(self):return self.value
+    def scale(self,loss):return loss
+    def unscale_(self,opt):
+        self.attempts+=1
+        self.overflow=self.attempts==1 or self.fail_forever
+        if self.overflow:
+            for group in opt.param_groups:
+                for p in group['params']:p.grad.fill_(float('inf'))
+    def update(self,new_scale=None):
+        if new_scale is not None:self.value=new_scale
+        elif self.overflow:self.value/=2
+    def step(self,opt):self.steps+=1;opt.step()
+
+
+def test_amp_overflow_recomputes_same_batch_rng_and_updates_once(monkeypatch):
+    import v1_continuation.runtime as runtime
+    model=nn.Linear(2,2);optimizer=torch.optim.SGD(model.parameters(),lr=.1)
+    images=torch.ones(3,2);prob=torch.ones(3,2)/2;weights=torch.ones(3);perm=torch.arange(3)
+    scaler=OverflowScaler();draws=[]
+    def backward(*args,**kwargs):
+        draws.append(torch.rand(1).item())
+        return mixed_backward(*args[:-1],amp=False)
+    monkeypatch.setattr(runtime,'mixed_backward',backward)
+    loss,numeric=logical_update(model,optimizer,images,prob,weights,perm,.7,2,scaler,True,1.)
+    assert loss>0 and scaler.steps==1 and scaler.attempts==2
+    assert draws[0]==draws[1] and len(numeric['amp_retries'])==1
+    assert all(torch.isfinite(p).all() for p in model.parameters())
+
+
+def test_true_nonfinite_gradients_fail_without_any_update(monkeypatch):
+    import v1_continuation.runtime as runtime
+    model=nn.Linear(2,2);before=copy.deepcopy(model.state_dict())
+    optimizer=torch.optim.SGD(model.parameters(),lr=.1);scaler=OverflowScaler(fail_forever=True)
+    def backward(*args,**kwargs):return mixed_backward(*args[:-1],amp=False)
+    monkeypatch.setattr(runtime,'mixed_backward',backward)
+    with pytest.raises(ValueError,match='Persistent nonfinite'):
+        logical_update(model,optimizer,torch.ones(3,2),torch.ones(3,2)/2,torch.ones(3),
+                       torch.arange(3),.7,2,scaler,True,1.)
+    assert scaler.steps==0 and scaler.attempts==3
+    for name,p in model.state_dict().items():assert torch.equal(p,before[name])
 
 
 class TinyClassifier(nn.Module):

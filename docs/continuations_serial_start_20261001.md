@@ -1,4 +1,6 @@
-# 本机串行续训队列已启动
+# 本机串行续训最初启动记录
+
+本次最初服务已因第75个batch AMP缩放溢出停止，无完整候选；后续以[数值修复和新队列](continuations_serial_recovery_20261001.md)为准。
 
 2026-10-01 02:09:39 CST启动本机持久服务`noise-continuations-serial-20261001.service`。
 顺序WFT448_DEV → LR512_DEV → 有完整DEV支持的WFT448_FULL → 有支持的LR512_FULL。
