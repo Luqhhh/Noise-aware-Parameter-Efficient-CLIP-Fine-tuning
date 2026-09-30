@@ -1,0 +1,13 @@
+{
+  "binding": {
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "data_version": "20260921",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "implementation_sha256": "20923ff914fb706cd7145ba29652eff31f3fd5c834b95fe4870f00d4d8b8135d",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "recipe_sha256": "1e3bbf0f98b930324ee4d25156c0302d4a9ab495a653e2197109b0445dacb646",
+    "stage": "repechage"
+  },
+  "sha256": "34307b7998af27b2399d091bdbdee40cec33e10f17267d8f81c6ed1a6ac8461a"
+}
