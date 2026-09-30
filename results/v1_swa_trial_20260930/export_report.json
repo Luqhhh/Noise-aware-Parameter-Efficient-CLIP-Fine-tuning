@@ -1,0 +1,86 @@
+{
+  "binding": {
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "data_version": "20260921",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "implementation_sha256": "f332fe1a1f7282f4a97f2504a354b104bb4092f619e96c4d85414c8081b59688",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "recipe_sha256": "0c027ecb1a965b04d254c6a9a82a2c469ba9942e2f9ba9d8ccfe584c3d536722",
+    "stage": "repechage"
+  },
+  "checkpoint": "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.pt",
+  "device": "cpu",
+  "elapsed_seconds": 1.6505586470011622,
+  "epochs": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "exporter_sha256": "92578ce72b93b078d5a8286ea3276cdacb6e00c42ed593111380fcb2743224cb",
+  "inference_mode": "single_checkpoint",
+  "local_score": null,
+  "platform_score": null,
+  "selected_policy": "swa_ema",
+  "source_training_dir": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training",
+  "sources": [
+    {
+      "epoch": 4,
+      "path": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training/epoch_04.pt",
+      "sha256": "4e7e8a93abd6af3a90ea0dd666aa22441a9c72bc9f889ad2f96da90c97a0ab32"
+    },
+    {
+      "epoch": 5,
+      "path": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training/epoch_05.pt",
+      "sha256": "03c34a1fdebe19723d150f070b31ce34c12d1ae4993f824a6f5c4e9af8e69a2e"
+    },
+    {
+      "epoch": 6,
+      "path": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training/epoch_06.pt",
+      "sha256": "1f9ae62065d1038254293cb752a78d33a54df3cfe1ada21cf6839fc8d083a3a9"
+    },
+    {
+      "epoch": 7,
+      "path": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training/epoch_07.pt",
+      "sha256": "549af6a98314ba0fee48e396027b810ef49121a96a35194be0468264ce91ca1e"
+    },
+    {
+      "epoch": 8,
+      "path": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training/epoch_08.pt",
+      "sha256": "b226c84f3e5fd4a0fba84ece8ce83a446169e2a79e86960181fa30a9fbea3498"
+    },
+    {
+      "epoch": 9,
+      "path": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training/epoch_09.pt",
+      "sha256": "7e0611fe04d3fadfb4ff4b910ce783cae139e040533752656f1ecaacc22f0c73"
+    },
+    {
+      "epoch": 10,
+      "path": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training/epoch_10.pt",
+      "sha256": "3e947babe30ee358dd2589a72dcf0f6b727fa779d8537c7201890a5d34e8e85d"
+    },
+    {
+      "epoch": 11,
+      "path": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training/epoch_11.pt",
+      "sha256": "d8d3e56b9f5cae105ef1662b336a977114a711d4f83562e293a0d00206a6ddc1"
+    },
+    {
+      "epoch": 12,
+      "path": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/training/epoch_12.pt",
+      "sha256": "3ce10afc42155d3ba2fa975a7b0d132e81e18c770c61357e2c9c03e3a5a3c006"
+    }
+  ],
+  "status": "exported_not_evaluated",
+  "strategy_name": "v1",
+  "strategy_origin": "team_original",
+  "targets_sha256": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2",
+  "training_started": false,
+  "trajectory": "f161e254eee5c5a709cd5daa2752840f3a2ce6c9d5200ae74fc51b3536921471",
+  "weight_source": "ema"
+}
