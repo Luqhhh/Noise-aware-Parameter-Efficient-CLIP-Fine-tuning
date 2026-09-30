@@ -1,0 +1,62 @@
+{
+  "experiments": [
+    "WFT448_DEV",
+    "LR512_DEV",
+    "WFT448_FULL",
+    "LR512_FULL"
+  ],
+  "jobs": [
+    {
+      "name": "wft448_dev_20261001",
+      "experiment_id": "WFT448_DEV",
+      "partition": "train_dev",
+      "worktree": "/home/lux1/noise/worktrees/wft448_dev_20261001",
+      "branch": "codex/wft448_dev_20261001",
+      "config": "/home/lux1/noise/worktrees/wft448_dev_20261001/configs/v1_continuation/wft448_dev.yaml",
+      "output": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2",
+      "plan": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/prepared_amp/plan.json",
+      "development_report": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/run/report.json"
+    },
+    {
+      "name": "lr512_dev_20261001",
+      "experiment_id": "LR512_DEV",
+      "partition": "train_dev",
+      "worktree": "/home/lux1/noise/worktrees/lr512_dev_20261001",
+      "branch": "codex/lr512_dev_20261001",
+      "config": "/home/lux1/noise/worktrees/lr512_dev_20261001/configs/v1_continuation/lr512_dev.yaml",
+      "output": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001",
+      "plan": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json",
+      "development_report": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/report.json"
+    },
+    {
+      "name": "wft448_full_20261001",
+      "experiment_id": "WFT448_FULL",
+      "partition": "full_train",
+      "worktree": "/home/lux1/noise/worktrees/wft448_full_20261001",
+      "branch": "codex/wft448_full_20261001",
+      "config": "/home/lux1/noise/worktrees/wft448_full_20261001/configs/v1_continuation/wft448_full.yaml",
+      "output": "/home/lux1/noise/worktrees/wft448_full_20261001/outputs/codex/wft448_full_20261001",
+      "plan": "/home/lux1/noise/worktrees/wft448_full_20261001/outputs/codex/wft448_full_20261001/prepared_r1/plan.json",
+      "development_report": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/run/report.json"
+    },
+    {
+      "name": "lr512_full_20261001",
+      "experiment_id": "LR512_FULL",
+      "partition": "full_train",
+      "worktree": "/home/lux1/noise/worktrees/lr512_full_20261001",
+      "branch": "codex/lr512_full_20261001",
+      "config": "/home/lux1/noise/worktrees/lr512_full_20261001/configs/v1_continuation/lr512_full.yaml",
+      "output": "/home/lux1/noise/worktrees/lr512_full_20261001/outputs/codex/lr512_full_20261001",
+      "plan": "/home/lux1/noise/worktrees/lr512_full_20261001/outputs/codex/lr512_full_20261001/prepared_r1/plan.json",
+      "development_report": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/report.json"
+    }
+  ],
+  "controller_output": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/continuations_serial_20261001_r2",
+  "gpu": "local_cuda_serial",
+  "user_authorized": true,
+  "full_gate": "both fixed EMA endpoints: full net/macro positive; tail and sparse nonregressing; raw/EMA agree; late EMA retains epoch2 net",
+  "unsupported_full": "retained_for_review_no_automatic_spend",
+  "platform_upload": false,
+  "supersedes_failed_queue": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/continuations_serial_20261001/queue.json",
+  "numerical_recovery": "same fixed batch, lower AMP scale, restored forward RNG, one optimizer/scheduler/EMA update"
+}

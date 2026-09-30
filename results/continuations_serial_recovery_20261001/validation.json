@@ -1,0 +1,15 @@
+{
+  "status": "numerical_recovery_verified_not_restarted_yet",
+  "tests_passed": 150,
+  "tests_seconds": 9.19,
+  "cuda_successful_updates": 128,
+  "reproduced_overflow_at_batch": 75,
+  "overflow_scale": 65536,
+  "recovered_scale": 32768,
+  "fitted_probe_weights_saved": false,
+  "fixed_recipe_changed": false,
+  "all_logical_batches_preserved": true,
+  "automatic_retry": false,
+  "new_candidate_complete": false,
+  "platform_score": null
+}

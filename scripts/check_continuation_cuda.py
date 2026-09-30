@@ -14,11 +14,11 @@ sys.path.insert(0, str(ROOT / 'reproducibility/aegis_f1'))
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from aegis_clip.runtime import atomic_json_dump, sha256_file
+from aegis_clip.runtime import atomic_json_dump, sha256_file, seed_worker
 from aegis_clip.v1_pipeline import Images, image_transform, seed_training
 from aegis_clip.v1_strategy import WeightAverage, target_probabilities
 from v1_continuation.plan import verify
-from v1_continuation.runtime import initial_model, mixed_backward, optimizer_for, scheduler_for, require_idle_cuda
+from v1_continuation.runtime import initial_model, logical_update, optimizer_for, scheduler_for, require_idle_cuda
 
 
 def main():
@@ -26,6 +26,8 @@ def main():
     p.add_argument('--plan', required=True)
     p.add_argument('--report', required=True)
     p.add_argument('--execute', action='store_true')
+    p.add_argument('--updates', type=int, choices=(3,128), default=3,
+                   help='128 replays the real shuffled sampler to diagnose a numerical failure')
     args=p.parse_args()
     if not args.execute:p.error('CUDA probe requires --execute')
     report_path=Path(args.report).resolve()
@@ -35,11 +37,13 @@ def main():
     model,zero=initial_model(plan,context)
     model=model.to('cuda')
     cfg,recipe=plan['config'],plan['config']['recipe']
-    active=np.flatnonzero(targets['weights']>0)[:plan['logical_batch_size']*3]
+    active=np.flatnonzero(targets['weights']>0)
+    if args.updates==3:active=active[:plan['logical_batch_size']*3]
     rows=[context.train[i] for i in active]
     data=Images(context.train_root,rows,image_transform(recipe['image_size'],training=True,
         crop_min=plan['inherited_train']['crop_min_scale']))
-    loader=DataLoader(data,batch_size=plan['logical_batch_size'],num_workers=cfg['num_workers'])
+    loader=DataLoader(data,batch_size=plan['logical_batch_size'],num_workers=cfg['num_workers'],
+                      shuffle=args.updates==128,worker_init_fn=seed_worker)
     seed_training(cfg['seed'])
     tensors={k:torch.as_tensor(targets[k][active],device='cuda') for k in
              ('targets','labels','weights','original_alpha')}
@@ -52,23 +56,20 @@ def main():
     live=lambda:{n:p.detach() for n,p in model.named_parameters() if p.requires_grad}
     ema=WeightAverage(live(),recipe['ema_decay'])
     model.train(); torch.cuda.reset_peak_memory_stats()
-    times,losses,norms=[],[],[]
+    times,losses,norms,retries=[],[],[],[]
     for images,indices in loader:
         started=time.monotonic()
         images,indices=images.to('cuda'),indices.to('cuda')
         permutation=torch.randperm(len(images),device='cuda')
         lam=float(np.random.beta(plan['inherited_train']['mixup_alpha'],plan['inherited_train']['mixup_alpha']))
-        optimizer.zero_grad(set_to_none=True)
-        loss=mixed_backward(model,images,probabilities[indices],tensors['weights'][indices],
-            permutation,lam,cfg['micro_batch_size'],scaler,plan['inherited_train']['amp'])
-        scaler.unscale_(optimizer)
-        norm=torch.nn.utils.clip_grad_norm_(model.parameters(),recipe['grad_clip'])
-        if not torch.isfinite(norm):raise ValueError('Nonfinite CUDA gradient')
-        before=scaler.get_scale();scaler.step(optimizer);scaler.update()
-        if scaler.get_scale()<before:raise ValueError('Probe optimizer update skipped')
+        loss,numeric=logical_update(model,optimizer,images,probabilities[indices],tensors['weights'][indices],
+            permutation,lam,cfg['micro_batch_size'],scaler,plan['inherited_train']['amp'],recipe['grad_clip'])
         scheduler.step();ema.update(live());torch.cuda.synchronize()
-        times.append(time.monotonic()-started);losses.append(loss);norms.append(float(norm))
-        print(dict(probe_update=len(times),seconds=times[-1],loss=loss,grad_norm=norms[-1]),flush=True)
+        times.append(time.monotonic()-started);losses.append(loss);norms.append(numeric['gradient_norm'])
+        if numeric['amp_retries']:retries.append(dict(probe_update=len(times),**numeric))
+        if len(times)<=3 or numeric['amp_retries'] or len(times)==args.updates:
+            print(dict(probe_update=len(times),seconds=times[-1],loss=loss,**numeric),flush=True)
+        if len(times)==args.updates:break
     peak=torch.cuda.max_memory_allocated()/2**20
     model.eval()
     eval_times=[]
@@ -85,6 +86,7 @@ def main():
         device=torch.cuda.get_device_name(),zero_update=zero,successful_updates=len(times),
         logical_batch_size=plan['logical_batch_size'],micro_batch_size=cfg['micro_batch_size'],
         train_seconds=times,losses=losses,gradient_norms=norms,training_peak_mib=peak,
+        amp_retries=retries,actual_sampler=args.updates==128,
         fp32_inference_batch_size=len(eval_images),fp32_inference_seconds=eval_times,inference_peak_mib=eval_peak,
         fitted_weights_saved=False,train_estimated_hours=max(times[1:])*steps_per_epoch*4/3600,
         inference_estimate_seconds_per_image=max(eval_times[1:])/len(eval_images),

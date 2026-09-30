@@ -100,6 +100,49 @@ def mixed_backward(model, images, probabilities, weights, permutation, lam, micr
     return loss_total
 
 
+def logical_update(model, optimizer, images, probabilities, weights, permutation, lam,
+                   micro_batch, scaler, amp, grad_clip):
+    """Keep every logical update when FP16 loss scaling overflows.
+
+    Recompute the same augmented/mixed batch with a lower scale and identical
+    forward RNG. No optimizer, scheduler or EMA step happens on failed attempts.
+    Persistent nonfinite gradients at scale 1 still fail explicitly.
+    """
+    cpu_rng = torch.get_rng_state()
+    cuda_rng = torch.cuda.get_rng_state(images.device) if images.is_cuda else None
+    initial_scale = scaler.get_scale()
+    retries = []
+    for attempt in range(17):
+        if attempt:
+            torch.set_rng_state(cpu_rng)
+            if cuda_rng is not None:
+                torch.cuda.set_rng_state(cuda_rng, images.device)
+        optimizer.zero_grad(set_to_none=True)
+        loss = mixed_backward(model, images, probabilities, weights, permutation, lam,
+                              micro_batch, scaler, amp)
+        scaler.unscale_(optimizer)
+        norm = torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+        if not torch.isfinite(norm):
+            scale = scaler.get_scale()
+            if not amp or scale <= 1 or attempt == 16:
+                raise ValueError("Persistent nonfinite gradient norm after bounded AMP scale reduction")
+            # unscale_ already recorded found_inf; use GradScaler's normal
+            # backoff so its growth counter resets as well.
+            scaler.update()
+            if scaler.get_scale() >= scale:
+                raise ValueError("AMP scale failed to decrease on a nonfinite gradient")
+            retries.append(dict(old_scale=scale, new_scale=scaler.get_scale()))
+            continue
+        old_scale = scaler.get_scale()
+        scaler.step(optimizer)
+        scaler.update()
+        if scaler.get_scale() < old_scale:
+            raise ValueError("Unexpected skipped optimizer update despite finite gradients")
+        return loss, dict(gradient_norm=float(norm), amp_initial_scale=initial_scale,
+                          amp_final_scale=scaler.get_scale(), amp_retries=retries)
+    raise AssertionError("Unreachable AMP retry state")
+
+
 def eval_loader(plan, context, rows, scale, root=None):
     cfg = plan["config"]
     return DataLoader(Images(root or context.train_root, rows,
@@ -175,6 +218,8 @@ def fit(model, loader, targets, plan, output, *, device="cpu", evaluation=None, 
         tensor_targets["original_alpha"], len(plan["classes"]), plan["inherited_train"]["label_smoothing"])
     trajectory = dict(binding=binding, seed=cfg["seed"], parent=plan["config"]["parent_checkpoint"])
     history, updates, start_time, last_report = [], 0, time.monotonic(), 0.
+    amp_retries = []
+    atomic_json_dump(amp_retries, output / "amp_retries.json")
     def payload(epoch, state, policy):
         return dict(epoch=epoch, selected_state={k: v.detach().cpu().clone() for k, v in state.items()},
                     selected_policy=policy, route=cfg["route"], classes=plan["classes"],
@@ -190,17 +235,14 @@ def fit(model, loader, targets, plan, output, *, device="cpu", evaluation=None, 
                 permutation = torch.randperm(len(images), device=device)
                 alpha = plan["inherited_train"]["mixup_alpha"]
                 lam = float(np.random.beta(alpha, alpha)) if alpha else 1.
-                opt.zero_grad(set_to_none=True)
-                loss = mixed_backward(model, images, probabilities[indices], tensor_targets["weights"][indices],
-                                      permutation, lam, cfg["micro_batch_size"], scaler, amp)
-                scaler.unscale_(opt)
-                norm = torch.nn.utils.clip_grad_norm_(model.parameters(), recipe["grad_clip"])
-                if not torch.isfinite(norm):
-                    raise ValueError("Nonfinite gradient norm")
-                old_scale = scaler.get_scale()
-                scaler.step(opt); scaler.update()
-                if scaler.get_scale() < old_scale:
-                    raise ValueError("AMP skipped an optimizer update; fixed trajectory incomplete")
+                loss, numeric = logical_update(model, opt, images, probabilities[indices],
+                    tensor_targets["weights"][indices], permutation, lam, cfg["micro_batch_size"],
+                    scaler, amp, recipe["grad_clip"])
+                if numeric["amp_retries"]:
+                    event = dict(epoch=epoch, batch=batch, optimizer_update=updates+1, **numeric)
+                    amp_retries.append(event)
+                    atomic_json_dump(amp_retries, output / "amp_retries.json")
+                    print(json.dumps(dict(status="amp_same_batch_recomputed", **event)), flush=True)
                 scheduler.step(); ema.update(live_state()); updates += 1
                 losses.append(loss)
                 now = time.monotonic()
@@ -220,13 +262,14 @@ def fit(model, loader, targets, plan, output, *, device="cpu", evaluation=None, 
                     average = WeightAverage(ema_payload["selected_state"])
                 average.update(ema_payload["selected_state"])
             entry = dict(epoch=epoch, loss=float(np.mean(losses)), optimizer_updates=updates,
+                         amp_recomputed_batches=len(amp_retries),
                          ema_updates=ema.count, initial_ema_coefficient=recipe["ema_decay"]**ema.count)
             if evaluation:
                 entry["raw"] = evaluation(model, epoch, "raw")
                 with using_weights(model, ema.state):
                     entry["ema"] = evaluation(model, epoch, "ema")
             history.append(entry)
-            atomic_json_dump(history, output / "history.json")
+        atomic_json_dump(history, output / "history.json")
         if average is None or average.count != 3:
             raise ValueError("Fixed EMA2-4 window incomplete")
         final = output / "selected.pt"
@@ -307,6 +350,7 @@ def run(plan_path, output, device="cuda"):
     history, average_metrics = fit(model, loader, subset, plan, output / "training", device=device,
                                    evaluation=evaluation if context.val else None, binding=binding)
     for name in ("zero_update.json", "baseline_status.json", "training/history.json", "training/status.json",
+                 "training/amp_retries.json",
                  "training/selected.pt", "training/ema_swa.pt"):
         path = output / name
         artifacts[str(path)] = sha256_file(path)

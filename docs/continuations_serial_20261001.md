@@ -1,5 +1,8 @@
 # V1_CONTINUATIONS_SERIAL_20261001：本机串行执行
 
+首个服务在第75个batch AMP scale溢出后停止；已通过同batch重算的128更新验证及150项测试，
+使用[修复后新队列](continuations_serial_recovery_20261001.md)重新从原v1 SWA开始，不覆盖旧产物。
+
 用户明确要求“在本机串行进行剩下几个不依赖v2的实验”。执行队列冻结为：
 WFT448_DEV → LR512_DEV → 有证据支持的WFT448_FULL → 有证据支持的LR512_FULL。
 每项使用`codex/<路线>_<dev/full>_20261001`新分支与独立worktree/输出。
@@ -48,8 +51,8 @@ controller脚本为`python3 scripts/run_serial_continuations.py --queue <queue.j
 
 运行队列来源见[冻结queue](../results/continuations_serial_start_20261001/queue.json)。
 实时controller位于
-`/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/continuations_serial_20261001/status.json`。
-WFT DEV输出位于`worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001/`，
+`/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/continuations_serial_20261001_r2/status.json`。
+WFT DEV输出位于`worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/`，
 LR DEV输出位于`worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/`。
 此启动记录没有新识别结果或新提交包；源模型仍为已校验v1 SWA，平台起点为用户回填full v1 SWA70.9860%。
 
