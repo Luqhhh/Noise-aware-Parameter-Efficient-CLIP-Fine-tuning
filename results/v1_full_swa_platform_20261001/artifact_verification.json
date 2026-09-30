@@ -1,0 +1,81 @@
+{
+  "record_id": "V1_FULL_SWA_PLATFORM_20261001",
+  "experiment_id": "V1_FULL_SWA_20260930",
+  "recorded_at": "2026-09-30T16:20:29.236903+00:00",
+  "source": "explicit_user_report",
+  "source_message": "70.98600576861446 \"C:\\Users\\lqh22\\Desktop\\v1_full_swa_submission.zip\"",
+  "platform_score_percent": 70.98600576861446,
+  "platform_score_reported_text": "70.98600576861446",
+  "platform_submission_id": null,
+  "platform_submitted_at": null,
+  "platform_package_binding_verified": false,
+  "base_origin_main_commit": "5bac23ad5fc2d712a306cae395d2ecbbc3641f53",
+  "feedback_branch": "codex/v1_full_swa_platform_20261001",
+  "feedback_worktree": "/home/lux1/noise/worktrees/v1_full_swa_platform_20261001",
+  "artifacts": {
+    "csv": {
+      "path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv",
+      "sha256": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5",
+      "matches_delivery_record": true
+    },
+    "zip": {
+      "path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+      "sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+      "matches_delivery_record": true
+    },
+    "desktop_zip": {
+      "path": "/mnt/c/Users/lqh22/Desktop/v1_full_swa_submission.zip",
+      "sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+      "matches_delivery_record": true
+    }
+  },
+  "delivery_result": "results/v1_full_swa_20260930/final_validation.json",
+  "delivery_manifest": "results/v1_full_swa_20260930/submission_manifest.json",
+  "prior_submission_check": "results/v1_full_swa_20260930/submission_check.log",
+  "submission_check_command": [
+    "python3",
+    "scripts/check_submission.py",
+    "--test_dir",
+    "/home/lux1/noise/test",
+    "--class-mapping",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+    "--csv",
+    "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv",
+    "--zip",
+    "/mnt/c/Users/lqh22/Desktop/v1_full_swa_submission.zip"
+  ],
+  "submission_check_exit_code": 0,
+  "submission_check_log": "results/v1_full_swa_platform_20261001/submission_check.log",
+  "submission_checks_passed": 9,
+  "submission_rows": 37444,
+  "zip_csv_bytes_identical": true,
+  "source_zip_desktop_zip_sha256_identical": true,
+  "manifest_hashes_match": true,
+  "platform_correct_count_implied": 26580,
+  "platform_count_is_receipt": false,
+  "platform_comparison": {
+    "train_dev_swa_score_percent": 70.4091,
+    "full_minus_train_dev_swa_pp": 0.57690576861446,
+    "train_dev_swa_correct_implied": 26364,
+    "full_minus_train_dev_swa_correct_implied": 216,
+    "original_v1_score_percent": 69.23405619057793,
+    "full_minus_original_v1_pp": 1.75194957803653,
+    "original_v1_correct_implied": 25924,
+    "full_minus_original_v1_correct_implied": 656,
+    "l05_score_percent": 66.94797564362783,
+    "full_minus_l05_pp": 4.03803012498663,
+    "l05_correct_implied": 25068,
+    "full_minus_l05_correct_implied": 1512,
+    "score_comparison_scope": "same_stage_user_reported_platform_aggregates",
+    "counts_source": "inferred_from_reported_micro_accuracy_and_37444_samples_not_receipt",
+    "train_dev_swa_precision_decimals": 4
+  },
+  "target_75_percent": {
+    "required_correct": 28083,
+    "remaining_correct_implied": 1503,
+    "remaining_pp": 4.01399423138554
+  },
+  "implementation_changed": false,
+  "new_training_started": false,
+  "v3_processes_modified": false
+}
