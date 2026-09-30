@@ -22,7 +22,7 @@ recipe:
   views:
   - 512
   flip: true
-micro_batch_size: 2
+micro_batch_size: 8
 num_workers: 2
 seed: 42
 parent_code_root: /home/lux1/noise/worktrees/v1_full_swa_20260930

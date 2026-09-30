@@ -196,3 +196,11 @@ def test_execution_refuses_busy_cuda_before_initializing_it(monkeypatch):
     monkeypatch.setattr(torch.cuda,'is_available',lambda:pytest.fail('CUDA touched while another job is active'))
     with pytest.raises(RuntimeError,match='occupied'):
         rt.require_idle_cuda()
+
+
+def test_eval_batch_does_not_follow_training_micro_batch(tmp_path):
+    from types import SimpleNamespace
+    from v1_continuation.runtime import eval_loader
+    plan=dict(logical_batch_size=32,config=dict(micro_batch_size=8,num_workers=0,recipe=dict(image_size=448)))
+    data=eval_loader(plan,SimpleNamespace(train_root=tmp_path),[],448)
+    assert data.batch_size == 32
