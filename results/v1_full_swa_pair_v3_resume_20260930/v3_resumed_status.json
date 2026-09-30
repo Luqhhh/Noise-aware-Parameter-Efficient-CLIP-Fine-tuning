@@ -1,0 +1,16 @@
+{
+  "status": "running",
+  "stage": "train",
+  "v1_status": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/status.json",
+  "plan": "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/prepared_exif_recovery/plan.json",
+  "started_at": "2026-09-29T23:24:44.034603+00:00",
+  "runner_pid": 361828,
+  "automatic_retry": false,
+  "platform_score": null,
+  "v1_completed": true,
+  "v1_submission": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/submission/submission.zip",
+  "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+  "heartbeat_at": "2026-09-30T06:13:15.873909+00:00",
+  "child_pid": 361861,
+  "log": "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/handoff_exif_recovery/train.log"
+}
