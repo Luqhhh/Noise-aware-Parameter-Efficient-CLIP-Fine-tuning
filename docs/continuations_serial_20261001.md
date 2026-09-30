@@ -49,7 +49,7 @@ controller脚本为`python3 scripts/run_serial_continuations.py --queue <queue.j
 不并发训练，已有CUDA计算任务时等待本机资源，不抢占、不用远端/NPU。
 训练失败不会自动重启；完整状态、PID、命令与日志均落盘。
 
-运行队列来源见[冻结queue](../results/continuations_serial_start_20261001/queue.json)。
+运行队列来源见[修复后冻结queue](../results/continuations_serial_recovery_20261001/queue.json)。
 实时controller位于
 `/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/continuations_serial_20261001_r2/status.json`。
 WFT DEV输出位于`worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/`，
@@ -60,13 +60,13 @@ LR DEV输出位于`worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001
 
 ```bash
 PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 python3 -m v1_continuation.runtime train \
-  --plan outputs/codex/wft448_dev_20261001/prepared_r1/plan.json \
-  --output outputs/codex/wft448_dev_20261001/run --execute
+  --plan outputs/codex/wft448_dev_20261001_r2/prepared_amp/plan.json \
+  --output outputs/codex/wft448_dev_20261001_r2/run --execute
 PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 python3 -m v1_continuation.runtime infer \
-  --plan outputs/codex/wft448_dev_20261001/prepared_r1/plan.json \
-  --run-root outputs/codex/wft448_dev_20261001/run \
-  --checkpoint outputs/codex/wft448_dev_20261001/run/training/selected.pt \
-  --output outputs/codex/wft448_dev_20261001/submission --execute
+  --plan outputs/codex/wft448_dev_20261001_r2/prepared_amp/plan.json \
+  --run-root outputs/codex/wft448_dev_20261001_r2/run \
+  --checkpoint outputs/codex/wft448_dev_20261001_r2/run/training/selected.pt \
+  --output outputs/codex/wft448_dev_20261001_r2/submission --execute
 ```
 
 WFT/LR每项各自输出固定末轮EMA和EMA2–4报告；所生成包始终使用一份明确checkpoint。
