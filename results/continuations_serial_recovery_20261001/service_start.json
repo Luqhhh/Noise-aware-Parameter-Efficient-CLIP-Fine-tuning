@@ -1,0 +1,53 @@
+{
+  "status": "started_in_progress",
+  "service": "noise-continuations-serial-20261001-r2.service",
+  "state": {
+    "status": "running",
+    "runner_pid": 87399,
+    "started_at": "2026-09-30T18:37:08.916112+00:00",
+    "jobs": [],
+    "automatic_retry": false,
+    "test_usage": "inference_only",
+    "platform_upload": false,
+    "current_stage": "train",
+    "current_experiment": "WFT448_DEV",
+    "child_pid": 87403,
+    "log": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/train.log",
+    "heartbeat_at": "2026-09-30T18:40:24.007331+00:00",
+    "evaluation_progress.json": {
+      "batch": 1,
+      "batches": 465,
+      "elapsed_seconds": 157.56624347600155,
+      "phase": "untrained_parent_baseline",
+      "rows": 14880,
+      "scale": 512,
+      "status": "evaluating",
+      "view": 2,
+      "views": 3
+    }
+  },
+  "zero_update": {
+    "atol": 2e-05,
+    "class_order_preserved": true,
+    "eval_mode": true,
+    "fp32": true,
+    "head_preserved": true,
+    "image_size": 448,
+    "max_abs_logits_error": 0.0,
+    "merged_modules": 48,
+    "optimizer_updates": 0,
+    "passed": true,
+    "rtol": 2e-05,
+    "tokens": 197
+  },
+  "source_commit": "ba396721fe31d21446a2831ce28698a00935b16a",
+  "queue": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/continuations_serial_20261001_r2/queue.json",
+  "queue_sha256": "ce739cce932ac818ffdf5628e219c83e357521e1e546b01fc61c3dcf1d090e2d",
+  "tests_passed": 150,
+  "wft_numerical_probe_successful_updates": 128,
+  "lr_cuda_probe_successful_updates": 3,
+  "new_four_epoch_training_complete": false,
+  "new_submission_package": null,
+  "platform_score": null,
+  "previous_attempt": "74 updates, failed AMP scale overflow; preserved, not resumed"
+}

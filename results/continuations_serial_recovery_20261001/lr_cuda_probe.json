@@ -1,0 +1,53 @@
+{
+  "actual_sampler": false,
+  "amp_retries": [],
+  "costs_are_estimates": true,
+  "device": "NVIDIA GeForce RTX 4070 Laptop GPU",
+  "estimated_cuda_work_hours": 2.6906563617873176,
+  "experiment_id": "LR512_DEV",
+  "fitted_weights_saved": false,
+  "fp32_inference_batch_size": 32,
+  "fp32_inference_seconds": [
+    0.24665518700021494,
+    0.2123129119991063,
+    0.21151988599922333
+  ],
+  "gradient_norms": [
+    1.913371205329895,
+    2.703315258026123,
+    5.199697971343994
+  ],
+  "inference_estimate_seconds_per_image": 0.006634778499972072,
+  "inference_peak_mib": 1006.2548828125,
+  "logical_batch_size": 32,
+  "losses": [
+    1.1251550316810608,
+    1.145349383354187,
+    1.1858806312084198
+  ],
+  "micro_batch_size": 8,
+  "plan_sha256": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+  "status": "passed",
+  "successful_updates": 3,
+  "train_estimated_hours": 2.004163202371318,
+  "train_seconds": [
+    1.3130467219998536,
+    0.414859852000518,
+    0.48461764700005006
+  ],
+  "training_peak_mib": 816.8486328125,
+  "zero_update": {
+    "atol": 2e-05,
+    "class_order_preserved": true,
+    "eval_mode": true,
+    "fp32": true,
+    "head_preserved": true,
+    "image_size": 512,
+    "max_abs_logits_error": 0.0,
+    "merged_modules": 0,
+    "optimizer_updates": 0,
+    "passed": true,
+    "rtol": 2e-05,
+    "tokens": 257
+  }
+}
