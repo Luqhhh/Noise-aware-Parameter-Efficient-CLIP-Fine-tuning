@@ -323,6 +323,12 @@ def train(plan_path, authorization, stage, probe_steps=0):
             binding["completed_epochs"] = epoch + 1
             snapshot = payload(entry)
             save_checkpoint(destination / "last.pt", snapshot)
+            if final and epoch >= cfg["train"]["epochs"] - 3:
+                # Preserve only the fixed final RAW window. Original last.pt policy is unchanged.
+                archive = {key: snapshot[key] for key in ("model", "binding", "config", "epoch", "global_step",
+                                                           "num_classes", "image_size")}
+                archive["weight_source"] = "raw"
+                save_checkpoint(destination / f"epoch_{epoch+1:02d}_raw.pt", archive)
             if not final and score > best_score:
                 best_score = score
                 save_checkpoint(destination / "best.pt", snapshot)
@@ -363,14 +369,20 @@ def write_submission(output, files, predictions, classes):
         z.write(csv_path, arcname="pred_results.csv")
 
 
-def infer(plan_path, authorization, output):
+def infer(plan_path, authorization, output, checkpoint=None):
     auth = authorize(plan_path, authorization, "infer")
     budget = Budget(auth["max_seconds"])
     plan = verify_prepared(plan_path)
     workspace = Path(plan_path).resolve().parent
-    cp = workspace / "runs/full_576/last.pt"
-    payload = read_checkpoint(cp, plan, "full_576")
-    require(payload["epoch"] == 4 and payload["metrics"]["chosen"] == "raw", "v2 inference requires final raw last epoch")
+    cp = workspace / "runs/full_576/last.pt" if checkpoint is None else Path(checkpoint).resolve()
+    if cp == workspace / "runs/full_576/last.pt":
+        payload = read_checkpoint(cp, plan, "full_576")
+        weight_policy = "raw"
+        require(payload["epoch"] == 4 and payload["metrics"]["chosen"] == "raw", "v2 inference requires final raw last epoch")
+    else:
+        from .swa import read_export
+        payload = read_export(cp, plan, workspace)
+        weight_policy = "full_last3_raw_swa"
     root = Path(plan["recipe"]["test_root"])
     with (Path(plan["recipe"]["stage_artifacts"]) / "test_manifest.csv").open(newline="") as f:
         files = sorted(Path(r["image_path"]).name for r in csv.DictReader(f))
@@ -396,7 +408,7 @@ def infer(plan_path, authorization, output):
     subprocess.run(["python3", str(ROOT / "scripts/check_submission.py"), "--test_dir", str(root),
         "--num-classes", "750", "--csv", str(Path(output)/"pred_results.csv"), "--zip", str(Path(output)/"submission.zip")], check=True)
     dump(Path(output) / "report.json", dict(status="package_ready", checkpoint=str(cp), checkpoint_sha256=sha(cp),
-         weights="raw", views=plan["recipe"]["views"], rows=len(files), elapsed_seconds=time.monotonic()-budget.start,
+         weights=weight_policy, views=plan["recipe"]["views"], rows=len(files), elapsed_seconds=time.monotonic()-budget.start,
          csv_sha256=sha(Path(output)/"pred_results.csv"), zip_sha256=sha(Path(output)/"submission.zip"), platform_metrics=None))
 
 
@@ -413,13 +425,14 @@ def main():
             p.add_argument("--steps", type=int, default=5)
         if name == "infer":
             p.add_argument("--output", required=True)
+            p.add_argument("--checkpoint", help="Optional fixed V2_FULL_LAST3_SWA export; default remains full_576/last.pt")
     args = parser.parse_args()
     if args.command in ("train", "probe"):
         if args.command == "probe":
             require(3 <= args.steps <= 10, "Probe is bounded to 3-10 logical updates")
         train(args.plan, args.authorization, args.stage, args.steps if args.command == "probe" else 0)
     else:
-        infer(args.plan, args.authorization, args.output)
+        infer(args.plan, args.authorization, args.output, args.checkpoint)
 
 
 if __name__ == "__main__":

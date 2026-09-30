@@ -1,0 +1,89 @@
+{
+  "experiment_id": "V1_CONTINUATIONS_ENGINEERING_20261001",
+  "status": "engineering_ready_not_started",
+  "checked_at": "2026-09-30T17:25:50.592955+00:00",
+  "branch": "codex/v1_continuations_20261001",
+  "worktree": "/home/lux1/noise/worktrees/v1_continuations_20261001",
+  "experiments": [
+    "WFT448_DEV",
+    "WFT448_FULL",
+    "LR512_DEV",
+    "LR512_FULL",
+    "V2_FULL_LAST3_SWA"
+  ],
+  "tests": {
+    "command": "PYTHONPATH=reproducibility/aegis_f1 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=2 python3 -m pytest tests/test_v1_continuation.py tests/test_v2_swa.py tests/test_v2.py tests/test_v3.py reproducibility/aegis_f1/tests/test_v1.py reproducibility/aegis_f1/tests/test_v1_export.py -q",
+    "result": "142 passed in 10.85s",
+    "passed": 142,
+    "failed": 0,
+    "execution": "outside_sandbox_after_local_multiprocessing_socket_denial",
+    "cuda_visible_devices": ""
+  },
+  "cpu_preflight": {
+    "command": "CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=2 python3 scripts/check_v1_continuation_cpu.py --output outputs/codex/v1_continuations_20261001/cpu_preflight.json",
+    "status": "verified",
+    "gpu_initialized": false,
+    "sha256": "765da7086a839efb6ff6a5879d7e1c58dd367e838b0db0aad61bb837f301738b"
+  },
+  "prepared": {
+    "wft448": {
+      "path": "/home/lux1/noise/worktrees/v1_continuations_20261001/outputs/codex/v1_continuations_20261001/wft448_prepared/plan.json",
+      "sha256": "1202e69c18f0f95846b61dacb3efc54685e4de33e687c4e2672967d14a5ea9f4",
+      "status": "prepared_verified_not_started",
+      "train_rows": 133815,
+      "val_rows": 14880,
+      "active_train_rows": 119074,
+      "logical_batch_size": 32
+    },
+    "lr512": {
+      "path": "/home/lux1/noise/worktrees/v1_continuations_20261001/outputs/codex/v1_continuations_20261001/lr512_prepared/plan.json",
+      "sha256": "a33fad375ae925320d51916515eae26199848d53288dd2530396f6193bd872dc",
+      "status": "prepared_verified_not_started",
+      "train_rows": 133815,
+      "val_rows": 14880,
+      "active_train_rows": 119074,
+      "logical_batch_size": 32
+    }
+  },
+  "implementation_sha256": {
+    "reproducibility/aegis_f1/v1_continuation/plan.py": "2e7a41063057ba1f3c8ce8e7a34022ea604078bbe4e314f8e683ba4c4a05a4ec",
+    "reproducibility/aegis_f1/v1_continuation/runtime.py": "dd401769ddbb81859220bb6361a26db9eb0b0b8eaf3bc099d6f3c3466b01ecd7",
+    "reproducibility/aegis_f1/v1_continuation/model.py": "92b8b4dfb73978feb4558e97d8122af61e7e801eab89c3a6b359e2f21e1c74b6",
+    "reproducibility/aegis_f1/v1_continuation/__init__.py": "ef977f826a7d16aa9fe0e0558433d2f525c64207f34b01119fcccec4b4c47a9a",
+    "configs/v1_continuation/wft448_dev.yaml": "a91b8f9f21fe80f1e3adaec07e2c17f9bf576eec501b37952208939217e12cd1",
+    "configs/v1_continuation/wft448_full.yaml": "49445d856e70d3e29f9ffe0a010bd547776fac28abcdadd8be3f7a3cdc1dd65b",
+    "configs/v1_continuation/lr512_full.yaml": "ac099367eb13a77c033c3466a5edbe6cec1e639d9560c8a0b45a9f5e92d3c957",
+    "configs/v1_continuation/lr512_dev.yaml": "7a4085609d7218ae3cd0d0ca45c447439ec2f94fc2459ce67c4885cb321306e4",
+    "reproducibility/aegis_f1/v2/runtime.py": "19fe1ebd6347fdbbb4ba4a51f98c59f9800db8d2a9f01a4ef9e8fb1e0b298a4a",
+    "reproducibility/aegis_f1/v2/swa.py": "a3aea765db4806738cec3661297c9578d739e1cb990ae2c5e942b2249d7b9bc0",
+    "scripts/check_v1_continuation_cpu.py": "71016ebf4dbadb6069c3e2a247743ddcd52fc7574fbd3be95631f18ca0b939e1",
+    "tests/test_v1_continuation.py": "0b55cd769df4ce57c669055e24eb51ea960a03ad2ee42f36dded58b00a7e94b4",
+    "tests/test_v2_swa.py": "644584067dcbfe353847f49a13d621eb28c988e6c6ba3db30a3031096ea9154d"
+  },
+  "training_started": false,
+  "test_inference_started": false,
+  "full_prepared": false,
+  "local_score": null,
+  "platform_score": null,
+  "platform_best_user_reported_percent": 70.98600576861446,
+  "v2_state": "engineering_ready_not_started",
+  "v3_observed": {
+    "status": "running",
+    "cuda_pid": 8916,
+    "interrupted": false,
+    "protocol_changed": false
+  },
+  "conditional_supervision_ladder": "not_started_requires_v3_support",
+  "submission": {
+    "new_package": false,
+    "current_directory": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission",
+    "rows": 37444,
+    "prior_checks_passed": 9,
+    "verification_sources": [
+      "results/v1_full_swa_20260930/final_validation.json",
+      "results/v1_full_swa_platform_20261001/artifact_verification.json"
+    ],
+    "scope": "references_prior_verification_no_new_package_check"
+  },
+  "git_diff_check": "passed"
+}

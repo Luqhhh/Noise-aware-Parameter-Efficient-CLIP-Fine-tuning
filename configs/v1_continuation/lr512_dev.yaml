@@ -1,0 +1,28 @@
+experiment_id: LR512_DEV
+route: LR512
+partition: train_dev
+parent_config: /home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/config.yaml
+parent_checkpoint: /home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.pt
+targets: /home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.pt
+recipe:
+  image_size: 512
+  epochs: 4
+  backbone_lr: 5.0e-05
+  head_lr: 0.00025
+  optimizer: v1_adamw
+  weight_decay: 0.0
+  scheduler: v1_onecycle
+  warmup_epochs: 0.4
+  grad_clip: 1.0
+  ema_decay: 0.999
+  average_epochs:
+  - 2
+  - 3
+  - 4
+  views:
+  - 512
+  flip: true
+micro_batch_size: 2
+num_workers: 2
+seed: 42
+parent_code_root: /home/lux1/noise/worktrees/v1_train_20260929

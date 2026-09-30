@@ -1,5 +1,22 @@
 # 当前执行入口：full v1 SWA平台70.9860%，v3恢复运行（2026-10-01）
 
+## 最新工程检查点：WFT448 / LR512 / V2_FULL_LAST3_SWA
+
+用户要求实现固定新增路线。已接入WFT448（先加载当前dev v1 SWA、合并全部LoRA、保留cosine头、
+全视觉塔4轮低LR续训）与LR512（保留LoRA、实际512输入、未训练512基线先落盘、固定4轮）。
+各自末轮EMA与固定EMA2–4导出；逻辑batch32、micro累积不改变Mixup/权重归一化。
+DEV/FULL监督人口分别绑定，FULL须有对应完整DEV证据与支持分析，不用重叠val选模或校准；
+固定报告全量micro/macro、修正/退化、头尾/少支持组与raw/EMA轨迹，不以小幅原标签分下降自动淘汰。
+v2新增full_576 RAW3–5快照与一次CPU平均导出，原第5轮raw默认提交不变；缺快照不重训。
+**142项CPU测试及真实父权重/目标预检通过**；WFT48模块合并零更新FP32 logits误差0，
+LR实际257 tokens。两个DEV plan CPU核验完成，未启动新训练、推理、FULL或平台提交。
+只用本机CUDA，已有进程占卡时入口拒绝启动；本段未操作运行中的v3。
+仓库v2仍为`engineering_ready / not_started`，不是在训；v3维持原两轮EMA协议。
+资源释放后优先WFT448_DEV、随后LR512_DEV；SUPERVISION_LADDER保持等待v3证据的条件候选，
+不恢复NDCW或旧NPU任务，不自动扩大配方/上传平台。当前最好用户报告分仍为70.9860%。
+入口、配方、命令、现役包与验证见[新增策略记录](v1_continuations_20261001.md)和
+[校验记录](../results/v1_continuations_20261001/validation.json)。本工程检查点暂停。
+
 ## 最新平台反馈：V1_FULL_SWA_20260930
 
 用户明确回填`C:\Users\lqh22\Desktop\v1_full_swa_submission.zip`平台
