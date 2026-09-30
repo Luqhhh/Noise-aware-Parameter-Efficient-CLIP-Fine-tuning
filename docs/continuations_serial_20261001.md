@@ -18,6 +18,12 @@ WFT最终预检峰值约2.13GiB，预热后逻辑更新0.435/0.387秒，FP32 bat
 这些是短测外推，不是保证耗时或识别成绩；训练输出从原v1 SWA重新开始。
 成本和血缘见[CUDA预检](../results/continuations_serial_start_20261001/wft448_cuda_probe.json)。
 
+LR512最终CUDA预检也通过：实际512×512、257 tokens，3次更新均有限，
+峰值训练0.817GiB、推理1.006GiB，预计四轮训练2.21小时、含评估出包约3.13小时。
+两DEV合计短测外推约6.42小时，数据读取和GPU频率会改变实际耗时。
+见[LR512 CUDA预检](../results/lr512_dev_start_20261001/cuda_probe.json)与
+[148项相关测试记录](../results/lr512_dev_start_20261001/validation.json)。
+
 ## FULL投入边界
 
 在新结果出现前，持久串行controller冻结一个保守的自动投入条件：
