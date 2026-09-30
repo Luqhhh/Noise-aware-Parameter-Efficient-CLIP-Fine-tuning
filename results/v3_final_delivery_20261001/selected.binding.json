@@ -1,0 +1,11 @@
+{
+  "sha256": "ed61d72f65ee4d9415d45fdfd68833b26cc6e34bd2ac9caef366e34776f63882",
+  "binding": {
+    "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+    "arm": "v1_supervision",
+    "weights": "last_ema",
+    "epoch": 2,
+    "updates": 2786,
+    "complete": true
+  }
+}

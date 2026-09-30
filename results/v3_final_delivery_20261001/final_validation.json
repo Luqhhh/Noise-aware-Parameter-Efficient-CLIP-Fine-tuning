@@ -1,0 +1,33 @@
+{
+  "status": "completed_delivered",
+  "verified_at": "2026-09-30T17:31:55.033062+00:00",
+  "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+  "paired_trace_verified": true,
+  "updates_per_arm": 2786,
+  "metrics_reproduced": true,
+  "test_rows": 37444,
+  "submission_checks_passed": true,
+  "zip_csv_identical": true,
+  "csv": "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/prepared_exif_recovery/submission/pred_results.csv",
+  "zip": "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/prepared_exif_recovery/submission/submission.zip",
+  "csv_sha256": "a60acd2640458825c37449f63f7b92e1d8a619b9170b9e455e32a6e35bacf7f1",
+  "zip_sha256": "bd078e6df85084adf997e63103f2a03a876923a2c55827359672502b39011899",
+  "checkpoint_sha256": "ed61d72f65ee4d9415d45fdfd68833b26cc6e34bd2ac9caef366e34776f63882",
+  "selected_weights": "last_ema",
+  "original_retrained": false,
+  "platform_score": null,
+  "decision": "no_support_for_ladder",
+  "automatic_ladder": false,
+  "checker_command": [
+    "/usr/bin/python3",
+    "/home/lux1/noise/worktrees/v3_final_delivery_20261001/scripts/check_submission.py",
+    "--test_dir",
+    "/home/lux1/noise/test",
+    "--class-mapping",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+    "--csv",
+    "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/prepared_exif_recovery/submission/pred_results.csv",
+    "--zip",
+    "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/prepared_exif_recovery/submission/submission.zip"
+  ]
+}

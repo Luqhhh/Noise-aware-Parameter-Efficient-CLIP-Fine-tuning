@@ -1,5 +1,9 @@
 # V3_RESUME_CHECKPOINT_20260930
 
+2026-10-01 01:26:03 CST已完成两臂配对、测试推理及正式校验。
+本页后文保留启动时的恢复记录；最终指标与源包见
+[最终交付](v3_final_delivery_20261001.md)。
+
 用户“继续”，恢复原v3固定实验。2026-09-30恢复检查发现原暂停进程与
 `noise-v3-after-v1-exif-recovery-20260930.service`已不存在；不推断消失原因。
 磁盘完整保留original的第2轮checkpoint、history和全部2786条更新轨迹。
@@ -80,13 +84,15 @@ v1监督臂已开始第1/2轮且首个更新完成，精确更新快照及验证
 [原臂导出核验](../results/v3_resume_checkpoint_20260930/original_export_validation.json)。
 后续进度以实时controller/log为准。
 启动快照见[状态](../results/v3_resume_checkpoint_20260930/resume_status.json)。
-当前工程恢复完成并后台继续原训练；整个v3实验尚未完成，没有新的平台结果。
+启动检查点工程恢复完成并后台继续原训练，当时整个v3实验尚未完成；
+现已按本页顶部的最终交付记录收尾，没有v3平台结果。
 
 现役可提交包：`/mnt/c/Users/lqh22/Desktop/v1_full_swa_submission.zip`，
 源ZIP为`/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip`，
 SHA `1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e`。
 9项既有校验见[校验日志](../results/v1_full_swa_20260930/submission_check.log)和
-[最终验证](../results/v1_full_swa_20260930/final_validation.json)。最高用户报告平台分仍为train_dev v1 SWA **70.4091%**。
+[最终验证](../results/v1_full_swa_20260930/final_validation.json)。启动时最高用户报告平台分为train_dev v1 SWA **70.4091%**，
+随后full v1 SWA平台反馈 **70.98600576861446%**，见当前执行入口。
 
 ## Git集成
 

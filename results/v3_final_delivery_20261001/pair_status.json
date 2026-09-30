@@ -1,0 +1,131 @@
+{
+  "status": "complete",
+  "operation": "train",
+  "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+  "arms": {
+    "original": {
+      "status": "complete",
+      "arm": "original",
+      "updates": 2786,
+      "initial_model_sha256": "1095bab4f55b749f6b37aa2feda3d0cd712b756c1e535f1a99ff5f209a4beba0",
+      "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+      "zero_mass_batches": 0,
+      "trace_sha256": "d9b075be90cc97769da41eee2c89ff798a5540688d8e46039567e3c7263d1afc",
+      "weights": "last_ema",
+      "checkpoint_sha256": "0630934880e6c6a76cd6787ddd95ca44152ce4e2c70338bcffc8d8301c21282d",
+      "predictions_sha256": "f84d2a890c3ae29e9b7efb7b8ca3e9a359dca7293f0b51045da91c4431eee2dc"
+    },
+    "v1_supervision": {
+      "status": "complete",
+      "arm": "v1_supervision",
+      "updates": 2786,
+      "initial_model_sha256": "1095bab4f55b749f6b37aa2feda3d0cd712b756c1e535f1a99ff5f209a4beba0",
+      "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+      "zero_mass_batches": 0,
+      "trace_sha256": "d9b075be90cc97769da41eee2c89ff798a5540688d8e46039567e3c7263d1afc",
+      "weights": "last_ema",
+      "checkpoint_sha256": "ed61d72f65ee4d9415d45fdfd68833b26cc6e34bd2ac9caef366e34776f63882",
+      "predictions_sha256": "603e924a168310fea2a28dd7d6607f68db74f523c9ae62bf4f772db8f2ed6b5a"
+    }
+  },
+  "elapsed_seconds": 8301.671447401,
+  "original_retrained": false,
+  "recovered_checkpoint_sha256": "08d4986158d388e51a311093c3fdb7c36d36ea478defb0a308ee099c3d5073e9",
+  "comparison": {
+    "slices": {
+      "all": {
+        "rows": 14880,
+        "defined_classes": 750,
+        "classes_present": 750,
+        "original": {
+          "macro": 0.530370086158837,
+          "micro": 0.540994623655914
+        },
+        "v1_supervision": {
+          "macro": 0.4881114721754417,
+          "micro": 0.4989247311827957
+        },
+        "delta_macro_pp": -4.225861398339525,
+        "delta_micro_pp": -4.2069892473118315,
+        "corrections": 424,
+        "regressions": 1050,
+        "net": -626,
+        "prediction_changes": 3848
+      },
+      "tail": {
+        "rows": 1003,
+        "defined_classes": 75,
+        "classes_present": 75,
+        "original": {
+          "macro": 0.36345367377720317,
+          "micro": 0.41575274177467597
+        },
+        "v1_supervision": {
+          "macro": 0.3248911513323278,
+          "micro": 0.37188434695912265
+        },
+        "delta_macro_pp": -3.8562522444875347,
+        "delta_micro_pp": -4.386839481555333,
+        "corrections": 15,
+        "regressions": 59,
+        "net": -44,
+        "prediction_changes": 290
+      },
+      "other": {
+        "rows": 13877,
+        "defined_classes": 675,
+        "classes_present": 675,
+        "original": {
+          "macro": 0.5489163542012406,
+          "micro": 0.5500468400951214
+        },
+        "v1_supervision": {
+          "macro": 0.5062470633802322,
+          "micro": 0.5081069395402464
+        },
+        "delta_macro_pp": -4.266929082100845,
+        "delta_micro_pp": -4.193990055487495,
+        "corrections": 409,
+        "regressions": 991,
+        "net": -582,
+        "prediction_changes": 3558
+      },
+      "few_support": {
+        "rows": 1,
+        "defined_classes": 1,
+        "classes_present": 1,
+        "original": {
+          "macro": 0.0,
+          "micro": 0.0
+        },
+        "v1_supervision": {
+          "macro": 0.0,
+          "micro": 0.0
+        },
+        "delta_macro_pp": 0.0,
+        "delta_micro_pp": 0.0,
+        "corrections": 0,
+        "regressions": 0,
+        "net": 0,
+        "prediction_changes": 1
+      }
+    },
+    "decision": "no_support_for_ladder",
+    "automatic_ladder": false,
+    "platform_gain_known": false,
+    "clean_labels_known": false,
+    "status": "local_result",
+    "experiment_id": "V3_SUPERVISION_FT_20260929",
+    "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+    "run_root": "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/prepared_exif_recovery/runs/train",
+    "selected_weights": "last_ema",
+    "paired_trace_verified": true,
+    "checkpoint_sha256": {
+      "original": "0630934880e6c6a76cd6787ddd95ca44152ce4e2c70338bcffc8d8301c21282d",
+      "v1_supervision": "ed61d72f65ee4d9415d45fdfd68833b26cc6e34bd2ac9caef366e34776f63882"
+    },
+    "paired_csv_sha256": "b7dfeb2094be7a2925620089a6595058320f8048928546b9e64cad103c6f3a83",
+    "per_class_sha256": "f33d20722816b6824bad75e7235452237c541acdb681e1bfdb0fd1cbdfb415cb",
+    "platform_metrics": null
+  }
+}

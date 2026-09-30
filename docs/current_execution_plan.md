@@ -1,4 +1,21 @@
-# 当前执行入口：full v1 SWA平台70.9860%，新增续训路线工程就绪（2026-10-01）
+# 当前执行入口：full v1 SWA平台70.9860%，续训工程就绪，v3两臂完成并交付（2026-10-01）
+
+## 最新已交付执行：V3_FINAL_DELIVERY_20261001
+
+按用户“继续”完成原v3固定384/每臂2轮协议，2026-10-01 01:26:03 CST交付。
+original与v1监督臂各2786次更新，初始化一致、完整轨迹逐字节相等。
+固定末轮EMA全量14880张留出：对照macro/micro **53.0370% / 54.0995%**，
+v1监督 **48.8111% / 49.8925%**，分别 **−4.2259 / −4.2070pp**；
+修正424、退化1050、净−626，改判3848；尾部macro−3.8563pp、净−44。
+末轮raw监督macro/micro **55.8867% / 56.8414%**，仅记录诊断，保持冻结EMA交付。
+配对指标独立重算一致，selected/预测/ZIP摘要及测试绑定一致，37444行CSV/ZIP
+通过9项正式复核且ZIP内外CSV字节相等。状态`completed_delivered`；平台结果未知。
+本轮全量及尾部结果不支持自动推进ladder，不改选raw、不自动追加训练或上传平台。
+现役最高用户报告平台分仍为full v1 SWA70.98600576861446%；不以本地对照替代平台结论。
+源包与确切命令、冻结SHA、结果及CPU复核见
+[最终交付](v3_final_delivery_20261001.md)、
+[独立核验](../results/v3_final_delivery_20261001/final_validation.json)和
+[配对结果](../results/v3_final_delivery_20261001/comparison.json)。本检查点暂停。
 
 ## 最新工程检查点：WFT448 / LR512 / V2_FULL_LAST3_SWA
 
@@ -10,18 +27,18 @@ DEV/FULL监督人口分别绑定，FULL须有对应完整DEV证据与支持分�
 v2新增full_576 RAW3–5快照与一次CPU平均导出，原第5轮raw默认提交不变；缺快照不重训。
 **142项CPU测试及真实父权重/目标预检通过**；WFT48模块合并零更新FP32 logits误差0，
 LR实际257 tokens。两个DEV plan CPU核验完成，未启动新训练、推理、FULL或平台提交。
-只用本机CUDA，已有进程占卡时入口拒绝启动；本段未操作运行中的v3。
+只用本机CUDA，已有进程占卡时入口拒绝启动；工程段当时未操作运行中的v3。
 仓库v2仍为`engineering_ready / not_started`，不是在训；v3维持原两轮EMA协议。
-资源释放后优先WFT448_DEV、随后LR512_DEV；SUPERVISION_LADDER保持等待v3证据的条件候选，
+资源释放后优先WFT448_DEV、随后LR512_DEV；SUPERVISION_LADDER仍为条件候选，本轮v3无配对推进信号，
 不恢复NDCW或旧NPU任务，不自动扩大配方/上传平台。当前最好用户报告分仍为70.9860%。
 入口、配方、命令、现役包与验证见[新增策略记录](v1_continuations_20261001.md)和
 [校验记录](../results/v1_continuations_20261001/validation.json)。本工程检查点暂停。
 
 收尾只读复核：2026-10-01 01:26:03 CST，原v3 controller自行回报
 `completed / delivered`，单份末轮EMA的37,444行CSV/ZIP已生成，平台分仍为空。
-这是控制器状态回报；完整配对指标与包校验尚未在本执行入口独立登记。
+该工程收尾仅登记控制器回报；完整配对指标与包校验已由本页顶部独立交付段登记。
 状态源为`worktrees/v3_resume_checkpoint_20260930/outputs/codex/v3_resume_checkpoint_20260930/status.json`；
-本段没有干预其流程或启动WFT448/LR512。下方“恢复运行”段保留此前检查点。
+该工程段没有干预其流程或启动WFT448/LR512。下方恢复段保留此前授权与最终完成状态。
 
 ## 最新平台反馈：V1_FULL_SWA_20260930
 
@@ -37,9 +54,9 @@ LR实际257 tokens。两个DEV plan CPU核验完成，未启动新训练、推�
 [full v1执行记录](v1_full_swa_20260930.md#用户平台反馈)、
 [最终结果](../results/v1_full_swa_20260930/final_validation.json)及
 [包复核](../results/v1_full_swa_platform_20261001/artifact_verification.json)。
-本段为平台结果回填；v3继续沿既有恢复协议运行，状态入口见下方。
+本段为平台结果回填；当时v3沿既有恢复协议运行，现已完成，最终状态见本页顶部。
 
-## 最新用户指令：继续v3（从磁盘恢复）
+## 恢复授权与完成状态：继续v3（从磁盘恢复）
 
 用户明确“继续”，撤销此前第2轮后的暂停要求。原暂停进程与旧服务已不存在，
 保留的对照臂epoch02 checkpoint、2786条完整轨迹和冻结计划已独立核对；
@@ -48,8 +65,8 @@ LR实际257 tokens。两个DEV plan CPU核验完成，未启动新训练、推�
 44项CPU检查通过，真实测试绑定37,444项通过；23:02:45 CST新用户服务启动，
 状态`running / recover_train`；训练图像核验及14880张对照EMA复核已通过，
 复算macro/micro **53.0370% / 54.0995%**与原记录完全一致，selected与预测已导出。
-v1监督臂已开始第1/2轮，首个更新完成；原checkpoint重新哈希不变。
-恢复后将完成配对报告与9项校验CSV/ZIP；当前v3新包和平台结果仍未完成。
+恢复启动时v1监督臂开始第1/2轮，首个更新完成；原checkpoint重新哈希不变。
+随后于01:26完成两轮、配对报告与9项校验CSV/ZIP；最终状态见顶部，平台结果仍未知。
 现役可提交包继续为已校验full v1 SWA，路径与校验见
 [恢复记录](v3_resume_checkpoint_20260930.md)、
 [预检](../results/v3_resume_checkpoint_20260930/preflight.json)及
