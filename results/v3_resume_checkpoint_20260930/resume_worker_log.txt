@@ -1,0 +1,2 @@
+{"stage": "verify_training_pixels", "checkpoint_sha256": "08d4986158d388e51a311093c3fdb7c36d36ea478defb0a308ee099c3d5073e9"}
+{"stage": "original_ema_validation", "rows": 14880}
