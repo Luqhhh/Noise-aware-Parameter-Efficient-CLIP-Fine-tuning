@@ -133,7 +133,7 @@
   },
   "bias_fitted_on_val_dev": true,
   "independent_test_score": false,
-  "platform_score": null,
+  "platform_score": 70.4091,
   "l05_fixed_local_reference": {
     "macro": 0.758265,
     "micro": 0.766532,
@@ -207,5 +207,27 @@
   "v3_status": "paused_by_user",
   "desktop_zip": "/mnt/c/Users/lqh22/Desktop/v1_swa_submission.zip",
   "zip_sha256": "7db9e15c1615e8767280e374a0d2b44b93fe7cae8632f970881ae7cf29f9aa5f",
-  "desktop_zip_sha256": "7db9e15c1615e8767280e374a0d2b44b93fe7cae8632f970881ae7cf29f9aa5f"
+  "desktop_zip_sha256": "7db9e15c1615e8767280e374a0d2b44b93fe7cae8632f970881ae7cf29f9aa5f",
+  "platform_score_unit": "percent",
+  "platform_score_source": "user_reported_2026-09-30",
+  "platform_score_reported_precision_decimals": 4,
+  "platform_submission_id": null,
+  "platform_package_binding_verified": false,
+  "platform_correct_count_implied": 26364,
+  "platform_correct_count_source": "inferred_from_rounded_micro_accuracy_and_37444_samples_not_receipt",
+  "platform_comparison": {
+    "original_v1_score_percent": 69.23405619057793,
+    "swa_minus_original_v1_pp": 1.175043809422064,
+    "original_v1_correct": 25924,
+    "swa_minus_original_v1_correct_implied": 440,
+    "l05_score_percent": 66.94797564362783,
+    "swa_minus_l05_pp": 3.461124356372167,
+    "l05_correct": 25068,
+    "swa_minus_l05_correct_implied": 1296
+  },
+  "target_75_percent": {
+    "required_correct": 28083,
+    "remaining_correct_implied": 1719,
+    "remaining_pp": 4.590900000000005
+  }
 }
