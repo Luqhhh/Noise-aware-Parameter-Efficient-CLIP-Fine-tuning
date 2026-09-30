@@ -1,0 +1,74 @@
+{
+  "record_id": "DOCS_REFRESH_20261001",
+  "base_commit": "f474ff17e6d48b3330d031861d0ba58d7119950c",
+  "status": "passed",
+  "changed_markdown_files": [
+    "CLAUDE.md",
+    "docs/AEGIS_F1_VISUAL_LORA.md",
+    "docs/a2_lora_platform_results_2026-07-22.md",
+    "docs/current_execution_plan.md",
+    "docs/documentation_refresh_20261001.md",
+    "docs/history/execution_plan_before_docs_refresh_20261001.md",
+    "docs/lessons_learned.md",
+    "docs/ndcw_20260930.md",
+    "docs/p75_error_budget_policy_20260929.md",
+    "docs/p75_full_sam_execution_20260928.md",
+    "docs/p75_semantic_content_probe_20260929.md",
+    "docs/p75_semantic_mask_pair_20260929.md",
+    "docs/p75_supervision_pipeline_20260929.md",
+    "docs/preliminary_75_v10_sam_implementation_20260920.md",
+    "docs/preliminary_75_v10_sam_preregistration_20260920.md",
+    "docs/rematch750_strategy_oof_downweight_20260921.md",
+    "docs/rematch750_transfer_rate_prereg_20260926.md",
+    "docs/team_assignments_and_experiment_configs_2026-07-22.md",
+    "docs/v1.md",
+    "docs/v1_continuations_20261001.md",
+    "docs/v1_full_swa_pair_v3_resume_20260930.md",
+    "docs/v1_swa_trial_20260930.md",
+    "docs/v2.md",
+    "docs/v3.md",
+    "docs/v3_after_v1_20260930.md",
+    "docs/v3_pause_epoch2_20260930.md",
+    "reproducibility/aegis_f1/PROVENANCE.md",
+    "reproducibility/aegis_f1/docs/COMPETITION_COMPLIANCE.md",
+    "reproducibility/aegis_f1/docs/EXPERIMENT_PROTOCOL.md",
+    "reproducibility/aegis_f1/docs/RESEARCH.md",
+    "reproducibility/aegis_f1/docs/TEAM_ASSIGNMENTS_AND_EXPERIMENT_CONFIGS_2026-07-22.md",
+    "reproducibility/aegis_f1/docs/VERIFICATION.md"
+  ],
+  "changed_markdown_count": 32,
+  "readme_files_verified_unchanged": 15,
+  "relative_links_checked": 276,
+  "execution_archive_original_sha256": "fa4b07636d74394b6f8194e6cd4aa81f098962c84335302f8315b96aa9382d81",
+  "execution_archive_preserved": true,
+  "platform_score_percent": 70.98600576861446,
+  "remaining_correct_implied_not_receipt": 1503,
+  "v3_net_corrections": -626,
+  "active_submission": {
+    "csv": {
+      "path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv",
+      "sha256": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5",
+      "matches_delivery_record": true
+    },
+    "zip": {
+      "path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+      "sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+      "matches_delivery_record": true
+    },
+    "desktop_zip": {
+      "path": "/mnt/c/Users/lqh22/Desktop/v1_full_swa_submission.zip",
+      "sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+      "matches_delivery_record": true
+    }
+  },
+  "existing_submission_validation": {
+    "source": "results/v1_full_swa_platform_20261001/artifact_verification.json",
+    "checks_passed": 9,
+    "rows": 37444,
+    "zip_csv_bytes_identical": true,
+    "package_revalidated_in_docs_refresh": false
+  },
+  "training_started": false,
+  "new_candidate_produced": false,
+  "errors": []
+}

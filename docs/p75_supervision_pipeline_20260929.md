@@ -1,5 +1,11 @@
 # P75_SUPERVISION_PIPELINE：独立工程交付，训练仍为 proposal
 
+> **后续状态**：A已获新授权并完成E6，净−11，固定配方关闭；
+> B虽收到原授权，因缺绑定的验证flip特征未启动，不重编码补缺。
+> 见[执行记录](p75_mask_e6_execution_20260929.md)。下文proposal、L05成绩和3,015张缺口
+> 保留原工程段口径；当前现役包与缺口见[当前执行入口](current_execution_plan.md)。
+
+
 用户任务单的 `proposal_only` 边界有效。本段只实现和验证工程：没有启动 A/B 实验训练、续训旧任务、改变旧预算或上传平台。`engineering_ready` 只描述工具代码；实验状态仍为 `proposal`。没有新模型识别结果、可提交包或平台成绩。
 
 ## 冻结问题与边界

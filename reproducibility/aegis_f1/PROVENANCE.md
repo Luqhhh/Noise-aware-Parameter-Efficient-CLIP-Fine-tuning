@@ -1,5 +1,11 @@
 # Aegis 独立实验线 provenance
 
+> **历史文档（2026-10-01核对）**：本文配置、人员分工、待运行指令、成绩和测试数量
+> 仅描述编写时的阶段；不构成当前授权、资源状态或必须补跑的任务。
+> 当前策略与冻结项以[执行入口](../../docs/current_execution_plan.md)及其链接的协议为准。
+> 旧阶段数据、权重、缓存、拟合prior不能跨阶段复用，旧多seed/OOF计划不自动恢复。
+
+
 - Source repositories: `/home/x28639/projects/AegisCLIP-Noise-Robust` and `/home/x28639/projects/AegisCLIP-F6-A2LoRA`
 - Original snapshot commit: `d542fc6` (`experiment: add noise-aware visual LoRA F1`)
 - First incremental source commit: `0e06f0a` (`feat: add cross-fitted trajectory audit`)

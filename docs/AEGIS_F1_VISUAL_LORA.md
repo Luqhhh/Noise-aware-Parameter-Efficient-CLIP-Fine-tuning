@@ -1,10 +1,16 @@
 # AEGIS F1: noise-aware visual LoRA
 
+> **Historical report**: this document describes the preliminary-stage F1 model and its original protocols.
+> Current strategies, rules and deliverables are maintained in
+> [the execution entry](current_execution_plan.md) and [competition rules](../COMPETITION_RULES_AGENT.md).
+> The root README is now a general project introduction; it no longer contains experiment status.
+
+
 > **Status update (2026-07-30)**: this report's Bare/Flip results remain audited and unchanged. A later team record reports F1 + M1 at 63.3276%, but the corresponding ZIP SHA-256 is unavailable in this repository, so that result is tracked as `reported_unverified` in `results/current_platform_summary.csv`. Phase 4 follow-up mechanisms are all closed; see `phase4_results.md`.
 
 ## Identity
 
-`AEGIS_F1_VISUAL_LORA_CLEAN_CORE` is not the deprecated legacy `F1-strict` run mentioned in the root README. The legacy run was invalidated by validation leakage. AEGIS F1 was developed in an isolated runner, source commit `d542fc6`, and is preserved under `reproducibility/aegis_f1/`.
+`AEGIS_F1_VISUAL_LORA_CLEAN_CORE` is not the deprecated legacy `F1-strict` run recorded in historical experiment logs. The legacy run was invalidated by validation leakage. AEGIS F1 was developed in an isolated runner, source commit `d542fc6`, and is preserved under `reproducibility/aegis_f1/`.
 
 ## Configuration
 
