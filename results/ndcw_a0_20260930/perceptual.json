@@ -1,0 +1,12 @@
+{
+  "decoded_images": 39218,
+  "failed_images": {},
+  "policy": {
+    "max_phash_hamming": 6,
+    "max_thumbnail_rmse": 0.1,
+    "max_log_aspect_ratio": 0.08,
+    "min_gray_std": 0.03
+  },
+  "candidate_sha256": "8f0275d5b03c3a86c94a75c8fe6151305f52101844b7ef23c19eef6e53d1fec9",
+  "verified_sha256": "19a11f67c64b23024aea057e8bf89b0cbdc3ab55e64644e73bdef4534006a713"
+}

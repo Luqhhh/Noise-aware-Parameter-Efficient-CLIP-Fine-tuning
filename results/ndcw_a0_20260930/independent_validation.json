@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "total_images": 148695,
+  "candidate_pairs": 69256,
+  "exact_duplicate_images": 4498,
+  "exact_conflict_images": 3894,
+  "independent_manifest_checks": {
+    "full": {
+      "raw_conflict_images": 248,
+      "weighted_images": 248,
+      "affected_classes": 157,
+      "max_class_supervision_loss_rate": 0.01764705882352941
+    },
+    "dev": {
+      "raw_conflict_images": 196,
+      "weighted_images": 196,
+      "affected_classes": 133,
+      "max_class_supervision_loss_rate": 0.016568047337278107
+    }
+  },
+  "source_sha256": "d278e5bf5520a02828a2e9099a31484b169e4438c13e9c5f8a52ed5674b2f471",
+  "audit_report_sha256": "b73a87e0e48150e025128cc5ea1e60998402b93c6bb622b9e7b55ca9776d870b",
+  "manifest_sha256": "c0047faf3ddfcbaec87657314c5c1bd4fd8b00841c04b14eb5af7a2a2a8c94bf",
+  "test_read": false
+}

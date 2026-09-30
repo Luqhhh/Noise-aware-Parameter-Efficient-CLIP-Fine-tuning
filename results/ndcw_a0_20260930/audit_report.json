@@ -1,0 +1,180 @@
+{
+  "status": "audit_complete_thresholds_pending",
+  "training_started": false,
+  "test_read": false,
+  "total_images": 148695,
+  "exact_duplicate_images": 4498,
+  "exact_duplicate_groups": 2184,
+  "exact_cross_label_groups": 1882,
+  "exact_cross_label_images": 3894,
+  "exact_cross_label_pairs": 2151,
+  "near_duplicate_candidate_images": 39218,
+  "strong_conflict_images": null,
+  "medium_conflict_images": null,
+  "affected_classes": null,
+  "note": "Strong/medium and class/cluster statistics require one-time threshold freeze; no labels adjudicated",
+  "perceptual_policy": {
+    "max_phash_hamming": 6,
+    "max_thumbnail_rmse": 0.1,
+    "max_log_aspect_ratio": 0.08,
+    "min_gray_std": 0.03
+  },
+  "similarity_curve": [
+    {
+      "threshold": 0.94,
+      "candidate_pairs": 66799,
+      "cross_label_pairs": 25937,
+      "involved_images": 39218,
+      "cross_label_images": 12505,
+      "cross_label_ratio": 0.3882842557523316,
+      "mutual_nn_ratio": 0.7104297968532463,
+      "perceptual_confirm_ratio": 0.07983652449886974
+    },
+    {
+      "threshold": 0.945,
+      "candidate_pairs": 46499,
+      "cross_label_pairs": 16459,
+      "involved_images": 32174,
+      "cross_label_images": 8668,
+      "cross_label_ratio": 0.3539646013892772,
+      "mutual_nn_ratio": 0.7659089442783715,
+      "perceptual_confirm_ratio": 0.10920664960536786
+    },
+    {
+      "threshold": 0.95,
+      "candidate_pairs": 31772,
+      "cross_label_pairs": 10106,
+      "involved_images": 25833,
+      "cross_label_images": 5696,
+      "cross_label_ratio": 0.31807881153216666,
+      "mutual_nn_ratio": 0.8226425783708926,
+      "perceptual_confirm_ratio": 0.15123379075915902
+    },
+    {
+      "threshold": 0.955,
+      "candidate_pairs": 21637,
+      "cross_label_pairs": 6033,
+      "involved_images": 20611,
+      "cross_label_images": 3688,
+      "cross_label_ratio": 0.2788279336322041,
+      "mutual_nn_ratio": 0.8734112862226742,
+      "perceptual_confirm_ratio": 0.2068216481027869
+    },
+    {
+      "threshold": 0.96,
+      "candidate_pairs": 14942,
+      "cross_label_pairs": 3807,
+      "involved_images": 16317,
+      "cross_label_images": 2395,
+      "cross_label_ratio": 0.25478516932137596,
+      "mutual_nn_ratio": 0.9057689733636729,
+      "perceptual_confirm_ratio": 0.27687056618926514
+    },
+    {
+      "threshold": 0.965,
+      "candidate_pairs": 10677,
+      "cross_label_pairs": 2645,
+      "involved_images": 12872,
+      "cross_label_images": 1531,
+      "cross_label_ratio": 0.24772876276107522,
+      "mutual_nn_ratio": 0.9173925259904467,
+      "perceptual_confirm_ratio": 0.35590521682120446
+    },
+    {
+      "threshold": 0.97,
+      "candidate_pairs": 7929,
+      "cross_label_pairs": 2048,
+      "involved_images": 10140,
+      "cross_label_images": 1053,
+      "cross_label_ratio": 0.2582923445579518,
+      "mutual_nn_ratio": 0.9204187161054358,
+      "perceptual_confirm_ratio": 0.4260310253499811
+    },
+    {
+      "threshold": 0.975,
+      "candidate_pairs": 5873,
+      "cross_label_pairs": 1532,
+      "involved_images": 8070,
+      "cross_label_images": 847,
+      "cross_label_ratio": 0.2608547590669164,
+      "mutual_nn_ratio": 0.9385322663034225,
+      "perceptual_confirm_ratio": 0.4995743231738464
+    },
+    {
+      "threshold": 0.98,
+      "candidate_pairs": 4257,
+      "cross_label_pairs": 994,
+      "involved_images": 6363,
+      "cross_label_images": 637,
+      "cross_label_ratio": 0.2334977683814893,
+      "mutual_nn_ratio": 0.9652337326755931,
+      "perceptual_confirm_ratio": 0.5781066478740897
+    },
+    {
+      "threshold": 0.985,
+      "candidate_pairs": 3004,
+      "cross_label_pairs": 599,
+      "involved_images": 4884,
+      "cross_label_images": 477,
+      "cross_label_ratio": 0.19940079893475365,
+      "mutual_nn_ratio": 0.961051930758988,
+      "perceptual_confirm_ratio": 0.6614513981358189
+    },
+    {
+      "threshold": 0.99,
+      "candidate_pairs": 1934,
+      "cross_label_pairs": 334,
+      "involved_images": 3253,
+      "cross_label_images": 253,
+      "cross_label_ratio": 0.17269906928645296,
+      "mutual_nn_ratio": 0.9570837642192348,
+      "perceptual_confirm_ratio": 0.7430196483971044
+    },
+    {
+      "threshold": 0.995,
+      "candidate_pairs": 1002,
+      "cross_label_pairs": 160,
+      "involved_images": 1704,
+      "cross_label_images": 123,
+      "cross_label_ratio": 0.1596806387225549,
+      "mutual_nn_ratio": 0.9500998003992016,
+      "perceptual_confirm_ratio": 0.8423153692614771
+    }
+  ],
+  "oof_probability_known": 0,
+  "trust_definition": "V1 low trust = original label not retained by CL; not a ground-truth label judgment",
+  "trusted_val_definition": "pre-ND P0 weak-consistent and snapshot-confidence-passes proxy; not clean truth",
+  "files": {
+    "similarity_sweep.csv": "31b9e0b68539ecb23180c5aab3b143931e347022de6287b5a56ff773f652f987",
+    "existing_signals.csv.gz": "27731f0eb183c3f782b75f51a1a2eac98db75fe18d321e95ac99a3957bfec958",
+    "verified_pairs.csv.gz": "19a11f67c64b23024aea057e8bf89b0cbdc3ab55e64644e73bdef4534006a713",
+    "perceptual.json": "53944f2a3d00f2b01d94342245a33ba116d06a49fcdeb7334b9a67445f2b3317",
+    "candidates.json": "8f0275d5b03c3a86c94a75c8fe6151305f52101844b7ef23c19eef6e53d1fec9"
+  },
+  "inputs": {
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/full_train.csv": "142d255e86aadc2be4f4f1bee832948b30416c54bdc904159ff096ce8eb278ad",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/train_dev.csv": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/val_dev.csv": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/decode_report.json": "1f2c9b7e8ed8d8d83a2cf9308869e69f66761cbf0a648beabbe225bc4ce1823a",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/features.pt": "21c35d1cce959ca6a547b7d352e7b4c1e491257f03855b40fa8b99cf11df7c64",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/image_paths.json": "fcb7de523e06342c7ecad36d94b4f360ccd4f87cb402527897b7de4fef43d168",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/manifest.json": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/configs/v2_ndcw/audit.yaml": "80dc2b1a1e6c115507eddb9b0d39139d95437a129328d83accfe2caa6fd5093f",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/retrieval.py": "2f6eaa9fa29a494f9f015e8d10b4cd1c7b40829ee667cf630a723361b5faf201",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/perceptual.py": "a10c59b0dcf02cfcd8a6eb5e81dde67ca5a00f01f82da70d4d865eaa83f312ab",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/prepare.py": "313324b916a57e64d18e888d707e3f5643844651c6e0a0e16263c154c14891e6",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/core.py": "5eb1607c3eee23d1ef6e9cb5357c1e95134cad22ac67c17abd081d4d3ae7b9d9",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/paired.py": "904e60c43b9801d11e306649857b86c5b87e7e1f0dd303ff1a05f535b6dcb331",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/cli.py": "e964edb1938fcca433343b34719d7d41e510050645b56872d853ad51551c179a",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/audit.py": "bdf78bfe83e7e8256bf896f410942352cd382f7f341d73282ba288a4a379d1ad",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/signals.py": "340916acb263ff309513a97d1b9193b2fbece376c755a7c2a99f91c7b641429f",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/__init__.py": "dc832f071e143703e4f74053fdc41f20120a8058168ce4a6757e80e473033394",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/io.py": "ace265922b1ba2a3b4bf6689c28717aafe652ea2902e803b7abb4d2a488d9a9d",
+    "/home/lux1/noise/results/p75_supervision_rebuild_20260929/sample_evidence.csv.gz": "6c89d11fb29e85c8f4c8270217892246efd81deed45858a310987b41a3e02dcc",
+    "/home/lux1/noise/results/p75_supervision_rebuild_20260929/summary.json": "9171db437b68d44a894d57a9aa94ad6d7793206906e54c65245d78b6591e2de1",
+    "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.pt": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2",
+    "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.sha256.json": "e58e91bc3512bf5a853dbdcc1e157fbbbead6e568b0e333f8869f9e1aed98124"
+  }
+}

@@ -1,0 +1,50 @@
+{"stage": "perceptual", "done": 0, "total": 39218}
+{"stage": "perceptual", "done": 1000, "total": 39218}
+/home/lux1/.local/lib/python3.10/site-packages/PIL/Image.py:1137: UserWarning: Palette images with Transparency expressed in bytes should be converted to RGBA images
+  warnings.warn(
+{"stage": "perceptual", "done": 2000, "total": 39218}
+{"stage": "perceptual", "done": 3000, "total": 39218}
+{"stage": "perceptual", "done": 4000, "total": 39218}
+{"stage": "perceptual", "done": 5000, "total": 39218}
+/home/lux1/.local/lib/python3.10/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 2 bytes but only got 0. 
+  warnings.warn(str(msg))
+{"stage": "perceptual", "done": 6000, "total": 39218}
+/home/lux1/.local/lib/python3.10/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 4 bytes but only got 2. 
+  warnings.warn(str(msg))
+{"stage": "perceptual", "done": 7000, "total": 39218}
+{"stage": "perceptual", "done": 8000, "total": 39218}
+{"stage": "perceptual", "done": 9000, "total": 39218}
+{"stage": "perceptual", "done": 10000, "total": 39218}
+{"stage": "perceptual", "done": 11000, "total": 39218}
+{"stage": "perceptual", "done": 12000, "total": 39218}
+{"stage": "perceptual", "done": 13000, "total": 39218}
+{"stage": "perceptual", "done": 14000, "total": 39218}
+{"stage": "perceptual", "done": 15000, "total": 39218}
+{"stage": "perceptual", "done": 16000, "total": 39218}
+{"stage": "perceptual", "done": 17000, "total": 39218}
+{"stage": "perceptual", "done": 18000, "total": 39218}
+{"stage": "perceptual", "done": 19000, "total": 39218}
+{"stage": "perceptual", "done": 20000, "total": 39218}
+{"stage": "perceptual", "done": 21000, "total": 39218}
+{"stage": "perceptual", "done": 22000, "total": 39218}
+{"stage": "perceptual", "done": 23000, "total": 39218}
+{"stage": "perceptual", "done": 24000, "total": 39218}
+{"stage": "perceptual", "done": 25000, "total": 39218}
+{"stage": "perceptual", "done": 26000, "total": 39218}
+{"stage": "perceptual", "done": 27000, "total": 39218}
+{"stage": "perceptual", "done": 28000, "total": 39218}
+{"stage": "perceptual", "done": 29000, "total": 39218}
+{"stage": "perceptual", "done": 30000, "total": 39218}
+{"stage": "perceptual", "done": 31000, "total": 39218}
+{"stage": "perceptual", "done": 32000, "total": 39218}
+{"stage": "perceptual", "done": 33000, "total": 39218}
+{"stage": "perceptual", "done": 34000, "total": 39218}
+{"stage": "perceptual", "done": 35000, "total": 39218}
+{"stage": "perceptual", "done": 36000, "total": 39218}
+{"stage": "perceptual", "done": 37000, "total": 39218}
+{"stage": "perceptual", "done": 38000, "total": 39218}
+{"stage": "perceptual", "done": 39000, "total": 39218}
+{
+  "decoded_images": 39218,
+  "failed_images": {}
+}

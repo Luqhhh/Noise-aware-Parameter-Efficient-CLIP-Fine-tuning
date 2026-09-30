@@ -1,0 +1,328 @@
+{
+  "status": "closed_or_missing_evidence",
+  "training_allowed": false,
+  "training_started": false,
+  "data_version": "20260921",
+  "total_images": 148695,
+  "thresholds": {
+    "medium": 0.99,
+    "strong": 0.995,
+    "rationale": "Freeze once before training: non-exact all-pair perceptual confirmation rises from 42.60% at .970 and 66.15% at .985 to 74.30% at .990 and 84.23% at .995; select the conservative high-similarity region. Cross-label confirmation remains only 25.15%/.2625 at .990/.995, so mutual-only medium edges remain hypotheses, not confirmed wrong labels. Strong still requires mutual plus perceptual support. Do not lower thresholds to manufacture Gate A coverage; no training/platform outcomes exist.",
+    "audit": "/home/lux1/noise/worktrees/ndcw_a0_20260930/outputs/rematch750/ndcw/audit",
+    "audit_report_sha256": "b73a87e0e48150e025128cc5ea1e60998402b93c6bb622b9e7b55ca9776d870b",
+    "output": "/home/lux1/noise/worktrees/ndcw_a0_20260930/outputs/rematch750/ndcw/manifest",
+    "weights": {
+      "weak": 1.0,
+      "medium": 0.5,
+      "strong": 0.2
+    },
+    "cap": 0.1,
+    "policy": "edge_minimum; strongest_samples_first; no_chaining"
+  },
+  "stats": {
+    "full": {
+      "gates": {
+        "gate_a": false,
+        "gate_b": true,
+        "gate_c": true,
+        "low_trust_given_nd": 0.31363636363636366,
+        "low_trust_given_nd_bounds": [
+          0.2782258064516129,
+          0.3911290322580645
+        ],
+        "high_trust_nd_images": 151,
+        "trust_coverage": 0.8870967741935484,
+        "raw_conflict_images": 248,
+        "weighted_images": 248,
+        "affected_classes": 157,
+        "post_cap_scale_ok": false,
+        "training_allowed": false,
+        "decision": "close_or_missing_independent_evidence"
+      },
+      "strong_conflict_images": 80,
+      "medium_conflict_images": 168,
+      "class_cap_restored": 0,
+      "max_per_class_affected_rate": 0.026905829596412557,
+      "max_per_class_supervision_loss_rate": 0.01764705882352941,
+      "cross_signals": {
+        "nd_raw": {
+          "images": 248,
+          "v1_low_trust": {
+            "known": 220,
+            "unknown": 28,
+            "mean": 0.31363636363636366
+          },
+          "v1_weight": {
+            "known": 220,
+            "unknown": 28,
+            "mean": 0.17294108650901102
+          },
+          "oof_label_probability": {
+            "known": 0,
+            "unknown": 248,
+            "mean": null
+          },
+          "knn_agreement": {
+            "known": 248,
+            "unknown": 0,
+            "mean": 0.13528225806451624
+          },
+          "prototype_agreement": {
+            "known": 220,
+            "unknown": 28,
+            "mean": 0.19545454545454546
+          },
+          "oof_ridge_agreement": {
+            "known": 220,
+            "unknown": 28,
+            "mean": 0.20454545454545456
+          }
+        },
+        "nd_weighted": {
+          "images": 248,
+          "v1_low_trust": {
+            "known": 220,
+            "unknown": 28,
+            "mean": 0.31363636363636366
+          },
+          "v1_weight": {
+            "known": 220,
+            "unknown": 28,
+            "mean": 0.17294108650901102
+          },
+          "oof_label_probability": {
+            "known": 0,
+            "unknown": 248,
+            "mean": null
+          },
+          "knn_agreement": {
+            "known": 248,
+            "unknown": 0,
+            "mean": 0.13528225806451624
+          },
+          "prototype_agreement": {
+            "known": 220,
+            "unknown": 28,
+            "mean": 0.19545454545454546
+          },
+          "oof_ridge_agreement": {
+            "known": 220,
+            "unknown": 28,
+            "mean": 0.20454545454545456
+          }
+        },
+        "unaffected": {
+          "images": 148447,
+          "v1_low_trust": {
+            "known": 133595,
+            "unknown": 14852,
+            "mean": 0.11040832366480781
+          },
+          "v1_weight": {
+            "known": 133595,
+            "unknown": 14852,
+            "mean": 0.2998629236494363
+          },
+          "oof_label_probability": {
+            "known": 0,
+            "unknown": 148447,
+            "mean": null
+          },
+          "knn_agreement": {
+            "known": 148447,
+            "unknown": 0,
+            "mean": 0.34742702782814006
+          },
+          "prototype_agreement": {
+            "known": 133595,
+            "unknown": 14852,
+            "mean": 0.4818294097833003
+          },
+          "oof_ridge_agreement": {
+            "known": 133595,
+            "unknown": 14852,
+            "mean": 0.5615105355739362
+          }
+        }
+      },
+      "head_affected_rate": 0.0019676432006996065,
+      "middle_affected_rate": 0.0016116838773458724,
+      "tail_affected_rate": 0.0017949740725967292
+    },
+    "dev": {
+      "gates": {
+        "gate_a": false,
+        "gate_b": true,
+        "gate_c": true,
+        "low_trust_given_nd": 0.32653061224489793,
+        "low_trust_given_nd_bounds": [
+          0.32653061224489793,
+          0.32653061224489793
+        ],
+        "high_trust_nd_images": 132,
+        "trust_coverage": 1.0,
+        "raw_conflict_images": 196,
+        "weighted_images": 196,
+        "affected_classes": 133,
+        "post_cap_scale_ok": false,
+        "training_allowed": false,
+        "decision": "close_or_missing_independent_evidence"
+      },
+      "strong_conflict_images": 67,
+      "medium_conflict_images": 129,
+      "class_cap_restored": 0,
+      "max_per_class_affected_rate": 0.029585798816568046,
+      "max_per_class_supervision_loss_rate": 0.016568047337278107,
+      "cross_signals": {
+        "nd_raw": {
+          "images": 196,
+          "v1_low_trust": {
+            "known": 196,
+            "unknown": 0,
+            "mean": 0.32653061224489793
+          },
+          "v1_weight": {
+            "known": 196,
+            "unknown": 0,
+            "mean": 0.16541531651603933
+          },
+          "oof_label_probability": {
+            "known": 0,
+            "unknown": 196,
+            "mean": null
+          },
+          "knn_agreement": {
+            "known": 196,
+            "unknown": 0,
+            "mean": 0.1375
+          },
+          "prototype_agreement": {
+            "known": 196,
+            "unknown": 0,
+            "mean": 0.1989795918367347
+          },
+          "oof_ridge_agreement": {
+            "known": 196,
+            "unknown": 0,
+            "mean": 0.1989795918367347
+          }
+        },
+        "nd_weighted": {
+          "images": 196,
+          "v1_low_trust": {
+            "known": 196,
+            "unknown": 0,
+            "mean": 0.32653061224489793
+          },
+          "v1_weight": {
+            "known": 196,
+            "unknown": 0,
+            "mean": 0.16541531651603933
+          },
+          "oof_label_probability": {
+            "known": 0,
+            "unknown": 196,
+            "mean": null
+          },
+          "knn_agreement": {
+            "known": 196,
+            "unknown": 0,
+            "mean": 0.1375
+          },
+          "prototype_agreement": {
+            "known": 196,
+            "unknown": 0,
+            "mean": 0.1989795918367347
+          },
+          "oof_ridge_agreement": {
+            "known": 196,
+            "unknown": 0,
+            "mean": 0.1989795918367347
+          }
+        },
+        "unaffected": {
+          "images": 148499,
+          "v1_low_trust": {
+            "known": 133619,
+            "unknown": 14880,
+            "mean": 0.11042591248250623
+          },
+          "v1_weight": {
+            "known": 133619,
+            "unknown": 14880,
+            "mean": 0.29985116579185056
+          },
+          "oof_label_probability": {
+            "known": 0,
+            "unknown": 148499,
+            "mean": null
+          },
+          "knn_agreement": {
+            "known": 148499,
+            "unknown": 0,
+            "mean": 0.3473498138034864
+          },
+          "prototype_agreement": {
+            "known": 133619,
+            "unknown": 14880,
+            "mean": 0.48177280177220305
+          },
+          "oof_ridge_agreement": {
+            "known": 133619,
+            "unknown": 14880,
+            "mean": 0.561454583554734
+          }
+        }
+      },
+      "head_affected_rate": 0.0020642341084330033,
+      "middle_affected_rate": 0.0013755666134288537,
+      "tail_affected_rate": 0.0014404432132963988
+    }
+  },
+  "clusters": {
+    "clusters": 94,
+    "median_cluster_size": 2.0,
+    "largest_cluster": 23
+  },
+  "cross_split_conflict_edges": 33,
+  "val_images_linked_to_train": 26,
+  "files": {
+    "ndcw_weights.csv": "0c8bbac1bd8a0e73b403604698fd3650a7e62dae23570be652306041b5b0b499",
+    "ndcw_dev_weights.csv": "5a556b195f001c357aac0f760de84d9d32262034ad49a61ce2f35b342ae3cf67",
+    "control_weights.csv": "432b701b60fd65433d6e84f319f35780a47e9c3cd1d885de7ca8e5b5e3f23fa4",
+    "full_class_impact.csv": "f0fe22795c32acef4861d240554adc66c8f97730d07f2c38d45ff7062ea24cef",
+    "dev_class_impact.csv": "c6176a08a4f6e4c652416d6c7b690f277a0b9f27a36c91d170bb2c2ab6cbaa12",
+    "conflict_pairs.csv": "df7575d1fbb1bdc1c4357306ad86a7e908408060457a2fbe98187d78a3d5011d",
+    "evaluation_groups.json": "34afb8ac1466e75ed2ecc46e17c2d9e2824c5b155dcb02c4fd855cf7e589c672"
+  },
+  "inputs": {
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/full_train.csv": "142d255e86aadc2be4f4f1bee832948b30416c54bdc904159ff096ce8eb278ad",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/train_dev.csv": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/val_dev.csv": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/decode_report.json": "1f2c9b7e8ed8d8d83a2cf9308869e69f66761cbf0a648beabbe225bc4ce1823a",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/features.pt": "21c35d1cce959ca6a547b7d352e7b4c1e491257f03855b40fa8b99cf11df7c64",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/image_paths.json": "fcb7de523e06342c7ecad36d94b4f360ccd4f87cb402527897b7de4fef43d168",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/manifest.json": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/configs/v2_ndcw/audit.yaml": "80dc2b1a1e6c115507eddb9b0d39139d95437a129328d83accfe2caa6fd5093f",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/retrieval.py": "2f6eaa9fa29a494f9f015e8d10b4cd1c7b40829ee667cf630a723361b5faf201",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/perceptual.py": "a10c59b0dcf02cfcd8a6eb5e81dde67ca5a00f01f82da70d4d865eaa83f312ab",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/prepare.py": "313324b916a57e64d18e888d707e3f5643844651c6e0a0e16263c154c14891e6",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/core.py": "5eb1607c3eee23d1ef6e9cb5357c1e95134cad22ac67c17abd081d4d3ae7b9d9",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/paired.py": "904e60c43b9801d11e306649857b86c5b87e7e1f0dd303ff1a05f535b6dcb331",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/cli.py": "e964edb1938fcca433343b34719d7d41e510050645b56872d853ad51551c179a",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/audit.py": "bdf78bfe83e7e8256bf896f410942352cd382f7f341d73282ba288a4a379d1ad",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/signals.py": "340916acb263ff309513a97d1b9193b2fbece376c755a7c2a99f91c7b641429f",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/__init__.py": "dc832f071e143703e4f74053fdc41f20120a8058168ce4a6757e80e473033394",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/io.py": "ace265922b1ba2a3b4bf6689c28717aafe652ea2902e803b7abb4d2a488d9a9d",
+    "/home/lux1/noise/results/p75_supervision_rebuild_20260929/sample_evidence.csv.gz": "6c89d11fb29e85c8f4c8270217892246efd81deed45858a310987b41a3e02dcc",
+    "/home/lux1/noise/results/p75_supervision_rebuild_20260929/summary.json": "9171db437b68d44a894d57a9aa94ad6d7793206906e54c65245d78b6591e2de1",
+    "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.pt": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2",
+    "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.sha256.json": "e58e91bc3512bf5a853dbdcc1e157fbbbead6e568b0e333f8869f9e1aed98124"
+  },
+  "audit_report": "/home/lux1/noise/worktrees/ndcw_a0_20260930/outputs/rematch750/ndcw/audit/report.json",
+  "audit_report_sha256": "b73a87e0e48150e025128cc5ea1e60998402b93c6bb622b9e7b55ca9776d870b",
+  "freeze_file": "/home/lux1/noise/worktrees/ndcw_a0_20260930/outputs/rematch750/ndcw/audit/frozen_thresholds.json",
+  "freeze_sha256": "dae6fa5fdc302f5075b479740fa220eb767b4f438af00adc551e2b7464b71be7"
+}
