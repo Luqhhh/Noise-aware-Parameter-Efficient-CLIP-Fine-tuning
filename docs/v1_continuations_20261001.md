@@ -60,13 +60,14 @@ FULL导出末轮EMA `training/selected.pt`，另保留固定 `training/ema_swa.p
 
 真实GPU入口要求显式 `--execute`，只用本机CUDA。`nvidia-smi`发现在用进程就拒绝新任务，
 没有守护排队、自动恢复、抢占或远端/NPU回退；释放资源后由执行者按顺序启动。
-本次只读核对看到v3 PID8916在用CUDA，未操作它。
+工程预检当时看到v3 PID8916在用CUDA，未操作它；这不是当前占卡状态，启动前须重新只读核对。
 **仓库当前v2是 `engineering_ready / not_started`，并不是正在训练**；不据用户建议中的运行描述自动启动它。
 v3维持384/两臂2轮、固定第二轮EMA的原主判据，raw曲线仅辅助解释短轨迹/EMA滞后。
 
-队列：原v2/v3按既有授权协议收尾 → v2末段固定SWA（若快照齐全） → WFT448_DEV → LR512_DEV。
+当前v3已完成，v2尚未启动；二者不构成待收尾的在途队列。后续DEV顺序为WFT448_DEV → LR512_DEV。
+v2末段固定SWA仅在完整full_576结束且RAW3–5快照齐全后可导出，不自动启动v2。
 两个FULL均在各自DEV证据支持后另开分支；`SUPERVISION_LADDER`保持条件候选，
-等待v3配对结果支持，未新增自动阶梯入口。v3两轮探针不优先占平台名额。
+v3已交付配对结果为`no_support_for_ladder`，当前不推进，未新增自动阶梯入口。v3两轮探针不优先占平台名额。
 成熟包的平台优先级为v2完整末轮、WFT448_FULL、LR512_FULL；v2固定SWA按届时质量安排。
 每日最多两次；平台达75%即冻结，不自动派生搜索或上传平台。
 
@@ -90,7 +91,9 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m v2.runtime infer \
 
 ## 可重放命令
 
-合并后每条真实实验另建worktree。例如WFT448_DEV（LR512另建`codex/lr512_dev_20261001`）：
+每条真实实验使用独立worktree。下面保留原创建/运行示例；
+`codex/wft448_dev_20261001`与`codex/lr512_dev_20261001`已存在，不重复创建或启动。
+已有目录先核对分支、状态和重叠工作；新重放另取运行标识与输出路径：
 
 ```bash
 git fetch origin
@@ -153,4 +156,5 @@ PYTHONPATH=reproducibility/aegis_f1 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=2 py
 
 收尾补充：v3原controller在2026-10-01 01:26:03 CST自行回报`completed / delivered`，
 CSV/ZIP与末轮EMA摘要写入其原`status.json`，平台分仍为空。本工程没有干预该任务，
-该状态回报不代替独立配对/提交校验登记，也没有据此自动启动新训练。
+随后独立配对和9项提交复核已归档于[最终交付](v3_final_delivery_20261001.md)，
+全量净−626、尾部净−44，结论`no_support_for_ladder`；没有据此自动启动新训练。

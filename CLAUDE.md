@@ -58,7 +58,7 @@ Aegis 自带独立的 `pyproject.toml`、测试（`reproducibility/aegis_f1/test
 # CLI 总入口；子命令：prepare / verify / cache / train / infer / run / record / prepare-full
 PYTHONPATH=reproducibility/aegis_f1 python3 -m aegis_clip.cli.rematch --help
 
-# 完整命令序列以当轮执行文档为准：见 docs/current_execution_plan.md 顶部的「可重放命令」
+# 完整命令序列以当轮执行文档为准：见 docs/current_execution_plan.md 的「当前方案状态与下一步」所链接的执行记录
 ```
 
 ### 提交校验

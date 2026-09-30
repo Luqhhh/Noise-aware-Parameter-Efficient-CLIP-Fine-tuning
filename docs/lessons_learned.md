@@ -1,12 +1,17 @@
 # 经验与方法论教训
 
+**跨阶段适用边界（2026-10-01）**：下文“有效/关闭”均指对应历史数据与配方。
+当前v1使用cosine head、强增强和EMA，固定SWA已产生平台反馈；不能据旧清单禁止这些现行实现。
+当前冻结项只在[执行入口](current_execution_plan.md)维护；同轨迹参数平均遵守单checkpoint交付边界。
+
+
 本文件提炼自上一阶段（初赛，500 类 / 约 103K 训练图）跑过的数十轮实验，目的是让后来者**不必重走弯路**。
 
 除特别说明外，数字均为该阶段的平台实测成绩；阶段相关的绝对分数不具跨阶段可比性，**可迁移的是方法与陷阱**。
 
 **2026-09-29 方法论更正**：严谨验证数十个零点几 pp 的局部修改，不能代替寻找足以
 支撑数个百分点收益的主要误差来源。当前先做机制归因与可恢复预算，再决定训练；
-L05 邻域搜索冻结，已有 SAM 仅固定收尾。完整纪律与证据边界见
+L05邻域搜索冻结；SAM后来已由用户停止，不再是在途任务。完整纪律与证据边界见
 [当前搜索入口](p75_error_budget_policy_20260929.md)。下文历史成绩不构成当前自动待跑任务。
 
 ---
@@ -19,7 +24,8 @@ L05 邻域搜索冻结，已有 SAM 仅固定收尾。完整纪律与证据边�
 
 同批次实验中，**本地 val 最高（69.47%）的候选平台最差（59.89%）**。
 
-**Why**：验证集与训练集存在重叠、且验证标签本身含噪，本地指标衡量的是"记住了多少"而非"泛化多好"。
+**原因边界**：历史实验存在划分重叠和含噪验证标签；不能据此认定所有本地验证都只衡量记忆。
+当前train_dev/val_dev按内容组隔离，可用于配对泛化诊断；full训练纳入val_dev后，该集合只能作训练内诊断。
 
 **How to apply**：平台提升只能凭平台实测确认。本地分用于安全审计、复现、配对归因与工程止损；已有协议的本地门槛只决定该轮筛选/出包，不能证明平台晋级，也不能作为新高成本训练的启动依据。
 
@@ -57,7 +63,8 @@ L05 邻域搜索冻结，已有 SAM 仅固定收尾。完整纪律与证据边�
 
 拟合在测试批统计量上的 prior 曾拿到阶段的绝对最高分，但它属于**不同来源协议**，与其他结果不可比，并留下了未决的合规问题。
 
-**How to apply**：任何使用测试集统计量的步骤都要显式登记、单独分组、不与合规结果混排。别让它悄悄成为"基线"。
+**当前执行约束**：禁止用测试预测分布拟合prior、bias、温度或选择候选。
+历史使用测试统计量的结果单独标明协议来源，不能因曾有高分而重新启用。当前bias只在训练侧拟合后冻结。
 
 ---
 
@@ -74,18 +81,18 @@ L05 邻域搜索冻结，已有 SAM 仅固定收尾。完整纪律与证据边�
 
 **数据层面：**
 
-- **数据增强在该任务上无正面收益**。A0（无增强）69.86% 为最佳；A1（RRC + Flip）在匹配学习率后 69.77%，Δ=−0.09pp；A2（+ColorJitter）67.36%，**ColorJitter 显著破坏细粒度判别信息**。
-- **删除 > 重标**。重标 100 个样本（0.1%）反而 **−0.42pp**；当时 OOF 预测准确率约 69%，不足以支撑可靠重标。**当你确定标签错了、但不确定正确答案时，删除比重标安全。**
+- **该历史配置的数据增强没有正收益**。A0（无增强）69.86% 为最佳；A1（RRC + Flip）在匹配学习率后 69.77%，Δ=−0.09pp；A2（+ColorJitter）67.36%，**ColorJitter 显著破坏细粒度判别信息**。
+- **该历史配置中删除优于重标**。重标 100 个样本（0.1%）反而 **−0.42pp**；当时 OOF 预测准确率约 69%，不足以支撑可靠重标。错误标签缺少可靠替代时，不能把不确定预测直接当作新监督；该结果不构成所有阶段一律删除的依据。
 - **清洗的精度 > 覆盖面**。删 991 个高精度样本（+0.90pp）> 删 6354 个中精度 > 删 8680 个低精度（−0.76pp）。精度碾压数量。
 - **跨类别重复图片是真实存在的**：扫描发现 1,032 组跨类别 SHA-256 完全重复，涉及 2,095 张图（2.0%）—— 同一张图进入 2–4 个不同类别目录，监督彼此矛盾。处理方式是 CLIP 特征质心仲裁去重。
 
 **模型/推理层面：**
 
-- **Linear head 远优于 Cosine head**：69.86% vs 63.61%，差距约 6pp。
+- **该历史配置的linear head优于cosine head**：69.86% vs 63.61%，差距约 6pp。
 - **更多视图不等于更好**：三视图互补融合 62.03%，低于纯 attention-local/global 的 62.67%（−0.65pp）。带噪的本地排序不能代替平台验证。
 - **数字类别不能继承语义 prompt 的鲁棒性**：固定数字 prompt 的 raw / clean-core 仅 0.23%，500 个文本方向的 90% 能量秩为 1。按语义 prompt 的经验去设计数字类别的文本侧方案是无效的。
 
-**已关闭的完整方向清单**：Dropout、ColorJitter / RandomErasing、Cosine Head、Label Smoothing、Head EMA、EMA Loss、Prototype Weighting、CE 下部分解冻、Head-only EMA Teacher + Consistency、GCE q=0.9、4-view TTA、vertical flip、OOF 3-tier discrete weight、OOF relabel / pseudo-label、Classwise CL-only drop、ELR、PEFT LN-tune、半监督回收，以及结构化 Head、同轨迹 checkpoint averaging、Clean-Routed LoRA、Trusted Prototype-Contrastive、Dynamic Trust Refresh。
+**上一阶段关闭的配置清单（不是跨阶段永久禁用的方法）**：Dropout、ColorJitter / RandomErasing、Cosine Head、Label Smoothing、Head EMA、EMA Loss、Prototype Weighting、CE 下部分解冻、Head-only EMA Teacher + Consistency、GCE q=0.9、4-view TTA、vertical flip、OOF 3-tier discrete weight、OOF relabel / pseudo-label、Classwise CL-only drop、ELR、PEFT LN-tune、半监督回收，以及结构化 Head、同轨迹 checkpoint averaging、Clean-Routed LoRA、Trusted Prototype-Contrastive、Dynamic Trust Refresh。
 
 ## 四、门槛纪律
 
