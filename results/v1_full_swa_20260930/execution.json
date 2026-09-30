@@ -5,7 +5,7 @@
   "training_partition": "full_train",
   "training_population": 148695,
   "classes": 750,
-  "student_used_samples": null,
+  "student_used_samples": 133594,
   "epochs": 12,
   "swa_enabled": true,
   "swa_weight_source": "ema",
@@ -56,5 +56,28 @@
   "child_pid": 407044,
   "service": "noise-v1-full-swa-20260930.service",
   "launch_code_commit": "a34542ebbbccaa246880df2d9cef70e2c50ee57b",
-  "live_status_path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/status.json"
+  "live_status_path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/status.json",
+  "targets_summary": {
+    "classes_with_targets": 750,
+    "clean_labels_known": false,
+    "initial_kept": 133531,
+    "kept": 133437,
+    "knn_seconds": 8.704482781991828,
+    "original_samples": 148695,
+    "preparation_seconds": 10.557688963017426,
+    "pseudo": 157,
+    "used": 133594
+  },
+  "training_progress_snapshot": {
+    "batch": 449,
+    "batches": 4175,
+    "elapsed_seconds": 122.04639795000548,
+    "epoch": 1,
+    "epoch_seconds": 122.04471569598536,
+    "epochs": 12,
+    "loss": 2.9444969550007434,
+    "optimizer_steps": 446,
+    "status": "training"
+  },
+  "snapshot_at": "2026-09-30T01:35:27.429853+00:00"
 }
