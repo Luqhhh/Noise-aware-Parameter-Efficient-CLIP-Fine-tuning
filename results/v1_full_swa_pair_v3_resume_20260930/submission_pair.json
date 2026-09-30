@@ -1,0 +1,30 @@
+{
+  "comparison_id": "V1_FULL_SWA_VS_V1_SWA_20260930",
+  "status": "verified",
+  "test_samples": 37444,
+  "changed": 6952,
+  "unchanged": 30492,
+  "changed_percent": 18.566392479435958,
+  "reference": {
+    "csv": "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/submission/pred_results.csv",
+    "zip": "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/submission/submission.zip",
+    "csv_sha256": "49f0a5b97368a55889c4ad9f63914221885698848f7f1af3e994d8daf115336a",
+    "zip_sha256": "7db9e15c1615e8767280e374a0d2b44b93fe7cae8632f970881ae7cf29f9aa5f",
+    "submission_check_log": "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/submission/submission_check.log",
+    "recipe_sha256": "0c027ecb1a965b04d254c6a9a82a2c469ba9942e2f9ba9d8ccfe584c3d536722",
+    "experiment_id": "V1_SWA_TRIAL_20260930"
+  },
+  "candidate": {
+    "csv": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv",
+    "zip": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+    "csv_sha256": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5",
+    "zip_sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+    "submission_check_log": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission_check.log",
+    "recipe_sha256": "1e3bbf0f98b930324ee4d25156c0302d4a9ab495a653e2197109b0445dacb646",
+    "experiment_id": "V1_FULL_SWA_20260930"
+  },
+  "changed_predictions_csv": "/home/lux1/noise/worktrees/v1_full_swa_pair_v3_resume_20260930/outputs/codex/v1_full_swa_pair_v3_resume_20260930/changed_predictions.csv",
+  "changed_predictions_csv_sha256": "38573ae33e7ef7c9ac81cee2bdc95fc7411c7fbc4a5b47d9d311a25a0109752c",
+  "test_correctness_known": false,
+  "meaning": "prediction disagreement only; no test labels or measured platform gain"
+}
