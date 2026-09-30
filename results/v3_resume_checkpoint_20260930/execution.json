@@ -1,0 +1,24 @@
+{
+  "experiment_id": "V3_RESUME_CHECKPOINT_20260930",
+  "status": "v1_supervision_running",
+  "original_retrained": false,
+  "branch": "codex/v3_resume_checkpoint_20260930",
+  "implementation_commit": "b597360",
+  "service": "noise-v3-checkpoint-resume-20260930.service",
+  "controller_status": "/home/lux1/noise/worktrees/v3_resume_checkpoint_20260930/outputs/codex/v3_resume_checkpoint_20260930/status.json",
+  "cpu_tests": {
+    "passed": 44,
+    "elapsed_seconds": 5.63
+  },
+  "new_v3_submission_ready": false,
+  "platform_score": null,
+  "original_export_verified": true,
+  "v1_supervision_started": true,
+  "latest_logged_update": {
+    "arm": "v1_supervision",
+    "epoch": 1,
+    "batch": 1,
+    "updates": 1,
+    "loss": 6.650430180132389
+  }
+}

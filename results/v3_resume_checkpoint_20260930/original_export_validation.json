@@ -1,0 +1,26 @@
+{
+  "verified_at": "2026-09-30T15:08:49.633928+00:00",
+  "original_export_verified": true,
+  "original_checkpoint_unchanged": true,
+  "hashes": {
+    "epoch02.pt": "08d4986158d388e51a311093c3fdb7c36d36ea478defb0a308ee099c3d5073e9",
+    "selected.pt": "0630934880e6c6a76cd6787ddd95ca44152ce4e2c70338bcffc8d8301c21282d",
+    "predictions.npz": "f84d2a890c3ae29e9b7efb7b8ca3e9a359dca7293f0b51045da91c4431eee2dc",
+    "steps.jsonl": "d9b075be90cc97769da41eee2c89ff798a5540688d8e46039567e3c7263d1afc"
+  },
+  "metrics": {
+    "macro": 0.530370086158837,
+    "micro": 0.540994623655914,
+    "rows": 14880,
+    "classes_present": 750
+  },
+  "v1_supervision_started": true,
+  "latest_logged_update": {
+    "arm": "v1_supervision",
+    "epoch": 1,
+    "batch": 1,
+    "updates": 1,
+    "loss": 6.650430180132389
+  },
+  "original_retrained": false
+}

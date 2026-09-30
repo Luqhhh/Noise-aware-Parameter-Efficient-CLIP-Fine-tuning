@@ -1,0 +1,16 @@
+{
+  "status": "running",
+  "stage": "recover_train",
+  "plan": "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/prepared_exif_recovery/plan.json",
+  "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+  "frozen_code_root": "/home/lux1/noise/worktrees/v3_after_v1_20260930",
+  "runner_pid": 8852,
+  "checkpoint_sha256": "08d4986158d388e51a311093c3fdb7c36d36ea478defb0a308ee099c3d5073e9",
+  "original_retrained": false,
+  "automatic_retry": false,
+  "platform_score": null,
+  "started_at": "2026-09-30T15:02:45.640072+00:00",
+  "child_pid": 8916,
+  "log": "/home/lux1/noise/worktrees/v3_resume_checkpoint_20260930/outputs/codex/v3_resume_checkpoint_20260930/recover_train.log",
+  "heartbeat_at": "2026-09-30T15:08:45.649515+00:00"
+}
