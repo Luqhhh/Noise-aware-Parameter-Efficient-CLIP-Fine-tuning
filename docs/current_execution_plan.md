@@ -1,13 +1,14 @@
 # 当前执行入口（2026-10-01）
 
 当前最高用户报告平台分为 **full v1 SWA 70.98600576861446%**；v3固定两臂已完成并交付，
-本地结果不支持推进监督阶梯。WFT448 / LR512进入本机串行执行准备，v2尚未启动训练。
+本地结果不支持推进监督阶梯。WFT448 / LR512已启动本机持久串行队列，v2尚未启动训练。
 本页只维护现行状态、下一步和证据入口；各段命令、配置、原始指标及暂停/恢复经过保留在执行记录。
 
 ## 最新授权本机串行执行：V1_CONTINUATIONS_SERIAL_20261001
 
 用户明确要求“在本机串行进行剩下几个不依赖v2的实验”。队列为WFT448_DEV → LR512_DEV，
 随后仅在各自完整DEV总体/分组/轨迹共同支持时执行对应固定4轮FULL。
+2026-10-01 02:09:39 CST本机持久服务已启动，WFT448先完成父模型基线，LR512随后运行。
 独立方案分支与worktree均已建立；使用当前v1 DEV/FULL SWA和各自监督，不依赖v2。
 本机CUDA预检通过，固定micro8、逻辑batch32，FP32评估batch32；不改变监督、LR或固定导出窗口。
 预先记录保守FULL投入条件；混合证据保留DEV包待复核，不以小幅原标签下降自动否定路线。
@@ -15,7 +16,7 @@
 已有计算任务时等本机资源，失败不自动重启；不启动v2、SWA窗口搜索、监督阶梯或平台上传。
 当前最高用户报告平台分仍为70.9860%；本启动记录没有新识别分。
 配置、精确命令、资源测量、FULL支持边界及实时状态路径见
-[串行记录](continuations_serial_20261001.md)。各段最终结果以上方已交付检查点和controller为准。
+[串行记录](continuations_serial_20261001.md)与[实际服务启动](continuations_serial_start_20261001.md)。各段最终结果以上方已交付检查点和controller为准。
 
 
 ## 当前阶段与平台结果
@@ -50,7 +51,7 @@ full训练纳入val_dev，其86–88%级本地指标仅为训练内诊断；不�
 | v2分辨率/LR阶梯 | `engineering_ready / not_started` | 尚无GPU训练结果；[v2策略与入口](v2.md) |
 | V2_FULL_LAST3_SWA | 已实现full_576 RAW3–5固定CPU平均导出 | 原第5轮raw默认提交不变；缺快照拒绝导出、不重训补齐；[工程记录](v1_continuations_20261001.md#v2_full_last3_swa) |
 | v3固定384、每臂2轮 | `completed_delivered`；平台分未知 | `no_support_for_ladder`，保持末轮EMA，不自动追加训练或改选raw；[最终交付](v3_final_delivery_20261001.md) |
-| WFT448_DEV / LR512_DEV | 工程准备与CPU预检通过，尚无已归档训练结果 | 后续顺序WFT448_DEV→LR512_DEV；[固定配方和命令](v1_continuations_20261001.md) |
+| WFT448_DEV / LR512_DEV | WFT父模型基线评估中；LR512待串行 | 固定4轮，尚无最终指标；[实际启动](continuations_serial_start_20261001.md) |
 | WFT448_FULL / LR512_FULL | 条件候选，未启动 | 各自须有完整DEV证据及支持分析，不能用已入训val_dev选模或拟合bias |
 | SUPERVISION_LADDER | 条件候选 | 本轮v3没有配对推进信号，不自动执行 |
 | NDCW_A0 | 审计完成；规模门关闭 | full影响248张、dev196张，小于744/670门槛，不启动N1；[A0实测](ndcw_a0_20260930.md) |
