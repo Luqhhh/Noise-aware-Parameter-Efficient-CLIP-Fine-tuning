@@ -1,0 +1,56 @@
+{
+  "status": "actual_fixed_training_in_progress",
+  "experiment_id": "WFT448_DEV",
+  "progress_snapshot": {
+    "batch": 703,
+    "batches": 3722,
+    "elapsed_seconds": 242.22818928000015,
+    "epoch": 1,
+    "loss": 1.838670584080399,
+    "optimizer_updates": 703,
+    "status": "training"
+  },
+  "baseline_rows": 14880,
+  "baseline_parent_comparison": {
+    "predictions": true,
+    "labels": true,
+    "image_paths": true,
+    "logits": true
+  },
+  "baseline_sha256": "d77a02ea3e5214cfc33afb5e7f58958c1b4315d0446fc937a61aa51d9592ac7c",
+  "amp_retries_snapshot": [
+    {
+      "amp_final_scale": 32768.0,
+      "amp_initial_scale": 65536.0,
+      "amp_retries": [
+        {
+          "new_scale": 32768.0,
+          "old_scale": 65536.0
+        }
+      ],
+      "batch": 75,
+      "epoch": 1,
+      "gradient_norm": 50.57289505004883,
+      "optimizer_update": 75
+    },
+    {
+      "amp_final_scale": 16384.0,
+      "amp_initial_scale": 32768.0,
+      "amp_retries": [
+        {
+          "new_scale": 16384.0,
+          "old_scale": 32768.0
+        }
+      ],
+      "batch": 817,
+      "epoch": 1,
+      "gradient_norm": 67.51203918457031,
+      "optimizer_update": 817
+    }
+  ],
+  "previous_failure_batch_passed": true,
+  "optimizer_batches_not_skipped": true,
+  "complete_four_epochs": false,
+  "new_submission": null,
+  "platform_score": null
+}

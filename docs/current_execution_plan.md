@@ -17,7 +17,7 @@
 已有计算任务时等本机资源，失败不自动重启；不启动v2、SWA窗口搜索、监督阶梯或平台上传。
 当前最高用户报告平台分仍为70.9860%；本启动记录没有新识别分。
 配置、精确命令、资源测量、FULL支持边界及实时状态路径见
-[串行记录](continuations_serial_20261001.md)与[实际服务启动](continuations_serial_start_20261001.md)。各段最终结果以上方已交付检查点和controller为准。
+[串行记录](continuations_serial_20261001.md)与[实际服务启动](continuations_serial_start_20261001.md)。各段最终结果以上方已交付检查点和controller为准；本节描述启动沿革，不能当作最终训练成绩。
 
 
 ## 当前阶段与平台结果
@@ -52,8 +52,8 @@ full训练纳入val_dev，其86–88%级本地指标仅为训练内诊断；不�
 | v2分辨率/LR阶梯 | `engineering_ready / not_started` | 尚无GPU训练结果；[v2策略与入口](v2.md) |
 | V2_FULL_LAST3_SWA | 已实现full_576 RAW3–5固定CPU平均导出 | 原第5轮raw默认提交不变；缺快照拒绝导出、不重训补齐；[工程记录](v1_continuations_20261001.md#v2_full_last3_swa) |
 | v3固定384、每臂2轮 | `completed_delivered`；平台分未知 | `no_support_for_ladder`，保持末轮EMA，不自动追加训练或改选raw；[最终交付](v3_final_delivery_20261001.md) |
-| WFT448_DEV / LR512_DEV | WFT修复后新队列父模型基线评估中；LR512待串行 | 固定4轮，尚无最终指标；[数值恢复](continuations_serial_recovery_20261001.md) |
-| WFT448_FULL / LR512_FULL | 条件候选，未启动 | 各自须有完整DEV证据及支持分析，不能用已入训val_dev选模或拟合bias |
+| WFT448_DEV / LR512_DEV | 本机串行队列已启动；WFT正式训练通过原第75批失败点 | 固定4轮，逐段最终状态/指标以置顶交付检查点为准；[执行核验](continuations_serial_recovery_20261001.md) |
+| WFT448_FULL / LR512_FULL | 条件队列；逐段状态见置顶交付检查点/实时controller | 各自须有完整DEV证据及支持分析，不能用已入训val_dev选模或拟合bias |
 | SUPERVISION_LADDER | 条件候选 | 本轮v3没有配对推进信号，不自动执行 |
 | NDCW_A0 | 审计完成；规模门关闭 | full影响248张、dev196张，小于744/670门槛，不启动N1；[A0实测](ndcw_a0_20260930.md) |
 | P75_MASK_E6_EXTENSION A | 已完成两臂E6；净−11张 | `close_recipe_no_full_training`；[执行记录](p75_mask_e6_execution_20260929.md) |

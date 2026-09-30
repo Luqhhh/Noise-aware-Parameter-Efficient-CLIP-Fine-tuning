@@ -65,3 +65,12 @@ systemctl --user status noise-continuations-serial-20261001-r2.service --no-page
 
 本记录只证明新队列正在执行，最终4轮指标和CSV/ZIP以逐段交付记录及实时status为准。
 当前实时状态`worktrees/wft448_dev_20261001/outputs/codex/continuations_serial_20261001_r2/status.json`。
+
+## 正式训练越过原失败点
+
+修复后完整父基线470.895秒，14,880张的logits/预测/标签/图像路径与初次父基线逐元素完全相等。
+正式WFT448已进入第1轮，在本检查点已完成703个逻辑更新；
+第75个batch按65536→32768成功重算，真实norm50.5729，后续更新持续执行。
+此记录不表示4轮完成；LR512仍在其后串行，FULL仍依赖完整DEV证据。
+见[正式前缀与基线独立核对](../results/continuations_serial_recovery_20261001/first_updates_validation.json)。
+服务持续运行，逐段模型、预测包及Git交付由已冻结controller完成。
