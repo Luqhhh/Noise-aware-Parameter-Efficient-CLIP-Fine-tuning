@@ -1,0 +1,41 @@
+{
+  "all_rows_estimated_knn_seconds": 19.104321255482404,
+  "batch_size": 32,
+  "binding": {
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "data_version": "20260921",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "implementation_sha256": "20923ff914fb706cd7145ba29652eff31f3fd5c834b95fe4870f00d4d8b8135d",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "recipe_sha256": "1e3bbf0f98b930324ee4d25156c0302d4a9ab495a653e2197109b0445dacb646",
+    "stage": "repechage"
+  },
+  "conservative_full_train_rows": 148695,
+  "device": "NVIDIA GeForce RTX 4070 Laptop GPU",
+  "estimate_excludes_teacher_and_startup": true,
+  "estimated_pipeline_hours": 4.448528318713302,
+  "fitted_weights_saved": false,
+  "image_size": 448,
+  "knn_probe_seconds": 0.1315634349884931,
+  "losses": [
+    7.00487756729126,
+    6.968099594116211,
+    6.8988542556762695,
+    6.942026138305664,
+    5.620019435882568
+  ],
+  "mean_inference_batch_seconds": 0.16775720252189785,
+  "mean_step_seconds": 0.26570790332819644,
+  "measured_step_seconds": [
+    0.278736704000039,
+    0.2897024539997801,
+    0.22868455198477022
+  ],
+  "measured_train_batches": 3,
+  "query_rows": 1024,
+  "status": "passed",
+  "successful_optimizer_updates": 2,
+  "training_peak_allocated_mib": 3172.517578125,
+  "warmup_batches": 2
+}

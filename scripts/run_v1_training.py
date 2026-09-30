@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -23,12 +25,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True)
     parser.add_argument("--max-hours", type=float, default=24)
+    parser.add_argument("--desktop-zip", type=Path, help="Copy the checked final ZIP to a new desktop path")
     args = parser.parse_args()
     if args.max_hours <= 0:
         parser.error("--max-hours must be positive")
     root = Path(__file__).resolve().parents[1]
     config = Path(args.config).resolve()
     recipe = yaml.safe_load(config.read_text())
+    if args.desktop_zip and args.desktop_zip.exists():
+        raise FileExistsError(f"Desktop delivery already exists: {args.desktop_zip}")
     output = Path(recipe["output"]["root"])
     if not output.is_absolute():
         output = (config.parent / output).resolve()
@@ -43,6 +48,9 @@ def main():
     status = dict(experiment_id=recipe["project"]["experiment_id"], strategy="v1", status="starting",
         worktree=str(root), config=str(config), output=str(output), runner_pid=os.getpid(),
         started_at=datetime.now(timezone.utc).isoformat(), max_hours=args.max_hours,
+        training_partition=recipe["source"]["partition"], swa_enabled=recipe["train"]["swa_enabled"],
+        swa_epochs=list(range(recipe["train"]["swa_start"], recipe["train"]["epochs"] + 1))
+            if recipe["train"]["swa_enabled"] else [],
         training_started=False, local_score=None, platform_score=None, automatic_retry=False)
     commands = []
     for stage in ("targets", "train", "calibrate", "infer"):
@@ -90,6 +98,21 @@ def main():
         for name in ("pred_results.csv", "submission.zip", "submission_check.log"):
             if not (submission / name).is_file():
                 raise FileNotFoundError(submission / name)
+        if "All checks passed" not in (submission / "submission_check.log").read_text():
+            raise RuntimeError("Submission checker did not report success")
+        manifest = json.loads((submission / "manifest.json").read_text())
+        if recipe["train"]["swa_enabled"] and manifest["selected_policy"] != "swa_ema":
+            raise ValueError("The requested EMA SWA checkpoint was not selected")
+        zip_hash = hashlib.sha256((submission / "submission.zip").read_bytes()).hexdigest()
+        status.update(zip_sha256=zip_hash, selected_policy=manifest["selected_policy"])
+        if args.desktop_zip:
+            # Exclusive creation protects previous desktop submissions.
+            with (submission / "submission.zip").open("rb") as source, args.desktop_zip.open("xb") as destination:
+                shutil.copyfileobj(source, destination)
+            desktop_hash = hashlib.sha256(args.desktop_zip.read_bytes()).hexdigest()
+            if desktop_hash != zip_hash:
+                raise ValueError("Desktop submission hash differs")
+            status.update(desktop_zip=str(args.desktop_zip), desktop_zip_sha256=desktop_hash)
         status.update(status="completed", stage="delivered", checkpoint=str(checkpoint),
             csv=str(submission / "pred_results.csv"), zip=str(submission / "submission.zip"),
             submission_check=str(submission / "submission_check.log"),
