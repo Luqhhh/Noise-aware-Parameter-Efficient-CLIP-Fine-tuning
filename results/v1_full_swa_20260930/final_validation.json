@@ -40,7 +40,7 @@
       "samples": 14880
     }
   },
-  "platform_score": null,
+  "platform_score": 70.98600576861446,
   "score_scope": "training_included_diagnostic",
   "selected_policy": "swa_ema",
   "sources": [
@@ -126,5 +126,39 @@
   "training_population": 148695,
   "v3_status": "paused_by_user",
   "zip": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
-  "zip_csv_bytes_identical": true
+  "zip_csv_bytes_identical": true,
+  "platform_score_reported_text": "70.98600576861446",
+  "platform_score_unit": "percent",
+  "platform_score_source": "user_reported_2026-10-01",
+  "platform_score_reported_precision_decimals": 14,
+  "platform_feedback_recorded_at": "2026-09-30T16:20:29.236903+00:00",
+  "platform_user_reported_package": "C:\\Users\\lqh22\\Desktop\\v1_full_swa_submission.zip",
+  "platform_submission_id": null,
+  "platform_submitted_at": null,
+  "platform_package_binding_verified": false,
+  "platform_correct_count_implied": 26580,
+  "platform_correct_count_source": "inferred_from_reported_micro_accuracy_and_37444_samples_not_receipt",
+  "platform_comparison": {
+    "train_dev_swa_score_percent": 70.4091,
+    "full_minus_train_dev_swa_pp": 0.57690576861446,
+    "train_dev_swa_correct_implied": 26364,
+    "full_minus_train_dev_swa_correct_implied": 216,
+    "original_v1_score_percent": 69.23405619057793,
+    "full_minus_original_v1_pp": 1.75194957803653,
+    "original_v1_correct_implied": 25924,
+    "full_minus_original_v1_correct_implied": 656,
+    "l05_score_percent": 66.94797564362783,
+    "full_minus_l05_pp": 4.03803012498663,
+    "l05_correct_implied": 25068,
+    "full_minus_l05_correct_implied": 1512,
+    "score_comparison_scope": "same_stage_user_reported_platform_aggregates",
+    "counts_source": "inferred_from_reported_micro_accuracy_and_37444_samples_not_receipt",
+    "train_dev_swa_precision_decimals": 4
+  },
+  "target_75_percent": {
+    "required_correct": 28083,
+    "remaining_correct_implied": 1503,
+    "remaining_pp": 4.01399423138554
+  },
+  "platform_feedback_verification": "results/v1_full_swa_platform_20261001/artifact_verification.json"
 }
