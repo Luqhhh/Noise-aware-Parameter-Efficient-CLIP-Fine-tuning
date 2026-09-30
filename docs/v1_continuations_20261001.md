@@ -150,3 +150,7 @@ PYTHONPATH=reproducibility/aegis_f1 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=2 py
 [full v1验证](../results/v1_full_swa_20260930/final_validation.json)与
 [平台包复核](../results/v1_full_swa_platform_20261001/artifact_verification.json)。
 本段引用既有校验，不为工程准备另训练新包。完成提交、方案push及main集成后，在该工程检查点暂停。
+
+收尾补充：v3原controller在2026-10-01 01:26:03 CST自行回报`completed / delivered`，
+CSV/ZIP与末轮EMA摘要写入其原`status.json`，平台分仍为空。本工程没有干预该任务，
+该状态回报不代替独立配对/提交校验登记，也没有据此自动启动新训练。

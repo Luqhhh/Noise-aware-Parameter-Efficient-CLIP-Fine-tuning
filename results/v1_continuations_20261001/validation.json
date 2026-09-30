@@ -85,5 +85,13 @@
     ],
     "scope": "references_prior_verification_no_new_package_check"
   },
-  "git_diff_check": "passed"
+  "git_diff_check": "passed",
+  "v3_at_finish": {
+    "status": "controller_reported_completed_delivered",
+    "completed_at": "2026-09-30T17:26:03.528374+00:00",
+    "source": "/home/lux1/noise/worktrees/v3_resume_checkpoint_20260930/outputs/codex/v3_resume_checkpoint_20260930/status.json",
+    "independent_pair_or_package_audit_this_segment": false,
+    "platform_score": null,
+    "new_training_automatically_started": false
+  }
 }

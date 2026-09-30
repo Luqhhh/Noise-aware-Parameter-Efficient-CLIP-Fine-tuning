@@ -1,4 +1,4 @@
-# 当前执行入口：full v1 SWA平台70.9860%，v3两臂完成并交付（2026-10-01）
+# 当前执行入口：full v1 SWA平台70.9860%，续训工程就绪，v3两臂完成并交付（2026-10-01）
 
 ## 最新已交付执行：V3_FINAL_DELIVERY_20261001
 
@@ -27,12 +27,18 @@ DEV/FULL监督人口分别绑定，FULL须有对应完整DEV证据与支持分�
 v2新增full_576 RAW3–5快照与一次CPU平均导出，原第5轮raw默认提交不变；缺快照不重训。
 **142项CPU测试及真实父权重/目标预检通过**；WFT48模块合并零更新FP32 logits误差0，
 LR实际257 tokens。两个DEV plan CPU核验完成，未启动新训练、推理、FULL或平台提交。
-只用本机CUDA，已有进程占卡时入口拒绝启动；本段未操作运行中的v3。
+只用本机CUDA，已有进程占卡时入口拒绝启动；工程段当时未操作运行中的v3。
 仓库v2仍为`engineering_ready / not_started`，不是在训；v3维持原两轮EMA协议。
-资源释放后优先WFT448_DEV、随后LR512_DEV；SUPERVISION_LADDER保持等待v3证据的条件候选，
+资源释放后优先WFT448_DEV、随后LR512_DEV；SUPERVISION_LADDER仍为条件候选，本轮v3无配对推进信号，
 不恢复NDCW或旧NPU任务，不自动扩大配方/上传平台。当前最好用户报告分仍为70.9860%。
 入口、配方、命令、现役包与验证见[新增策略记录](v1_continuations_20261001.md)和
 [校验记录](../results/v1_continuations_20261001/validation.json)。本工程检查点暂停。
+
+收尾只读复核：2026-10-01 01:26:03 CST，原v3 controller自行回报
+`completed / delivered`，单份末轮EMA的37,444行CSV/ZIP已生成，平台分仍为空。
+该工程收尾仅登记控制器回报；完整配对指标与包校验已由本页顶部独立交付段登记。
+状态源为`worktrees/v3_resume_checkpoint_20260930/outputs/codex/v3_resume_checkpoint_20260930/status.json`；
+该工程段没有干预其流程或启动WFT448/LR512。下方恢复段保留此前授权与最终完成状态。
 
 ## 最新平台反馈：V1_FULL_SWA_20260930
 
