@@ -1,4 +1,4 @@
-# 当前执行入口：full v1 SWA平台70.9860%，v3恢复运行（2026-10-01）
+# 当前执行入口：full v1 SWA平台70.9860%，新增续训路线工程就绪（2026-10-01）
 
 ## 最新工程检查点：WFT448 / LR512 / V2_FULL_LAST3_SWA
 
@@ -16,6 +16,12 @@ LR实际257 tokens。两个DEV plan CPU核验完成，未启动新训练、推�
 不恢复NDCW或旧NPU任务，不自动扩大配方/上传平台。当前最好用户报告分仍为70.9860%。
 入口、配方、命令、现役包与验证见[新增策略记录](v1_continuations_20261001.md)和
 [校验记录](../results/v1_continuations_20261001/validation.json)。本工程检查点暂停。
+
+收尾只读复核：2026-10-01 01:26:03 CST，原v3 controller自行回报
+`completed / delivered`，单份末轮EMA的37,444行CSV/ZIP已生成，平台分仍为空。
+这是控制器状态回报；完整配对指标与包校验尚未在本执行入口独立登记。
+状态源为`worktrees/v3_resume_checkpoint_20260930/outputs/codex/v3_resume_checkpoint_20260930/status.json`；
+本段没有干预其流程或启动WFT448/LR512。下方“恢复运行”段保留此前检查点。
 
 ## 最新平台反馈：V1_FULL_SWA_20260930
 
