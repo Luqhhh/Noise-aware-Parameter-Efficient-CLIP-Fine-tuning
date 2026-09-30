@@ -1,0 +1,12 @@
+{
+  "status": "complete",
+  "arm": "v1_supervision",
+  "updates": 2786,
+  "initial_model_sha256": "1095bab4f55b749f6b37aa2feda3d0cd712b756c1e535f1a99ff5f209a4beba0",
+  "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+  "zero_mass_batches": 0,
+  "trace_sha256": "d9b075be90cc97769da41eee2c89ff798a5540688d8e46039567e3c7263d1afc",
+  "weights": "last_ema",
+  "checkpoint_sha256": "ed61d72f65ee4d9415d45fdfd68833b26cc6e34bd2ac9caef366e34776f63882",
+  "predictions_sha256": "603e924a168310fea2a28dd7d6607f68db74f523c9ae62bf4f772db8f2ed6b5a"
+}
