@@ -1,6 +1,6 @@
 {
   "experiment_id": "V1_FULL_SWA_20260930",
-  "status": "running",
+  "status": "completed_delivered",
   "training_started": true,
   "training_partition": "full_train",
   "training_population": 148695,
@@ -50,10 +50,9 @@
   "current_submittable_zip": "/mnt/c/Users/lqh22/Desktop/v1_swa_submission.zip",
   "current_submittable_zip_sha256": "7db9e15c1615e8767280e374a0d2b44b93fe7cae8632f970881ae7cf29f9aa5f",
   "current_submission_checks": "results/v1_swa_trial_20260930/submission_check.log",
-  "stage": "train",
+  "stage": "delivered",
   "started_at": "2026-09-30T01:33:14.913414+00:00",
   "runner_pid": 406990,
-  "child_pid": 407044,
   "service": "noise-v1-full-swa-20260930.service",
   "launch_code_commit": "a34542ebbbccaa246880df2d9cef70e2c50ee57b",
   "live_status_path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/status.json",
@@ -68,7 +67,38 @@
     "pseudo": 157,
     "used": 133594
   },
-  "training_progress_snapshot": {
+  "completed_at": "2026-09-30T05:51:20.440832+00:00",
+  "elapsed_seconds": 15991.364130868984,
+  "final_validation": "results/v1_full_swa_20260930/final_validation.json",
+  "final_metrics": {
+    "calibrated": {
+      "correct": 13071,
+      "macro": 0.8759808480428901,
+      "micro": 0.8784274193548387,
+      "samples": 14880
+    },
+    "raw": {
+      "correct": 13028,
+      "macro": 0.8677599564296051,
+      "micro": 0.8755376344086021,
+      "samples": 14880
+    }
+  },
+  "score_scope": "training_included_diagnostic",
+  "submission_rows": 37444,
+  "submission_checks_passed": 9,
+  "hashes": {
+    "calibration_sha256": "2d087726c3a9d3e7585f3fb353c6645367eeb2d0781e9d86f461720c16dbc6b4",
+    "checkpoint_sha256": "34307b7998af27b2399d091bdbdee40cec33e10f17267d8f81c6ed1a6ac8461a",
+    "prediction_csv_sha256": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5",
+    "submission_zip_sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e"
+  },
+  "checkpoint": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/training/selected.pt",
+  "csv": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv",
+  "zip": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+  "desktop_zip": "/mnt/c/Users/lqh22/Desktop/v1_full_swa_submission.zip",
+  "swa_max_absolute_difference": 5.960464477539063e-08,
+  "initial_training_progress_snapshot": {
     "batch": 449,
     "batches": 4175,
     "elapsed_seconds": 122.04639795000548,
@@ -79,5 +109,5 @@
     "optimizer_steps": 446,
     "status": "training"
   },
-  "snapshot_at": "2026-09-30T01:35:27.429853+00:00"
+  "initial_snapshot_at": "2026-09-30T01:35:27.429853+00:00"
 }

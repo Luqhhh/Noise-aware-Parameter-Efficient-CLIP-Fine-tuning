@@ -1,0 +1,36 @@
+{
+  "binding": {
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "data_version": "20260921",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "implementation_sha256": "20923ff914fb706cd7145ba29652eff31f3fd5c834b95fe4870f00d4d8b8135d",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "recipe_sha256": "1e3bbf0f98b930324ee4d25156c0302d4a9ab495a653e2197109b0445dacb646",
+    "stage": "repechage"
+  },
+  "calibration_sha256": "2d087726c3a9d3e7585f3fb353c6645367eeb2d0781e9d86f461720c16dbc6b4",
+  "checkpoint": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/training/selected.pt",
+  "checkpoint_sha256": "34307b7998af27b2399d091bdbdee40cec33e10f17267d8f81c6ed1a6ac8461a",
+  "decoder": {
+    "bias_iterations": 200,
+    "bias_source": "val_dev",
+    "bias_strength": 1.0,
+    "flip": true,
+    "scales": [
+      448,
+      512,
+      576
+    ]
+  },
+  "format_version": 1,
+  "inference_mode": "v1_fixed_multiscale_flip",
+  "platform_score": null,
+  "prediction_count": 37444,
+  "prediction_csv_sha256": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5",
+  "selected_policy": "swa_ema",
+  "status": "unpromoted_research_candidate",
+  "submission_zip_sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+  "test_usage": "inference_only",
+  "tta_risk_acknowledged": true
+}
