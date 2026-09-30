@@ -261,7 +261,8 @@ def test_image_symlink_escape_fails_without_reading_external_file(tmp_path):
         ds[0]
 
 
-def test_calibrate_and_infer_complete_cpu_workflow_uses_bound_training_bias(tmp_path, monkeypatch):
+@pytest.mark.parametrize("partition", ["train_dev", "full_train"])
+def test_calibrate_and_infer_complete_cpu_workflow_uses_bound_training_bias(tmp_path, monkeypatch, partition):
     from PIL import Image
     from aegis_clip import v1_pipeline as pipeline
     train_root, test_root = tmp_path / "train", tmp_path / "test"
@@ -290,9 +291,11 @@ def test_calibrate_and_infer_complete_cpu_workflow_uses_bound_training_bias(tmp_
     checkpoint.write_bytes(b"synthetic checkpoint")
     model = tiny_model()
     context = SimpleNamespace(config=dict(model=dict(image_size=32),
+        source=dict(partition=partition),
         train=dict(batch_size=2, num_workers=0),
         decode=dict(scales=[32, 40, 48], flip=True, bias_iterations=20, bias_strength=1.),
-        output=dict(root=str(tmp_path / "output"))), calibration=rows, train=rows[::2],
+        output=dict(root=str(tmp_path / "output"))), calibration=rows,
+        train=rows if partition == "full_train" else rows[::2],
         train_root=train_root, test_root=test_root, classes=["0000", "0001", "0002"],
         binding=dict(stage="synthetic_cpu"), manifest=dict(test_samples=3),
         reference=dict(data=dict(dataset_manifest=str(tmp_path / "dataset_manifest.json"), class_mapping=str(mapping))))
@@ -303,6 +306,10 @@ def test_calibrate_and_infer_complete_cpu_workflow_uses_bound_training_bias(tmp_
     report = json.loads((path.parent / "validation_report.json").read_text())
     assert report["samples"] == 6 and report["bias_fitted_on_this_split"] is True
     assert report["independent_test_score"] is False and report["platform_score"] is None
+    assert report["student_training_partition"] == partition
+    assert report["calibration_split_in_training_population"] is (partition == "full_train")
+    assert report["score_scope"] == ("training_included_diagnostic" if partition == "full_train"
+                                     else "development_split")
     from aegis_clip.v1_pipeline import read_rows
     predictions = read_rows(path.parent / "validation_predictions.csv")
     assert [r["image_path"] for r in predictions] == [r["image_path"] for r in rows]

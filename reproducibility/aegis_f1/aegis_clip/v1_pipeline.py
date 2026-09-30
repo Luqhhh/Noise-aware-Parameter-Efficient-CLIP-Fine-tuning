@@ -482,9 +482,13 @@ def calibrate(context, checkpoint, device):
     train_counts = torch.bincount(torch.tensor([int(r["label"]) for r in context.train]),
                                  minlength=len(context.classes))
     calibrated = logits + bias * context.config["decode"]["bias_strength"]
+    full_training = context.config["source"]["partition"] == "full_train"
     atomic_json_dump(dict(samples=len(rows), partition="val_dev", views=context.config["decode"],
         raw=accuracy_report(logits, labels, train_counts),
         calibrated=accuracy_report(calibrated, labels, train_counts),
+        student_training_partition=context.config["source"]["partition"],
+        calibration_split_in_training_population=full_training,
+        score_scope="training_included_diagnostic" if full_training else "development_split",
         bias_fitted_on_this_split=True, independent_test_score=False, platform_score=None),
         path.parent / "validation_report.json")
     with (path.parent / "validation_predictions.csv").open("w", newline="") as handle:
