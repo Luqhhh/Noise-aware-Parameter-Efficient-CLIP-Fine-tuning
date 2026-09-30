@@ -1,0 +1,15 @@
+{
+  "medium": 0.99,
+  "strong": 0.995,
+  "rationale": "Freeze once before training: non-exact all-pair perceptual confirmation rises from 42.60% at .970 and 66.15% at .985 to 74.30% at .990 and 84.23% at .995; select the conservative high-similarity region. Cross-label confirmation remains only 25.15%/.2625 at .990/.995, so mutual-only medium edges remain hypotheses, not confirmed wrong labels. Strong still requires mutual plus perceptual support. Do not lower thresholds to manufacture Gate A coverage; no training/platform outcomes exist.",
+  "audit": "/home/lux1/noise/worktrees/ndcw_a0_20260930/outputs/rematch750/ndcw/audit",
+  "audit_report_sha256": "b73a87e0e48150e025128cc5ea1e60998402b93c6bb622b9e7b55ca9776d870b",
+  "output": "/home/lux1/noise/worktrees/ndcw_a0_20260930/outputs/rematch750/ndcw/manifest",
+  "weights": {
+    "weak": 1.0,
+    "medium": 0.5,
+    "strong": 0.2
+  },
+  "cap": 0.1,
+  "policy": "edge_minimum; strongest_samples_first; no_chaining"
+}

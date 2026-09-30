@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "command": [
+    "python3",
+    "-m",
+    "ndcw.cli",
+    "prepare-pair",
+    "--manifest",
+    "outputs/rematch750/ndcw/manifest/manifest.json",
+    "--output",
+    "outputs/rematch750/ndcw/n1_pair"
+  ],
+  "expected_rejection": true,
+  "returncode": 1,
+  "reason": "A0 scale/coverage/independence gates did not pass",
+  "n1_workspace_created": false,
+  "cuda_training_started": false
+}

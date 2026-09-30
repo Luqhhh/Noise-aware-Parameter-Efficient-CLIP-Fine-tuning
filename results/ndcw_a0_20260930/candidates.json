@@ -1,0 +1,35 @@
+{
+  "status": "retrieved",
+  "inputs": {
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/full_train.csv": "142d255e86aadc2be4f4f1bee832948b30416c54bdc904159ff096ce8eb278ad",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/train_dev.csv": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/val_dev.csv": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/decode_report.json": "1f2c9b7e8ed8d8d83a2cf9308869e69f66761cbf0a648beabbe225bc4ce1823a",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/features.pt": "21c35d1cce959ca6a547b7d352e7b4c1e491257f03855b40fa8b99cf11df7c64",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/image_paths.json": "fcb7de523e06342c7ecad36d94b4f360ccd4f87cb402527897b7de4fef43d168",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/manifest.json": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/configs/v2_ndcw/audit.yaml": "80dc2b1a1e6c115507eddb9b0d39139d95437a129328d83accfe2caa6fd5093f",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/retrieval.py": "2f6eaa9fa29a494f9f015e8d10b4cd1c7b40829ee667cf630a723361b5faf201",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/perceptual.py": "a10c59b0dcf02cfcd8a6eb5e81dde67ca5a00f01f82da70d4d865eaa83f312ab",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/prepare.py": "313324b916a57e64d18e888d707e3f5643844651c6e0a0e16263c154c14891e6",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/core.py": "5eb1607c3eee23d1ef6e9cb5357c1e95134cad22ac67c17abd081d4d3ae7b9d9",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/paired.py": "904e60c43b9801d11e306649857b86c5b87e7e1f0dd303ff1a05f535b6dcb331",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/cli.py": "e964edb1938fcca433343b34719d7d41e510050645b56872d853ad51551c179a",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/audit.py": "bdf78bfe83e7e8256bf896f410942352cd382f7f341d73282ba288a4a379d1ad",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/signals.py": "340916acb263ff309513a97d1b9193b2fbece376c755a7c2a99f91c7b641429f",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/__init__.py": "dc832f071e143703e4f74053fdc41f20120a8058168ce4a6757e80e473033394",
+    "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/io.py": "ace265922b1ba2a3b4bf6689c28717aafe652ea2902e803b7abb4d2a488d9a9d"
+  },
+  "config": "/home/lux1/noise/worktrees/ndcw_a0_20260930/configs/v2_ndcw/audit.yaml",
+  "total_images": 148695,
+  "pairs": 69256,
+  "elapsed_seconds": 838.7334649300028,
+  "files": {
+    "knn_top10.npz": "383881186a6935cb06a8a0760fa395e83bcca3c916c706affd1edac17506e5b9",
+    "pair_candidates.csv.gz": "67e89bd8070ed7abfa455369ceb1eeb0dc80c5abd7ea837bab66a4f6f807abd8"
+  },
+  "retrieval": "bounded exact top10; self excluded; exact groups retained; CSV.gz lossless",
+  "complexity": "O(N^2) similarity compute in bounded tiles; O(Nk) neighbor storage; no all-pairs table"
+}

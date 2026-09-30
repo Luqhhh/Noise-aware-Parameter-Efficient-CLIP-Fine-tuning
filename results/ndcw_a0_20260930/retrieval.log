@@ -1,0 +1,27 @@
+{"stage": "knn", "done": 6400, "total": 148695, "seconds": 35.80139017201145}
+{"stage": "knn", "done": 12800, "total": 148695, "seconds": 70.7536692120193}
+{"stage": "knn", "done": 19200, "total": 148695, "seconds": 105.66677745699417}
+{"stage": "knn", "done": 25600, "total": 148695, "seconds": 140.6366597280139}
+{"stage": "knn", "done": 32000, "total": 148695, "seconds": 177.16206065099686}
+{"stage": "knn", "done": 38400, "total": 148695, "seconds": 213.28300975300954}
+{"stage": "knn", "done": 44800, "total": 148695, "seconds": 249.0659842469904}
+{"stage": "knn", "done": 51200, "total": 148695, "seconds": 284.8048767700093}
+{"stage": "knn", "done": 57600, "total": 148695, "seconds": 321.38673809499596}
+{"stage": "knn", "done": 64000, "total": 148695, "seconds": 357.88269868600764}
+{"stage": "knn", "done": 70400, "total": 148695, "seconds": 395.56905430500046}
+{"stage": "knn", "done": 76800, "total": 148695, "seconds": 433.2560201259912}
+{"stage": "knn", "done": 83200, "total": 148695, "seconds": 470.90186582901515}
+{"stage": "knn", "done": 89600, "total": 148695, "seconds": 506.76263098901836}
+{"stage": "knn", "done": 96000, "total": 148695, "seconds": 542.6075515070115}
+{"stage": "knn", "done": 102400, "total": 148695, "seconds": 579.3056355800072}
+{"stage": "knn", "done": 108800, "total": 148695, "seconds": 614.8383185690036}
+{"stage": "knn", "done": 115200, "total": 148695, "seconds": 649.9709138360049}
+{"stage": "knn", "done": 121600, "total": 148695, "seconds": 685.0019762770098}
+{"stage": "knn", "done": 128000, "total": 148695, "seconds": 720.2554856319912}
+{"stage": "knn", "done": 134400, "total": 148695, "seconds": 755.5581356240145}
+{"stage": "knn", "done": 140800, "total": 148695, "seconds": 790.8694154710101}
+{"stage": "knn", "done": 147200, "total": 148695, "seconds": 826.1717311030079}
+{"stage": "knn", "done": 148695, "total": 148695, "seconds": 834.2793473649945}
+{
+  "output": "/home/lux1/noise/worktrees/ndcw_a0_20260930/outputs/rematch750/ndcw/audit"
+}

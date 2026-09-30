@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/cli.py", line 64, in <module>
+    main()
+  File "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/cli.py", line 57, in main
+    result = prepare.prepare_pair(args.manifest, args.output)
+  File "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/prepare.py", line 65, in prepare_pair
+    bundle, meta = verify_bundle(manifest)
+  File "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/ndcw/prepare.py", line 16, in verify_bundle
+    require(not require_gate or meta['training_allowed'] is True, 'A0 scale/coverage/independence gates did not pass')
+  File "/home/lux1/noise/worktrees/ndcw_a0_20260930/reproducibility/aegis_f1/v2/plan.py", line 22, in require
+    raise ValueError(message)
+ValueError: A0 scale/coverage/independence gates did not pass
