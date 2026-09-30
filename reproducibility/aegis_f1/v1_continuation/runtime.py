@@ -104,24 +104,34 @@ def eval_loader(plan, context, rows, scale, root=None):
     cfg = plan["config"]
     return DataLoader(Images(root or context.train_root, rows,
                             image_transform(cfg["recipe"]["image_size"], scale=scale)),
-                      batch_size=cfg["micro_batch_size"], num_workers=cfg["num_workers"],
+                      # Inference has no saved backward activations. Keep the v1
+                      # batch32 throughput, independent of training accumulation.
+                      batch_size=plan["logical_batch_size"], num_workers=cfg["num_workers"],
                       worker_init_fn=seed_worker, shuffle=False)
 
 
 @torch.no_grad()
-def evaluate(plan, context, model, rows, device, root=None):
+def evaluate(plan, context, model, rows, device, root=None, progress_path=None, phase=None):
     model.eval()
     classes = len(plan["classes"])
     result = torch.zeros(len(rows), classes)
     recipe = plan["config"]["recipe"]
-    for scale in recipe["views"]:
-        for images, indices in eval_loader(plan, context, rows, scale, root):
+    started, last_report = time.monotonic(), 0.
+    for view, scale in enumerate(recipe["views"], 1):
+        data = eval_loader(plan, context, rows, scale, root)
+        for batch, (images, indices) in enumerate(data, 1):
             images = images.to(device)
             # Fixed FP32 eval, identical for the baseline and each raw/EMA candidate.
             logits = model(images)
             if recipe["flip"]:
                 logits = (logits + model(images.flip(3))) / 2
             result[indices] += logits.float().cpu() / len(recipe["views"])
+            now = time.monotonic()
+            if progress_path and (batch == 1 or batch == len(data) or now-last_report >= 60):
+                atomic_json_dump(dict(status="evaluating", phase=phase, view=view, views=len(recipe["views"]),
+                    scale=scale, batch=batch, batches=len(data), rows=len(rows),
+                    elapsed_seconds=now-started), progress_path)
+                last_report = now
     if not torch.isfinite(result).all():
         raise ValueError("Nonfinite continuation logits")
     return result
@@ -256,7 +266,8 @@ def run(plan_path, output, device="cuda"):
     artifacts = {}
     baseline = None
     if context.val:
-        logits = evaluate(plan, context, model, context.val, device)
+        logits = evaluate(plan, context, model, context.val, device, progress_path=output / "evaluation_progress.json",
+                          phase="untrained_parent_baseline")
         baseline = logits.argmax(1).numpy()
         baseline_path = output / "baseline.npz"
         np.savez_compressed(baseline_path, predictions=baseline, labels=labels,
@@ -266,7 +277,8 @@ def run(plan_path, output, device="cuda"):
     atomic_json_dump(dict(status="baseline_complete" if context.val else "full_no_validation",
                           recipe=plan["config"]["recipe"], train_started=False), output / "baseline_status.json")
     def evaluation(current, epoch, policy):
-        logits = evaluate(plan, context, current, context.val, device)
+        logits = evaluate(plan, context, current, context.val, device, progress_path=output / "evaluation_progress.json",
+                          phase=f"epoch_{epoch:02d}_{policy}")
         prediction = logits.argmax(1).numpy()
         path = output / f"val_epoch{epoch:02d}_{policy}.npz"
         np.savez_compressed(path, predictions=prediction, labels=labels,
@@ -337,7 +349,8 @@ def infer(plan_path, run_root, checkpoint, output):
     names = [Path(r["image_path"]).name for r in rows]
     if len(names) != context.manifest["test_samples"] or sorted(names) != sorted(p.name for p in context.test_root.iterdir() if p.is_file()):
         raise ValueError("Official test coverage changed")
-    logits = evaluate(plan, context, model, rows, "cuda", context.test_root)
+    logits = evaluate(plan, context, model, rows, "cuda", context.test_root,
+                      progress_path=root / "inference_progress.json", phase=payload["selected_policy"])
     predictions = [(name, context.classes[index]) for name, index in zip(names, logits.argmax(1).tolist())]
     output = Path(output).resolve()
     if output.exists():
