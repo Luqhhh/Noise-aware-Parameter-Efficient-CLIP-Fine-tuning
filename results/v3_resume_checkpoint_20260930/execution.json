@@ -1,6 +1,6 @@
 {
   "experiment_id": "V3_RESUME_CHECKPOINT_20260930",
-  "status": "recovery_running",
+  "status": "v1_supervision_running",
   "original_retrained": false,
   "branch": "codex/v3_resume_checkpoint_20260930",
   "implementation_commit": "b597360",
@@ -11,5 +11,14 @@
     "elapsed_seconds": 5.63
   },
   "new_v3_submission_ready": false,
-  "platform_score": null
+  "platform_score": null,
+  "original_export_verified": true,
+  "v1_supervision_started": true,
+  "latest_logged_update": {
+    "arm": "v1_supervision",
+    "epoch": 1,
+    "batch": 1,
+    "updates": 1,
+    "loss": 6.650430180132389
+  }
 }

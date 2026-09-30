@@ -72,7 +72,13 @@ python3 -m pytest tests/test_v3_checkpoint_recovery.py tests/test_v3.py \
 拒绝覆盖导出以及验证不一致时阻止产物生成。
 
 23:02:45 CST用户服务启动，runner PID8852、worker PID8916，状态`running / recover_train`。
-启动核对日志显示`verify_training_pixels`；后续GPU恢复与监督臂进度以实时controller/log为准。
+随后训练图像核验与14880张GPU对照EMA复核通过，macro/micro与历史结果完全一致；
+独立从导出的predictions重算指标亦一致，原epoch02再次哈希未变。
+原臂已导出selected SHA `0630934880e6c6a76cd6787ddd95ca44152ce4e2c70338bcffc8d8301c21282d`，
+验证预测SHA `f84d2a890c3ae29e9b7efb7b8ca3e9a359dca7293f0b51045da91c4431eee2dc`。
+v1监督臂已开始第1/2轮且首个更新完成，精确更新快照及验证见
+[原臂导出核验](../results/v3_resume_checkpoint_20260930/original_export_validation.json)。
+后续进度以实时controller/log为准。
 启动快照见[状态](../results/v3_resume_checkpoint_20260930/resume_status.json)。
 当前工程恢复完成并后台继续原训练；整个v3实验尚未完成，没有新的平台结果。
 

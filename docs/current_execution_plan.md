@@ -7,7 +7,9 @@
 不重训对照臂，从其最终EMA补齐验证预测与selected导出，再运行原v1监督臂。
 沿用原代码绑定、train_dev v1目标、384/每臂2轮协议，不切换full监督或新增搜索。
 44项CPU检查通过，真实测试绑定37,444项通过；23:02:45 CST新用户服务启动，
-状态`running / recover_train`，先检查训练图像字节，再复核对照EMA、开始监督臂。
+状态`running / recover_train`；训练图像核验及14880张对照EMA复核已通过，
+复算macro/micro **53.0370% / 54.0995%**与原记录完全一致，selected与预测已导出。
+v1监督臂已开始第1/2轮，首个更新完成；原checkpoint重新哈希不变。
 恢复后将完成配对报告与9项校验CSV/ZIP；当前v3新包和平台结果仍未完成。
 现役可提交包继续为已校验full v1 SWA，路径与校验见
 [恢复记录](v3_resume_checkpoint_20260930.md)、
