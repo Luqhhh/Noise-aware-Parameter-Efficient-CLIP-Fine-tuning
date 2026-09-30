@@ -1,0 +1,12 @@
+{
+  "plan_verified": true,
+  "endpoint_updates": 2786,
+  "checkpoint_sha256": "08d4986158d388e51a311093c3fdb7c36d36ea478defb0a308ee099c3d5073e9",
+  "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+  "initial_model_sha256": "1095bab4f55b749f6b37aa2feda3d0cd712b756c1e535f1a99ff5f209a4beba0",
+  "source_test_binding_verified": true,
+  "test_rows": 37444,
+  "frozen_module_root": "/home/lux1/noise/worktrees/v3_after_v1_20260930/reproducibility/aegis_f1/v3/runtime.py",
+  "original_retrained": false,
+  "v1_supervision_started": false
+}
