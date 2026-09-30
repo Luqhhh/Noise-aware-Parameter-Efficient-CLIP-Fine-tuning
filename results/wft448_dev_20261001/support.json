@@ -1,0 +1,166 @@
+{
+  "eligible": true,
+  "status": "supports_fixed_full",
+  "reasons": [],
+  "evidence": {
+    "last_ema": {
+      "all": {
+        "candidate": {
+          "macro": 0.7552002638587737,
+          "micro": 0.7654569892473119
+        },
+        "classes_present": 750,
+        "corrections": 323,
+        "defined_classes": 750,
+        "delta_macro_pp": 0.5641784546100093,
+        "delta_micro_pp": 0.5846774193548399,
+        "net": 87,
+        "original": {
+          "macro": 0.7495584793126736,
+          "micro": 0.7596102150537635
+        },
+        "prediction_changes": 1278,
+        "regressions": 236,
+        "rows": 14880
+      },
+      "tail": {
+        "candidate": {
+          "macro": 0.6023020541549953,
+          "micro": 0.67098703888335
+        },
+        "classes_present": 75,
+        "corrections": 20,
+        "defined_classes": 75,
+        "delta_macro_pp": 0.3683784624961106,
+        "delta_micro_pp": 0.3988035892323105,
+        "net": 4,
+        "original": {
+          "macro": 0.5986182695300342,
+          "micro": 0.6669990029910269
+        },
+        "prediction_changes": 110,
+        "regressions": 16,
+        "rows": 1003
+      },
+      "head": {
+        "candidate": {
+          "macro": 0.7487777777777779,
+          "micro": 0.7483552631578947
+        },
+        "classes_present": 75,
+        "corrections": 48,
+        "defined_classes": 75,
+        "delta_macro_pp": 1.075555555555563,
+        "delta_micro_pp": 1.0964912280701733,
+        "net": 20,
+        "original": {
+          "macro": 0.7380222222222222,
+          "micro": 0.737390350877193
+        },
+        "prediction_changes": 179,
+        "regressions": 28,
+        "rows": 1824
+      },
+      "few_support": {
+        "candidate": {
+          "macro": 0.0,
+          "micro": 0.0
+        },
+        "classes_present": 1,
+        "corrections": 0,
+        "defined_classes": 1,
+        "delta_macro_pp": 0.0,
+        "delta_micro_pp": 0.0,
+        "net": 0,
+        "original": {
+          "macro": 0.0,
+          "micro": 0.0
+        },
+        "prediction_changes": 1,
+        "regressions": 0,
+        "rows": 1
+      }
+    },
+    "ema_swa_2_4": {
+      "all": {
+        "candidate": {
+          "macro": 0.7555756798782198,
+          "micro": 0.7654569892473119
+        },
+        "classes_present": 750,
+        "corrections": 287,
+        "defined_classes": 750,
+        "delta_macro_pp": 0.6017200565546221,
+        "delta_micro_pp": 0.5846774193548399,
+        "net": 87,
+        "original": {
+          "macro": 0.7495584793126736,
+          "micro": 0.7596102150537635
+        },
+        "prediction_changes": 1141,
+        "regressions": 200,
+        "rows": 14880
+      },
+      "tail": {
+        "candidate": {
+          "macro": 0.6094581388110799,
+          "micro": 0.6779661016949152
+        },
+        "classes_present": 75,
+        "corrections": 21,
+        "defined_classes": 75,
+        "delta_macro_pp": 1.0839869281045744,
+        "delta_micro_pp": 1.0967098703888345,
+        "net": 11,
+        "original": {
+          "macro": 0.5986182695300342,
+          "micro": 0.6669990029910269
+        },
+        "prediction_changes": 96,
+        "regressions": 10,
+        "rows": 1003
+      },
+      "head": {
+        "candidate": {
+          "macro": 0.7472222222222222,
+          "micro": 0.7467105263157895
+        },
+        "classes_present": 75,
+        "corrections": 40,
+        "defined_classes": 75,
+        "delta_macro_pp": 0.9199999999999986,
+        "delta_micro_pp": 0.9320175438596534,
+        "net": 17,
+        "original": {
+          "macro": 0.7380222222222222,
+          "micro": 0.737390350877193
+        },
+        "prediction_changes": 161,
+        "regressions": 23,
+        "rows": 1824
+      },
+      "few_support": {
+        "candidate": {
+          "macro": 0.0,
+          "micro": 0.0
+        },
+        "classes_present": 1,
+        "corrections": 0,
+        "defined_classes": 1,
+        "delta_macro_pp": 0.0,
+        "delta_micro_pp": 0.0,
+        "net": 0,
+        "original": {
+          "macro": 0.0,
+          "micro": 0.0
+        },
+        "prediction_changes": 0,
+        "regressions": 0,
+        "rows": 1
+      }
+    }
+  },
+  "assessment": "Both fixed DEV endpoints improve whole-set net and macro; tail and few-support groups do not regress; final raw agrees with EMA and late EMA retains epoch2 net gains. Four-epoch FULL uses its own v1 full parent/targets and no overlapping validation. Platform migration and clean-label improvement remain unknown. This is a bounded funding decision, not a promise of platform gain.",
+  "candidate_rejected": false,
+  "platform_gain_known": false
+}

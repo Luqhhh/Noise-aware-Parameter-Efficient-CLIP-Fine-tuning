@@ -1,0 +1,20 @@
+{
+  "status": "completed_delivered",
+  "experiment_id": "WFT448_DEV",
+  "source_report": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/run/report.json",
+  "source_report_sha256": "40d39bb090347d69e3d56e7bcd226b2adec859d06ec8ff003804bd833136c757",
+  "plan": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/prepared_amp/plan.json",
+  "plan_sha256": "c1cbda08d2cdcfd932966f8f08b9d78738ab7cb9d9f7c470122129513e947500",
+  "checkpoint": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/run/training/selected.pt",
+  "checkpoint_sha256": "191d5e6e58ad5f5ea57c084d8445aa3079aea1afb23aa1a016399e9db4535a42",
+  "csv": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/submission/pred_results.csv",
+  "zip": "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/submission/submission.zip",
+  "csv_sha256": "e6ded1dd4f173f46a8ac7b07241007a7fe7a15cef35bc5fe74c86e21523b2668",
+  "zip_sha256": "eda87720c659f7941c5b4d3007acde52d2242211c7b359ccd3ba631183917a1b",
+  "rows": 37444,
+  "submission_checks_passed": 9,
+  "zip_csv_identical": true,
+  "paired_independently_recounted": true,
+  "scores_are_original_label_diagnostics": true,
+  "platform_score": null
+}
