@@ -1,0 +1,34 @@
+[
+  {
+    "epoch": 1,
+    "updates": 1393,
+    "raw": {
+      "macro": 0.3801791848336524,
+      "micro": 0.39126344086021503,
+      "rows": 14880,
+      "classes_present": 750
+    },
+    "ema": {
+      "macro": 0.15813767053066288,
+      "micro": 0.16377688172043012,
+      "rows": 14880,
+      "classes_present": 750
+    }
+  },
+  {
+    "epoch": 2,
+    "updates": 2786,
+    "raw": {
+      "macro": 0.596075102436886,
+      "micro": 0.6059139784946237,
+      "rows": 14880,
+      "classes_present": 750
+    },
+    "ema": {
+      "macro": 0.530370086158837,
+      "micro": 0.540994623655914,
+      "rows": 14880,
+      "classes_present": 750
+    }
+  }
+]
