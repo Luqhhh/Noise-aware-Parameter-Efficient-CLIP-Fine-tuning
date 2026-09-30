@@ -86,6 +86,16 @@ def authorize(plan_path, authorization, operation, stage=None):
     budget = a.get("max_seconds")
     require(isinstance(budget, (int, float)) and math.isfinite(budget) and budget > 0, "Finite positive budget required")
     plan = verify_prepared(plan_path)
+    if plan['recipe'].get('ndcw') and operation in ('train', 'probe', 'infer'):
+        require(operation != 'infer' and stage == 's1_384', 'ND-CW first round allows N1 only; N2 needs a new promotion checkpoint')
+        if operation == 'train':
+            report_path = a.get('ndcw_probe_report')
+            require(report_path and sha(report_path) == a.get('ndcw_probe_report_sha256'), 'Bound paired ND-CW probe report required')
+            report = json_read(report_path)
+            require(report['stage'] == 'probe' and report['passed'] is True and
+                    report['plans'][plan['recipe']['ndcw']['arm']] == sha(plan_path), 'ND-CW probe did not pass for this pair')
+            for name, digest in report['inputs'].items():
+                require(sha(name) == digest, 'Paired probe evidence changed')
     if operation == "train":
         spec = plan["stages"][stage]
         estimate = cost_estimate(spec, a.get("measured_seconds_per_update"),
@@ -219,6 +229,9 @@ def prepare(recipe_path, output):
             plan["inputs"][str(path)] = sha(path)
     plan["inputs"][str(ROOT / "reproducibility/aegis_f1/aegis_clip/model.py")] = sha(ROOT / "reproducibility/aegis_f1/aegis_clip/model.py")
     plan["inputs"][str(ROOT / "reproducibility/aegis_f1/aegis_clip/v1_strategy.py")] = sha(ROOT / "reproducibility/aegis_f1/aegis_clip/v1_strategy.py")
+    if recipe.get('ndcw'):
+        from ndcw.prepare import attach_weights
+        attach_weights(plan, output, recipe['ndcw'])
     dump(output / "plan.json", plan)
     return plan
 
