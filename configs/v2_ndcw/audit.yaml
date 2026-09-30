@@ -1,0 +1,24 @@
+stage_artifacts: /home/lux1/noise/artifacts/stages/repechage/20260921
+train_root: /home/lux1/noise/train
+device: cpu
+cpu_threads: 2
+k: 10
+minimum_cosine: 0.94
+query_chunk: 128
+gallery_chunk: 8192
+retrieval_max_seconds: 7200
+perceptual_max_seconds: 1800
+class_cap: 0.1
+thresholds:
+  medium: null
+  strong: null
+perceptual:
+  max_phash_hamming: 6
+  max_thumbnail_rmse: 0.1
+  max_log_aspect_ratio: 0.08
+  min_gray_std: 0.03
+evidence:
+  p0_table: /home/lux1/noise/results/p75_supervision_rebuild_20260929/sample_evidence.csv.gz
+  p0_summary: /home/lux1/noise/results/p75_supervision_rebuild_20260929/summary.json
+  v1_targets: /home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.pt
+  oof_probabilities: null

@@ -18,15 +18,18 @@ def sample_weights(labels, classes):
     return torch.as_tensor(1.0 / np.sqrt(counts[labels]), dtype=torch.double)
 
 
-def logical_backward(model, images, targets, micro_batch_size, autocast):
+def logical_backward(model, images, targets, micro_batch_size, autocast, supervision_mass=None):
     """One logical batch, one mix operation, mean CE, many micro forwards."""
     require(micro_batch_size > 0 and len(images) == len(targets), "Invalid logical batch")
+    if supervision_mass is not None:
+        require(torch.isfinite(supervision_mass).all() and float(supervision_mass) > 0,
+                "Invalid ND-CW logical supervision mass")
     loss_sum = 0.0
     for start in range(0, len(images), micro_batch_size):
         end = min(start + micro_batch_size, len(images))
         with autocast():
             loss = training_utils.soft_cross_entropy(model(images[start:end]), targets[start:end])
-            loss = loss * ((end - start) / len(images))
+            loss = loss * ((end - start) / (len(images) if supervision_mass is None else supervision_mass))
         loss.backward()
         loss_sum += float(loss.detach())
     return loss_sum

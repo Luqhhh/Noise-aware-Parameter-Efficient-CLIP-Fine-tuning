@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -171,6 +172,11 @@ def train(plan_path, authorization, stage, probe_steps=0):
     train_indices = list(range(len(records))) if final else split["train"]
     selected = [records[i] for i in train_indices]
     weights = sample_weights([r["label"] for r in selected], plan["recipe"]["num_classes"])
+    nd_weights = None
+    if cfg.get('ndcw'):
+        from ndcw.io import load_sidecar
+        nd_weights = load_sidecar(cfg['ndcw']['sidecar'], records,
+                                  expected_sha=cfg['ndcw']['sha256'])[train_indices]
     verify_images(cfg["data"]["train_dir"], records, budget)
     destination = workspace / ("probes" if probe_steps else "runs") / stage
     destination.mkdir(parents=True, exist_ok=False)
@@ -198,6 +204,8 @@ def train(plan_path, authorization, stage, probe_steps=0):
                    workspace=str(workspace), stage=stage, stage_config_sha256=plan["stages"][stage]["config_sha256"],
                    plan_sha256=sha(plan_path), parent=parent, complete=False, completed_epochs=0)
     history, best_score, updates, seconds = [], -math.inf, 0, []
+    weighted_samples_observed = 0
+    nd_probe_trace = []
     epoch = -1
 
     def payload(metrics):
@@ -217,6 +225,7 @@ def train(plan_path, authorization, stage, probe_steps=0):
         for epoch in range(cfg["train"]["epochs"]):
             model.train()
             loss_sum = 0.0
+            sample_order = hashlib.sha256()
             batches = iter(train_loader)
             for _ in range(len(train_loader)):
                 budget.check()
@@ -224,14 +233,29 @@ def train(plan_path, authorization, stage, probe_steps=0):
                     torch.cuda.synchronize()
                 start = time.monotonic()
                 # Include CPU decoding/augmentation and DataLoader wait in cost.
-                images, labels, _ = next(batches)
+                images, labels, batch_indices = next(batches)
+                sample_order.update(batch_indices.numpy().astype('<i8').tobytes())
                 images, labels = images.to(device, non_blocking=True), labels.to(device, non_blocking=True)
                 targets = training_utils.one_hot(labels, plan["recipe"]["num_classes"], cfg["augment"]["label_smoothing"])
+                supervision_mass = None
+                if nd_weights is not None:
+                    batch_weights = nd_weights[batch_indices].to(device)
+                    weighted_samples_observed += int((batch_weights < 1).sum())
+                    # All-ones control takes precisely the original numerical path.
+                    if not bool((batch_weights == 1).all()):
+                        targets = targets * batch_weights[:, None]
+                        supervision_mass = batch_weights.sum()
                 images, targets, _ = training_utils.apply_mixup_cutmix(images, targets, cfg["augment"]["mixup"],
                     cfg["augment"]["cutmix"], cfg["augment"]["mix_prob"], plan["recipe"]["num_classes"])
                 optimizer.zero_grad(set_to_none=True)
-                loss = logical_backward(model, images, targets, cfg["local_replay"]["micro_batch_size"], amp)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), cfg["train"]["grad_clip"])
+                loss = logical_backward(model, images, targets, cfg["local_replay"]["micro_batch_size"], amp,
+                                        supervision_mass=supervision_mass)
+                grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), cfg["train"]["grad_clip"])
+                require(math.isfinite(loss) and bool(torch.isfinite(grad_norm)), 'Nonfinite ND-CW loss/gradient; close probe')
+                if probe_steps and nd_weights is not None:
+                    nd_probe_trace.append(dict(update=updates + 1, loss=loss, gradient_norm=float(grad_norm),
+                        weight_sum=float(batch_weights.sum()), weighted_samples=int((batch_weights < 1).sum()),
+                        effective_batch_size=float(batch_weights.sum().square() / batch_weights.square().sum())))
                 optimizer.step(); scheduler.step()
                 if ema is not None:
                     ema.update(model.state_dict())
@@ -280,8 +304,19 @@ def train(plan_path, authorization, stage, probe_steps=0):
                      dataloader_wait_included=True, elapsed_seconds=elapsed, peak_allocated_bytes=torch.cuda.max_memory_allocated(),
                      complete_holdout_rows=len(split["val"]), validation_passes=2 if ema is not None else 1,
                      ema_enabled=ema is not None, parent=parent, plan_sha256=sha(plan_path)))
+                if nd_weights is not None:
+                    dump(destination / 'ndcw_probe.json', dict(status='numerics_pass_pending_paired_tail_check',
+                         updates=updates, final_loss=loss, final_gradient_norm=float(grad_norm),
+                         last_batch_weight_sum=float(batch_weights.sum()),
+                         last_batch_effective_size=float(batch_weights.sum().square() / batch_weights.square().sum()),
+                         weighted_train_rows=int((nd_weights < 1).sum()),
+                         weighted_samples_observed=weighted_samples_observed,
+                         trace=nd_probe_trace,
+                         sample_order_sha256=sample_order.hexdigest(),
+                         sample_weighting='loss_only_before_mix', sampler='unchanged_sqrt_inv'))
                 return
             entry = dict(epoch=epoch, chosen=chosen, val=raw_metrics, val_ema=ema_metrics,
+                         sample_order_sha256=sample_order.hexdigest(),
                          selection_score=score, train_loss=loss_sum / len(train_loader),
                          validation_is_independent=not final, validation_seconds=validation_seconds)
             history.append(entry)
