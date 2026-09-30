@@ -1,0 +1,14 @@
+{
+  "status": "engineering_and_cuda_preflight_passed",
+  "experiment_id": "LR512_DEV",
+  "plan": "outputs/codex/lr512_dev_20261001/prepared_r1/plan.json",
+  "plan_sha256": "5976dafa83e6b3b47e71f234d35d958a29a252238ab5b2281818a979d3fe1405",
+  "successful_probe_updates": 3,
+  "weights_saved": false,
+  "tokens": 257,
+  "logical_batch_size": 32,
+  "micro_batch_size": 8,
+  "tests_passed": 148,
+  "tests_command": "PYTHONPATH=reproducibility/aegis_f1 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=2 python3 -m pytest tests/test_v1_continuation.py tests/test_serial_continuations.py tests/test_v2_swa.py tests/test_v2.py tests/test_v3.py reproducibility/aegis_f1/tests/test_v1.py reproducibility/aegis_f1/tests/test_v1_export.py -q",
+  "platform_score": null
+}
