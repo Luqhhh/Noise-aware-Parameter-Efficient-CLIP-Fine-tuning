@@ -85,6 +85,8 @@ def verify(plan_path, controller_path, output):
                "selected.binding.json": selected_path.with_suffix(".binding.json")}
     for name, source in sources.items():
         shutil.copyfile(source, output / name)
+    # Keep the original CSV bytes/digests, including standard CRLF endings.
+    (output / ".gitattributes").write_text("*.csv -text whitespace=cr-at-eol\n")
     (output / "submission_check.log").write_text(checked.stdout + checked.stderr)
     validation = dict(status="completed_delivered", verified_at=datetime.now(timezone.utc).isoformat(),
                       plan_sha256=sha(plan_path), paired_trace_verified=True, updates_per_arm=len(trace_rows),
