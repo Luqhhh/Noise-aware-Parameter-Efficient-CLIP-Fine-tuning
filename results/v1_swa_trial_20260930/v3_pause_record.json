@@ -1,0 +1,26 @@
+{
+  "status": "paused_by_user",
+  "stage": "train",
+  "v1_status": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/status.json",
+  "plan": "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/prepared_exif_recovery/plan.json",
+  "started_at": "2026-09-29T23:24:44.034603+00:00",
+  "runner_pid": 361828,
+  "automatic_retry": false,
+  "platform_score": null,
+  "v1_completed": true,
+  "v1_submission": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/submission/submission.zip",
+  "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+  "heartbeat_at": "2026-09-29T23:36:43.904379+00:00",
+  "child_pid": 361861,
+  "log": "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/handoff_exif_recovery/train.log",
+  "paused_at": "2026-09-29T23:46:10.107624+00:00",
+  "pause_reason": "User requested v3暂停; keep v3 suspended after SWA completes",
+  "paused_pids": [
+    361828,
+    361861,
+    362190,
+    362191,
+    362252
+  ],
+  "automatic_resume": false
+}
