@@ -9,7 +9,7 @@
 
 2026-09-30 15:55:21 CST，用户服务`noise-v3-pause-epoch2-20260930.service`
 已启动，独立监控进程PID471892，状态`armed_waiting_epoch`。
-这是已启用未来边界动作，尚不代表v3已暂停或第2轮已完成。
+该启动快照当时为等待状态；后续已达到边界并暂停，见下方实际暂停结果。
 实时监控状态为
 `/home/lux1/noise/worktrees/v3_pause_epoch2_20260930/outputs/codex/v3_pause_epoch2_20260930/pause_status.json`。
 最终暂停时该文件自动记录时间、全部暂停PID、T状态、checkpoint SHA和两轮指标，
@@ -61,3 +61,27 @@ systemd-run --user --unit=noise-v3-pause-epoch2-20260930 \
 SHA256 `1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e`，
 [9项校验](../results/v1_full_swa_20260930/submission_check.log)及
 [full v1交付记录](v1_full_swa_20260930.md)保留。
+
+## 实际暂停结果
+
+2026-09-30 **16:25:58 CST**自动触发，状态`paused_by_user`。
+原标签对照臂第2轮验证、epoch02 checkpoint及history已完成，2786次有效更新。
+原runner/训练/资源追踪及当前两个加载进程PID
+361828、361861、362190、461544、461551均为T，随后再次只读核对五进程T状态。
+两个加载PID随轮次变化，由监控动态识别，原先僵尸加载进程未被操作。
+`v1_supervision`目录尚未创建，没有启动监督臂，内存训练现场保留，不自动恢复。
+
+第2轮raw macro/micro **59.6075% / 60.5914%**，EMA **53.0370% / 54.0995%**。
+这些是14,880张val_dev上的对照臂指标，两臂比较及v3最终候选尚未完成。
+Checkpoint：
+`/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/prepared_exif_recovery/runs/train/original/epoch02.pt`。
+实际SHA256与binding侧车重新核对一致：
+`08d4986158d388e51a311093c3fdb7c36d36ea478defb0a308ee099c3d5073e9`。
+
+暂停[实际结果](../results/v3_pause_epoch2_20260930/pause_result.json)、
+[原任务状态](../results/v3_pause_epoch2_20260930/paused_v3_status.json)、
+[checkpoint绑定](../results/v3_pause_epoch2_20260930/epoch02.binding.json)、
+[两轮对照臂指标](../results/v3_pause_epoch2_20260930/original_history.json)及
+[已更新执行记录](../results/v3_pause_epoch2_20260930/execution.json)已归档。
+现役可提交包仍引用上述full v1 SWA及9项校验；没有生成v3新提交包，
+按用户新指令保留此提前暂停状态，等待后续恢复指令。

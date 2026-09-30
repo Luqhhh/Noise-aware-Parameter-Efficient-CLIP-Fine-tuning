@@ -1,0 +1,66 @@
+{
+  "status": "paused_by_user",
+  "requested_at": "2026-09-30T07:55:21.826613+00:00",
+  "epoch": 2,
+  "arm": "original",
+  "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+  "watched_pids": [
+    361828,
+    361861
+  ],
+  "automatic_resume": false,
+  "watcher_pid": 471892,
+  "heartbeat_at": "2026-09-30T08:25:36.887792+00:00",
+  "paused_at": "2026-09-30T08:25:58.346369+00:00",
+  "paused_pids": [
+    361828,
+    361861,
+    461544,
+    362190,
+    461551
+  ],
+  "process_states": {
+    "361828": "T",
+    "361861": "T",
+    "461544": "T",
+    "362190": "T",
+    "461551": "T"
+  },
+  "next_arm_started": false,
+  "checkpoint": "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/prepared_exif_recovery/runs/train/original/epoch02.pt",
+  "checkpoint_sha256": "08d4986158d388e51a311093c3fdb7c36d36ea478defb0a308ee099c3d5073e9",
+  "history": [
+    {
+      "epoch": 1,
+      "updates": 1393,
+      "raw": {
+        "macro": 0.3801791848336524,
+        "micro": 0.39126344086021503,
+        "rows": 14880,
+        "classes_present": 750
+      },
+      "ema": {
+        "macro": 0.15813767053066288,
+        "micro": 0.16377688172043012,
+        "rows": 14880,
+        "classes_present": 750
+      }
+    },
+    {
+      "epoch": 2,
+      "updates": 2786,
+      "raw": {
+        "macro": 0.596075102436886,
+        "micro": 0.6059139784946237,
+        "rows": 14880,
+        "classes_present": 750
+      },
+      "ema": {
+        "macro": 0.530370086158837,
+        "micro": 0.540994623655914,
+        "rows": 14880,
+        "classes_present": 750
+      }
+    }
+  ]
+}
