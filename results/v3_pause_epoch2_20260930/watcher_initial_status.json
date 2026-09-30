@@ -1,0 +1,14 @@
+{
+  "status": "armed_waiting_epoch",
+  "requested_at": "2026-09-30T07:55:21.826613+00:00",
+  "epoch": 2,
+  "arm": "original",
+  "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+  "watched_pids": [
+    361828,
+    361861
+  ],
+  "automatic_resume": false,
+  "watcher_pid": 471892,
+  "heartbeat_at": "2026-09-30T07:58:14.536284+00:00"
+}

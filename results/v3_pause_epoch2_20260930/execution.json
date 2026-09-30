@@ -1,0 +1,27 @@
+{
+  "experiment_id": "V3_PAUSE_EPOCH2_20260930",
+  "status": "armed_waiting_epoch",
+  "user_instruction": "第二轮完成后暂停",
+  "target_arm": "original",
+  "target_epoch": 2,
+  "trigger": "epoch02.pt + matching epoch02.binding.json + history.json with epoch2 and 2786 updates",
+  "keep_memory_state": true,
+  "automatic_resume": false,
+  "service": "noise-v3-pause-epoch2-20260930.service",
+  "watcher_pid": 471892,
+  "watcher_code_commit": "ee28edf",
+  "watcher_live_report": "/home/lux1/noise/worktrees/v3_pause_epoch2_20260930/outputs/codex/v3_pause_epoch2_20260930/pause_status.json",
+  "v3_live_status": "/home/lux1/noise/worktrees/v3_after_v1_20260930/outputs/codex/v3_after_v1_20260930/handoff_exif_recovery/status.json",
+  "tests": {
+    "command": "python3 -m pytest tests/test_v3_pause_watcher.py -q",
+    "passed": 5,
+    "failed": 0
+  },
+  "requested_at": "2026-09-30T07:55:21.826613+00:00",
+  "plan_sha256": "615fc646d20cf5d7b02f64e3adcc4d659bd607036302b895d08901140fa9e224",
+  "new_candidate_completed": false,
+  "current_submittable_zip": "/mnt/c/Users/lqh22/Desktop/v1_full_swa_submission.zip",
+  "current_submittable_zip_sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+  "current_submission_check": "results/v1_full_swa_20260930/submission_check.log",
+  "user_pause_supersedes_uninterrupted_pair_run": true
+}
