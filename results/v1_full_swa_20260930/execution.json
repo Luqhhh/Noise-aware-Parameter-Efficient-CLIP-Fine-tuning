@@ -1,7 +1,7 @@
 {
   "experiment_id": "V1_FULL_SWA_20260930",
-  "status": "prepared_not_started",
-  "training_started": false,
+  "status": "running",
+  "training_started": true,
   "training_partition": "full_train",
   "training_population": 148695,
   "classes": 750,
@@ -49,5 +49,12 @@
   "expected_desktop_zip": "/mnt/c/Users/lqh22/Desktop/v1_full_swa_submission.zip",
   "current_submittable_zip": "/mnt/c/Users/lqh22/Desktop/v1_swa_submission.zip",
   "current_submittable_zip_sha256": "7db9e15c1615e8767280e374a0d2b44b93fe7cae8632f970881ae7cf29f9aa5f",
-  "current_submission_checks": "results/v1_swa_trial_20260930/submission_check.log"
+  "current_submission_checks": "results/v1_swa_trial_20260930/submission_check.log",
+  "stage": "train",
+  "started_at": "2026-09-30T01:33:14.913414+00:00",
+  "runner_pid": 406990,
+  "child_pid": 407044,
+  "service": "noise-v1-full-swa-20260930.service",
+  "launch_code_commit": "a34542ebbbccaa246880df2d9cef70e2c50ee57b",
+  "live_status_path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/status.json"
 }

@@ -1,0 +1,137 @@
+{
+  "config": "/home/lux1/noise/worktrees/v1_full_swa_20260930/configs/v1_full_swa_20260930.yaml",
+  "recipe": {
+    "project": {
+      "strategy_name": "v1",
+      "strategy_origin": "team_original",
+      "experiment_id": "V1_FULL_SWA_20260930",
+      "stage": "repechage",
+      "data_version": "20260921",
+      "seed": 42
+    },
+    "source": {
+      "root": "/home/lux1/noise",
+      "reference_config": "configs/rematch750_lp.yaml",
+      "partition": "full_train"
+    },
+    "model": {
+      "backbone": "ViT-B/32",
+      "pretrained": "openai",
+      "image_size": 448,
+      "blocks": 12,
+      "rank": 32,
+      "alpha": 64.0
+    },
+    "denoise": {
+      "keep_ratio": 0.9,
+      "knn_k": 16,
+      "query_chunk": 128,
+      "gallery_chunk": 8192,
+      "high_agreement_floor": 0.7,
+      "teacher_epochs": 20,
+      "teacher_batch_size": 8192,
+      "teacher_lr": 0.005,
+      "minimum_weight": 0.2,
+      "pseudo_threshold": 0.7,
+      "pseudo_margin": 0.2,
+      "pseudo_soft_alpha": 0.0
+    },
+    "train": {
+      "epochs": 12,
+      "batch_size": 32,
+      "num_workers": 2,
+      "amp": true,
+      "lora_lr": 0.0002,
+      "head_lr": 0.001,
+      "grad_clip": 1.0,
+      "label_smoothing": 0.1,
+      "mixup_alpha": 0.2,
+      "crop_min_scale": 0.8,
+      "ema_decay": 0.999,
+      "swa_enabled": true,
+      "swa_start": 4
+    },
+    "decode": {
+      "scales": [
+        448,
+        512,
+        576
+      ],
+      "flip": true,
+      "bias_source": "val_dev",
+      "bias_iterations": 200,
+      "bias_strength": 1.0
+    },
+    "output": {
+      "root": "../outputs/codex/v1_full_swa_20260930"
+    }
+  },
+  "max_hours": 24.0,
+  "commands": [
+    {
+      "stage": "targets",
+      "argv": [
+        "/usr/bin/python3",
+        "-u",
+        "-m",
+        "aegis_clip.cli.v1",
+        "targets",
+        "--config",
+        "/home/lux1/noise/worktrees/v1_full_swa_20260930/configs/v1_full_swa_20260930.yaml",
+        "--device",
+        "cuda",
+        "--execute"
+      ]
+    },
+    {
+      "stage": "train",
+      "argv": [
+        "/usr/bin/python3",
+        "-u",
+        "-m",
+        "aegis_clip.cli.v1",
+        "train",
+        "--config",
+        "/home/lux1/noise/worktrees/v1_full_swa_20260930/configs/v1_full_swa_20260930.yaml",
+        "--device",
+        "cuda",
+        "--execute"
+      ]
+    },
+    {
+      "stage": "calibrate",
+      "argv": [
+        "/usr/bin/python3",
+        "-u",
+        "-m",
+        "aegis_clip.cli.v1",
+        "calibrate",
+        "--config",
+        "/home/lux1/noise/worktrees/v1_full_swa_20260930/configs/v1_full_swa_20260930.yaml",
+        "--device",
+        "cuda",
+        "--execute",
+        "--checkpoint",
+        "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/training/selected.pt"
+      ]
+    },
+    {
+      "stage": "infer",
+      "argv": [
+        "/usr/bin/python3",
+        "-u",
+        "-m",
+        "aegis_clip.cli.v1",
+        "infer",
+        "--config",
+        "/home/lux1/noise/worktrees/v1_full_swa_20260930/configs/v1_full_swa_20260930.yaml",
+        "--device",
+        "cuda",
+        "--execute",
+        "--checkpoint",
+        "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/training/selected.pt"
+      ]
+    }
+  ],
+  "code_commit": "a34542ebbbccaa246880df2d9cef70e2c50ee57b"
+}
