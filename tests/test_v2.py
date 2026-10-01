@@ -367,6 +367,6 @@ def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_
     assert len(averages)==(3 if ema_enabled else 0)
     final=torch.load(tmp_path/'runs/full_576/last.pt',map_location='cpu',weights_only=False)
     assert final['metrics']['chosen']=='raw' and final['metrics']['val'] is None
-    assert final['binding']['parent']['path'].endswith('s2_448/best.pt')
+    assert final['binding']['parent']['path'].replace('\\','/').endswith('s2_448/best.pt')
     assert final['binding']['parent']['weights']==('ema' if ema_enabled else 'raw')
     assert not torch.cuda.is_initialized()
