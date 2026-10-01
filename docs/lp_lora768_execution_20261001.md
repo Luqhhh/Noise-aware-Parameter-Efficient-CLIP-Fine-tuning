@@ -16,7 +16,7 @@
 ```bash
 PYTHONPATH=reproducibility/aegis_f1 /home/clairvoyant/.venvs/noise-clip/bin/python -u -m lp_lora768 \
   --locations .planning/2026-10-01-clairvoyanttt-lp-lora768/locations.json \
-  --output /home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T211600 \
+  --output /home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1 \
   --execute --allow-local-parent-baseline
 ```
 
@@ -40,7 +40,18 @@ Windows Git曾将历史跟踪文本转成CRLF，使历史SHA测试失败；在�
 
 ## 实际在途与交付边界
 
-正式head_only已在本机4060 Laptop启动（2026-10-01 21:53左右），随后顺序执行lora_and_head。动态状态与日志：
-`outputs/clairvoyanttt/lp_lora768_20261001/20261001T211600/progress.json`、`execution.log`。
+当前新轨迹head_only已在本机4060 Laptop启动（2026-10-01 22:31左右），随后顺序执行lora_and_head。首次故障记录见末节。动态状态与日志：
+`outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/progress.json`、`execution.log`。
 
 本段完成后独立复算全量/目标/尾部/其余/重叠的修正退化，固定净+75、目标净+25及比率1.25判据只支持supports_review；否则关闭固定配方。四轮与两份提交包未完成前，不报告训练段完成。本段不上传平台，不自动启动full。收尾立即推送方案分支，在main集成目录按自动模式pull --rebase --autostash、合并、重新核验并push。
+## 首次运行设备异常与完整状态恢复
+
+首目录`20261001T211600`在head_only第2轮batch1268（4,990个尝试batch）发生CUDA unknown error。仅完成1轮；最后完整进度为4,934次更新，日志记录失败尝试。该不完整轨迹不计为四轮结果，原产物与错误日志保留。根因尚未建立；新进程CUDA矩阵运算及精确重建的同一增强/Mixup batch原父更新通过，不根据这个结果声称已定位硬件问题。证据`first_run_failure.json`。
+
+新目录`20261001T222332_retry1`从原父权重重新开始两臂固定4轮。零更新父预测与首次运行的logits全部逐元素一致（最大差0），仍是3张源差异。重放入口报告重复rows字段已修正；第二次完整预测已算完、NPZ保留，用该完整真实输出补写报告，明确保留入口错误记录。
+
+新增完整训练状态：每1,000次成功更新及轮边界保存raw权重、AdamW、OneCycle、GradScaler、EMA和EMA2–4平均累计状态，另记录成功batch前缀SHA。`--resume`仅在输入/代码绑定一致时恢复完整状态，保留失败尾部，再从同一采样位置继续；不会拿EMA冒充raw起点，不改变更新总数。真实父权重两臂测试证明恢复后下一步的loss/权重/EMA/调度/AMP逐项精确一致，恢复后的实际增强图像与索引一致、成功日志前缀一致，失败尾部保留。
+
+5项真实资产/恢复测试通过；额外恢复采样检查1passed。独立交付核验脚本为`python scripts/verify_lp_lora768_delivery.py --output <run_dir> --assets <handoff_dir>`，须在两份包生成后实际执行。
+
+当前动态状态以新目录`progress.json`、`execution.log`、`head_only/recovery/latest.json`为准；首目录的进度是故障前记录。四轮与新包尚未完成。
