@@ -1,0 +1,6 @@
+Command: cd /root/autodl-tmp/noise/repo && CUDA_VISIBLE_DEVICES="" OMP_NUM_THREADS=2 PYTHONPATH=reproducibility/aegis_f1 /root/autodl-tmp/noise/venv/bin/python -m pytest tests/test_v2.py tests/test_v2_swa.py reproducibility/aegis_f1/tests/test_model.py -q
+
+...................................................................      [100%]
+67 passed in 4.29s
+
+Recorded from the successful SSH execution output on 2026-10-01.

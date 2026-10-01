@@ -1,0 +1,22 @@
+{
+  "status": "completed",
+  "experiment_id": "V2_REMOTE_PREPARE_20261001",
+  "recorded_at_utc": "2026-10-01T04:38:59.565849+00:00",
+  "source": "/home/lux1/noise/{train,test}",
+  "destination": "/root/autodl-tmp/noise/data/{train,test}",
+  "files": 186139,
+  "bytes": 32492515836,
+  "completed_batches": 81,
+  "batch_source_bytes_limit": 402653184,
+  "order": "sorted(train/**/*.jpg), then sorted(test/*.jpg)",
+  "concurrent_transfers": 2,
+  "driver_elapsed_seconds": 3786.239150908994,
+  "elapsed_scope": "serial and parallel successful batch drivers; excludes earlier failed transport trials",
+  "command_templates": {
+    "archive": "tar -C /home/lux1/noise -cf /tmp/noise-v2-39385-data-batch-NNN.tar -T batch_NNN_files.txt",
+    "copy": "rsync -a --partial --timeout=180 --whole-file -e \"ssh -p 39385 [host-key and password-auth options]\" archive.tar root@connect.bjb1.seetacloud.com:/root/autodl-tmp/noise/assets/data-batch-NNN.tar",
+    "extract": "tar -xf /root/autodl-tmp/noise/assets/data-batch-NNN.tar -C /root/autodl-tmp/noise/data"
+  },
+  "temporary_archives_deleted_after_each_batch": true,
+  "training_started": false
+}

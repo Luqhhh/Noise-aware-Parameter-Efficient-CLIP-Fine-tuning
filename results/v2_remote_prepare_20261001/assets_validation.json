@@ -1,0 +1,35 @@
+{
+  "data_version": "20260921",
+  "data_root": "/root/autodl-tmp/noise/data",
+  "stage_artifacts": "/root/autodl-tmp/noise/assets/stages/repechage/20260921",
+  "changed_audit_files": [],
+  "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+  "datasets": {
+    "train": {
+      "expected_files": 148695,
+      "actual_files": 148695,
+      "bytes": 30957960910,
+      "mismatches": [],
+      "missing_files": [],
+      "extra_files": [],
+      "fingerprint": "a8ef9384c4343c5c51a0d4278660ab962013c976cd1c11e6f5dead414cbbd147",
+      "fingerprint_matches": true,
+      "passed": true
+    },
+    "test": {
+      "expected_files": 37444,
+      "actual_files": 37444,
+      "bytes": 1534554926,
+      "mismatches": [],
+      "missing_files": [],
+      "extra_files": [],
+      "fingerprint": "02807320dfde20fa851092481dda89056069477a5d54ff0da8b833d2503442de",
+      "fingerprint_matches": true,
+      "passed": true
+    }
+  },
+  "training_started": false,
+  "train_classes": 750,
+  "passed": true,
+  "elapsed_seconds": 37.603126554749906
+}

@@ -1,0 +1,25 @@
+{
+  "status": "cpu_forward_passed",
+  "gpu_started": false,
+  "training_started": false,
+  "native224_max_absolute_difference": 0.0,
+  "resolution_logits_shapes": {
+    "384": [
+      1,
+      750
+    ],
+    "448": [
+      1,
+      750
+    ],
+    "576": [
+      1,
+      750
+    ]
+  },
+  "all_parameters_fp32": true,
+  "trainable_parameters": 88233966,
+  "official_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+  "local_metrics": null,
+  "platform_metrics": null
+}
