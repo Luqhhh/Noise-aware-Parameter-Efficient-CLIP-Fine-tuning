@@ -191,8 +191,13 @@ def verify(config, output):
         checked = subprocess.run([sys.executable, str(ROOT/'scripts/check_submission.py'), '--test_dir', reference['data']['test_root'],
             '--class-mapping', str(base/'class_to_idx.json'), '--csv', str(submission/'pred_results.csv'), '--zip', str(submission/'submission.zip')],
             capture_output=True, text=True)
-        require(checked.returncode == 0 and (checked.stdout+checked.stderr).count('✅') == 9, 'Independent nine checks failed')
-        require((submission/'submission_check.log').read_text().count('✅') == 9, 'Original check log incomplete')
+        # The checker enforces nine constraints, but prints eight success rows:
+        # two-field parsing has no separate success message. CSV replay covers it.
+        checked_text = checked.stdout+checked.stderr
+        require(checked.returncode == 0 and checked_text.count('✅') == 8 and
+                'All checks passed!' in checked_text, 'Independent nine constraints failed')
+        original_text = (submission/'submission_check.log').read_text()
+        require(original_text.count('✅') == 8 and 'All checks passed!' in original_text, 'Original check log incomplete')
         manifest = read_json(submission/'manifest.json')
         require(manifest['binding'] == bind and manifest['decoder'] == cfg['test_decoder'] and manifest['training_updates'] == 1024 and
                 manifest['checkpoint_sha256'] == package['checkpoint_sha256'] and manifest['prediction_csv_sha256'] == package['csv_sha256'] and
