@@ -1,0 +1,111 @@
+{
+  "status": "passed_independent_torch64_and_counter_replay",
+  "experiment_id": "V1_FROZEN_TEACHER_RECOVERY_20261001",
+  "teacher_predictions_replayed": 29760,
+  "native_head_predictions_identical": true,
+  "teacher_support_memberships_identical": true,
+  "numerical_max_errors": {
+    "512": {
+      "confidence": 6.994405055138486e-15,
+      "margin": 1.3711254354120683e-14
+    },
+    "768": {
+      "confidence": 7.216449660063518e-15,
+      "margin": 1.1934897514720433e-14
+    }
+  },
+  "metric_groups_checked": 20,
+  "paired_groups_checked": 20,
+  "source_files_checked": 28,
+  "scores_sha256": "a60f3851a20046bb241d0a04074acd676ce0072b6f4ddd1e702a6fc6ebc33eb7",
+  "report_sha256": "88f54882be78886e56b1a7e7803225d5bfd2182f550cac73debb5bba63c2c828",
+  "supported_comparisons": {
+    "512": {
+      "all": {
+        "rows": 1141,
+        "corrections": 0,
+        "regressions": 1,
+        "net": -1,
+        "changed": 2,
+        "both_wrong": 16
+      },
+      "common_candidate_wrong": {
+        "rows": 16,
+        "corrections": 0,
+        "regressions": 0,
+        "net": 0,
+        "changed": 1,
+        "both_wrong": 16
+      },
+      "originally_small": {
+        "rows": 61,
+        "corrections": 0,
+        "regressions": 0,
+        "net": 0,
+        "changed": 0,
+        "both_wrong": 1
+      },
+      "tail75": {
+        "rows": 26,
+        "corrections": 0,
+        "regressions": 1,
+        "net": -1,
+        "changed": 1,
+        "both_wrong": 2
+      },
+      "other_student_errors": {
+        "rows": 0,
+        "corrections": 0,
+        "regressions": 0,
+        "net": 0,
+        "changed": 0,
+        "both_wrong": 0
+      }
+    },
+    "768": {
+      "all": {
+        "rows": 1890,
+        "corrections": 0,
+        "regressions": 1,
+        "net": -1,
+        "changed": 2,
+        "both_wrong": 30
+      },
+      "common_candidate_wrong": {
+        "rows": 30,
+        "corrections": 0,
+        "regressions": 0,
+        "net": 0,
+        "changed": 1,
+        "both_wrong": 30
+      },
+      "originally_small": {
+        "rows": 123,
+        "corrections": 0,
+        "regressions": 0,
+        "net": 0,
+        "changed": 0,
+        "both_wrong": 2
+      },
+      "tail75": {
+        "rows": 70,
+        "corrections": 0,
+        "regressions": 1,
+        "net": -1,
+        "changed": 1,
+        "both_wrong": 4
+      },
+      "other_student_errors": {
+        "rows": 0,
+        "corrections": 0,
+        "regressions": 0,
+        "net": 0,
+        "changed": 0,
+        "both_wrong": 0
+      }
+    }
+  },
+  "decision": "close_fixed_confident_teacher_logit_transfer",
+  "new_candidate": false,
+  "platform_gain_known": false
+}

@@ -1,0 +1,437 @@
+{
+  "experiment_id": "V1_FROZEN_TEACHER_RECOVERY_20261001",
+  "status": "completed_cpu_diagnostic",
+  "source_files": {
+    "/home/lux1/noise/worktrees/v1_frozen_teacher_recovery_20261001/configs/v1_frozen_teacher_recovery_20261001.json": "3dda17ccdc8d295d06e449ae392f27e94dd088d34dd94eee2606abe6dc3b535b",
+    "/home/lux1/noise/worktrees/v1_frozen_teacher_recovery_20261001/scripts/diagnose_v1_frozen_teacher_recovery.py": "52ba0257b7051b050abf2c1a98abc15fb4abfd21f53b140056872f12c3225339",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/train_dev.csv": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/val_dev.csv": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/full_train.csv": "142d255e86aadc2be4f4f1bee832948b30416c54bdc904159ff096ce8eb278ad",
+    "/home/lux1/noise/worktrees/v1_frozen_teacher_recovery_20261001/results/v1_feature_calibration_20261001/summary.json": "1eac441e8ced1953d95c6a319a02cad8fa2898a1805a7677b014a914a7bcd44c",
+    "/home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/features768.pt": "00eefe153a7141f4016c112623dabe796d4fc2468e5a2f6797788085e3058a21",
+    "/home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/protocol.json": "da9309242b13498a0553d353a28a4ffe6001439a1c43261743e7fe4e0da863fe",
+    "/home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/report.json": "7bacffaebf84504d0535f3b910503434a3d65d36e39e76d091d37504ca2dba09",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/manifest.json": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/features.pt": "21c35d1cce959ca6a547b7d352e7b4c1e491257f03855b40fa8b99cf11df7c64",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/features/image_paths.json": "fcb7de523e06342c7ecad36d94b4f360ccd4f87cb402527897b7de4fef43d168",
+    "/home/lux1/.cache/clip/ViT-B-32.pt": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/config.yaml": "385fb63fc4cb6d75e068d464e68dea121a42d0b7ee8f60d8558921ec978b9db8",
+    "/home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/predictions.npz": "472fd3310a0379ab9b38c9fba39aacd309864c7236e4e39258671717cfb76dfa",
+    "/home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/head512.pt": "c505f5268e6884a9924f47d407bbb59e94c01b6b8e5ccf9ad979ddb41cafdd9e",
+    "/home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/head768.pt": "1a30c75550eaecc783f44ca4052d5bfc82d7527e329e79747617aa0ab3cabec6",
+    "/home/lux1/noise/worktrees/v1_frozen_teacher_recovery_20261001/results/lr512_dev_20261001/report.json": "cf5b9bcfaebd1163284fcb9347e8b4c724991592c9fcaa009bf99d0b297ea404",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/val_epoch04_ema_swa_2_4.npz": "a404e16f2d88d3331dc9caf3c26bda111714369bdcca69cda6e290a3478d8845",
+    "/home/lux1/noise/worktrees/v1_frozen_teacher_recovery_20261001/results/v1_candidate_error_budget_20261001/report.json": "2a456105af7e7dc4b1f1e286924d6714d0767d4289cf942abfb014d6ae661b15",
+    "/home/lux1/noise/worktrees/v1_candidate_error_budget_20261001/outputs/codex/v1_candidate_error_budget_20261001/diagnostic_r3/aligned_predictions.csv": "d94a98acc2b2c6cbb9263547b38a7a678d8e664a3c382f1172784f4b45bcc718",
+    "/home/lux1/noise/worktrees/v1_frozen_teacher_recovery_20261001/results/v1_full_swa_platform_20261001/artifact_verification.json": "7132effa696592401bbeff0d17815101045a3a46f1aeb0d5ebb6fe7ca88dd9f4",
+    "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5",
+    "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+    "/home/lux1/noise/worktrees/v1_frozen_teacher_recovery_20261001/results/v1_full_swa_platform_20261001/submission_check.log": "edb24cf74b09c551bb82c223e25801a445cc7a4963d9a6294f022b09943c3c59"
+  },
+  "config_sha256": "3dda17ccdc8d295d06e449ae392f27e94dd088d34dd94eee2606abe6dc3b535b",
+  "script_sha256": "52ba0257b7051b050abf2c1a98abc15fb4abfd21f53b140056872f12c3225339",
+  "score_file": "/home/lux1/noise/worktrees/v1_frozen_teacher_recovery_20261001/outputs/codex/v1_frozen_teacher_recovery_20261001/diagnostic_r1/scores.npz",
+  "score_sha256": "a60f3851a20046bb241d0a04074acd676ce0072b6f4ddd1e702a6fc6ebc33eb7",
+  "validation_rows": 14880,
+  "classes": 750,
+  "teacher_reports": {
+    "512": {
+      "native_predictions_replayed": 14880,
+      "support_rows": 1141,
+      "unsupported_rows": 13739,
+      "groups": {
+        "all": {
+          "teacher": {
+            "rows": 14880,
+            "correct": 8903,
+            "errors": 5977,
+            "classes": 750,
+            "micro": 0.5983198924731182,
+            "macro": 0.5877718604658031
+          },
+          "student": {
+            "rows": 14880,
+            "correct": 11422,
+            "errors": 3458,
+            "classes": 750,
+            "micro": 0.7676075268817204,
+            "macro": 0.7576305868924552
+          },
+          "comparison": {
+            "rows": 14880,
+            "corrections": 319,
+            "regressions": 2838,
+            "net": -2519,
+            "changed": 5191,
+            "both_wrong": 3139
+          },
+          "supported_rows": 1141,
+          "supported_comparison": {
+            "rows": 1141,
+            "corrections": 0,
+            "regressions": 1,
+            "net": -1,
+            "changed": 2,
+            "both_wrong": 16
+          }
+        },
+        "common_candidate_wrong": {
+          "teacher": {
+            "rows": 2875,
+            "correct": 189,
+            "errors": 2686,
+            "classes": 657,
+            "micro": 0.0657391304347826,
+            "macro": 0.07478228178939972
+          },
+          "student": {
+            "rows": 2875,
+            "correct": 0,
+            "errors": 2875,
+            "classes": 657,
+            "micro": 0.0,
+            "macro": 0.0
+          },
+          "comparison": {
+            "rows": 2875,
+            "corrections": 189,
+            "regressions": 0,
+            "net": 189,
+            "changed": 1935,
+            "both_wrong": 2686
+          },
+          "supported_rows": 16,
+          "supported_comparison": {
+            "rows": 16,
+            "corrections": 0,
+            "regressions": 0,
+            "net": 0,
+            "changed": 1,
+            "both_wrong": 16
+          }
+        },
+        "originally_small": {
+          "teacher": {
+            "rows": 1848,
+            "correct": 910,
+            "errors": 938,
+            "classes": 571,
+            "micro": 0.49242424242424243,
+            "macro": 0.5134516825847825
+          },
+          "student": {
+            "rows": 1848,
+            "correct": 1236,
+            "errors": 612,
+            "classes": 571,
+            "micro": 0.6688311688311688,
+            "macro": 0.6849869774125465
+          },
+          "comparison": {
+            "rows": 1848,
+            "corrections": 67,
+            "regressions": 393,
+            "net": -326,
+            "changed": 830,
+            "both_wrong": 545
+          },
+          "supported_rows": 61,
+          "supported_comparison": {
+            "rows": 61,
+            "corrections": 0,
+            "regressions": 0,
+            "net": 0,
+            "changed": 0,
+            "both_wrong": 1
+          }
+        },
+        "tail75": {
+          "teacher": {
+            "rows": 1003,
+            "correct": 488,
+            "errors": 515,
+            "classes": 75,
+            "micro": 0.4865403788634098,
+            "macro": 0.4272791663674016
+          },
+          "student": {
+            "rows": 1003,
+            "correct": 670,
+            "errors": 333,
+            "classes": 75,
+            "micro": 0.6679960119641076,
+            "macro": 0.6038376906318081
+          },
+          "comparison": {
+            "rows": 1003,
+            "corrections": 26,
+            "regressions": 208,
+            "net": -182,
+            "changed": 439,
+            "both_wrong": 307
+          },
+          "supported_rows": 26,
+          "supported_comparison": {
+            "rows": 26,
+            "corrections": 0,
+            "regressions": 1,
+            "net": -1,
+            "changed": 1,
+            "both_wrong": 2
+          }
+        },
+        "other_student_errors": {
+          "teacher": {
+            "rows": 583,
+            "correct": 130,
+            "errors": 453,
+            "classes": 371,
+            "micro": 0.22298456260720412,
+            "macro": 0.23849955076370166
+          },
+          "student": {
+            "rows": 583,
+            "correct": 0,
+            "errors": 583,
+            "classes": 371,
+            "micro": 0.0,
+            "macro": 0.0
+          },
+          "comparison": {
+            "rows": 583,
+            "corrections": 130,
+            "regressions": 0,
+            "net": 130,
+            "changed": 418,
+            "both_wrong": 453
+          },
+          "supported_rows": 0,
+          "supported_comparison": {
+            "rows": 0,
+            "corrections": 0,
+            "regressions": 0,
+            "net": 0,
+            "changed": 0,
+            "both_wrong": 0
+          }
+        }
+      }
+    },
+    "768": {
+      "native_predictions_replayed": 14880,
+      "support_rows": 1890,
+      "unsupported_rows": 12990,
+      "groups": {
+        "all": {
+          "teacher": {
+            "rows": 14880,
+            "correct": 9150,
+            "errors": 5730,
+            "classes": 750,
+            "micro": 0.6149193548387096,
+            "macro": 0.6045549131872501
+          },
+          "student": {
+            "rows": 14880,
+            "correct": 11422,
+            "errors": 3458,
+            "classes": 750,
+            "micro": 0.7676075268817204,
+            "macro": 0.7576305868924552
+          },
+          "comparison": {
+            "rows": 14880,
+            "corrections": 331,
+            "regressions": 2603,
+            "net": -2272,
+            "changed": 4927,
+            "both_wrong": 3127
+          },
+          "supported_rows": 1890,
+          "supported_comparison": {
+            "rows": 1890,
+            "corrections": 0,
+            "regressions": 1,
+            "net": -1,
+            "changed": 2,
+            "both_wrong": 30
+          }
+        },
+        "common_candidate_wrong": {
+          "teacher": {
+            "rows": 2875,
+            "correct": 195,
+            "errors": 2680,
+            "classes": 657,
+            "micro": 0.06782608695652174,
+            "macro": 0.07576173739214298
+          },
+          "student": {
+            "rows": 2875,
+            "correct": 0,
+            "errors": 2875,
+            "classes": 657,
+            "micro": 0.0,
+            "macro": 0.0
+          },
+          "comparison": {
+            "rows": 2875,
+            "corrections": 195,
+            "regressions": 0,
+            "net": 195,
+            "changed": 1899,
+            "both_wrong": 2680
+          },
+          "supported_rows": 30,
+          "supported_comparison": {
+            "rows": 30,
+            "corrections": 0,
+            "regressions": 0,
+            "net": 0,
+            "changed": 1,
+            "both_wrong": 30
+          }
+        },
+        "originally_small": {
+          "teacher": {
+            "rows": 1848,
+            "correct": 934,
+            "errors": 914,
+            "classes": 571,
+            "micro": 0.5054112554112554,
+            "macro": 0.526339713992954
+          },
+          "student": {
+            "rows": 1848,
+            "correct": 1236,
+            "errors": 612,
+            "classes": 571,
+            "micro": 0.6688311688311688,
+            "macro": 0.6849869774125465
+          },
+          "comparison": {
+            "rows": 1848,
+            "corrections": 62,
+            "regressions": 364,
+            "net": -302,
+            "changed": 799,
+            "both_wrong": 550
+          },
+          "supported_rows": 123,
+          "supported_comparison": {
+            "rows": 123,
+            "corrections": 0,
+            "regressions": 0,
+            "net": 0,
+            "changed": 0,
+            "both_wrong": 2
+          }
+        },
+        "tail75": {
+          "teacher": {
+            "rows": 1003,
+            "correct": 506,
+            "errors": 497,
+            "classes": 75,
+            "micro": 0.5044865403788634,
+            "macro": 0.44365591706768176
+          },
+          "student": {
+            "rows": 1003,
+            "correct": 670,
+            "errors": 333,
+            "classes": 75,
+            "micro": 0.6679960119641076,
+            "macro": 0.6038376906318081
+          },
+          "comparison": {
+            "rows": 1003,
+            "corrections": 25,
+            "regressions": 189,
+            "net": -164,
+            "changed": 414,
+            "both_wrong": 308
+          },
+          "supported_rows": 70,
+          "supported_comparison": {
+            "rows": 70,
+            "corrections": 0,
+            "regressions": 1,
+            "net": -1,
+            "changed": 1,
+            "both_wrong": 4
+          }
+        },
+        "other_student_errors": {
+          "teacher": {
+            "rows": 583,
+            "correct": 136,
+            "errors": 447,
+            "classes": 371,
+            "micro": 0.2332761578044597,
+            "macro": 0.24748427672955975
+          },
+          "student": {
+            "rows": 583,
+            "correct": 0,
+            "errors": 583,
+            "classes": 371,
+            "micro": 0.0,
+            "macro": 0.0
+          },
+          "comparison": {
+            "rows": 583,
+            "corrections": 136,
+            "regressions": 0,
+            "net": 136,
+            "changed": 425,
+            "both_wrong": 447
+          },
+          "supported_rows": 0,
+          "supported_comparison": {
+            "rows": 0,
+            "corrections": 0,
+            "regressions": 0,
+            "net": 0,
+            "changed": 0,
+            "both_wrong": 0
+          }
+        }
+      }
+    }
+  },
+  "primary_teacher_dimension": 768,
+  "gate_passed": false,
+  "decision": "close_fixed_confident_teacher_logit_transfer",
+  "no_fusion_predictions_created": true,
+  "training_started": false,
+  "new_candidate": false,
+  "test_data_used": false,
+  "native_decoder_comparison_is_causal": false,
+  "catastrophic_forgetting_proven": false,
+  "original_labels_noisy": true,
+  "platform_gain_known": false,
+  "automatic_training": false,
+  "seconds": 4.3136140079877805,
+  "incumbent_reference": {
+    "csv": {
+      "path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv",
+      "sha256": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5",
+      "matches_delivery_record": true
+    },
+    "zip": {
+      "path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+      "sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+      "matches_delivery_record": true
+    },
+    "desktop_zip": {
+      "path": "/mnt/c/Users/lqh22/Desktop/v1_full_swa_submission.zip",
+      "sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+      "matches_delivery_record": true
+    }
+  },
+  "limitation": "Cross-recipe teacher/student recovery budget on original noisy validation labels; no attainable gain, fusion candidate, forgetting causality or platform effect is established"
+}
