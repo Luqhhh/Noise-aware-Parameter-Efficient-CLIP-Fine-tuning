@@ -1,0 +1,26 @@
+{
+  "head_only": {
+    "cursor_epoch": 5,
+    "cursor_batch": 0,
+    "successful_updates": 14888,
+    "all_adamw_step_counters": 14888,
+    "optimizer_parameter_tensors": 2,
+    "one_cycle_last_epoch": 14888,
+    "ema_count": 14888,
+    "average_count": 3,
+    "all_exports_exact_full_recovery_state": true,
+    "paired_prefix_sha256": "85d4d588b9a3b58bb3681b965ac3bb942c58acc9f41e144c412b171fcd2ecd1e"
+  },
+  "lora_and_head": {
+    "cursor_epoch": 5,
+    "cursor_batch": 0,
+    "successful_updates": 14888,
+    "all_adamw_step_counters": 14888,
+    "optimizer_parameter_tensors": 98,
+    "one_cycle_last_epoch": 14888,
+    "ema_count": 14888,
+    "average_count": 3,
+    "all_exports_exact_full_recovery_state": true,
+    "paired_prefix_sha256": "85d4d588b9a3b58bb3681b965ac3bb942c58acc9f41e144c412b171fcd2ecd1e"
+  }
+}

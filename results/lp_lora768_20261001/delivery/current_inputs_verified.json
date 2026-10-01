@@ -1,0 +1,58 @@
+{
+  "all_ordered_labels_and_paths_match": true,
+  "binding": {
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "experiment_id": "LP_LORA768_20261001",
+    "groups_sha256": "004f56bf83a8c3e982c5f8236fd79eea5fda0b01e95bd37d1614645d82243a8c",
+    "implementation_sha256": "12b0bec095ebefa1c7d4d4e875f3b9c409a547ca184b3f2fd3d1fef2f535a270",
+    "local_dataset_manifest_sha256": "a6aeb2618ddc08d62b3a9ca3f767be089a76652b325004bf21d039f7692a1380",
+    "local_train_sha256": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "local_val_sha256": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "owner": "clairvoyanttt",
+    "parent_sha256": "ff7fdb81c3961ccd03501036e387df644e6fb6be3fc46055571b2787491a8b99",
+    "protocol_sha256": "66adcd3d8822585bb47eee1bf409c8cef453dd609d5eb72032ea07655cebe6c1",
+    "source_binding": {
+      "arm": "unbalanced",
+      "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+      "data_version": "20260921",
+      "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+      "frozen_features_sha256": "26230ec2f0236607ff72bfbea0ebbb7122425b304802ac20c7ea49825009228c",
+      "implementation_sha256": "71570b5a71f103d1e7cf901d1f3cf88f8729a20a79ac0257b62a7d51be37c1d4",
+      "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+      "parent_binding_sha256": "125274300395b3a0a6b55e4004584ec141cc67bcd61bee3fc382fcdb53ff5ddf",
+      "parent_checkpoint_sha256": "01caedaa4996d25fa9dfc213d4b2376c147bb99ebdc23dacd93e6e1ff2d6fa20",
+      "post768_script_sha256": "685dda8c5e6c2603e4f76ed0b126cbdd261b069b9ce331dd6bb8cb633d0d60dc",
+      "prior_alignment_sha256": "9b033970399eb97771552619385b5a46c811f711b78c543da82e794ec845b73a",
+      "recipe_sha256": "9d3d15998d8a807cb4d201c71ffab708eaded03bfd550991b1e5dd2418a27a76",
+      "stage": "repechage",
+      "targets_sha256": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2",
+      "test_bias_script_sha256": "3a1c868b80830cde29606886db46ecf5042eeaa23130edfe18e5049b2166eb72"
+    },
+    "targets_sha256": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2"
+  },
+  "bundle": {
+    "bundle": "/home/clairvoyant/code/team_exploration_assets_20261001.zip",
+    "bundle_bytes": 63803102,
+    "bundle_sha256": "35396b7b6482b2fd3cbf2cf8f807bf6744edabeda67f79948db8aa88950dc5cd",
+    "data_version": "20260921",
+    "files": 26,
+    "gpu_started": false,
+    "status": "verified",
+    "training_started": false
+  },
+  "locations": {
+    "assets": "/home/clairvoyant/code/team_exploration_assets_20261001",
+    "bundle": "/home/clairvoyant/code/team_exploration_assets_20261001.zip",
+    "device": "cuda",
+    "official_checkpoint": "/home/clairvoyant/.cache/clip/ViT-B-32.pt",
+    "owner": "clairvoyanttt",
+    "source_root": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning"
+  },
+  "original_artifacts_modified": false,
+  "positive_weight_rows": 119074,
+  "status": "verified",
+  "train_rows": 133815,
+  "val_rows": 14880
+}
