@@ -236,7 +236,7 @@ def analyze(config_path, output):
     contradiction_lower_bound = sum(sum(counts.values()) - max(counts.values())
                                     for counts in val_group_counts.values())
     ci = bootstrap_intervals(labels, predictions, comparisons, group_indices, cfg['bootstrap'])
-    output = Path(output)
+    output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=False)
     with (output / 'aligned_predictions.csv').open('w', newline='') as handle:
         writer = csv.writer(handle)
