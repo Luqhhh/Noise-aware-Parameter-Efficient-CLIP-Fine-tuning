@@ -1,0 +1,29 @@
+{
+  "experiment_id": "V1_REFLECTION_CONSISTENCY_PROBE_20261001",
+  "source_config": "configs/v1_resolution_degradation_probe_20261001.json",
+  "source_config_sha256": "38beb00391cc8285e15e30543ae05969c206dac5d954fa40734928e9178895bf",
+  "source_helper_sha256": "51cf6633122eefed555f0405365022a70861dfd8bd533a45290e378559a5beb3",
+  "error_report": "results/v1_candidate_error_budget_20261001/report.json",
+  "incumbent_reference": "results/v1_full_swa_platform_20261001/artifact_verification.json",
+  "models": ["native_parent", "lr512_swa"],
+  "primary_model": "lr512_swa",
+  "decoder": {"input_size": 512, "scales": [512], "flip": true, "bias": null},
+  "high_instability_rule": "different_top1_and_jensen_shannon_nats_at_least_0.1",
+  "js_threshold": 0.1,
+  "mechanism_gate": {
+    "high_instability_rows_min": 500,
+    "high_instability_native_errors_min": 200,
+    "error_rate_excess_over_all_min": 0.1,
+    "high_instability_native_errors_either_view_top5_min": 100
+  },
+  "batch_size": 32,
+  "workers": 2,
+  "cold_rows": 64,
+  "seed": 42,
+  "training_updates": 0,
+  "test_data_used": false,
+  "automatic_training": false,
+  "parameter_search": false,
+  "new_candidate": false,
+  "wall_clock_time_limit": null
+}

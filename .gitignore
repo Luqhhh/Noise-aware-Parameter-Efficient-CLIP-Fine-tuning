@@ -123,3 +123,6 @@ outputs/search_20260923/
 
 # Private fixed Mixup exposure and heldout cohort flags.
 /outputs/codex/v1_mixup_mass_diagnostic_20261001/
+
+# Private orientation logits and diagnostic group memberships.
+/outputs/codex/v1_reflection_consistency_probe_20261001/
