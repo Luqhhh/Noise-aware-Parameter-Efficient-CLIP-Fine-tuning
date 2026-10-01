@@ -23,3 +23,12 @@ PYTHONPATH=reproducibility/aegis_f1 python3 scripts/run_v1_post768_job.py \
 产物根：`/home/lux1/noise-worktrees/v1_512_test_bias_control_20261001/outputs/codex/v1_512_test_bias_control_20261001`。
 桌面前缀：`/mnt/c/Users/lqh22/Desktop/v1_512_test_bias_control_20261001_512_{raw,test_bias}_submission.zip`。
 未产生新候选；现役可提交包及已有校验见[当前入口](current_execution_plan.md#交付与历史入口)。
+
+## 已验证交付
+
+2026-10-01T09:25:44.344332+00:00 完成，用时21.92分钟。原始标签诊断不证明平台改善；平台分待回填。
+
+- submission: `/home/lux1/noise-worktrees/v1_512_test_bias_control_20261001/outputs/codex/v1_512_test_bias_control_20261001/submission/submission.zip`；SHA `260fc98bff216236e2d1bb4b4d6423f10a779f14bd6e508e9bcf0c9a8ae11048`；37,444行，9项校验通过，独立NumPy预测与CSV/ZIP一致。
+- submission_raw: `/home/lux1/noise-worktrees/v1_512_test_bias_control_20261001/outputs/codex/v1_512_test_bias_control_20261001/submission_raw/submission.zip`；SHA `774e3d94837b72fa9449786bc610cb8c318ce7087fd5458d26ed2114dfdc7d9e`；37,444行，9项校验通过，独立NumPy预测与CSV/ZIP一致。
+
+[完整指标与血缘](../results/v1_512_test_bias_control_20261001/delivery_report.json)。
