@@ -1,0 +1,16 @@
+experiment_id: V1_CRT768_DEV_20261001
+route: crt768_dev
+parent_config: /home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/config.yaml
+parent_checkpoint: /home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.pt
+targets: /home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.pt
+output: /home/lux1/noise-worktrees/v1_crt768_dev_20261001/outputs/codex/v1_crt768_dev_20261001
+desktop_prefix: /mnt/c/Users/lqh22/Desktop/v1_crt768_dev_20261001
+head_fit:
+  epochs: 20
+  batch_size: 8192
+  lr: 0.001
+  minimum_lr: 0.0001
+  weight_decay: 0.01
+  dropout: 0.1
+  label_smoothing: 0.1
+  seed: 42

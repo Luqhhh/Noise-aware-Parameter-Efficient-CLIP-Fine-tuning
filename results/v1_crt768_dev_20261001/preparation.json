@@ -1,0 +1,47 @@
+{
+  "experiment_id": "V1_CRT768_DEV_20261001",
+  "status": "prepared_not_started",
+  "binding": {
+    "stage": "repechage",
+    "data_version": "20260921",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "recipe_sha256": "9d3d15998d8a807cb4d201c71ffab708eaded03bfd550991b1e5dd2418a27a76",
+    "implementation_sha256": "71570b5a71f103d1e7cf901d1f3cf88f8729a20a79ac0257b62a7d51be37c1d4",
+    "parent_checkpoint_sha256": "01caedaa4996d25fa9dfc213d4b2376c147bb99ebdc23dacd93e6e1ff2d6fa20",
+    "parent_binding_sha256": "125274300395b3a0a6b55e4004584ec141cc67bcd61bee3fc382fcdb53ff5ddf",
+    "post768_script_sha256": "685dda8c5e6c2603e4f76ed0b126cbdd261b069b9ce331dd6bb8cb633d0d60dc",
+    "prior_alignment_sha256": "9b033970399eb97771552619385b5a46c811f711b78c543da82e794ec845b73a",
+    "test_bias_script_sha256": "3a1c868b80830cde29606886db46ecf5042eeaa23130edfe18e5049b2166eb72",
+    "targets_sha256": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2"
+  },
+  "training_started": false,
+  "route": "crt768_dev",
+  "parent_partition": "train_dev",
+  "train_samples": 133815,
+  "val_samples": 14880,
+  "parent_checkpoint": "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.pt",
+  "output": "/home/lux1/noise-worktrees/v1_crt768_dev_20261001/outputs/codex/v1_crt768_dev_20261001",
+  "platform_score": null,
+  "active_training_rows": 119074,
+  "reliable_class_mass_min": 0.6447523236274719,
+  "reliable_class_mass_max": 172.2667694091797,
+  "official_cpu_smoke": {
+    "device": "cpu",
+    "real_images": 1,
+    "feature_dimension": 768,
+    "independent_candidate_count": 2,
+    "output_shape": [
+      1,
+      1500
+    ],
+    "standalone_head_max_errors": [
+      0.0,
+      0.0
+    ],
+    "visual_requires_grad": false,
+    "cuda_used": false
+  }
+}
