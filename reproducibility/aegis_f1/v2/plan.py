@@ -86,6 +86,8 @@ def authorize(plan_path, authorization, operation, stage=None):
     budget = a.get("max_seconds")
     require(isinstance(budget, (int, float)) and math.isfinite(budget) and budget > 0, "Finite positive budget required")
     plan = verify_prepared(plan_path)
+    require(operation not in ('train', 'probe') or stage not in plan.get('imported_stages', {}),
+            'An imported completed stage cannot be trained again in this continuation workspace')
     if plan['recipe'].get('ndcw') and operation in ('train', 'probe', 'infer'):
         require(operation != 'infer' and stage == 's1_384', 'ND-CW first round allows N1 only; N2 needs a new promotion checkpoint')
         if operation == 'train':

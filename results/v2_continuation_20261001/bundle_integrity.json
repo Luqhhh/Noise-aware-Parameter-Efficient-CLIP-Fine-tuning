@@ -1,0 +1,15 @@
+{
+  "experiment_id": "V2_CONTINUATION_20261001",
+  "status": "bundle_integrity_verified",
+  "recorded_at_utc": "2026-10-01T05:03:21.660728+00:00",
+  "archive_name": "v2_s1_384_bundle_20261001_r3.zip",
+  "archive_bytes": 1349808241,
+  "archive_sha256": "a12bf57cb79763dd45f70fda5919b1436abc23ccacbc2650bd9755d8c1f16b10",
+  "manifested_files": 45,
+  "extracted_bundle": "/home/lux1/noise/worktrees/v2_continuation_20261001/outputs/codex/v2_continuation_20261001/handoff/v2_s1_384_bundle_20261001",
+  "plan_sha256": "1aea2bbf37162ba44d7741a908fd540070d585658c1fbb360e1740426da4c727",
+  "checkpoint_sha256": "3643b9a10a8cf3b330db6537a4b1d9c4cc630a78649099fce9f81b7f1538b817",
+  "checkpoint_binding_plan_sha256": "be3206eff072bd54c3af2f25fb11aea56daa187aaa02d16f54a0bb0aadcb873b",
+  "plan_hash_matches_checkpoint_binding": false,
+  "training_started": false
+}

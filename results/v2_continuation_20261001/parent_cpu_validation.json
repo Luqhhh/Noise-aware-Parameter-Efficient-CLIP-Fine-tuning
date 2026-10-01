@@ -1,0 +1,33 @@
+{
+  "status": "original_s1_parent_strict_load_passed",
+  "checkpoint_sha256": "3643b9a10a8cf3b330db6537a4b1d9c4cc630a78649099fce9f81b7f1538b817",
+  "selected_weights": "raw",
+  "strict_all_tensors_equal": true,
+  "raw_and_ema_all_tensors_finite": true,
+  "cpu_448_shape": [
+    1,
+    750
+  ],
+  "parameters": 88233966,
+  "source_epoch": 9,
+  "source_updates": 13930,
+  "source_metrics": {
+    "epoch": 9,
+    "chosen": "raw",
+    "val": {
+      "accuracy": 0.7515456989247312,
+      "macro_accuracy": 0.7422943699117074,
+      "classes_present": 750
+    },
+    "val_ema": {
+      "accuracy": 0.7499327956989247,
+      "macro_accuracy": 0.7406175469784799,
+      "classes_present": 750
+    },
+    "selection_score": 1.118067219374073,
+    "train_loss": 2.931289952368678,
+    "validation_is_independent": true,
+    "validation_seconds": 668.8120000000054
+  },
+  "new_training_started": false
+}
