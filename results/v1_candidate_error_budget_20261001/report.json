@@ -1,0 +1,6794 @@
+{
+  "experiment_id": "V1_CANDIDATE_ERROR_BUDGET_20261001",
+  "status": "completed_verified_diagnostic",
+  "data_version": "20260921",
+  "classes": 750,
+  "validation_rows": 14880,
+  "training_rows": 133815,
+  "content_groups": 14658,
+  "analysis_type": "retrospective_recipe_comparison_not_causal_ablation",
+  "decoder_comparison_is_causal": false,
+  "original_noisy_labels": true,
+  "clean_labels_known": false,
+  "platform_gain_known": false,
+  "new_candidate": false,
+  "training_started": false,
+  "test_predictions_used": false,
+  "native_results_reproduced": true,
+  "decoders": {
+    "parent448_center": {
+      "input_size": 448,
+      "resize_short_edges": [
+        448
+      ],
+      "flip": false,
+      "bias": null
+    },
+    "head768": {
+      "input_size": 448,
+      "resize_short_edges": [
+        448
+      ],
+      "flip": false,
+      "bias": null
+    },
+    "balanced768": {
+      "input_size": 448,
+      "resize_short_edges": [
+        448
+      ],
+      "flip": false,
+      "bias": null
+    },
+    "lr512_parent": {
+      "input_size": 512,
+      "resize_short_edges": [
+        512
+      ],
+      "flip": true,
+      "bias": null
+    },
+    "lr512_ema": {
+      "input_size": 512,
+      "resize_short_edges": [
+        512
+      ],
+      "flip": true,
+      "bias": null
+    },
+    "lr512_swa": {
+      "input_size": 512,
+      "resize_short_edges": [
+        512
+      ],
+      "flip": true,
+      "bias": null
+    },
+    "wft448_parent": {
+      "input_size": 448,
+      "resize_short_edges": [
+        448,
+        512,
+        576
+      ],
+      "flip": true,
+      "bias": null
+    },
+    "wft448_ema": {
+      "input_size": 448,
+      "resize_short_edges": [
+        448,
+        512,
+        576
+      ],
+      "flip": true,
+      "bias": null
+    },
+    "wft448_swa": {
+      "input_size": 448,
+      "resize_short_edges": [
+        448,
+        512,
+        576
+      ],
+      "flip": true,
+      "bias": null
+    }
+  },
+  "metrics": {
+    "parent448_center": {
+      "all": {
+        "rows": 14880,
+        "correct": 11326,
+        "errors": 3554,
+        "classes": 750,
+        "micro": 0.7611559139784946,
+        "macro": 0.7516452637561509
+      },
+      "tail75": {
+        "rows": 1003,
+        "correct": 667,
+        "errors": 336,
+        "classes": 75,
+        "micro": 0.6650049850448654,
+        "macro": 0.6016353874883287
+      },
+      "head75": {
+        "rows": 1824,
+        "correct": 1357,
+        "errors": 467,
+        "classes": 75,
+        "micro": 0.7439692982456141,
+        "macro": 0.7446444444444446
+      },
+      "a_target_classes": {
+        "rows": 417,
+        "correct": 247,
+        "errors": 170,
+        "classes": 20,
+        "micro": 0.592326139088729,
+        "macro": 0.5770360073680676
+      },
+      "cross_label_duplicate": {
+        "rows": 367,
+        "correct": 113,
+        "errors": 254,
+        "classes": 140,
+        "micro": 0.3079019073569482,
+        "macro": 0.33558956916099775
+      },
+      "short_edge_below224": {
+        "rows": 1848,
+        "correct": 1215,
+        "errors": 633,
+        "classes": 571,
+        "micro": 0.6574675324675324,
+        "macro": 0.6737806560048241
+      },
+      "aspect_ratio_at_least2": {
+        "rows": 261,
+        "correct": 158,
+        "errors": 103,
+        "classes": 195,
+        "micro": 0.6053639846743295,
+        "macro": 0.6138461538461539
+      },
+      "non_tail": {
+        "rows": 13877,
+        "correct": 10659,
+        "errors": 3218,
+        "classes": 675,
+        "micro": 0.7681054983065504,
+        "macro": 0.7683130277859088
+      },
+      "outside_a_target": {
+        "rows": 14463,
+        "correct": 11079,
+        "errors": 3384,
+        "classes": 730,
+        "micro": 0.7660236465463597,
+        "macro": 0.7564290789996599
+      }
+    },
+    "head768": {
+      "all": {
+        "rows": 14880,
+        "correct": 11386,
+        "errors": 3494,
+        "classes": 750,
+        "micro": 0.7651881720430107,
+        "macro": 0.7560269146159723
+      },
+      "tail75": {
+        "rows": 1003,
+        "correct": 679,
+        "errors": 324,
+        "classes": 75,
+        "micro": 0.6769690927218345,
+        "macro": 0.6151103330220977
+      },
+      "head75": {
+        "rows": 1824,
+        "correct": 1364,
+        "errors": 460,
+        "classes": 75,
+        "micro": 0.7478070175438597,
+        "macro": 0.7484444444444446
+      },
+      "a_target_classes": {
+        "rows": 417,
+        "correct": 244,
+        "errors": 173,
+        "classes": 20,
+        "micro": 0.5851318944844125,
+        "macro": 0.5714192418871716
+      },
+      "cross_label_duplicate": {
+        "rows": 367,
+        "correct": 117,
+        "errors": 250,
+        "classes": 140,
+        "micro": 0.3188010899182561,
+        "macro": 0.3418707482993197
+      },
+      "short_edge_below224": {
+        "rows": 1848,
+        "correct": 1212,
+        "errors": 636,
+        "classes": 571,
+        "micro": 0.6558441558441559,
+        "macro": 0.6729252601844546
+      },
+      "aspect_ratio_at_least2": {
+        "rows": 261,
+        "correct": 160,
+        "errors": 101,
+        "classes": 195,
+        "micro": 0.6130268199233716,
+        "macro": 0.6159829059829061
+      },
+      "non_tail": {
+        "rows": 13877,
+        "correct": 10707,
+        "errors": 3170,
+        "classes": 675,
+        "micro": 0.7715644591770555,
+        "macro": 0.7716843125708474
+      },
+      "outside_a_target": {
+        "rows": 14463,
+        "correct": 11142,
+        "errors": 3321,
+        "classes": 730,
+        "micro": 0.7703795892968264,
+        "macro": 0.7610846590742957
+      }
+    },
+    "balanced768": {
+      "all": {
+        "rows": 14880,
+        "correct": 11328,
+        "errors": 3552,
+        "classes": 750,
+        "micro": 0.7612903225806451,
+        "macro": 0.7534204997723842
+      },
+      "tail75": {
+        "rows": 1003,
+        "correct": 690,
+        "errors": 313,
+        "classes": 75,
+        "micro": 0.6879361914257228,
+        "macro": 0.6269105197634609
+      },
+      "head75": {
+        "rows": 1824,
+        "correct": 1341,
+        "errors": 483,
+        "classes": 75,
+        "micro": 0.7351973684210527,
+        "macro": 0.7358444444444444
+      },
+      "a_target_classes": {
+        "rows": 417,
+        "correct": 247,
+        "errors": 170,
+        "classes": 20,
+        "micro": 0.592326139088729,
+        "macro": 0.5830280731667189
+      },
+      "cross_label_duplicate": {
+        "rows": 367,
+        "correct": 118,
+        "errors": 249,
+        "classes": 140,
+        "micro": 0.3215258855585831,
+        "macro": 0.34133219954648525
+      },
+      "short_edge_below224": {
+        "rows": 1848,
+        "correct": 1205,
+        "errors": 643,
+        "classes": 571,
+        "micro": 0.6520562770562771,
+        "macro": 0.6670714574392332
+      },
+      "aspect_ratio_at_least2": {
+        "rows": 261,
+        "correct": 159,
+        "errors": 102,
+        "classes": 195,
+        "micro": 0.6091954022988506,
+        "macro": 0.6134188034188035
+      },
+      "non_tail": {
+        "rows": 13877,
+        "correct": 10638,
+        "errors": 3239,
+        "classes": 675,
+        "micro": 0.7665922029257044,
+        "macro": 0.7674771642178203
+      },
+      "outside_a_target": {
+        "rows": 14463,
+        "correct": 11081,
+        "errors": 3382,
+        "classes": 730,
+        "micro": 0.7661619304431999,
+        "macro": 0.7580887854328133
+      }
+    },
+    "lr512_parent": {
+      "all": {
+        "rows": 14880,
+        "correct": 11312,
+        "errors": 3568,
+        "classes": 750,
+        "micro": 0.7602150537634409,
+        "macro": 0.7502871585775517
+      },
+      "tail75": {
+        "rows": 1003,
+        "correct": 656,
+        "errors": 347,
+        "classes": 75,
+        "micro": 0.654037886340977,
+        "macro": 0.5896764705882354
+      },
+      "head75": {
+        "rows": 1824,
+        "correct": 1348,
+        "errors": 476,
+        "classes": 75,
+        "micro": 0.7390350877192983,
+        "macro": 0.7396444444444444
+      },
+      "a_target_classes": {
+        "rows": 417,
+        "correct": 254,
+        "errors": 163,
+        "classes": 20,
+        "micro": 0.6091127098321343,
+        "macro": 0.5915887718550426
+      },
+      "cross_label_duplicate": {
+        "rows": 367,
+        "correct": 109,
+        "errors": 258,
+        "classes": 140,
+        "micro": 0.2970027247956403,
+        "macro": 0.327704081632653
+      },
+      "short_edge_below224": {
+        "rows": 1848,
+        "correct": 1198,
+        "errors": 650,
+        "classes": 571,
+        "micro": 0.6482683982683982,
+        "macro": 0.6649698812570967
+      },
+      "aspect_ratio_at_least2": {
+        "rows": 261,
+        "correct": 152,
+        "errors": 109,
+        "classes": 195,
+        "micro": 0.5823754789272031,
+        "macro": 0.583076923076923
+      },
+      "non_tail": {
+        "rows": 13877,
+        "correct": 10656,
+        "errors": 3221,
+        "classes": 675,
+        "micro": 0.7678893132521438,
+        "macro": 0.7681327905763646
+      },
+      "outside_a_target": {
+        "rows": 14463,
+        "correct": 11058,
+        "errors": 3405,
+        "classes": 730,
+        "micro": 0.7645716656295375,
+        "macro": 0.7546350595836477
+      }
+    },
+    "lr512_ema": {
+      "all": {
+        "rows": 14880,
+        "correct": 11389,
+        "errors": 3491,
+        "classes": 750,
+        "micro": 0.7653897849462366,
+        "macro": 0.755461258257504
+      },
+      "tail75": {
+        "rows": 1003,
+        "correct": 671,
+        "errors": 332,
+        "classes": 75,
+        "micro": 0.6689930209371885,
+        "macro": 0.6051234049175226
+      },
+      "head75": {
+        "rows": 1824,
+        "correct": 1367,
+        "errors": 457,
+        "classes": 75,
+        "micro": 0.7494517543859649,
+        "macro": 0.7500222222222223
+      },
+      "a_target_classes": {
+        "rows": 417,
+        "correct": 257,
+        "errors": 160,
+        "classes": 20,
+        "micro": 0.6163069544364509,
+        "macro": 0.5974243732927607
+      },
+      "cross_label_duplicate": {
+        "rows": 367,
+        "correct": 115,
+        "errors": 252,
+        "classes": 140,
+        "micro": 0.3133514986376022,
+        "macro": 0.35117630385487525
+      },
+      "short_edge_below224": {
+        "rows": 1848,
+        "correct": 1232,
+        "errors": 616,
+        "classes": 571,
+        "micro": 0.6666666666666666,
+        "macro": 0.6847096861107369
+      },
+      "aspect_ratio_at_least2": {
+        "rows": 261,
+        "correct": 155,
+        "errors": 106,
+        "classes": 195,
+        "micro": 0.5938697318007663,
+        "macro": 0.6010256410256409
+      },
+      "non_tail": {
+        "rows": 13877,
+        "correct": 10718,
+        "errors": 3159,
+        "classes": 675,
+        "micro": 0.7723571377098797,
+        "macro": 0.7721654641841686
+      },
+      "outside_a_target": {
+        "rows": 14463,
+        "correct": 11132,
+        "errors": 3331,
+        "classes": 730,
+        "micro": 0.7696881698126253,
+        "macro": 0.7597910359277711
+      }
+    },
+    "lr512_swa": {
+      "all": {
+        "rows": 14880,
+        "correct": 11422,
+        "errors": 3458,
+        "classes": 750,
+        "micro": 0.7676075268817204,
+        "macro": 0.7576305868924552
+      },
+      "tail75": {
+        "rows": 1003,
+        "correct": 670,
+        "errors": 333,
+        "classes": 75,
+        "micro": 0.6679960119641076,
+        "macro": 0.6038376906318081
+      },
+      "head75": {
+        "rows": 1824,
+        "correct": 1368,
+        "errors": 456,
+        "classes": 75,
+        "micro": 0.75,
+        "macro": 0.7505333333333334
+      },
+      "a_target_classes": {
+        "rows": 417,
+        "correct": 256,
+        "errors": 161,
+        "classes": 20,
+        "micro": 0.6139088729016786,
+        "macro": 0.5951516460200335
+      },
+      "cross_label_duplicate": {
+        "rows": 367,
+        "correct": 116,
+        "errors": 251,
+        "classes": 140,
+        "micro": 0.31607629427792916,
+        "macro": 0.35270408163265304
+      },
+      "short_edge_below224": {
+        "rows": 1848,
+        "correct": 1236,
+        "errors": 612,
+        "classes": 571,
+        "micro": 0.6688311688311688,
+        "macro": 0.6849869774125465
+      },
+      "aspect_ratio_at_least2": {
+        "rows": 261,
+        "correct": 155,
+        "errors": 106,
+        "classes": 195,
+        "micro": 0.5938697318007663,
+        "macro": 0.6010256410256409
+      },
+      "non_tail": {
+        "rows": 13877,
+        "correct": 10752,
+        "errors": 3125,
+        "classes": 675,
+        "micro": 0.7748072349931542,
+        "macro": 0.7747186864769716
+      },
+      "outside_a_target": {
+        "rows": 14463,
+        "correct": 11166,
+        "errors": 3297,
+        "classes": 730,
+        "micro": 0.7720389960589089,
+        "macro": 0.7620820647245764
+      }
+    },
+    "wft448_parent": {
+      "all": {
+        "rows": 14880,
+        "correct": 11303,
+        "errors": 3577,
+        "classes": 750,
+        "micro": 0.7596102150537635,
+        "macro": 0.7495584793126736
+      },
+      "tail75": {
+        "rows": 1003,
+        "correct": 669,
+        "errors": 334,
+        "classes": 75,
+        "micro": 0.6669990029910269,
+        "macro": 0.5986182695300343
+      },
+      "head75": {
+        "rows": 1824,
+        "correct": 1345,
+        "errors": 479,
+        "classes": 75,
+        "micro": 0.737390350877193,
+        "macro": 0.7380222222222224
+      },
+      "a_target_classes": {
+        "rows": 417,
+        "correct": 249,
+        "errors": 168,
+        "classes": 20,
+        "micro": 0.5971223021582733,
+        "macro": 0.5815581307760604
+      },
+      "cross_label_duplicate": {
+        "rows": 367,
+        "correct": 111,
+        "errors": 256,
+        "classes": 140,
+        "micro": 0.3024523160762943,
+        "macro": 0.33818027210884355
+      },
+      "short_edge_below224": {
+        "rows": 1848,
+        "correct": 1197,
+        "errors": 651,
+        "classes": 571,
+        "micro": 0.6477272727272727,
+        "macro": 0.662473671492936
+      },
+      "aspect_ratio_at_least2": {
+        "rows": 261,
+        "correct": 149,
+        "errors": 112,
+        "classes": 195,
+        "micro": 0.5708812260536399,
+        "macro": 0.5736752136752137
+      },
+      "non_tail": {
+        "rows": 13877,
+        "correct": 10634,
+        "errors": 3243,
+        "classes": 675,
+        "micro": 0.7663039561864956,
+        "macro": 0.7663296137329669
+      },
+      "outside_a_target": {
+        "rows": 14463,
+        "correct": 11054,
+        "errors": 3409,
+        "classes": 730,
+        "micro": 0.764295097835857,
+        "macro": 0.7541612285876494
+      }
+    },
+    "wft448_ema": {
+      "all": {
+        "rows": 14880,
+        "correct": 11390,
+        "errors": 3490,
+        "classes": 750,
+        "micro": 0.7654569892473119,
+        "macro": 0.7552002638587737
+      },
+      "tail75": {
+        "rows": 1003,
+        "correct": 673,
+        "errors": 330,
+        "classes": 75,
+        "micro": 0.67098703888335,
+        "macro": 0.6023020541549953
+      },
+      "head75": {
+        "rows": 1824,
+        "correct": 1365,
+        "errors": 459,
+        "classes": 75,
+        "micro": 0.7483552631578947,
+        "macro": 0.7487777777777777
+      },
+      "a_target_classes": {
+        "rows": 417,
+        "correct": 249,
+        "errors": 168,
+        "classes": 20,
+        "micro": 0.5971223021582733,
+        "macro": 0.5824526536396404
+      },
+      "cross_label_duplicate": {
+        "rows": 367,
+        "correct": 115,
+        "errors": 252,
+        "classes": 140,
+        "micro": 0.3133514986376022,
+        "macro": 0.3412329931972789
+      },
+      "short_edge_below224": {
+        "rows": 1848,
+        "correct": 1226,
+        "errors": 622,
+        "classes": 571,
+        "micro": 0.6634199134199135,
+        "macro": 0.6779039942349925
+      },
+      "aspect_ratio_at_least2": {
+        "rows": 261,
+        "correct": 154,
+        "errors": 107,
+        "classes": 195,
+        "micro": 0.5900383141762452,
+        "macro": 0.5946153846153847
+      },
+      "non_tail": {
+        "rows": 13877,
+        "correct": 10717,
+        "errors": 3160,
+        "classes": 675,
+        "micro": 0.7722850760250775,
+        "macro": 0.7721889538258603
+      },
+      "outside_a_target": {
+        "rows": 14463,
+        "correct": 11141,
+        "errors": 3322,
+        "classes": 730,
+        "micro": 0.7703104473484063,
+        "macro": 0.7599330750976542
+      }
+    },
+    "wft448_swa": {
+      "all": {
+        "rows": 14880,
+        "correct": 11390,
+        "errors": 3490,
+        "classes": 750,
+        "micro": 0.7654569892473119,
+        "macro": 0.7555756798782198
+      },
+      "tail75": {
+        "rows": 1003,
+        "correct": 680,
+        "errors": 323,
+        "classes": 75,
+        "micro": 0.6779661016949152,
+        "macro": 0.60945813881108
+      },
+      "head75": {
+        "rows": 1824,
+        "correct": 1362,
+        "errors": 462,
+        "classes": 75,
+        "micro": 0.7467105263157895,
+        "macro": 0.7472222222222222
+      },
+      "a_target_classes": {
+        "rows": 417,
+        "correct": 248,
+        "errors": 169,
+        "classes": 20,
+        "micro": 0.5947242206235012,
+        "macro": 0.5796748758618626
+      },
+      "cross_label_duplicate": {
+        "rows": 367,
+        "correct": 113,
+        "errors": 254,
+        "classes": 140,
+        "micro": 0.3079019073569482,
+        "macro": 0.34038265306122445
+      },
+      "short_edge_below224": {
+        "rows": 1848,
+        "correct": 1222,
+        "errors": 626,
+        "classes": 571,
+        "micro": 0.6612554112554112,
+        "macro": 0.671660422667428
+      },
+      "aspect_ratio_at_least2": {
+        "rows": 261,
+        "correct": 157,
+        "errors": 104,
+        "classes": 195,
+        "micro": 0.6015325670498084,
+        "macro": 0.61
+      },
+      "non_tail": {
+        "rows": 13877,
+        "correct": 10710,
+        "errors": 3167,
+        "classes": 675,
+        "micro": 0.7717806442314621,
+        "macro": 0.7718109622190134
+      },
+      "outside_a_target": {
+        "rows": 14463,
+        "correct": 11142,
+        "errors": 3321,
+        "classes": 730,
+        "micro": 0.7703795892968264,
+        "macro": 0.760394879988257
+      }
+    }
+  },
+  "paired": {
+    "parent448_center__to__head768": {
+      "same_decoder": true,
+      "native_parent_comparison": true,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 308,
+          "regressions": 248,
+          "net": 60,
+          "changed": 1222,
+          "both_wrong": 3246
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 28,
+          "regressions": 16,
+          "net": 12,
+          "changed": 105,
+          "both_wrong": 308
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 40,
+          "regressions": 33,
+          "net": 7,
+          "changed": 158,
+          "both_wrong": 427
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 8,
+          "regressions": 11,
+          "net": -3,
+          "changed": 37,
+          "both_wrong": 162
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 10,
+          "regressions": 6,
+          "net": 4,
+          "changed": 46,
+          "both_wrong": 244
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 49,
+          "regressions": 52,
+          "net": -3,
+          "changed": 249,
+          "both_wrong": 584
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 7,
+          "regressions": 5,
+          "net": 2,
+          "changed": 36,
+          "both_wrong": 96
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 280,
+          "regressions": 232,
+          "net": 48,
+          "changed": 1117,
+          "both_wrong": 2938
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 300,
+          "regressions": 237,
+          "net": 63,
+          "changed": 1185,
+          "both_wrong": 3084
+        }
+      }
+    },
+    "parent448_center__to__balanced768": {
+      "same_decoder": true,
+      "native_parent_comparison": true,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 319,
+          "regressions": 317,
+          "net": 2,
+          "changed": 1430,
+          "both_wrong": 3235
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 38,
+          "regressions": 15,
+          "net": 23,
+          "changed": 124,
+          "both_wrong": 298
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 34,
+          "regressions": 50,
+          "net": -16,
+          "changed": 186,
+          "both_wrong": 433
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 16,
+          "regressions": 16,
+          "net": 0,
+          "changed": 53,
+          "both_wrong": 154
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 17,
+          "regressions": 12,
+          "net": 5,
+          "changed": 73,
+          "both_wrong": 237
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 54,
+          "regressions": 64,
+          "net": -10,
+          "changed": 285,
+          "both_wrong": 579
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 6,
+          "regressions": 5,
+          "net": 1,
+          "changed": 45,
+          "both_wrong": 97
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 281,
+          "regressions": 302,
+          "net": -21,
+          "changed": 1306,
+          "both_wrong": 2937
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 303,
+          "regressions": 301,
+          "net": 2,
+          "changed": 1377,
+          "both_wrong": 3081
+        }
+      }
+    },
+    "lr512_parent__to__lr512_ema": {
+      "same_decoder": true,
+      "native_parent_comparison": true,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 337,
+          "regressions": 260,
+          "net": 77,
+          "changed": 1400,
+          "both_wrong": 3231
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 29,
+          "regressions": 14,
+          "net": 15,
+          "changed": 139,
+          "both_wrong": 318
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 51,
+          "regressions": 32,
+          "net": 19,
+          "changed": 192,
+          "both_wrong": 425
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 18,
+          "regressions": 15,
+          "net": 3,
+          "changed": 55,
+          "both_wrong": 145
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 17,
+          "regressions": 11,
+          "net": 6,
+          "changed": 69,
+          "both_wrong": 241
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 70,
+          "regressions": 36,
+          "net": 34,
+          "changed": 281,
+          "both_wrong": 580
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 8,
+          "regressions": 5,
+          "net": 3,
+          "changed": 45,
+          "both_wrong": 101
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 308,
+          "regressions": 246,
+          "net": 62,
+          "changed": 1261,
+          "both_wrong": 2913
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 319,
+          "regressions": 245,
+          "net": 74,
+          "changed": 1345,
+          "both_wrong": 3086
+        }
+      }
+    },
+    "lr512_parent__to__lr512_swa": {
+      "same_decoder": true,
+      "native_parent_comparison": true,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 324,
+          "regressions": 214,
+          "net": 110,
+          "changed": 1267,
+          "both_wrong": 3244
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 25,
+          "regressions": 11,
+          "net": 14,
+          "changed": 119,
+          "both_wrong": 322
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 46,
+          "regressions": 26,
+          "net": 20,
+          "changed": 177,
+          "both_wrong": 430
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 14,
+          "regressions": 12,
+          "net": 2,
+          "changed": 45,
+          "both_wrong": 149
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 15,
+          "regressions": 8,
+          "net": 7,
+          "changed": 59,
+          "both_wrong": 243
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 71,
+          "regressions": 33,
+          "net": 38,
+          "changed": 262,
+          "both_wrong": 579
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 8,
+          "regressions": 5,
+          "net": 3,
+          "changed": 43,
+          "both_wrong": 101
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 299,
+          "regressions": 203,
+          "net": 96,
+          "changed": 1148,
+          "both_wrong": 2922
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 310,
+          "regressions": 202,
+          "net": 108,
+          "changed": 1222,
+          "both_wrong": 3095
+        }
+      }
+    },
+    "wft448_parent__to__wft448_ema": {
+      "same_decoder": true,
+      "native_parent_comparison": true,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 323,
+          "regressions": 236,
+          "net": 87,
+          "changed": 1278,
+          "both_wrong": 3254
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 20,
+          "regressions": 16,
+          "net": 4,
+          "changed": 110,
+          "both_wrong": 314
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 48,
+          "regressions": 28,
+          "net": 20,
+          "changed": 179,
+          "both_wrong": 431
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 11,
+          "regressions": 11,
+          "net": 0,
+          "changed": 41,
+          "both_wrong": 157
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 16,
+          "regressions": 12,
+          "net": 4,
+          "changed": 67,
+          "both_wrong": 240
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 64,
+          "regressions": 35,
+          "net": 29,
+          "changed": 250,
+          "both_wrong": 587
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 9,
+          "regressions": 4,
+          "net": 5,
+          "changed": 47,
+          "both_wrong": 103
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 303,
+          "regressions": 220,
+          "net": 83,
+          "changed": 1168,
+          "both_wrong": 2940
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 312,
+          "regressions": 225,
+          "net": 87,
+          "changed": 1237,
+          "both_wrong": 3097
+        }
+      }
+    },
+    "wft448_parent__to__wft448_swa": {
+      "same_decoder": true,
+      "native_parent_comparison": true,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 287,
+          "regressions": 200,
+          "net": 87,
+          "changed": 1141,
+          "both_wrong": 3290
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 21,
+          "regressions": 10,
+          "net": 11,
+          "changed": 96,
+          "both_wrong": 313
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 40,
+          "regressions": 23,
+          "net": 17,
+          "changed": 161,
+          "both_wrong": 439
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 7,
+          "regressions": 8,
+          "net": -1,
+          "changed": 30,
+          "both_wrong": 161
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 11,
+          "regressions": 9,
+          "net": 2,
+          "changed": 52,
+          "both_wrong": 245
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 56,
+          "regressions": 31,
+          "net": 25,
+          "changed": 223,
+          "both_wrong": 595
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 10,
+          "regressions": 2,
+          "net": 8,
+          "changed": 42,
+          "both_wrong": 102
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 266,
+          "regressions": 190,
+          "net": 76,
+          "changed": 1045,
+          "both_wrong": 2977
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 280,
+          "regressions": 192,
+          "net": 88,
+          "changed": 1111,
+          "both_wrong": 3129
+        }
+      }
+    },
+    "lr512_swa__to__head768": {
+      "same_decoder": false,
+      "native_parent_comparison": false,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 376,
+          "regressions": 412,
+          "net": -36,
+          "changed": 1709,
+          "both_wrong": 3082
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 35,
+          "regressions": 26,
+          "net": 9,
+          "changed": 161,
+          "both_wrong": 298
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 47,
+          "regressions": 51,
+          "net": -4,
+          "changed": 218,
+          "both_wrong": 409
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 13,
+          "regressions": 25,
+          "net": -12,
+          "changed": 59,
+          "both_wrong": 148
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 17,
+          "regressions": 16,
+          "net": 1,
+          "changed": 78,
+          "both_wrong": 234
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 65,
+          "regressions": 89,
+          "net": -24,
+          "changed": 346,
+          "both_wrong": 547
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 9,
+          "regressions": 4,
+          "net": 5,
+          "changed": 46,
+          "both_wrong": 97
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 341,
+          "regressions": 386,
+          "net": -45,
+          "changed": 1548,
+          "both_wrong": 2784
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 363,
+          "regressions": 387,
+          "net": -24,
+          "changed": 1650,
+          "both_wrong": 2934
+        }
+      }
+    },
+    "lr512_swa__to__balanced768": {
+      "same_decoder": false,
+      "native_parent_comparison": false,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 381,
+          "regressions": 475,
+          "net": -94,
+          "changed": 1835,
+          "both_wrong": 3077
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 46,
+          "regressions": 26,
+          "net": 20,
+          "changed": 171,
+          "both_wrong": 287
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 42,
+          "regressions": 69,
+          "net": -27,
+          "changed": 237,
+          "both_wrong": 414
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 19,
+          "regressions": 28,
+          "net": -9,
+          "changed": 68,
+          "both_wrong": 142
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 23,
+          "regressions": 21,
+          "net": 2,
+          "changed": 93,
+          "both_wrong": 228
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 66,
+          "regressions": 97,
+          "net": -31,
+          "changed": 362,
+          "both_wrong": 546
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 9,
+          "regressions": 5,
+          "net": 4,
+          "changed": 49,
+          "both_wrong": 97
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 335,
+          "regressions": 449,
+          "net": -114,
+          "changed": 1664,
+          "both_wrong": 2790
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 362,
+          "regressions": 447,
+          "net": -85,
+          "changed": 1767,
+          "both_wrong": 2935
+        }
+      }
+    },
+    "lr512_swa__to__wft448_ema": {
+      "same_decoder": false,
+      "native_parent_comparison": false,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 311,
+          "regressions": 343,
+          "net": -32,
+          "changed": 1496,
+          "both_wrong": 3147
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 27,
+          "regressions": 24,
+          "net": 3,
+          "changed": 143,
+          "both_wrong": 306
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 38,
+          "regressions": 41,
+          "net": -3,
+          "changed": 179,
+          "both_wrong": 418
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 11,
+          "regressions": 18,
+          "net": -7,
+          "changed": 55,
+          "both_wrong": 150
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 11,
+          "regressions": 12,
+          "net": -1,
+          "changed": 69,
+          "both_wrong": 240
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 58,
+          "regressions": 68,
+          "net": -10,
+          "changed": 301,
+          "both_wrong": 554
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 9,
+          "regressions": 10,
+          "net": -1,
+          "changed": 52,
+          "both_wrong": 97
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 284,
+          "regressions": 319,
+          "net": -35,
+          "changed": 1353,
+          "both_wrong": 2841
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 300,
+          "regressions": 325,
+          "net": -25,
+          "changed": 1441,
+          "both_wrong": 2997
+        }
+      }
+    },
+    "head768__to__balanced768": {
+      "same_decoder": true,
+      "native_parent_comparison": false,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 95,
+          "regressions": 153,
+          "net": -58,
+          "changed": 590,
+          "both_wrong": 3399
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 15,
+          "regressions": 4,
+          "net": 11,
+          "changed": 49,
+          "both_wrong": 309
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 6,
+          "regressions": 29,
+          "net": -23,
+          "changed": 76,
+          "both_wrong": 454
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 8,
+          "regressions": 5,
+          "net": 3,
+          "changed": 18,
+          "both_wrong": 165
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 9,
+          "regressions": 8,
+          "net": 1,
+          "changed": 45,
+          "both_wrong": 241
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 20,
+          "regressions": 27,
+          "net": -7,
+          "changed": 125,
+          "both_wrong": 616
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 0,
+          "regressions": 1,
+          "net": -1,
+          "changed": 20,
+          "both_wrong": 101
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 80,
+          "regressions": 149,
+          "net": -69,
+          "changed": 541,
+          "both_wrong": 3090
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 87,
+          "regressions": 148,
+          "net": -61,
+          "changed": 572,
+          "both_wrong": 3234
+        }
+      }
+    },
+    "head768__to__wft448_ema": {
+      "same_decoder": false,
+      "native_parent_comparison": false,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 422,
+          "regressions": 418,
+          "net": 4,
+          "changed": 1823,
+          "both_wrong": 3072
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 27,
+          "regressions": 33,
+          "net": -6,
+          "changed": 154,
+          "both_wrong": 297
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 57,
+          "regressions": 56,
+          "net": 1,
+          "changed": 251,
+          "both_wrong": 403
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 19,
+          "regressions": 14,
+          "net": 5,
+          "changed": 64,
+          "both_wrong": 154
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 14,
+          "regressions": 16,
+          "net": -2,
+          "changed": 83,
+          "both_wrong": 236
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 78,
+          "regressions": 64,
+          "net": 14,
+          "changed": 350,
+          "both_wrong": 558
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 7,
+          "regressions": 13,
+          "net": -6,
+          "changed": 53,
+          "both_wrong": 94
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 395,
+          "regressions": 385,
+          "net": 10,
+          "changed": 1669,
+          "both_wrong": 2775
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 403,
+          "regressions": 404,
+          "net": -1,
+          "changed": 1759,
+          "both_wrong": 2918
+        }
+      }
+    },
+    "balanced768__to__wft448_ema": {
+      "same_decoder": false,
+      "native_parent_comparison": false,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 486,
+          "regressions": 424,
+          "net": 62,
+          "changed": 1951,
+          "both_wrong": 3066
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 29,
+          "regressions": 46,
+          "net": -17,
+          "changed": 173,
+          "both_wrong": 284
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 71,
+          "regressions": 47,
+          "net": 24,
+          "changed": 261,
+          "both_wrong": 412
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 21,
+          "regressions": 19,
+          "net": 2,
+          "changed": 72,
+          "both_wrong": 149
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 17,
+          "regressions": 20,
+          "net": -3,
+          "changed": 84,
+          "both_wrong": 232
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 91,
+          "regressions": 70,
+          "net": 21,
+          "changed": 377,
+          "both_wrong": 552
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 7,
+          "regressions": 12,
+          "net": -5,
+          "changed": 55,
+          "both_wrong": 95
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 457,
+          "regressions": 378,
+          "net": 79,
+          "changed": 1778,
+          "both_wrong": 2782
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 465,
+          "regressions": 405,
+          "net": 60,
+          "changed": 1879,
+          "both_wrong": 2917
+        }
+      }
+    },
+    "parent448_center__to__lr512_parent": {
+      "same_decoder": false,
+      "native_parent_comparison": false,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 263,
+          "regressions": 277,
+          "net": -14,
+          "changed": 1258,
+          "both_wrong": 3291
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 18,
+          "regressions": 29,
+          "net": -11,
+          "changed": 120,
+          "both_wrong": 318
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 35,
+          "regressions": 44,
+          "net": -9,
+          "changed": 172,
+          "both_wrong": 432
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 17,
+          "regressions": 10,
+          "net": 7,
+          "changed": 53,
+          "both_wrong": 153
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 13,
+          "regressions": 17,
+          "net": -4,
+          "changed": 63,
+          "both_wrong": 241
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 45,
+          "regressions": 62,
+          "net": -17,
+          "changed": 262,
+          "both_wrong": 588
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 6,
+          "regressions": 12,
+          "net": -6,
+          "changed": 37,
+          "both_wrong": 97
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 245,
+          "regressions": 248,
+          "net": -3,
+          "changed": 1138,
+          "both_wrong": 2973
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 246,
+          "regressions": 267,
+          "net": -21,
+          "changed": 1205,
+          "both_wrong": 3138
+        }
+      }
+    },
+    "parent448_center__to__wft448_parent": {
+      "same_decoder": false,
+      "native_parent_comparison": false,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 261,
+          "regressions": 284,
+          "net": -23,
+          "changed": 1160,
+          "both_wrong": 3293
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 20,
+          "regressions": 18,
+          "net": 2,
+          "changed": 90,
+          "both_wrong": 316
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 30,
+          "regressions": 42,
+          "net": -12,
+          "changed": 155,
+          "both_wrong": 437
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 14,
+          "regressions": 12,
+          "net": 2,
+          "changed": 47,
+          "both_wrong": 156
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 11,
+          "regressions": 13,
+          "net": -2,
+          "changed": 61,
+          "both_wrong": 243
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 42,
+          "regressions": 60,
+          "net": -18,
+          "changed": 239,
+          "both_wrong": 591
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 4,
+          "regressions": 13,
+          "net": -9,
+          "changed": 43,
+          "both_wrong": 99
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 241,
+          "regressions": 266,
+          "net": -25,
+          "changed": 1070,
+          "both_wrong": 2977
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 247,
+          "regressions": 272,
+          "net": -25,
+          "changed": 1113,
+          "both_wrong": 3137
+        }
+      }
+    },
+    "lr512_ema__to__lr512_swa": {
+      "same_decoder": true,
+      "native_parent_comparison": false,
+      "groups": {
+        "all": {
+          "rows": 14880,
+          "corrections": 100,
+          "regressions": 67,
+          "net": 33,
+          "changed": 376,
+          "both_wrong": 3391
+        },
+        "tail75": {
+          "rows": 1003,
+          "corrections": 8,
+          "regressions": 9,
+          "net": -1,
+          "changed": 34,
+          "both_wrong": 324
+        },
+        "head75": {
+          "rows": 1824,
+          "corrections": 13,
+          "regressions": 12,
+          "net": 1,
+          "changed": 52,
+          "both_wrong": 444
+        },
+        "a_target_classes": {
+          "rows": 417,
+          "corrections": 5,
+          "regressions": 6,
+          "net": -1,
+          "changed": 17,
+          "both_wrong": 155
+        },
+        "cross_label_duplicate": {
+          "rows": 367,
+          "corrections": 4,
+          "regressions": 3,
+          "net": 1,
+          "changed": 14,
+          "both_wrong": 248
+        },
+        "short_edge_below224": {
+          "rows": 1848,
+          "corrections": 17,
+          "regressions": 13,
+          "net": 4,
+          "changed": 74,
+          "both_wrong": 599
+        },
+        "aspect_ratio_at_least2": {
+          "rows": 261,
+          "corrections": 0,
+          "regressions": 0,
+          "net": 0,
+          "changed": 8,
+          "both_wrong": 106
+        },
+        "non_tail": {
+          "rows": 13877,
+          "corrections": 92,
+          "regressions": 58,
+          "net": 34,
+          "changed": 342,
+          "both_wrong": 3067
+        },
+        "outside_a_target": {
+          "rows": 14463,
+          "corrections": 95,
+          "regressions": 61,
+          "net": 34,
+          "changed": 359,
+          "both_wrong": 3236
+        }
+      }
+    }
+  },
+  "sampling_intervals": {
+    "parent448_center__to__head768": {
+      "delta_micro_pp_95_percentile_interval": [
+        0.09409234491565294,
+        0.6924462898766824
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "parent448_center__to__balanced768": {
+      "delta_micro_pp_95_percentile_interval": [
+        -0.3096804385335961,
+        0.32325344128570377
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "lr512_parent__to__lr512_ema": {
+      "delta_micro_pp_95_percentile_interval": [
+        0.20172033848504436,
+        0.8463305584926591
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "lr512_parent__to__lr512_swa": {
+      "delta_micro_pp_95_percentile_interval": [
+        0.442957358984465,
+        1.0468622010365631
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "wft448_parent__to__wft448_ema": {
+      "delta_micro_pp_95_percentile_interval": [
+        0.27497908558664813,
+        0.8940064632467574
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "wft448_parent__to__wft448_swa": {
+      "delta_micro_pp_95_percentile_interval": [
+        0.2887058927484261,
+        0.8673478830018839
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "lr512_swa__to__head768": {
+      "delta_micro_pp_95_percentile_interval": [
+        -0.6062011524806443,
+        0.11455165282794183
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "lr512_swa__to__balanced768": {
+      "delta_micro_pp_95_percentile_interval": [
+        -1.0080018557221972,
+        -0.241885497692156
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "lr512_swa__to__wft448_ema": {
+      "delta_micro_pp_95_percentile_interval": [
+        -0.5579850691032817,
+        0.11400769934314546
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "head768__to__balanced768": {
+      "delta_micro_pp_95_percentile_interval": [
+        -0.5842494419615797,
+        -0.17523315712581977
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "head768__to__wft448_ema": {
+      "delta_micro_pp_95_percentile_interval": [
+        -0.32919322557167674,
+        0.40306395789728505
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "balanced768__to__wft448_ema": {
+      "delta_micro_pp_95_percentile_interval": [
+        0.04680421294262035,
+        0.8074089570360883
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "parent448_center__to__lr512_parent": {
+      "delta_micro_pp_95_percentile_interval": [
+        -0.38395072781927564,
+        0.2151264120008633
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "parent448_center__to__wft448_parent": {
+      "delta_micro_pp_95_percentile_interval": [
+        -0.4505132998348749,
+        0.14828508993714626
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    },
+    "lr512_ema__to__lr512_swa": {
+      "delta_micro_pp_95_percentile_interval": [
+        0.053838156937839235,
+        0.38963373097529524
+      ],
+      "independent_content_groups": 14658,
+      "resamples": 2000,
+      "seed": 42,
+      "interpretation": "Sampling uncertainty conditional on original noisy labels; not platform uncertainty"
+    }
+  },
+  "candidate_names": [
+    "lr512_swa",
+    "head768",
+    "balanced768",
+    "wft448_ema"
+  ],
+  "candidate_error_overlap": {
+    "all": {
+      "rows": 14880,
+      "all_candidates_wrong": 2875,
+      "all_wrong_same_prediction": 1651,
+      "all_wrong_disagree": 1224,
+      "correctness_disagreement": 1269,
+      "uniquely_correct": {
+        "lr512_swa": 138,
+        "head768": 34,
+        "balanced768": 47,
+        "wft448_ema": 149
+      },
+      "errors": {
+        "lr512_swa": 3458,
+        "head768": 3494,
+        "balanced768": 3552,
+        "wft448_ema": 3490
+      }
+    },
+    "tail75": {
+      "rows": 1003,
+      "all_candidates_wrong": 278,
+      "all_wrong_same_prediction": 152,
+      "all_wrong_disagree": 126,
+      "correctness_disagreement": 101,
+      "uniquely_correct": {
+        "lr512_swa": 6,
+        "head768": 0,
+        "balanced768": 11,
+        "wft448_ema": 9
+      },
+      "errors": {
+        "lr512_swa": 333,
+        "head768": 324,
+        "balanced768": 313,
+        "wft448_ema": 330
+      }
+    },
+    "head75": {
+      "rows": 1824,
+      "all_candidates_wrong": 380,
+      "all_wrong_same_prediction": 224,
+      "all_wrong_disagree": 156,
+      "correctness_disagreement": 163,
+      "uniquely_correct": {
+        "lr512_swa": 18,
+        "head768": 8,
+        "balanced768": 4,
+        "wft448_ema": 25
+      },
+      "errors": {
+        "lr512_swa": 456,
+        "head768": 460,
+        "balanced768": 483,
+        "wft448_ema": 459
+      }
+    },
+    "a_target_classes": {
+      "rows": 417,
+      "all_candidates_wrong": 135,
+      "all_wrong_same_prediction": 104,
+      "all_wrong_disagree": 31,
+      "correctness_disagreement": 59,
+      "uniquely_correct": {
+        "lr512_swa": 12,
+        "head768": 1,
+        "balanced768": 6,
+        "wft448_ema": 6
+      },
+      "errors": {
+        "lr512_swa": 161,
+        "head768": 173,
+        "balanced768": 170,
+        "wft448_ema": 168
+      }
+    },
+    "cross_label_duplicate": {
+      "rows": 367,
+      "all_candidates_wrong": 224,
+      "all_wrong_same_prediction": 158,
+      "all_wrong_disagree": 66,
+      "correctness_disagreement": 53,
+      "uniquely_correct": {
+        "lr512_swa": 6,
+        "head768": 1,
+        "balanced768": 5,
+        "wft448_ema": 2
+      },
+      "errors": {
+        "lr512_swa": 251,
+        "head768": 250,
+        "balanced768": 249,
+        "wft448_ema": 252
+      }
+    },
+    "short_edge_below224": {
+      "rows": 1848,
+      "all_candidates_wrong": 510,
+      "all_wrong_same_prediction": 263,
+      "all_wrong_disagree": 247,
+      "correctness_disagreement": 235,
+      "uniquely_correct": {
+        "lr512_swa": 33,
+        "head768": 7,
+        "balanced768": 10,
+        "wft448_ema": 25
+      },
+      "errors": {
+        "lr512_swa": 612,
+        "head768": 636,
+        "balanced768": 643,
+        "wft448_ema": 622
+      }
+    },
+    "aspect_ratio_at_least2": {
+      "rows": 261,
+      "all_candidates_wrong": 92,
+      "all_wrong_same_prediction": 45,
+      "all_wrong_disagree": 47,
+      "correctness_disagreement": 26,
+      "uniquely_correct": {
+        "lr512_swa": 2,
+        "head768": 0,
+        "balanced768": 0,
+        "wft448_ema": 5
+      },
+      "errors": {
+        "lr512_swa": 106,
+        "head768": 101,
+        "balanced768": 102,
+        "wft448_ema": 107
+      }
+    },
+    "non_tail": {
+      "rows": 13877,
+      "all_candidates_wrong": 2597,
+      "all_wrong_same_prediction": 1499,
+      "all_wrong_disagree": 1098,
+      "correctness_disagreement": 1168,
+      "uniquely_correct": {
+        "lr512_swa": 132,
+        "head768": 34,
+        "balanced768": 36,
+        "wft448_ema": 140
+      },
+      "errors": {
+        "lr512_swa": 3125,
+        "head768": 3170,
+        "balanced768": 3239,
+        "wft448_ema": 3160
+      }
+    },
+    "outside_a_target": {
+      "rows": 14463,
+      "all_candidates_wrong": 2740,
+      "all_wrong_same_prediction": 1547,
+      "all_wrong_disagree": 1193,
+      "correctness_disagreement": 1210,
+      "uniquely_correct": {
+        "lr512_swa": 126,
+        "head768": 33,
+        "balanced768": 41,
+        "wft448_ema": 143
+      },
+      "errors": {
+        "lr512_swa": 3297,
+        "head768": 3321,
+        "balanced768": 3382,
+        "wft448_ema": 3322
+      }
+    }
+  },
+  "confusion": {
+    "lr512_swa": {
+      "errors": 3458,
+      "distinct_unordered_pairs": 2714,
+      "concentration": {
+        "10": {
+          "errors": 115,
+          "fraction": 0.03325621746674378
+        },
+        "50": {
+          "errors": 340,
+          "fraction": 0.09832272990167727
+        },
+        "100": {
+          "errors": 510,
+          "fraction": 0.1474840948525159
+        }
+      },
+      "top100": [
+        {
+          "class_indices": [
+            270,
+            612
+          ],
+          "class_names": [
+            "0270",
+            "0612"
+          ],
+          "errors": 17
+        },
+        {
+          "class_indices": [
+            179,
+            247
+          ],
+          "class_names": [
+            "0179",
+            "0247"
+          ],
+          "errors": 15
+        },
+        {
+          "class_indices": [
+            202,
+            535
+          ],
+          "class_names": [
+            "0202",
+            "0535"
+          ],
+          "errors": 14
+        },
+        {
+          "class_indices": [
+            491,
+            665
+          ],
+          "class_names": [
+            "0491",
+            "0665"
+          ],
+          "errors": 13
+        },
+        {
+          "class_indices": [
+            95,
+            167
+          ],
+          "class_names": [
+            "0095",
+            "0167"
+          ],
+          "errors": 10
+        },
+        {
+          "class_indices": [
+            502,
+            640
+          ],
+          "class_names": [
+            "0502",
+            "0640"
+          ],
+          "errors": 10
+        },
+        {
+          "class_indices": [
+            716,
+            739
+          ],
+          "class_names": [
+            "0716",
+            "0739"
+          ],
+          "errors": 10
+        },
+        {
+          "class_indices": [
+            14,
+            363
+          ],
+          "class_names": [
+            "0014",
+            "0363"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            59,
+            224
+          ],
+          "class_names": [
+            "0059",
+            "0224"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            23,
+            59
+          ],
+          "class_names": [
+            "0023",
+            "0059"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            130,
+            500
+          ],
+          "class_names": [
+            "0130",
+            "0500"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            135,
+            712
+          ],
+          "class_names": [
+            "0135",
+            "0712"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            189,
+            644
+          ],
+          "class_names": [
+            "0189",
+            "0644"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            316,
+            441
+          ],
+          "class_names": [
+            "0316",
+            "0441"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            424,
+            715
+          ],
+          "class_names": [
+            "0424",
+            "0715"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            172,
+            386
+          ],
+          "class_names": [
+            "0172",
+            "0386"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            541,
+            568
+          ],
+          "class_names": [
+            "0541",
+            "0568"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            8,
+            74
+          ],
+          "class_names": [
+            "0008",
+            "0074"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            18,
+            203
+          ],
+          "class_names": [
+            "0018",
+            "0203"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            81,
+            359
+          ],
+          "class_names": [
+            "0081",
+            "0359"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            117,
+            372
+          ],
+          "class_names": [
+            "0117",
+            "0372"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            161,
+            271
+          ],
+          "class_names": [
+            "0161",
+            "0271"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            188,
+            500
+          ],
+          "class_names": [
+            "0188",
+            "0500"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            384,
+            398
+          ],
+          "class_names": [
+            "0384",
+            "0398"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            420,
+            737
+          ],
+          "class_names": [
+            "0420",
+            "0737"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            432,
+            548
+          ],
+          "class_names": [
+            "0432",
+            "0548"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            504,
+            539
+          ],
+          "class_names": [
+            "0504",
+            "0539"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            2,
+            675
+          ],
+          "class_names": [
+            "0002",
+            "0675"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            21,
+            171
+          ],
+          "class_names": [
+            "0021",
+            "0171"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            91,
+            603
+          ],
+          "class_names": [
+            "0091",
+            "0603"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            123,
+            594
+          ],
+          "class_names": [
+            "0123",
+            "0594"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            130,
+            188
+          ],
+          "class_names": [
+            "0130",
+            "0188"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            139,
+            402
+          ],
+          "class_names": [
+            "0139",
+            "0402"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            140,
+            614
+          ],
+          "class_names": [
+            "0140",
+            "0614"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            141,
+            735
+          ],
+          "class_names": [
+            "0141",
+            "0735"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            166,
+            484
+          ],
+          "class_names": [
+            "0166",
+            "0484"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            216,
+            463
+          ],
+          "class_names": [
+            "0216",
+            "0463"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            218,
+            648
+          ],
+          "class_names": [
+            "0218",
+            "0648"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            229,
+            662
+          ],
+          "class_names": [
+            "0229",
+            "0662"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            264,
+            484
+          ],
+          "class_names": [
+            "0264",
+            "0484"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            269,
+            355
+          ],
+          "class_names": [
+            "0269",
+            "0355"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            401,
+            461
+          ],
+          "class_names": [
+            "0401",
+            "0461"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            451,
+            614
+          ],
+          "class_names": [
+            "0451",
+            "0614"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            538,
+            717
+          ],
+          "class_names": [
+            "0538",
+            "0717"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            561,
+            694
+          ],
+          "class_names": [
+            "0561",
+            "0694"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            594,
+            603
+          ],
+          "class_names": [
+            "0594",
+            "0603"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            30,
+            404
+          ],
+          "class_names": [
+            "0030",
+            "0404"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            54,
+            376
+          ],
+          "class_names": [
+            "0054",
+            "0376"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            63,
+            238
+          ],
+          "class_names": [
+            "0063",
+            "0238"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            93,
+            688
+          ],
+          "class_names": [
+            "0093",
+            "0688"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            141,
+            246
+          ],
+          "class_names": [
+            "0141",
+            "0246"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            144,
+            172
+          ],
+          "class_names": [
+            "0144",
+            "0172"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            171,
+            601
+          ],
+          "class_names": [
+            "0171",
+            "0601"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            172,
+            482
+          ],
+          "class_names": [
+            "0172",
+            "0482"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            184,
+            730
+          ],
+          "class_names": [
+            "0184",
+            "0730"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            188,
+            648
+          ],
+          "class_names": [
+            "0188",
+            "0648"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            196,
+            246
+          ],
+          "class_names": [
+            "0196",
+            "0246"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            196,
+            522
+          ],
+          "class_names": [
+            "0196",
+            "0522"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            213,
+            598
+          ],
+          "class_names": [
+            "0213",
+            "0598"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            214,
+            319
+          ],
+          "class_names": [
+            "0214",
+            "0319"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            259,
+            450
+          ],
+          "class_names": [
+            "0259",
+            "0450"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            264,
+            446
+          ],
+          "class_names": [
+            "0264",
+            "0446"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            308,
+            543
+          ],
+          "class_names": [
+            "0308",
+            "0543"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            310,
+            527
+          ],
+          "class_names": [
+            "0310",
+            "0527"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            372,
+            600
+          ],
+          "class_names": [
+            "0372",
+            "0600"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            405,
+            408
+          ],
+          "class_names": [
+            "0405",
+            "0408"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            439,
+            654
+          ],
+          "class_names": [
+            "0439",
+            "0654"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            550,
+            662
+          ],
+          "class_names": [
+            "0550",
+            "0662"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            637,
+            721
+          ],
+          "class_names": [
+            "0637",
+            "0721"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            707,
+            720
+          ],
+          "class_names": [
+            "0707",
+            "0720"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            1,
+            333
+          ],
+          "class_names": [
+            "0001",
+            "0333"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            12,
+            398
+          ],
+          "class_names": [
+            "0012",
+            "0398"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            16,
+            243
+          ],
+          "class_names": [
+            "0016",
+            "0243"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            22,
+            242
+          ],
+          "class_names": [
+            "0022",
+            "0242"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            23,
+            224
+          ],
+          "class_names": [
+            "0023",
+            "0224"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            24,
+            142
+          ],
+          "class_names": [
+            "0024",
+            "0142"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            28,
+            550
+          ],
+          "class_names": [
+            "0028",
+            "0550"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            39,
+            446
+          ],
+          "class_names": [
+            "0039",
+            "0446"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            42,
+            550
+          ],
+          "class_names": [
+            "0042",
+            "0550"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            45,
+            303
+          ],
+          "class_names": [
+            "0045",
+            "0303"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            54,
+            330
+          ],
+          "class_names": [
+            "0054",
+            "0330"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            57,
+            519
+          ],
+          "class_names": [
+            "0057",
+            "0519"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            68,
+            200
+          ],
+          "class_names": [
+            "0068",
+            "0200"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            69,
+            364
+          ],
+          "class_names": [
+            "0069",
+            "0364"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            76,
+            644
+          ],
+          "class_names": [
+            "0076",
+            "0644"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            80,
+            386
+          ],
+          "class_names": [
+            "0080",
+            "0386"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            80,
+            426
+          ],
+          "class_names": [
+            "0080",
+            "0426"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            88,
+            536
+          ],
+          "class_names": [
+            "0088",
+            "0536"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            91,
+            171
+          ],
+          "class_names": [
+            "0091",
+            "0171"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            91,
+            604
+          ],
+          "class_names": [
+            "0091",
+            "0604"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            104,
+            484
+          ],
+          "class_names": [
+            "0104",
+            "0484"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            105,
+            728
+          ],
+          "class_names": [
+            "0105",
+            "0728"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            106,
+            265
+          ],
+          "class_names": [
+            "0106",
+            "0265"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            107,
+            616
+          ],
+          "class_names": [
+            "0107",
+            "0616"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            111,
+            547
+          ],
+          "class_names": [
+            "0111",
+            "0547"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            118,
+            484
+          ],
+          "class_names": [
+            "0118",
+            "0484"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            120,
+            615
+          ],
+          "class_names": [
+            "0120",
+            "0615"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            129,
+            503
+          ],
+          "class_names": [
+            "0129",
+            "0503"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            138,
+            153
+          ],
+          "class_names": [
+            "0138",
+            "0153"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            142,
+            275
+          ],
+          "class_names": [
+            "0142",
+            "0275"
+          ],
+          "errors": 3
+        }
+      ]
+    },
+    "head768": {
+      "errors": 3494,
+      "distinct_unordered_pairs": 2705,
+      "concentration": {
+        "10": {
+          "errors": 110,
+          "fraction": 0.031482541499713794
+        },
+        "50": {
+          "errors": 342,
+          "fraction": 0.09788208357183743
+        },
+        "100": {
+          "errors": 520,
+          "fraction": 0.14882655981682885
+        }
+      },
+      "top100": [
+        {
+          "class_indices": [
+            179,
+            247
+          ],
+          "class_names": [
+            "0179",
+            "0247"
+          ],
+          "errors": 17
+        },
+        {
+          "class_indices": [
+            270,
+            612
+          ],
+          "class_names": [
+            "0270",
+            "0612"
+          ],
+          "errors": 15
+        },
+        {
+          "class_indices": [
+            491,
+            665
+          ],
+          "class_names": [
+            "0491",
+            "0665"
+          ],
+          "errors": 13
+        },
+        {
+          "class_indices": [
+            202,
+            535
+          ],
+          "class_names": [
+            "0202",
+            "0535"
+          ],
+          "errors": 12
+        },
+        {
+          "class_indices": [
+            316,
+            441
+          ],
+          "class_names": [
+            "0316",
+            "0441"
+          ],
+          "errors": 10
+        },
+        {
+          "class_indices": [
+            189,
+            644
+          ],
+          "class_names": [
+            "0189",
+            "0644"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            502,
+            640
+          ],
+          "class_names": [
+            "0502",
+            "0640"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            716,
+            739
+          ],
+          "class_names": [
+            "0716",
+            "0739"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            14,
+            363
+          ],
+          "class_names": [
+            "0014",
+            "0363"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            57,
+            519
+          ],
+          "class_names": [
+            "0057",
+            "0519"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            59,
+            224
+          ],
+          "class_names": [
+            "0059",
+            "0224"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            95,
+            167
+          ],
+          "class_names": [
+            "0095",
+            "0167"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            130,
+            500
+          ],
+          "class_names": [
+            "0130",
+            "0500"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            172,
+            482
+          ],
+          "class_names": [
+            "0172",
+            "0482"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            23,
+            59
+          ],
+          "class_names": [
+            "0023",
+            "0059"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            123,
+            594
+          ],
+          "class_names": [
+            "0123",
+            "0594"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            135,
+            712
+          ],
+          "class_names": [
+            "0135",
+            "0712"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            161,
+            271
+          ],
+          "class_names": [
+            "0161",
+            "0271"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            172,
+            386
+          ],
+          "class_names": [
+            "0172",
+            "0386"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            188,
+            500
+          ],
+          "class_names": [
+            "0188",
+            "0500"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            420,
+            737
+          ],
+          "class_names": [
+            "0420",
+            "0737"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            504,
+            539
+          ],
+          "class_names": [
+            "0504",
+            "0539"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            538,
+            717
+          ],
+          "class_names": [
+            "0538",
+            "0717"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            561,
+            694
+          ],
+          "class_names": [
+            "0561",
+            "0694"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            81,
+            359
+          ],
+          "class_names": [
+            "0081",
+            "0359"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            117,
+            372
+          ],
+          "class_names": [
+            "0117",
+            "0372"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            120,
+            615
+          ],
+          "class_names": [
+            "0120",
+            "0615"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            264,
+            484
+          ],
+          "class_names": [
+            "0264",
+            "0484"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            424,
+            715
+          ],
+          "class_names": [
+            "0424",
+            "0715"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            541,
+            568
+          ],
+          "class_names": [
+            "0541",
+            "0568"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            550,
+            662
+          ],
+          "class_names": [
+            "0550",
+            "0662"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            8,
+            74
+          ],
+          "class_names": [
+            "0008",
+            "0074"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            18,
+            203
+          ],
+          "class_names": [
+            "0018",
+            "0203"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            63,
+            238
+          ],
+          "class_names": [
+            "0063",
+            "0238"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            69,
+            364
+          ],
+          "class_names": [
+            "0069",
+            "0364"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            139,
+            402
+          ],
+          "class_names": [
+            "0139",
+            "0402"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            141,
+            246
+          ],
+          "class_names": [
+            "0141",
+            "0246"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            184,
+            730
+          ],
+          "class_names": [
+            "0184",
+            "0730"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            196,
+            246
+          ],
+          "class_names": [
+            "0196",
+            "0246"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            216,
+            463
+          ],
+          "class_names": [
+            "0216",
+            "0463"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            218,
+            648
+          ],
+          "class_names": [
+            "0218",
+            "0648"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            229,
+            662
+          ],
+          "class_names": [
+            "0229",
+            "0662"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            384,
+            398
+          ],
+          "class_names": [
+            "0384",
+            "0398"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            2,
+            675
+          ],
+          "class_names": [
+            "0002",
+            "0675"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            21,
+            171
+          ],
+          "class_names": [
+            "0021",
+            "0171"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            22,
+            242
+          ],
+          "class_names": [
+            "0022",
+            "0242"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            45,
+            303
+          ],
+          "class_names": [
+            "0045",
+            "0303"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            80,
+            426
+          ],
+          "class_names": [
+            "0080",
+            "0426"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            91,
+            601
+          ],
+          "class_names": [
+            "0091",
+            "0601"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            91,
+            603
+          ],
+          "class_names": [
+            "0091",
+            "0603"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            91,
+            604
+          ],
+          "class_names": [
+            "0091",
+            "0604"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            93,
+            688
+          ],
+          "class_names": [
+            "0093",
+            "0688"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            107,
+            616
+          ],
+          "class_names": [
+            "0107",
+            "0616"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            138,
+            153
+          ],
+          "class_names": [
+            "0138",
+            "0153"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            141,
+            364
+          ],
+          "class_names": [
+            "0141",
+            "0364"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            141,
+            735
+          ],
+          "class_names": [
+            "0141",
+            "0735"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            144,
+            172
+          ],
+          "class_names": [
+            "0144",
+            "0172"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            152,
+            210
+          ],
+          "class_names": [
+            "0152",
+            "0210"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            162,
+            268
+          ],
+          "class_names": [
+            "0162",
+            "0268"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            166,
+            484
+          ],
+          "class_names": [
+            "0166",
+            "0484"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            171,
+            601
+          ],
+          "class_names": [
+            "0171",
+            "0601"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            177,
+            587
+          ],
+          "class_names": [
+            "0177",
+            "0587"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            196,
+            522
+          ],
+          "class_names": [
+            "0196",
+            "0522"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            213,
+            598
+          ],
+          "class_names": [
+            "0213",
+            "0598"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            214,
+            319
+          ],
+          "class_names": [
+            "0214",
+            "0319"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            236,
+            349
+          ],
+          "class_names": [
+            "0236",
+            "0349"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            308,
+            543
+          ],
+          "class_names": [
+            "0308",
+            "0543"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            314,
+            721
+          ],
+          "class_names": [
+            "0314",
+            "0721"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            364,
+            524
+          ],
+          "class_names": [
+            "0364",
+            "0524"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            364,
+            735
+          ],
+          "class_names": [
+            "0364",
+            "0735"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            372,
+            600
+          ],
+          "class_names": [
+            "0372",
+            "0600"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            432,
+            436
+          ],
+          "class_names": [
+            "0432",
+            "0436"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            432,
+            548
+          ],
+          "class_names": [
+            "0432",
+            "0548"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            451,
+            614
+          ],
+          "class_names": [
+            "0451",
+            "0614"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            467,
+            492
+          ],
+          "class_names": [
+            "0467",
+            "0492"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            528,
+            594
+          ],
+          "class_names": [
+            "0528",
+            "0594"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            603,
+            648
+          ],
+          "class_names": [
+            "0603",
+            "0648"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            707,
+            720
+          ],
+          "class_names": [
+            "0707",
+            "0720"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            2,
+            471
+          ],
+          "class_names": [
+            "0002",
+            "0471"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            7,
+            45
+          ],
+          "class_names": [
+            "0007",
+            "0045"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            12,
+            384
+          ],
+          "class_names": [
+            "0012",
+            "0384"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            13,
+            69
+          ],
+          "class_names": [
+            "0013",
+            "0069"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            16,
+            243
+          ],
+          "class_names": [
+            "0016",
+            "0243"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            18,
+            199
+          ],
+          "class_names": [
+            "0018",
+            "0199"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            18,
+            484
+          ],
+          "class_names": [
+            "0018",
+            "0484"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            39,
+            446
+          ],
+          "class_names": [
+            "0039",
+            "0446"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            42,
+            550
+          ],
+          "class_names": [
+            "0042",
+            "0550"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            45,
+            504
+          ],
+          "class_names": [
+            "0045",
+            "0504"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            54,
+            376
+          ],
+          "class_names": [
+            "0054",
+            "0376"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            68,
+            200
+          ],
+          "class_names": [
+            "0068",
+            "0200"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            69,
+            196
+          ],
+          "class_names": [
+            "0069",
+            "0196"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            74,
+            502
+          ],
+          "class_names": [
+            "0074",
+            "0502"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            74,
+            640
+          ],
+          "class_names": [
+            "0074",
+            "0640"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            88,
+            536
+          ],
+          "class_names": [
+            "0088",
+            "0536"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            91,
+            171
+          ],
+          "class_names": [
+            "0091",
+            "0171"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            105,
+            728
+          ],
+          "class_names": [
+            "0105",
+            "0728"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            106,
+            265
+          ],
+          "class_names": [
+            "0106",
+            "0265"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            111,
+            359
+          ],
+          "class_names": [
+            "0111",
+            "0359"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            118,
+            264
+          ],
+          "class_names": [
+            "0118",
+            "0264"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            118,
+            446
+          ],
+          "class_names": [
+            "0118",
+            "0446"
+          ],
+          "errors": 3
+        }
+      ]
+    },
+    "balanced768": {
+      "errors": 3552,
+      "distinct_unordered_pairs": 2734,
+      "concentration": {
+        "10": {
+          "errors": 110,
+          "fraction": 0.030968468468468468
+        },
+        "50": {
+          "errors": 342,
+          "fraction": 0.09628378378378379
+        },
+        "100": {
+          "errors": 528,
+          "fraction": 0.14864864864864866
+        }
+      },
+      "top100": [
+        {
+          "class_indices": [
+            179,
+            247
+          ],
+          "class_names": [
+            "0179",
+            "0247"
+          ],
+          "errors": 18
+        },
+        {
+          "class_indices": [
+            270,
+            612
+          ],
+          "class_names": [
+            "0270",
+            "0612"
+          ],
+          "errors": 15
+        },
+        {
+          "class_indices": [
+            491,
+            665
+          ],
+          "class_names": [
+            "0491",
+            "0665"
+          ],
+          "errors": 13
+        },
+        {
+          "class_indices": [
+            202,
+            535
+          ],
+          "class_names": [
+            "0202",
+            "0535"
+          ],
+          "errors": 12
+        },
+        {
+          "class_indices": [
+            188,
+            500
+          ],
+          "class_names": [
+            "0188",
+            "0500"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            189,
+            644
+          ],
+          "class_names": [
+            "0189",
+            "0644"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            316,
+            441
+          ],
+          "class_names": [
+            "0316",
+            "0441"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            716,
+            739
+          ],
+          "class_names": [
+            "0716",
+            "0739"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            23,
+            59
+          ],
+          "class_names": [
+            "0023",
+            "0059"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            57,
+            519
+          ],
+          "class_names": [
+            "0057",
+            "0519"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            95,
+            167
+          ],
+          "class_names": [
+            "0095",
+            "0167"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            172,
+            482
+          ],
+          "class_names": [
+            "0172",
+            "0482"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            502,
+            640
+          ],
+          "class_names": [
+            "0502",
+            "0640"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            14,
+            363
+          ],
+          "class_names": [
+            "0014",
+            "0363"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            59,
+            224
+          ],
+          "class_names": [
+            "0059",
+            "0224"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            123,
+            594
+          ],
+          "class_names": [
+            "0123",
+            "0594"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            135,
+            712
+          ],
+          "class_names": [
+            "0135",
+            "0712"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            161,
+            271
+          ],
+          "class_names": [
+            "0161",
+            "0271"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            172,
+            386
+          ],
+          "class_names": [
+            "0172",
+            "0386"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            264,
+            484
+          ],
+          "class_names": [
+            "0264",
+            "0484"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            420,
+            737
+          ],
+          "class_names": [
+            "0420",
+            "0737"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            504,
+            539
+          ],
+          "class_names": [
+            "0504",
+            "0539"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            538,
+            717
+          ],
+          "class_names": [
+            "0538",
+            "0717"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            561,
+            694
+          ],
+          "class_names": [
+            "0561",
+            "0694"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            117,
+            372
+          ],
+          "class_names": [
+            "0117",
+            "0372"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            120,
+            615
+          ],
+          "class_names": [
+            "0120",
+            "0615"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            130,
+            500
+          ],
+          "class_names": [
+            "0130",
+            "0500"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            550,
+            662
+          ],
+          "class_names": [
+            "0550",
+            "0662"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            8,
+            74
+          ],
+          "class_names": [
+            "0008",
+            "0074"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            18,
+            203
+          ],
+          "class_names": [
+            "0018",
+            "0203"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            63,
+            238
+          ],
+          "class_names": [
+            "0063",
+            "0238"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            69,
+            364
+          ],
+          "class_names": [
+            "0069",
+            "0364"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            81,
+            359
+          ],
+          "class_names": [
+            "0081",
+            "0359"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            91,
+            603
+          ],
+          "class_names": [
+            "0091",
+            "0603"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            91,
+            604
+          ],
+          "class_names": [
+            "0091",
+            "0604"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            141,
+            246
+          ],
+          "class_names": [
+            "0141",
+            "0246"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            141,
+            735
+          ],
+          "class_names": [
+            "0141",
+            "0735"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            184,
+            730
+          ],
+          "class_names": [
+            "0184",
+            "0730"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            213,
+            598
+          ],
+          "class_names": [
+            "0213",
+            "0598"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            216,
+            463
+          ],
+          "class_names": [
+            "0216",
+            "0463"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            218,
+            648
+          ],
+          "class_names": [
+            "0218",
+            "0648"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            236,
+            349
+          ],
+          "class_names": [
+            "0236",
+            "0349"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            308,
+            543
+          ],
+          "class_names": [
+            "0308",
+            "0543"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            424,
+            715
+          ],
+          "class_names": [
+            "0424",
+            "0715"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            432,
+            548
+          ],
+          "class_names": [
+            "0432",
+            "0548"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            467,
+            492
+          ],
+          "class_names": [
+            "0467",
+            "0492"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            541,
+            568
+          ],
+          "class_names": [
+            "0541",
+            "0568"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            2,
+            675
+          ],
+          "class_names": [
+            "0002",
+            "0675"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            21,
+            171
+          ],
+          "class_names": [
+            "0021",
+            "0171"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            22,
+            242
+          ],
+          "class_names": [
+            "0022",
+            "0242"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            42,
+            550
+          ],
+          "class_names": [
+            "0042",
+            "0550"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            45,
+            303
+          ],
+          "class_names": [
+            "0045",
+            "0303"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            45,
+            504
+          ],
+          "class_names": [
+            "0045",
+            "0504"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            91,
+            171
+          ],
+          "class_names": [
+            "0091",
+            "0171"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            91,
+            601
+          ],
+          "class_names": [
+            "0091",
+            "0601"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            106,
+            265
+          ],
+          "class_names": [
+            "0106",
+            "0265"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            107,
+            616
+          ],
+          "class_names": [
+            "0107",
+            "0616"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            118,
+            446
+          ],
+          "class_names": [
+            "0118",
+            "0446"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            130,
+            188
+          ],
+          "class_names": [
+            "0130",
+            "0188"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            138,
+            153
+          ],
+          "class_names": [
+            "0138",
+            "0153"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            139,
+            402
+          ],
+          "class_names": [
+            "0139",
+            "0402"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            141,
+            364
+          ],
+          "class_names": [
+            "0141",
+            "0364"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            144,
+            172
+          ],
+          "class_names": [
+            "0144",
+            "0172"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            152,
+            210
+          ],
+          "class_names": [
+            "0152",
+            "0210"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            162,
+            268
+          ],
+          "class_names": [
+            "0162",
+            "0268"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            166,
+            484
+          ],
+          "class_names": [
+            "0166",
+            "0484"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            171,
+            601
+          ],
+          "class_names": [
+            "0171",
+            "0601"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            177,
+            587
+          ],
+          "class_names": [
+            "0177",
+            "0587"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            188,
+            648
+          ],
+          "class_names": [
+            "0188",
+            "0648"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            196,
+            246
+          ],
+          "class_names": [
+            "0196",
+            "0246"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            196,
+            522
+          ],
+          "class_names": [
+            "0196",
+            "0522"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            214,
+            319
+          ],
+          "class_names": [
+            "0214",
+            "0319"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            255,
+            537
+          ],
+          "class_names": [
+            "0255",
+            "0537"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            314,
+            721
+          ],
+          "class_names": [
+            "0314",
+            "0721"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            318,
+            390
+          ],
+          "class_names": [
+            "0318",
+            "0390"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            361,
+            741
+          ],
+          "class_names": [
+            "0361",
+            "0741"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            364,
+            524
+          ],
+          "class_names": [
+            "0364",
+            "0524"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            372,
+            600
+          ],
+          "class_names": [
+            "0372",
+            "0600"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            384,
+            398
+          ],
+          "class_names": [
+            "0384",
+            "0398"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            392,
+            460
+          ],
+          "class_names": [
+            "0392",
+            "0460"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            405,
+            408
+          ],
+          "class_names": [
+            "0405",
+            "0408"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            432,
+            436
+          ],
+          "class_names": [
+            "0432",
+            "0436"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            451,
+            614
+          ],
+          "class_names": [
+            "0451",
+            "0614"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            528,
+            594
+          ],
+          "class_names": [
+            "0528",
+            "0594"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            561,
+            569
+          ],
+          "class_names": [
+            "0561",
+            "0569"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            601,
+            603
+          ],
+          "class_names": [
+            "0601",
+            "0603"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            2,
+            471
+          ],
+          "class_names": [
+            "0002",
+            "0471"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            7,
+            45
+          ],
+          "class_names": [
+            "0007",
+            "0045"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            12,
+            384
+          ],
+          "class_names": [
+            "0012",
+            "0384"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            13,
+            69
+          ],
+          "class_names": [
+            "0013",
+            "0069"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            16,
+            243
+          ],
+          "class_names": [
+            "0016",
+            "0243"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            18,
+            199
+          ],
+          "class_names": [
+            "0018",
+            "0199"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            18,
+            264
+          ],
+          "class_names": [
+            "0018",
+            "0264"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            18,
+            484
+          ],
+          "class_names": [
+            "0018",
+            "0484"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            39,
+            446
+          ],
+          "class_names": [
+            "0039",
+            "0446"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            68,
+            200
+          ],
+          "class_names": [
+            "0068",
+            "0200"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            74,
+            640
+          ],
+          "class_names": [
+            "0074",
+            "0640"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            81,
+            111
+          ],
+          "class_names": [
+            "0081",
+            "0111"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            81,
+            318
+          ],
+          "class_names": [
+            "0081",
+            "0318"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            88,
+            536
+          ],
+          "class_names": [
+            "0088",
+            "0536"
+          ],
+          "errors": 3
+        }
+      ]
+    },
+    "wft448_ema": {
+      "errors": 3490,
+      "distinct_unordered_pairs": 2753,
+      "concentration": {
+        "10": {
+          "errors": 112,
+          "fraction": 0.032091690544412604
+        },
+        "50": {
+          "errors": 333,
+          "fraction": 0.09541547277936963
+        },
+        "100": {
+          "errors": 512,
+          "fraction": 0.1467048710601719
+        }
+      },
+      "top100": [
+        {
+          "class_indices": [
+            179,
+            247
+          ],
+          "class_names": [
+            "0179",
+            "0247"
+          ],
+          "errors": 16
+        },
+        {
+          "class_indices": [
+            270,
+            612
+          ],
+          "class_names": [
+            "0270",
+            "0612"
+          ],
+          "errors": 14
+        },
+        {
+          "class_indices": [
+            491,
+            665
+          ],
+          "class_names": [
+            "0491",
+            "0665"
+          ],
+          "errors": 14
+        },
+        {
+          "class_indices": [
+            202,
+            535
+          ],
+          "class_names": [
+            "0202",
+            "0535"
+          ],
+          "errors": 13
+        },
+        {
+          "class_indices": [
+            189,
+            644
+          ],
+          "class_names": [
+            "0189",
+            "0644"
+          ],
+          "errors": 10
+        },
+        {
+          "class_indices": [
+            130,
+            500
+          ],
+          "class_names": [
+            "0130",
+            "0500"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            135,
+            712
+          ],
+          "class_names": [
+            "0135",
+            "0712"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            316,
+            441
+          ],
+          "class_names": [
+            "0316",
+            "0441"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            502,
+            640
+          ],
+          "class_names": [
+            "0502",
+            "0640"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            716,
+            739
+          ],
+          "class_names": [
+            "0716",
+            "0739"
+          ],
+          "errors": 9
+        },
+        {
+          "class_indices": [
+            14,
+            363
+          ],
+          "class_names": [
+            "0014",
+            "0363"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            95,
+            167
+          ],
+          "class_names": [
+            "0095",
+            "0167"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            424,
+            715
+          ],
+          "class_names": [
+            "0424",
+            "0715"
+          ],
+          "errors": 8
+        },
+        {
+          "class_indices": [
+            23,
+            59
+          ],
+          "class_names": [
+            "0023",
+            "0059"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            140,
+            614
+          ],
+          "class_names": [
+            "0140",
+            "0614"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            172,
+            386
+          ],
+          "class_names": [
+            "0172",
+            "0386"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            229,
+            662
+          ],
+          "class_names": [
+            "0229",
+            "0662"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            561,
+            694
+          ],
+          "class_names": [
+            "0561",
+            "0694"
+          ],
+          "errors": 7
+        },
+        {
+          "class_indices": [
+            21,
+            171
+          ],
+          "class_names": [
+            "0021",
+            "0171"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            59,
+            224
+          ],
+          "class_names": [
+            "0059",
+            "0224"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            91,
+            603
+          ],
+          "class_names": [
+            "0091",
+            "0603"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            161,
+            271
+          ],
+          "class_names": [
+            "0161",
+            "0271"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            188,
+            500
+          ],
+          "class_names": [
+            "0188",
+            "0500"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            218,
+            648
+          ],
+          "class_names": [
+            "0218",
+            "0648"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            420,
+            737
+          ],
+          "class_names": [
+            "0420",
+            "0737"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            432,
+            548
+          ],
+          "class_names": [
+            "0432",
+            "0548"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            504,
+            539
+          ],
+          "class_names": [
+            "0504",
+            "0539"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            541,
+            568
+          ],
+          "class_names": [
+            "0541",
+            "0568"
+          ],
+          "errors": 6
+        },
+        {
+          "class_indices": [
+            18,
+            203
+          ],
+          "class_names": [
+            "0018",
+            "0203"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            39,
+            446
+          ],
+          "class_names": [
+            "0039",
+            "0446"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            117,
+            372
+          ],
+          "class_names": [
+            "0117",
+            "0372"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            123,
+            594
+          ],
+          "class_names": [
+            "0123",
+            "0594"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            141,
+            246
+          ],
+          "class_names": [
+            "0141",
+            "0246"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            172,
+            482
+          ],
+          "class_names": [
+            "0172",
+            "0482"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            177,
+            587
+          ],
+          "class_names": [
+            "0177",
+            "0587"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            213,
+            598
+          ],
+          "class_names": [
+            "0213",
+            "0598"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            216,
+            463
+          ],
+          "class_names": [
+            "0216",
+            "0463"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            264,
+            484
+          ],
+          "class_names": [
+            "0264",
+            "0484"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            467,
+            492
+          ],
+          "class_names": [
+            "0467",
+            "0492"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            538,
+            717
+          ],
+          "class_names": [
+            "0538",
+            "0717"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            594,
+            603
+          ],
+          "class_names": [
+            "0594",
+            "0603"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            625,
+            686
+          ],
+          "class_names": [
+            "0625",
+            "0686"
+          ],
+          "errors": 5
+        },
+        {
+          "class_indices": [
+            2,
+            675
+          ],
+          "class_names": [
+            "0002",
+            "0675"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            8,
+            74
+          ],
+          "class_names": [
+            "0008",
+            "0074"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            16,
+            243
+          ],
+          "class_names": [
+            "0016",
+            "0243"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            57,
+            519
+          ],
+          "class_names": [
+            "0057",
+            "0519"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            63,
+            238
+          ],
+          "class_names": [
+            "0063",
+            "0238"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            74,
+            502
+          ],
+          "class_names": [
+            "0074",
+            "0502"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            80,
+            386
+          ],
+          "class_names": [
+            "0080",
+            "0386"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            81,
+            318
+          ],
+          "class_names": [
+            "0081",
+            "0318"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            81,
+            359
+          ],
+          "class_names": [
+            "0081",
+            "0359"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            130,
+            188
+          ],
+          "class_names": [
+            "0130",
+            "0188"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            139,
+            402
+          ],
+          "class_names": [
+            "0139",
+            "0402"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            141,
+            735
+          ],
+          "class_names": [
+            "0141",
+            "0735"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            144,
+            172
+          ],
+          "class_names": [
+            "0144",
+            "0172"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            152,
+            210
+          ],
+          "class_names": [
+            "0152",
+            "0210"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            166,
+            484
+          ],
+          "class_names": [
+            "0166",
+            "0484"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            184,
+            730
+          ],
+          "class_names": [
+            "0184",
+            "0730"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            188,
+            648
+          ],
+          "class_names": [
+            "0188",
+            "0648"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            196,
+            246
+          ],
+          "class_names": [
+            "0196",
+            "0246"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            196,
+            522
+          ],
+          "class_names": [
+            "0196",
+            "0522"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            220,
+            440
+          ],
+          "class_names": [
+            "0220",
+            "0440"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            236,
+            349
+          ],
+          "class_names": [
+            "0236",
+            "0349"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            247,
+            612
+          ],
+          "class_names": [
+            "0247",
+            "0612"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            264,
+            446
+          ],
+          "class_names": [
+            "0264",
+            "0446"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            264,
+            633
+          ],
+          "class_names": [
+            "0264",
+            "0633"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            308,
+            543
+          ],
+          "class_names": [
+            "0308",
+            "0543"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            310,
+            527
+          ],
+          "class_names": [
+            "0310",
+            "0527"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            314,
+            721
+          ],
+          "class_names": [
+            "0314",
+            "0721"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            372,
+            600
+          ],
+          "class_names": [
+            "0372",
+            "0600"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            392,
+            460
+          ],
+          "class_names": [
+            "0392",
+            "0460"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            401,
+            461
+          ],
+          "class_names": [
+            "0401",
+            "0461"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            405,
+            408
+          ],
+          "class_names": [
+            "0405",
+            "0408"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            439,
+            654
+          ],
+          "class_names": [
+            "0439",
+            "0654"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            528,
+            594
+          ],
+          "class_names": [
+            "0528",
+            "0594"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            550,
+            662
+          ],
+          "class_names": [
+            "0550",
+            "0662"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            561,
+            569
+          ],
+          "class_names": [
+            "0561",
+            "0569"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            601,
+            603
+          ],
+          "class_names": [
+            "0601",
+            "0603"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            637,
+            721
+          ],
+          "class_names": [
+            "0637",
+            "0721"
+          ],
+          "errors": 4
+        },
+        {
+          "class_indices": [
+            12,
+            384
+          ],
+          "class_names": [
+            "0012",
+            "0384"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            22,
+            242
+          ],
+          "class_names": [
+            "0022",
+            "0242"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            23,
+            224
+          ],
+          "class_names": [
+            "0023",
+            "0224"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            24,
+            142
+          ],
+          "class_names": [
+            "0024",
+            "0142"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            29,
+            540
+          ],
+          "class_names": [
+            "0029",
+            "0540"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            45,
+            303
+          ],
+          "class_names": [
+            "0045",
+            "0303"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            54,
+            376
+          ],
+          "class_names": [
+            "0054",
+            "0376"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            68,
+            200
+          ],
+          "class_names": [
+            "0068",
+            "0200"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            68,
+            472
+          ],
+          "class_names": [
+            "0068",
+            "0472"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            69,
+            364
+          ],
+          "class_names": [
+            "0069",
+            "0364"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            74,
+            640
+          ],
+          "class_names": [
+            "0074",
+            "0640"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            76,
+            272
+          ],
+          "class_names": [
+            "0076",
+            "0272"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            80,
+            373
+          ],
+          "class_names": [
+            "0080",
+            "0373"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            80,
+            426
+          ],
+          "class_names": [
+            "0080",
+            "0426"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            88,
+            536
+          ],
+          "class_names": [
+            "0088",
+            "0536"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            91,
+            171
+          ],
+          "class_names": [
+            "0091",
+            "0171"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            91,
+            304
+          ],
+          "class_names": [
+            "0091",
+            "0304"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            91,
+            604
+          ],
+          "class_names": [
+            "0091",
+            "0604"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            93,
+            688
+          ],
+          "class_names": [
+            "0093",
+            "0688"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            104,
+            484
+          ],
+          "class_names": [
+            "0104",
+            "0484"
+          ],
+          "errors": 3
+        },
+        {
+          "class_indices": [
+            106,
+            265
+          ],
+          "class_names": [
+            "0106",
+            "0265"
+          ],
+          "errors": 3
+        }
+      ]
+    }
+  },
+  "cohort_definitions": {
+    "tail75": "Original frozen train_dev tail75 classes",
+    "head75": "Original frozen train_dev head75 classes",
+    "a_target_classes": "Previously frozen A target class union; retrospective for these old candidates",
+    "cross_label_duplicate": "Exact decoded content group has multiple original labels in full_train",
+    "short_edge_below224": "Official dimensions: shorter side <224; descriptive, not true source",
+    "aspect_ratio_at_least2": "Official dimensions: longer/shorter >=2; descriptive, not true source"
+  },
+  "cohorts_overlap": true,
+  "source_files": {
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/train_dev.csv": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/val_dev.csv": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/full_train.csv": "142d255e86aadc2be4f4f1bee832948b30416c54bdc904159ff096ce8eb278ad",
+    "/home/lux1/noise/worktrees/v1_candidate_error_budget_20261001/results/v1_post768_close_20261001/closure_verification.json": "898febde8e4c85a3863b05ea1962eac4f95b55fe60bf8a922e15b24354e8db38",
+    "/home/lux1/noise/worktrees/v1_candidate_error_budget_20261001/results/v1_crt768_dev_20261001/delivery_report.json": "ec5db9730cf1142b9dc015c07af3ef993c44e446a7bcb9eab140326f5eb3478a",
+    "/home/lux1/noise-worktrees/v1_crt768_dev_20261001/outputs/codex/v1_crt768_dev_20261001/validation_predictions.npz": "6a2827c4f65fa154dd03fcc50f4723142c4e859101dc1b9efc6292f067a2141c",
+    "/home/lux1/noise/worktrees/v1_candidate_error_budget_20261001/results/lr512_dev_20261001/report.json": "cf5b9bcfaebd1163284fcb9347e8b4c724991592c9fcaa009bf99d0b297ea404",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/baseline.npz": "af595985fd28eb1bfa4ee4477dffd206ccd62bd2e8e55de86e6ddb3373bd29ac",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/val_epoch04_ema.npz": "25c23448af8de1f63693630687aa16e4a2377485b66400d3c5ddbe43c07405c2",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/val_epoch04_ema_swa_2_4.npz": "a404e16f2d88d3331dc9caf3c26bda111714369bdcca69cda6e290a3478d8845",
+    "/home/lux1/noise/worktrees/v1_candidate_error_budget_20261001/results/wft448_dev_20261001/report.json": "ac58f4128ccc30fb5bcf709f67389dfdd03a78316f9bcf0fd76784cb9baad19b",
+    "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/prepared_amp/plan.json": "c1cbda08d2cdcfd932966f8f08b9d78738ab7cb9d9f7c470122129513e947500",
+    "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/run/baseline.npz": "d77a02ea3e5214cfc33afb5e7f58958c1b4315d0446fc937a61aa51d9592ac7c",
+    "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/run/val_epoch04_ema.npz": "6157b0d37383952c246f4024475205bf77685eee523e0c8d52adadcdfd4be61e",
+    "/home/lux1/noise/worktrees/wft448_dev_20261001/outputs/codex/wft448_dev_20261001_r2/run/val_epoch04_ema_swa_2_4.npz": "c3dd231cbac26912ef90bd46874bd38e6565fd1a7aacb0c992f6b5f565e3aa8c",
+    "/home/lux1/noise/worktrees/v1_candidate_error_budget_20261001/results/three_machine_exploration_20261001/a_target_groups.json": "004f56bf83a8c3e982c5f8236fd79eea5fda0b01e95bd37d1614645d82243a8c"
+  },
+  "config_sha256": "4c16a03a213f4aa833c4b077a07f214497f75f187a749dd13c20ab9ce5548126",
+  "identical_content_label_conflicts": {
+    "validation_conflicting_groups": 177,
+    "minimum_original_label_errors": 189,
+    "interpretation": "Lower bound for a deterministic image-content classifier on these contradictory original labels; does not identify clean labels"
+  },
+  "elapsed_seconds": 3.7256848599936347,
+  "script_sha256": "6a77932859cc29b8f8b60eabdc546536fad2e4a1cd7e31e8fc047b90a1b2e388",
+  "aligned_csv": "outputs/codex/v1_candidate_error_budget_20261001/diagnostic_r2/aligned_predictions.csv",
+  "aligned_csv_sha256": "d94a98acc2b2c6cbb9263547b38a7a678d8e664a3c382f1172784f4b45bcc718",
+  "decision": "Use existing independent A/B pairs to test visual learning/generalization; no new full training, fusion, or parameter scan justified by error overlap alone",
+  "incumbent_reference": "results/v1_full_swa_platform_20261001/artifact_verification.json",
+  "incumbent_check": "results/v1_full_swa_platform_20261001/submission_check.log"
+}

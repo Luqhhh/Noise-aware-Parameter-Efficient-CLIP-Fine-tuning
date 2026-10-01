@@ -1,0 +1,20 @@
+{
+  "experiment_id": "V1_CANDIDATE_ERROR_BUDGET_20261001",
+  "data_version": "20260921",
+  "stage_root": "/home/lux1/noise/artifacts/stages/repechage/20260921",
+  "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+  "head_closure_report": "results/v1_post768_close_20261001/closure_verification.json",
+  "head_delivery_report": "results/v1_crt768_dev_20261001/delivery_report.json",
+  "continuation_reports": {
+    "lr512": "results/lr512_dev_20261001/report.json",
+    "wft448": "results/wft448_dev_20261001/report.json"
+  },
+  "a_target_groups": "results/three_machine_exploration_20261001/a_target_groups.json",
+  "candidate_names": ["lr512_swa", "head768", "balanced768", "wft448_ema"],
+  "bootstrap": {"seed": 42, "resamples": 2000, "chunk": 50},
+  "analysis_type": "retrospective_recipe_comparison_not_causal_ablation",
+  "new_training": false,
+  "test_predictions_used": false,
+  "incumbent_reference": "results/v1_full_swa_platform_20261001/artifact_verification.json",
+  "incumbent_check": "results/v1_full_swa_platform_20261001/submission_check.log"
+}

@@ -107,3 +107,6 @@ outputs/search_20260923/
 /outputs/codex/aegis_aligned448*/
 /outputs/codex/aegis_resolution_ladder*/
 /outputs/codex/aegis_team_strategy_naming_20260929/
+
+# Private per-image candidate error diagnostics; aggregate evidence is in results/.
+/outputs/codex/v1_candidate_error_budget_20261001/

@@ -1,0 +1,90 @@
+{
+  "status": "passed",
+  "rows": 14880,
+  "metrics_recounted": 81,
+  "paired_groups_recounted": 135,
+  "overlap_groups_recounted": 9,
+  "source_checksums_verified": 19,
+  "group_conflicts_lower_bound": 189,
+  "incumbent_zip": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+  "incumbent_sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+  "incumbent_existing_submission_check": "results/v1_full_swa_platform_20261001/submission_check.log",
+  "proxy_error_union": {
+    "groups": [
+      "tail75",
+      "a_target_classes",
+      "cross_label_duplicate",
+      "short_edge_below224",
+      "aspect_ratio_at_least2"
+    ],
+    "rows": 3405,
+    "lr512_errors": 1205,
+    "lr512_errors_outside_union": 2253,
+    "interpretation": "Overlapping retrospective proxies, not exhaustive mechanisms or clean truth"
+  },
+  "error_proxy_counts": {
+    "tail75": 333,
+    "a_target_classes": 161,
+    "cross_label_duplicate": 251,
+    "short_edge_below224": 612,
+    "aspect_ratio_at_least2": 106,
+    "native_parent_regression": 214
+  },
+  "error_proxy_intersections": {
+    "tail75": {
+      "tail75": 333,
+      "a_target_classes": 0,
+      "cross_label_duplicate": 37,
+      "short_edge_below224": 61,
+      "aspect_ratio_at_least2": 13,
+      "native_parent_regression": 11
+    },
+    "a_target_classes": {
+      "tail75": 0,
+      "a_target_classes": 161,
+      "cross_label_duplicate": 39,
+      "short_edge_below224": 24,
+      "aspect_ratio_at_least2": 5,
+      "native_parent_regression": 12
+    },
+    "cross_label_duplicate": {
+      "tail75": 37,
+      "a_target_classes": 39,
+      "cross_label_duplicate": 251,
+      "short_edge_below224": 56,
+      "aspect_ratio_at_least2": 15,
+      "native_parent_regression": 8
+    },
+    "short_edge_below224": {
+      "tail75": 61,
+      "a_target_classes": 24,
+      "cross_label_duplicate": 56,
+      "short_edge_below224": 612,
+      "aspect_ratio_at_least2": 42,
+      "native_parent_regression": 33
+    },
+    "aspect_ratio_at_least2": {
+      "tail75": 13,
+      "a_target_classes": 5,
+      "cross_label_duplicate": 15,
+      "short_edge_below224": 42,
+      "aspect_ratio_at_least2": 106,
+      "native_parent_regression": 5
+    },
+    "native_parent_regression": {
+      "tail75": 11,
+      "a_target_classes": 12,
+      "cross_label_duplicate": 8,
+      "short_edge_below224": 33,
+      "aspect_ratio_at_least2": 5,
+      "native_parent_regression": 214
+    }
+  },
+  "error_union_including_native_regressions": 1359,
+  "errors_outside_all_recorded_proxies": 2099,
+  "report_sha256": "0499928832d3981cc028d09223a8f0accc09fb1dd2b410371e440d90e0b06438",
+  "aligned_csv_sha256": "d94a98acc2b2c6cbb9263547b38a7a678d8e664a3c382f1172784f4b45bcc718",
+  "verifier_sha256": "629c503750bca5bf0d106a0c35dac7ec73f7c1004f0fd31d853a1890c672898c",
+  "new_training": false,
+  "new_platform_score": null
+}
