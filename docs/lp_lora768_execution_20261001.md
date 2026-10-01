@@ -55,3 +55,10 @@ Windows Git曾将历史跟踪文本转成CRLF，使历史SHA测试失败；在�
 5项真实资产/恢复测试通过；额外恢复采样检查1passed。独立交付核验脚本为`python scripts/verify_lp_lora768_delivery.py --output <run_dir> --assets <handoff_dir>`，须在两份包生成后实际执行。
 
 当前动态状态以新目录`progress.json`、`execution.log`、`head_only/recovery/latest.json`为准；首目录的进度是故障前记录。四轮与新包尚未完成。
+## 2026-10-02 对照臂完成与首次完整状态续跑
+
+对照臂恰好完成4轮/14,888次成功更新，固定EMA2–4主结果micro76.4314516%、macro75.5113731%（11,373张正确）。相对本机父修正184、退化198，净−14；末轮EMA第4轮为micro76.3776882%、macro75.4590670%，仍只作诊断。三份完整导出均有98项参数，冻结LoRA逐项等于原父；四轮日志计数独立核对通过。真实报告见`results/lp_lora768_20261001/retry1/head_only/`。这些不是两臂比较或提交包完成声明。
+
+LoRA臂第1轮batch556再次报CUDA unknown error（香港时间00:05:14），原556条尝试记录、堆栈和失败报告保留。新进程CUDA矩阵运算正常；设备异常根因未知。按既有`--resume`从该臂step0完整状态恢复，失败尾部归档，已完成的对照臂直接复用；没有从EMA替代raw，也没有重做对照臂。恢复后首批loss与原首批完全一致，已越过故障位置并保存第1,000步完整恢复点。续跑在上方确切命令末尾加`--resume`，同一输出目录追加execution.log。故障证据见`retry1/cuda_failure_before_resume1.json`。
+
+主main实现及协议绑定与实际运行一致；最新整合回归787 passed/12 skipped/2 failed，两项失败均为仓库已知ScopePreflightError。实际两臂比较、37,444行CSV/ZIP和完整独立交付审计仍待LoRA臂完成，不启动额外轮次。

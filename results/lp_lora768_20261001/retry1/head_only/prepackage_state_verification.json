@@ -1,0 +1,14 @@
+{
+  "status": "four_epoch_control_state_verified_submission_pending",
+  "epochs": 4,
+  "updates": 14888,
+  "all_three_exports_complete_98_parameters": true,
+  "all_control_lora_exact_original": true,
+  "successful_batches": {
+    "1": 3722,
+    "2": 3722,
+    "3": 3722,
+    "4": 3722
+  },
+  "paired_batch_sha256": "85d4d588b9a3b58bb3681b965ac3bb942c58acc9f41e144c412b171fcd2ecd1e"
+}
