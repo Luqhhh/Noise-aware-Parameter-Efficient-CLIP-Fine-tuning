@@ -1,0 +1,9 @@
+{
+  "checkpoint": "/home/lux1/noise-worktrees/lr512_swa_package_20261001/outputs/codex/lr512_swa_package_20261001/run/training/ema_swa.pt",
+  "checkpoint_sha256": "c103dc3e6039c9fe156a56dfcd196500975b5bd21354be6506447bb1ee636e2e",
+  "csv_sha256": "46b66252f984acb76c4c08f798bd4e0a8ffa6ad0787f57df7abd7797761e68b7",
+  "platform_score": null,
+  "rows": 37444,
+  "status": "package_ready",
+  "zip_sha256": "8d37d0ba8e1d816094b5032d4a3a7cd5180c618a0d53bf6bf94f68bbd2817efd"
+}
