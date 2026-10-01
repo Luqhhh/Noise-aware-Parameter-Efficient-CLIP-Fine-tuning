@@ -11,7 +11,7 @@ WFT448_FULL用户回填70.43585087063347%，低于现役；LR512_FULL保持待�
 固定配方：当前阶段148,695张full_train的768缓存重新构建kNN/teacher/去噪目标，
 448px rank32/alpha64全12块LoRA、12轮、EMA0.999、EMA4–12单checkpoint SWA；
 448/512/576×flip六视角logits求和，当前37,444张无标签测试logits拟合均衡bias，200次、强度1。
-保留同模型无bias包供配对比较；不搜索强度、不使用重叠val选模。当前仅实现和验证准备，尚无新平台分。
+保留同模型无bias包供配对比较；不搜索强度、不使用重叠val选模。75项CPU回归及官方CPU/CUDA真实检查通过；北京时间12:08已启动，第1/12轮，去噪后136,631张、750类均有目标，尚无新包/平台分。
 见[执行协议](v1_768_full_test_bias_20261001.md)与[官方确认来源记录](v1_test_prior_authorization_20261001.md)。
 
 ## 最新诊断：V1_FEATURE_CALIBRATION_20261001

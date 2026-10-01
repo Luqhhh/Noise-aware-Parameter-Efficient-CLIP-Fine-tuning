@@ -32,3 +32,19 @@ python3 -u scripts/run_v1_training.py \
 ## 启动前实测
 
 CPU官方448px前向通过，750类输出、48处LoRA、5,294,593可训练参数。CUDA RTX4070 Laptop真实5个batch检查通过，2次成功优化更新（初始AMP溢出跳过按现有逻辑处理），不保留拟合权重；训练峰值3,175.21MiB，测得平均0.2563秒/batch，保守全流程估计4.32小时（另加teacher和启动；实际耗时以status为准）。CPU/CUDA检查见results/v1_768_full_test_bias_20261001/。
+
+## 在途状态（非完成报告）
+
+北京时间2026-10-01 12:08:31启动本机服务noise-v1-768-full-test-bias-20261001.service，执行前述命令。75项相关CPU测试通过；768缓存全量重建目标13.26秒，initial kept133,533、最终kept136,325、伪标签306、used136,631，全部750类有监督。学生每轮4,270个batch，固定12轮；实际完成状态以独立输出目录status.json为准。
+
+完成后CPU独立核验命令：
+
+```bash
+PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 \
+  python3 scripts/verify_v1_768_full_delivery.py \
+  --config configs/v1_768_full_test_bias_experimental_20261001.yaml \
+  --report results/v1_768_full_test_bias_20261001/delivery_verification.json \
+  --desktop-raw /mnt/c/Users/lqh22/Desktop/v1_768_full_raw_submission.zip
+```
+
+独立核验将重放全部两份CSV、核对ZIP逐字节、重新执行提交校验，并用NumPy FP64独立拟合固定200次bias；无新平台分。
