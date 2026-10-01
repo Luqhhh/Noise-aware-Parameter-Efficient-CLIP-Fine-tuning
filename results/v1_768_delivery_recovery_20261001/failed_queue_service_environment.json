@@ -1,0 +1,14 @@
+{
+  "experiment_id": "V1_POST768_SERIAL_20261001",
+  "status": "failed",
+  "runner_pid": 164380,
+  "started_at": "2026-10-01T08:58:03.462156+00:00",
+  "jobs": [],
+  "automatic_retry": false,
+  "automatic_full_training": false,
+  "platform_upload": false,
+  "dependency": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/completion_status.json",
+  "queue_sha256": "2f0dd68be2da8d314d2512def781cd7e19d6df5904015b6b22ef94b3f452f852",
+  "error": "[Errno 2] No such file or directory: 'nvidia-smi'",
+  "failed_at": "2026-10-01T08:58:19.819303+00:00"
+}
