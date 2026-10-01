@@ -1,0 +1,23 @@
+{
+  "status": "passed_independent_numpy64_counter_replay",
+  "experiment_id": "V1_REFLECTION_CONSISTENCY_PROBE_20261001",
+  "native_predictions_replayed_from_saved_views": 29760,
+  "orientation_predictions_replayed": 59520,
+  "js_rows_replayed": 29760,
+  "max_js_errors": {
+    "native_parent": 2.7755575615628914e-16,
+    "lr512_swa": 2.94469310047063e-16
+  },
+  "cold_native_match_records_checked": 128,
+  "metric_groups_checked": 48,
+  "paired_groups_checked": 32,
+  "source_files_checked": 32,
+  "group_and_top5_membership_identical": true,
+  "mechanism_gate_independently_verified": true,
+  "report_sha256": "8ed796ab75ba08c3a4223d6fc0653d4b5d1ad7cde694a907f7da5b1569f9f55a",
+  "verifier_sha256": "15f022bcbfbab9a5ae8896562ab23a3a25f5710fe878611cbde3d4e2ac7a6a3e",
+  "decision": "close_fixed_reflection_instability_entry",
+  "training_updates": 0,
+  "new_candidate": false,
+  "platform_gain_known": false
+}
