@@ -1,0 +1,59 @@
+{
+  "pillow": "12.2.0",
+  "results": [
+    {
+      "expected": [
+        463,
+        647,
+        484
+      ],
+      "predictions": [
+        730,
+        446,
+        545
+      ],
+      "strategy": "native_cuda"
+    },
+    {
+      "expected": [
+        463,
+        647,
+        484
+      ],
+      "predictions": [
+        730,
+        446,
+        545
+      ],
+      "strategy": "cuda_no_tf32"
+    },
+    {
+      "expected": [
+        463,
+        647,
+        484
+      ],
+      "predictions": [
+        730,
+        446,
+        545
+      ],
+      "strategy": "cuda_math_attention"
+    },
+    {
+      "expected": [
+        463,
+        647,
+        484
+      ],
+      "predictions": [
+        730,
+        446,
+        545
+      ],
+      "strategy": "cpu_fp32"
+    }
+  ],
+  "torch": "2.13.0+cu130",
+  "torchvision": "0.28.0+cu130"
+}

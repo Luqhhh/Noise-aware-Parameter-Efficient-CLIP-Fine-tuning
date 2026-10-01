@@ -1,0 +1,8 @@
+{
+  "owner": "clairvoyanttt",
+  "assets": "/home/clairvoyant/code/team_exploration_assets_20261001",
+  "bundle": "/home/clairvoyant/code/team_exploration_assets_20261001.zip",
+  "source_root": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning",
+  "official_checkpoint": "/home/clairvoyant/.cache/clip/ViT-B-32.pt",
+  "device": "cuda"
+}
