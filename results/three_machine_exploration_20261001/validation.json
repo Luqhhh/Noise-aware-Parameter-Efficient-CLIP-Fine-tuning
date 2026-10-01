@@ -1,0 +1,46 @@
+{
+  "experiment_id": "THREE_MACHINE_EXPLORATION_20261001",
+  "status": "validated_plan_and_handoff",
+  "base_commit": "cb515b5",
+  "branch": "codex/three_machine_exploration_20261001",
+  "training_started": false,
+  "external_machine_processes_started": false,
+  "platform_upload": false,
+  "remote_v2_modified": false,
+  "machine_statuses": {
+    "A": "implementation_required_not_started",
+    "B": "implementation_required_not_started",
+    "C": "completed_verified_delivery"
+  },
+  "implementation_limits": "A/B are frozen protocols and agent handoffs; training runtimes are not implemented by this planning segment",
+  "relative_document_links_checked": 78,
+  "asset_files": 26,
+  "bundle": "/home/lux1/noise-worktrees/three_machine_exploration_20261001/outputs/codex/three_machine_exploration_20261001/team_exploration_assets.zip",
+  "desktop_bundle": "/mnt/c/Users/lqh22/Desktop/team_exploration_assets_20261001.zip",
+  "bundle_sha256": "35396b7b6482b2fd3cbf2cf8f807bf6744edabeda67f79948db8aa88950dc5cd",
+  "desktop_bundle_sha256": "35396b7b6482b2fd3cbf2cf8f807bf6744edabeda67f79948db8aa88950dc5cd",
+  "bundle_bytes": 63803102,
+  "artifact_sidecar_source_sha_checked": true,
+  "bundle_all_members_sha_checked": true,
+  "negative_checks": {
+    "altered_manifest": "rejected",
+    "extra_or_missing_members": "rejected",
+    "unsafe_names_rejected": 4
+  },
+  "a_target_group": {
+    "rows": 417,
+    "parent_original_label_errors": 173,
+    "recoverable_errors": null
+  },
+  "c_delivery": "results/lr512_swa_package_20261001/final_validation.json",
+  "c_branch_commit": "805a3a1",
+  "incumbent_zip": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+  "incumbent_zip_sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+  "incumbent_submission_check_reference": "results/v1_full_swa_platform_20261001/submission_check.log",
+  "commands": [
+    "python3 -m py_compile scripts/export_team_exploration_assets.py",
+    "python3 scripts/export_team_exploration_assets.py export --output outputs/codex/three_machine_exploration_20261001/team_exploration_assets.zip",
+    "python3 scripts/export_team_exploration_assets.py verify --bundle outputs/codex/three_machine_exploration_20261001/team_exploration_assets.zip",
+    "git diff --check"
+  ]
+}

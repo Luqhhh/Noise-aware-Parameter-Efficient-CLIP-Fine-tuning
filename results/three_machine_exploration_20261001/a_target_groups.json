@@ -1,0 +1,188 @@
+{
+  "status": "frozen_before_new_candidate",
+  "experiment_id": "LP_LORA768_20261001",
+  "definition": "Top10 unordered parent768 error class pairs; target population includes ALL validation rows whose original label is in their class union",
+  "source_npz": "/home/lux1/noise-worktrees/v1_crt768_dev_20261001/outputs/codex/v1_crt768_dev_20261001/validation_predictions.npz",
+  "source_sha256": "6a2827c4f65fa154dd03fcc50f4723142c4e859101dc1b9efc6292f067a2141c",
+  "validation_rows": 14880,
+  "parent_correct": 11386,
+  "parent_errors": 3494,
+  "top_pairs": [
+    {
+      "classes": [
+        179,
+        247
+      ],
+      "error_count": 17
+    },
+    {
+      "classes": [
+        270,
+        612
+      ],
+      "error_count": 15
+    },
+    {
+      "classes": [
+        491,
+        665
+      ],
+      "error_count": 13
+    },
+    {
+      "classes": [
+        202,
+        535
+      ],
+      "error_count": 12
+    },
+    {
+      "classes": [
+        316,
+        441
+      ],
+      "error_count": 10
+    },
+    {
+      "classes": [
+        189,
+        644
+      ],
+      "error_count": 9
+    },
+    {
+      "classes": [
+        502,
+        640
+      ],
+      "error_count": 9
+    },
+    {
+      "classes": [
+        716,
+        739
+      ],
+      "error_count": 9
+    },
+    {
+      "classes": [
+        14,
+        363
+      ],
+      "error_count": 8
+    },
+    {
+      "classes": [
+        57,
+        519
+      ],
+      "error_count": 8
+    }
+  ],
+  "target_classes": [
+    14,
+    57,
+    179,
+    189,
+    202,
+    247,
+    270,
+    316,
+    363,
+    441,
+    491,
+    502,
+    519,
+    535,
+    612,
+    640,
+    644,
+    665,
+    716,
+    739
+  ],
+  "target_rows": 417,
+  "parent_target_errors": 173,
+  "tail_classes": [
+    183,
+    46,
+    413,
+    19,
+    305,
+    671,
+    589,
+    114,
+    555,
+    330,
+    682,
+    145,
+    407,
+    723,
+    318,
+    58,
+    324,
+    498,
+    458,
+    431,
+    304,
+    706,
+    361,
+    418,
+    611,
+    627,
+    686,
+    97,
+    237,
+    272,
+    280,
+    341,
+    659,
+    284,
+    573,
+    597,
+    620,
+    679,
+    163,
+    317,
+    389,
+    400,
+    251,
+    370,
+    375,
+    379,
+    515,
+    581,
+    590,
+    628,
+    152,
+    225,
+    378,
+    410,
+    545,
+    677,
+    722,
+    724,
+    299,
+    352,
+    387,
+    415,
+    617,
+    621,
+    653,
+    256,
+    264,
+    335,
+    507,
+    529,
+    17,
+    81,
+    144,
+    274,
+    480
+  ],
+  "target_tail_overlap_rows": 0,
+  "mechanism_entry_gate": true,
+  "clean_labels_known": false,
+  "recoverable_errors": null,
+  "platform_transfer_gain": null
+}

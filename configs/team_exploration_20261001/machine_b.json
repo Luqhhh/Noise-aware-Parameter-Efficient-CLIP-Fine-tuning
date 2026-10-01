@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "kind": "protocol_for_agent_implementation_not_runtime_config",
+  "data_version": "20260921",
+  "partition": "train_dev",
+  "status": "implementation_required_not_started",
+  "owner": null,
+  "gpu_model": null,
+  "epochs_per_arm": 4,
+  "max_compute_minutes": 300,
+  "logical_batch_size": 32,
+  "micro_batch_size": 8,
+  "num_workers": 2,
+  "seed": 42,
+  "image_size": 448,
+  "optimizer": "AdamW",
+  "lora_lr": 5e-05,
+  "head_lr": 0.00025,
+  "lora_weight_decay": 0.0,
+  "head_weight_decay": 0.01,
+  "scheduler": {
+    "name": "OneCycleLR",
+    "pct_start": 0.1,
+    "anneal_strategy": "cos"
+  },
+  "ema_decay": 0.999,
+  "grad_clip": 1.0,
+  "label_smoothing": 0.1,
+  "mixup_alpha": 0.2,
+  "supervision": "unchanged_v1_train_dev_119074_active",
+  "parent_has_seen_validation": false,
+  "validation": {
+    "rows": 14880,
+    "views": "448_center",
+    "bias": null,
+    "labels": "official_noisy_original"
+  },
+  "primary_export": "ema_swa_2_4",
+  "diagnostic_exports": [
+    "last_raw",
+    "last_ema"
+  ],
+  "test_decoder": {
+    "scales": [
+      448,
+      512,
+      576
+    ],
+    "flip": true,
+    "bias": null,
+    "reduction": "sum_logits"
+  },
+  "cost_probe": {
+    "updates": 5,
+    "safety_margin": 0.2,
+    "includes": [
+      "full_holdout",
+      "checkpoint_io",
+      "both_submission_packages"
+    ]
+  },
+  "review_gate": {
+    "net_vs_control_min": 75,
+    "net_vs_parent_min": 75,
+    "target_net_vs_control_min": 25,
+    "corrections_to_regressions_min": 1.25,
+    "automatic_full_training": false
+  },
+  "stop_if_micro_pp_vs_parent_below": -2,
+  "platform_upload": false,
+  "remote_execution": false,
+  "spawn_subagents": false,
+  "machine": "B",
+  "experiment_id": "STRONG_AUG448_20261001",
+  "branch_suffix": "strong_aug448_20261001",
+  "parent_asset": "assets/common/dev512/selected.pt",
+  "feature_dimension": 512,
+  "arms": [
+    "original_augmentation",
+    "strong_augmentation"
+  ],
+  "target_group": {
+    "name": "low_training_similarity_proxy",
+    "threshold": "training_group_excluded_max_cosine_10th_percentile",
+    "gallery": "train_dev_only",
+    "cache": "audited_official_224_projection_512",
+    "calculation_max_minutes": 20,
+    "minimum_parent_target_errors": 75
+  },
+  "augmentations": {
+    "control": {
+      "crop_min": 0.8,
+      "horizontal_flip": true,
+      "randaugment": [
+        2,
+        7
+      ]
+    },
+    "candidate": {
+      "crop_min": 0.35,
+      "horizontal_flip": true,
+      "color_jitter": {
+        "brightness": 0.5,
+        "contrast": 0.5,
+        "saturation": 0.5,
+        "hue": 0.125
+      },
+      "randaugment": [
+        2,
+        7
+      ],
+      "random_erasing_probability": 0.3,
+      "cutmix": false,
+      "random_erasing_value": "random"
+    }
+  },
+  "evidence": [
+    "results/wft448_full_platform_20261001/validation.json",
+    "results/wft448_dev_20261001/report.json"
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "kind": "protocol_for_agent_implementation_not_runtime_config",
+  "data_version": "20260921",
+  "partition": "train_dev",
+  "status": "implementation_required_not_started",
+  "owner": null,
+  "gpu_model": null,
+  "epochs_per_arm": 4,
+  "max_compute_minutes": 300,
+  "logical_batch_size": 32,
+  "micro_batch_size": 8,
+  "num_workers": 2,
+  "seed": 42,
+  "image_size": 448,
+  "optimizer": "AdamW",
+  "lora_lr": 5e-05,
+  "head_lr": 0.00025,
+  "lora_weight_decay": 0.0,
+  "head_weight_decay": 0.01,
+  "scheduler": {
+    "name": "OneCycleLR",
+    "pct_start": 0.1,
+    "anneal_strategy": "cos"
+  },
+  "ema_decay": 0.999,
+  "grad_clip": 1.0,
+  "label_smoothing": 0.1,
+  "mixup_alpha": 0.2,
+  "supervision": "unchanged_v1_train_dev_119074_active",
+  "parent_has_seen_validation": false,
+  "validation": {
+    "rows": 14880,
+    "views": "448_center",
+    "bias": null,
+    "labels": "official_noisy_original"
+  },
+  "primary_export": "ema_swa_2_4",
+  "diagnostic_exports": [
+    "last_raw",
+    "last_ema"
+  ],
+  "test_decoder": {
+    "scales": [
+      448,
+      512,
+      576
+    ],
+    "flip": true,
+    "bias": null,
+    "reduction": "sum_logits"
+  },
+  "cost_probe": {
+    "updates": 5,
+    "safety_margin": 0.2,
+    "includes": [
+      "full_holdout",
+      "checkpoint_io",
+      "both_submission_packages"
+    ]
+  },
+  "review_gate": {
+    "net_vs_control_min": 75,
+    "net_vs_parent_min": 75,
+    "target_net_vs_control_min": 25,
+    "corrections_to_regressions_min": 1.25,
+    "automatic_full_training": false
+  },
+  "stop_if_micro_pp_vs_parent_below": -2,
+  "platform_upload": false,
+  "remote_execution": false,
+  "spawn_subagents": false,
+  "machine": "A",
+  "experiment_id": "LP_LORA768_20261001",
+  "branch_suffix": "lp_lora768_20261001",
+  "parent_asset": "assets/a_parent/selected.pt",
+  "feature_dimension": 768,
+  "arms": [
+    "head_only",
+    "lora_and_head"
+  ],
+  "target_group": "top10_unordered_class_confusion_pairs_frozen_from_parent_validation",
+  "minimum_parent_target_errors": 75,
+  "augmentations": {
+    "crop_min": 0.8,
+    "horizontal_flip": true,
+    "randaugment": [
+      2,
+      7
+    ]
+  },
+  "evidence": [
+    "results/v1_feature_calibration_20261001/feature_report.json",
+    "results/v1_post768_close_20261001/closure_verification.json"
+  ],
+  "frozen_target_groups": "results/three_machine_exploration_20261001/a_target_groups.json"
+}
