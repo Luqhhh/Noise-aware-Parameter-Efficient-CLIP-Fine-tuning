@@ -1,0 +1,64 @@
+project:
+  strategy_name: v1
+  strategy_origin: team_original
+  experiment_id: V1_768_FULL_TEST_BIAS_20261001
+  stage: repechage
+  data_version: '20260921'
+  seed: 42
+source:
+  root: /home/lux1/noise
+  reference_config: configs/rematch750_lp.yaml
+  partition: full_train
+  preprojection_cache:
+    tensor_path: /home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/features768.pt
+    tensor_sha256: 00eefe153a7141f4016c112623dabe796d4fc2468e5a2f6797788085e3058a21
+    protocol_path: /home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/protocol.json
+    protocol_sha256: da9309242b13498a0553d353a28a4ffe6001439a1c43261743e7fe4e0da863fe
+model:
+  backbone: ViT-B/32
+  pretrained: openai
+  image_size: 448
+  blocks: 12
+  rank: 32
+  alpha: 64.0
+  feature_path: pre_projection
+denoise:
+  keep_ratio: 0.9
+  knn_k: 16
+  query_chunk: 128
+  gallery_chunk: 8192
+  high_agreement_floor: 0.7
+  teacher_epochs: 20
+  teacher_batch_size: 8192
+  teacher_lr: 0.005
+  minimum_weight: 0.2
+  pseudo_threshold: 0.7
+  pseudo_margin: 0.2
+  pseudo_soft_alpha: 0.0
+train:
+  epochs: 12
+  batch_size: 32
+  num_workers: 2
+  amp: true
+  lora_lr: 0.0002
+  head_lr: 0.001
+  grad_clip: 1.0
+  label_smoothing: 0.1
+  mixup_alpha: 0.2
+  crop_min_scale: 0.8
+  ema_decay: 0.999
+  swa_enabled: true
+  swa_start: 4
+decode:
+  scales:
+  - 448
+  - 512
+  - 576
+  flip: true
+  bias_source: test_uniform_experimental
+  bias_iterations: 200
+  bias_strength: 1.0
+  experimental_test_bias: true
+  logit_reduction: sum
+output:
+  root: ../outputs/codex/v1_768_full_test_bias_20261001

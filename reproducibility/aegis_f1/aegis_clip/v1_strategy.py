@@ -47,8 +47,10 @@ class CosineHead(nn.Module):
 
 class V1Classifier(nn.Module):
     def __init__(self, visual: nn.Module, classes: int, *, image_size=448,
-                 rank=32, alpha=64.0, blocks=12):
+                 rank=32, alpha=64.0, blocks=12, feature_path="projection"):
         super().__init__()
+        if feature_path not in ("projection", "pre_projection"):
+            raise ValueError("Unknown visual feature path")
         self.visual = visual.float()
         for p in visual.parameters():
             p.requires_grad_(False)
@@ -77,6 +79,12 @@ class V1Classifier(nn.Module):
                 parametrize.register_parametrization(module, key, adapter)
                 self.adapted_modules.append(f"blocks.{index}.{name}")
         dimension = int(visual.proj.shape[1])
+        if feature_path == "pre_projection":
+            # OpenAI's native forward explicitly supports proj=None. Its output
+            # is then the post-ln CLS vector, with gradients through every LoRA.
+            dimension = int(visual.class_embedding.numel())
+            visual.proj = None
+        self.feature_path = feature_path
         self.head = CosineHead(dimension, classes)
 
     def train(self, mode=True):
@@ -105,7 +113,8 @@ def build_classifier(official_checkpoint, classes, model_config, device="cpu"):
         raise ValueError("Unexpected official ViT-B/32 architecture")
     model = V1Classifier(visual, classes, image_size=model_config["image_size"],
                            rank=model_config["rank"], alpha=model_config["alpha"],
-                           blocks=model_config["blocks"])
+                           blocks=model_config["blocks"],
+                           feature_path=model_config.get("feature_path", "projection"))
     del clip_model
     return model.to(device)
 
