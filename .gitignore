@@ -120,3 +120,6 @@ outputs/search_20260923/
 
 # Private teacher confidence and recovery diagnostics; aggregate report only in Git.
 /outputs/codex/v1_frozen_teacher_recovery_20261001/
+
+# Private fixed Mixup exposure and heldout cohort flags.
+/outputs/codex/v1_mixup_mass_diagnostic_20261001/
