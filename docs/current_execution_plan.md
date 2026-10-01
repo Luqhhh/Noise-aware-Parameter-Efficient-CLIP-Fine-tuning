@@ -18,6 +18,12 @@
 
 37,444行CSV/ZIP通过9项校验；FULL证据状态 `evidence_requires_review`，未声称平台提升。见[LR512_DEV](lr512_dev_20261001.md)。
 
+## 已交付串行检查点：WFT448_FULL
+
+- 全量4轮完成，无独立val分；没有利用重叠val选模、校准或测试分布拟合。
+
+37,444行CSV/ZIP通过9项校验；FULL证据状态 `fixed_full_complete`，未声称平台提升。见[WFT448_FULL](wft448_full_20261001.md)。
+
 ## 最新授权本机串行执行：V1_CONTINUATIONS_SERIAL_20261001
 
 用户明确要求“在本机串行进行剩下几个不依赖v2的实验”。队列为WFT448_DEV → LR512_DEV，
