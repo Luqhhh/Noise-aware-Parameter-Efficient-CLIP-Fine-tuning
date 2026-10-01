@@ -20,13 +20,21 @@
 [定时器核验](../results/v2_continuation_20261001/monitor_schedule_20min.log)、
 [20分钟监控首次真实报告](../results/v2_continuation_20261001/health_20min_initial.json)。
 
+16:20的本机自动读取遇SSH断连，已保留异常历史，未影响controller或服务器独立监控。
+随后精简健康传输字段、启用SSH压缩/显式cipher与无QoS标记，并为SSH子进程设置60秒内部超时、
+外层健康读取75秒超时，使三次重试能在service的300秒内给出结果。
+16:32:54同一systemd服务实测成功、告警清除，健康状态running、原controller存活，
+已读到s2 epoch0、600次真实更新、loss3.2110589445、elapsed1468.289秒。
+[修复后真实监控报告](../results/v2_continuation_20261001/health_20min_recovered.json)。
+连接设置保存在私有transport，不改动训练代码或plan；无需等待旧每小时定时器。
+
 s2探针529.304秒完成，8次更新全部通过有限梯度检查，完整14,880张raw/EMA holdout两遍，
 验证447.775秒；峰值2,717,040,640 bytes（约2.53 GiB），checkpoint写盘3.930秒，
 更新计时包含数据加载。保守取除首步外最慢4.574836秒/更新；
 [成本原输出](../results/v2_continuation_20261001/s2_cost.json)。
 估算s2 41,033.761秒（11.398小时）、上限57,448秒（15.958小时），
 北京时间16:05:49已自动正式开训；[原预算](../results/v2_continuation_20261001/s2_authorization.json)。
-已观察到epoch0、200/8,358次更新，loss3.6736203432、elapsed529.795秒；
+启动日志已观察到epoch0、200/8,358次更新，loss3.6736203432、elapsed529.795秒，后续监控已到600次；
 这是正式训练进度，尚无完整阶段验证结果、完整候选或新提交包。
 前200步含初始化均摊2.649秒/更新，低于探针保守上界，不能当作576速度测量。
 完整v2（含固定推理）暂估还需18–36小时，即10月2日上午至10月3日凌晨；
