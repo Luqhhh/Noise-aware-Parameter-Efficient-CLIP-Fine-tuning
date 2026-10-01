@@ -1,0 +1,43 @@
+{
+  "experiment_id": "V2_REMOTE_PREPARE_20261001",
+  "user_requested_shutdown": true,
+  "endpoint": "connect.bjb1.seetacloud.com:39385",
+  "command": "sync && /usr/bin/shutdown",
+  "invoked_at_utc": "2026-10-01T04:49:00.823919+00:00",
+  "server_repository_commit": "00706771cb62c7f92d1ab21b872d42627ec67e19",
+  "shutdown_entry_sha256": "0358e83eeeaf542aa98f64ba9e339c91df46f1e025892d52dba159f4fb1cf027",
+  "cloud_console_verified": false,
+  "training_started": false,
+  "ssh_checks": [
+    {
+      "recorded_at_utc": "2026-10-01T04:49:11.481012+00:00",
+      "exit_code": 255,
+      "reachable": false,
+      "stderr": "kex_exchange_identification: Connection closed by remote host\r\nConnection closed by 106.120.183.117 port 39385"
+    },
+    {
+      "recorded_at_utc": "2026-10-01T04:49:25.764333+00:00",
+      "exit_code": 255,
+      "reachable": false,
+      "stderr": "kex_exchange_identification: Connection closed by remote host\r\nConnection closed by 106.120.183.117 port 39385"
+    },
+    {
+      "recorded_at_utc": "2026-10-01T04:49:40.910103+00:00",
+      "exit_code": 255,
+      "reachable": false,
+      "stderr": "kex_exchange_identification: Connection closed by remote host\r\nConnection closed by 106.120.183.117 port 39385"
+    }
+  ],
+  "shutdown_command_exit_code": 0,
+  "shutdown_command_stdout": "",
+  "shutdown_command_stderr": "",
+  "shutdown_output_received": false,
+  "status": "shutdown_entry_invoked_ssh_unreachable",
+  "completed_at_utc": "2026-10-01T04:49:46.051170+00:00",
+  "latest_user_instruction": "keep_server_running",
+  "post_keep_running_probe": {
+    "recorded_at_utc": "2026-10-01T04:56:40+00:00",
+    "ssh_exit_code": 0,
+    "reachable": true
+  }
+}
