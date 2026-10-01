@@ -1,0 +1,9 @@
+{
+  "zip": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+  "zip_sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+  "rows": 37444,
+  "zip_inner_outer_csv_identical": true,
+  "existing_nine_check_log": "/home/lux1/noise/results/v1_full_swa_platform_20261001/submission_check.log",
+  "user_reported_platform_score": 70.98600576861446,
+  "new_candidate": false
+}

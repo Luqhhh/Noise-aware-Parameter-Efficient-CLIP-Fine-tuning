@@ -1,0 +1,9 @@
+{
+  "bias_float64_max_errors": [
+    1.4165282218488173e-06,
+    1.4291314393011234e-06
+  ],
+  "calibration_content_groups_disjoint": true,
+  "calibration_predictions_replayed": 14878,
+  "calibration_sha256": "7bb2f57092c9d1ad6483835f9c2817b205e324ce1e90bcf651c869d775a0460f"
+}
