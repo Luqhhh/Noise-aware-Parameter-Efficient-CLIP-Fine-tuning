@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "experiment_id": "THREE_MACHINE_EXPLORATION_20261001",
+  "data_version": "20260921",
+  "stage": "repechage",
+  "base_commit": "cb515b5",
+  "files": [
+    {
+      "source_path": "/home/lux1/noise-worktrees/v1_crt768_dev_20261001/outputs/codex/v1_crt768_dev_20261001/unbalanced/selected.pt",
+      "archive_path": "assets/a_parent/selected.pt",
+      "sha256": "ff7fdb81c3961ccd03501036e387df644e6fb6be3fc46055571b2787491a8b99",
+      "bytes": 21226725
+    },
+    {
+      "source_path": "/home/lux1/noise-worktrees/v1_crt768_dev_20261001/outputs/codex/v1_crt768_dev_20261001/unbalanced/selected.sha256.json",
+      "archive_path": "assets/a_parent/selected.sha256.json",
+      "sha256": "7d589bd00019f6279d80e4099c5c74017037e73bfb8f1fa5ef81bc0bd8f9dcfe",
+      "bytes": 1446
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.pt",
+      "archive_path": "assets/common/dev512/selected.pt",
+      "sha256": "01caedaa4996d25fa9dfc213d4b2376c147bb99ebdc23dacd93e6e1ff2d6fa20",
+      "bytes": 20459941
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.sha256.json",
+      "archive_path": "assets/common/dev512/selected.sha256.json",
+      "sha256": "dde8be4540ce02985194feed2b5f4064e778e707b46e751c9e33f3f94c2165ff",
+      "bytes": 742
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.pt",
+      "archive_path": "assets/common/targets.pt",
+      "sha256": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2",
+      "bytes": 13195653
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.sha256.json",
+      "archive_path": "assets/common/targets.sha256.json",
+      "sha256": "e58e91bc3512bf5a853dbdcc1e157fbbbead6e568b0e333f8869f9e1aed98124",
+      "bytes": 742
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.pt",
+      "archive_path": "assets/c_average/ema_swa.pt",
+      "sha256": "c103dc3e6039c9fe156a56dfcd196500975b5bd21354be6506447bb1ee636e2e",
+      "bytes": 20457789
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.sha256.json",
+      "archive_path": "assets/c_average/ema_swa.sha256.json",
+      "sha256": "8be06d426e4b40d369da7e4c940d228a5bb59206d264f755d95c26483e2f11fa",
+      "bytes": 1054
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/config.yaml",
+      "archive_path": "assets/common/dev512/config.yaml",
+      "sha256": "385fb63fc4cb6d75e068d464e68dea121a42d0b7ee8f60d8558921ec978b9db8",
+      "bytes": 1100
+    },
+    {
+      "source_path": "/home/lux1/noise-worktrees/v1_crt768_dev_20261001/outputs/codex/v1_crt768_dev_20261001/validation_predictions.npz",
+      "archive_path": "assets/common/validation_predictions.npz",
+      "sha256": "6a2827c4f65fa154dd03fcc50f4723142c4e859101dc1b9efc6292f067a2141c",
+      "bytes": 445439
+    },
+    {
+      "source_path": "/home/lux1/noise-worktrees/v1_crt768_dev_20261001/outputs/codex/v1_crt768_dev_20261001/development_report.json",
+      "archive_path": "assets/a_parent/development_report.json",
+      "sha256": "353e9eb65531cc792f94c6318b0d77bf9f2dcf3fa1b1badea3539f6da98dc581",
+      "bytes": 57370
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/v1_strategy.py",
+      "archive_path": "assets/common/archived_v1_code/v1_strategy.py",
+      "sha256": "d843196b921ff801fb1b1156beda011dd025d4f31c29d2c00c75d7b39afa231d",
+      "bytes": 14257
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/v1_pipeline.py",
+      "archive_path": "assets/common/archived_v1_code/v1_pipeline.py",
+      "sha256": "ce6075b2f01c726614844b3262fefd6ecefb28176522ec114c5461a162545dc5",
+      "bytes": 30197
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/model.py",
+      "archive_path": "assets/common/archived_v1_code/model.py",
+      "sha256": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+      "bytes": 48692
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/submission.py",
+      "archive_path": "assets/common/archived_v1_code/submission.py",
+      "sha256": "2e76ad99a05f99488f46297f0991383915d0cd2a59d50ebc1bddd12e6ebbd905",
+      "bytes": 4934
+    },
+    {
+      "source_path": "/home/lux1/noise/configs/v1_train_20260929.yaml",
+      "archive_path": "assets/common/original_v1_config.yaml",
+      "sha256": "70c62332fe734030039d4070912c5b7f46d3296fea3cf84bc341850217424e65",
+      "bytes": 1040
+    },
+    {
+      "source_path": "/home/lux1/noise/configs/v1_crt768_dev_20261001.yaml",
+      "archive_path": "assets/a_parent/original_config.yaml",
+      "sha256": "6a77ff0f4676bf85e7ff1e78e0ac922c50e5adcdda0620c8b4c229318673d680",
+      "bytes": 707
+    },
+    {
+      "source_path": "/home/lux1/noise/configs/v1_continuation/lr512_dev.yaml",
+      "archive_path": "assets/c_average/original_config.yaml",
+      "sha256": "2272fecf5e03b2eb48b3db8b5528a8238e6aab8d6c47fe81822673ba448407ef",
+      "bytes": 781
+    },
+    {
+      "source_path": "/home/lux1/noise/configs/rematch750_lp.yaml",
+      "archive_path": "assets/common/original_reference_config.yaml",
+      "sha256": "154b02c122da5ab79b6feb07ff1dfcdde8c60c7e5a42019a276d0a49e53d1a8f",
+      "bytes": 2036
+    },
+    {
+      "source_path": "/home/lux1/noise/results/lr512_dev_20261001/final_validation.json",
+      "archive_path": "assets/c_average/original_validation.json",
+      "sha256": "927aa188966576a8254ec3df811a2435a80ec28cea9a7f44ea92b185d6a2b703",
+      "bytes": 1294
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json",
+      "archive_path": "assets/c_average/original_plan.json",
+      "sha256": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+      "bytes": 57343
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/report.json",
+      "archive_path": "assets/c_average/original_report.json",
+      "sha256": "62287189bf8546ee421381a04f885edcebd956245e18b3c256e8be7ed02a3f9e",
+      "bytes": 80819
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/plan.py",
+      "archive_path": "assets/c_average/archived_continuation_code/plan.py",
+      "sha256": "2e7a41063057ba1f3c8ce8e7a34022ea604078bbe4e314f8e683ba4c4a05a4ec",
+      "bytes": 11122
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/model.py",
+      "archive_path": "assets/c_average/archived_continuation_code/model.py",
+      "sha256": "92b8b4dfb73978feb4558e97d8122af61e7e801eab89c3a6b359e2f21e1c74b6",
+      "bytes": 4037
+    },
+    {
+      "source_path": "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/runtime.py",
+      "archive_path": "assets/c_average/archived_continuation_code/runtime.py",
+      "sha256": "d0515533fc4c6b029416cf7d7d6647c250f1f9d02535630c10ec7fa4ff8cdaa5",
+      "bytes": 25359
+    },
+    {
+      "source_path": "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+      "archive_path": "assets/common/class_to_idx.json",
+      "sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+      "bytes": 11143
+    }
+  ],
+  "excluded": [
+    "official_images",
+    "official_clip_weights",
+    "large_feature_cache",
+    "connection_credentials"
+  ]
+}
