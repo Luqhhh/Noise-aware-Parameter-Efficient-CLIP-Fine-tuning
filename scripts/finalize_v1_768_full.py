@@ -24,29 +24,50 @@ def main():
     parser.add_argument('--config', required=True, type=Path)
     parser.add_argument('--integration-root', required=True, type=Path)
     parser.add_argument('--desktop-raw', required=True, type=Path)
+    parser.add_argument('--scheme-branch', default='codex/v1_768_full_test_bias_20261001')
+    parser.add_argument('--recover-failed', action='store_true',
+        help='Recover only completion of an already delivered trajectory; never retry training')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     config = args.config.resolve()
     recipe = yaml.safe_load(config.read_text())
     experiment = recipe['project']['experiment_id']
-    branch = 'codex/v1_768_full_test_bias_20261001'
+    branch = args.scheme_branch
+    if branch not in ('codex/v1_768_full_test_bias_20261001','codex/v1_768_delivery_recovery_20261001'):
+        raise ValueError('Unsupported completion scheme branch')
     if experiment != 'V1_768_FULL_TEST_BIAS_20261001':
         raise ValueError('This completion workflow is scoped to the authorized fixed experiment')
     if subprocess.check_output(['git','branch','--show-current'],cwd=root,text=True).strip() != branch:
         raise ValueError('The experiment worktree has changed branches')
     output = (config.parent / recipe['output']['root']).resolve()
     status_path = output/'completion_status.json'
+    previous_failure = None
     if status_path.exists():
-        raise FileExistsError('Do not duplicate an existing completion workflow')
+        previous_failure = json.loads(status_path.read_text())
+        training = json.loads((output/'status.json').read_text())
+        if (not args.recover_failed or previous_failure['status'] != 'failed'
+                or training['status'] != 'completed' or training['stage'] != 'delivered'):
+            raise FileExistsError('Only failed completion of an already delivered trajectory can be recovered')
+        archived = root/'results/v1_768_delivery_recovery_20261001/failed_completion_status.json'
+        if archived.exists():
+            if json.loads(archived.read_text()) != previous_failure:
+                raise ValueError('Archived completion failure differs')
+        else:
+            write_json(archived,previous_failure)
+    elif args.recover_failed:
+        raise ValueError('No failed completion workflow exists to recover')
     state = dict(experiment_id=experiment,status='watching_existing_training',
         started_at=datetime.now(timezone.utc).isoformat(),training_retry=False)
+    if previous_failure:
+        state.update(recovery=True,recovery_branch=branch,previous_failed_at=previous_failure['failed_at'])
     write_json(status_path,state)
     environment = dict(os.environ,PYTHONPATH=str(root/'reproducibility/aegis_f1'),
         OMP_NUM_THREADS='2',MKL_NUM_THREADS='2')
     def run(stage,command,working=root):
         state.update(status='running',stage=stage,command=command)
         write_json(status_path,state)
-        with (output/f'completion_{stage}.log').open('x') as log:
+        prefix = 'completion_recovery_20261001' if args.recover_failed else 'completion'
+        with (output/f'{prefix}_{stage}.log').open('x') as log:
             process_environment = dict(environment,PYTHONPATH=str(working/'reproducibility/aegis_f1'))
             subprocess.run(command,cwd=working,env=process_environment,stdout=log,stderr=subprocess.STDOUT,check=True)
     try:
@@ -71,7 +92,8 @@ def main():
         targets = json.loads((output/'target_report.json').read_text())
         history = json.loads((output/'training/history.json').read_text())
         summary = dict(experiment_id=experiment,status='full_training_and_delivery_verified',
-            training_elapsed_seconds=status['elapsed_seconds'],train_samples=148695,
+            training_elapsed_seconds=status['training_progress']['elapsed_seconds'],
+            pipeline_elapsed_seconds=status['elapsed_seconds'],train_samples=148695,
             target_samples=targets['used'],classes=750,feature_dimension=768,epochs=12,
             selected_policy='swa_ema',swa_epochs=list(range(4,13)),
             checkpoint=status['checkpoint'],checkpoint_sha256=verification['checkpoint_sha256'],
@@ -135,6 +157,7 @@ def main():
         checks = ['reproducibility/aegis_f1/tests/'+name for name in (
             'test_v1.py','test_v1_preprojection_test_bias.py','test_v1_export.py',
             'test_prior_alignment.py','test_calibration_binding.py')]
+        checks += ['tests/test_v1_768_delivery_verifier.py','tests/test_v1_post768_jobs.py']
         run('main_tests',[sys.executable,'-m','pytest',*checks,'-q'],integration)
         run('main_diff_check',['git','diff','--check'],integration)
         run('push_main',['git','push','origin','main'],integration)

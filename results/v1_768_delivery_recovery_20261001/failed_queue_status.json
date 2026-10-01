@@ -1,0 +1,22 @@
+{
+  "experiment_id": "V1_POST768_SERIAL_20261001",
+  "status": "failed",
+  "runner_pid": 145338,
+  "started_at": "2026-10-01T05:40:13.276526+00:00",
+  "jobs": [],
+  "automatic_retry": false,
+  "automatic_full_training": false,
+  "platform_upload": false,
+  "dependency": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/completion_status.json",
+  "queue_sha256": "e2e0bf14cbf1a48ee9315afbe53e8b30a013af84e1b8b3abf29bb8df33409b6f",
+  "heartbeat_at": "2026-10-01T08:28:52.211269+00:00",
+  "dependency_stage": "independent_verification",
+  "dependency_training_progress": {
+    "elapsed_seconds": 14727.946200965998,
+    "epochs": 12,
+    "selected_checkpoint": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/training/selected.pt",
+    "status": "training_complete"
+  },
+  "error": "Required 768 FULL training/delivery/integration failed; no follow-up started",
+  "failed_at": "2026-10-01T08:29:20.851881+00:00"
+}

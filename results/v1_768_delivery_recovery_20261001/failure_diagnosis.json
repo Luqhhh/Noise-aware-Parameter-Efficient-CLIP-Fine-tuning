@@ -1,0 +1,28 @@
+{
+  "experiment_id": "V1_768_DELIVERY_RECOVERY_20261001",
+  "status": "repair_prepared_not_independently_verified",
+  "cause": "The checker succeeds through stderr; verifier searched stdout only.",
+  "training_completed": true,
+  "inference_completed": true,
+  "training_retry": false,
+  "inference_retry": false,
+  "checkpoint_sha256": "013b8e9c038d21e4dbb677f3cd52ac3ed9fb1bf7d2f74ae826056138275dacfe",
+  "packages": {
+    "submission": {
+      "zip": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission/submission.zip",
+      "zip_sha256": "0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca",
+      "original_submission_check_passed": true
+    },
+    "submission_raw": {
+      "zip": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission_raw/submission.zip",
+      "zip_sha256": "c8d7e0a5fb74f78bbb86796c67bc419f66dfd47733ac6cbe9d26d03875bf462e",
+      "original_submission_check_passed": true
+    }
+  },
+  "original_failure_log_sha256": "3860cad4575dda98d2b72b2e5a557e6765035aa58e348bf996752731b38a5c58",
+  "source_binding_matches": true,
+  "followup_jobs_started": false,
+  "platform_score": null,
+  "regression_tests_passed": 82,
+  "regression_command": "PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 python3 -m pytest tests/test_v1_768_delivery_verifier.py tests/test_v1_post768_jobs.py reproducibility/aegis_f1/tests/test_v1.py reproducibility/aegis_f1/tests/test_v1_preprojection_test_bias.py reproducibility/aegis_f1/tests/test_v1_export.py reproducibility/aegis_f1/tests/test_prior_alignment.py reproducibility/aegis_f1/tests/test_calibration_binding.py -q"
+}
