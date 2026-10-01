@@ -1,0 +1,800 @@
+{
+  "artifacts": {
+    "/home/lux1/noise/worktrees/v1_reflection_consistency_probe_20261001/outputs/codex/v1_reflection_consistency_probe_20261001/probe_r1/lr512_swa.npz": "1f877a07d3e68ae95278302cb61229db7bfc57cdd5d620e820edc37b5440c417",
+    "/home/lux1/noise/worktrees/v1_reflection_consistency_probe_20261001/outputs/codex/v1_reflection_consistency_probe_20261001/probe_r1/native_parent.npz": "dd7e9ae8e413c547ea35df461a7858501d650b9f960a60ddbe069274de34450e"
+  },
+  "automatic_training": false,
+  "classes": 750,
+  "config_sha256": "ae27762bbfcf6690982e5b4e5314a5311f0b5d20f687290089122df2997b3f4c",
+  "decision": "close_fixed_reflection_instability_entry",
+  "elapsed_seconds": 477.78792317499756,
+  "experiment_id": "V1_REFLECTION_CONSISTENCY_PROBE_20261001",
+  "full_native_predictions_replayed": 29760,
+  "implementation_sha256": "602a8b4227c0e994318bc7be9f04b9b147c78e0df338b4169b0d99c403873cc7",
+  "incumbent": {
+    "csv": {
+      "matches_delivery_record": true,
+      "path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv",
+      "sha256": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5"
+    },
+    "desktop_zip": {
+      "matches_delivery_record": true,
+      "path": "/mnt/c/Users/lqh22/Desktop/v1_full_swa_submission.zip",
+      "sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e"
+    },
+    "zip": {
+      "matches_delivery_record": true,
+      "path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+      "sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e"
+    }
+  },
+  "mechanism_gate_passed": false,
+  "models": {
+    "lr512_swa": {
+      "aggregate": {
+        "common_wrong_high_instability_either_view_top5": 5,
+        "disagreement_rows": 1010,
+        "high_instability_native_errors_either_view_top1": 5,
+        "high_instability_native_errors_either_view_top5": 10,
+        "high_instability_rows": 42,
+        "js_max_nats": 0.24543261720574458,
+        "js_mean_nats": 0.009475100211362672,
+        "native_errors_either_view_top1": 188,
+        "native_errors_either_view_top5": 1881
+      },
+      "decision": "close_fixed_reflection_instability_entry",
+      "high_instability_error_rate_excess_over_all": 0.45808371735791087,
+      "mechanism_gate_passed": false,
+      "validation": {
+        "all": {
+          "flipped": {
+            "classes": 750,
+            "correct": 11379,
+            "errors": 3501,
+            "macro": 0.7549483829468269,
+            "micro": 0.7647177419354839,
+            "rows": 14880
+          },
+          "flipped_vs_native": {
+            "both_wrong": 3365,
+            "changed": 533,
+            "corrections": 93,
+            "net": -43,
+            "regressions": 136,
+            "rows": 14880
+          },
+          "native": {
+            "classes": 750,
+            "correct": 11422,
+            "errors": 3458,
+            "macro": 0.7576305868924552,
+            "micro": 0.7676075268817204,
+            "rows": 14880
+          },
+          "original": {
+            "classes": 750,
+            "correct": 11394,
+            "errors": 3486,
+            "macro": 0.7558861837704131,
+            "micro": 0.7657258064516129,
+            "rows": 14880
+          },
+          "original_vs_native": {
+            "both_wrong": 3363,
+            "changed": 518,
+            "corrections": 95,
+            "net": -28,
+            "regressions": 123,
+            "rows": 14880
+          }
+        },
+        "common_candidate_wrong": {
+          "flipped": {
+            "classes": 657,
+            "correct": 37,
+            "errors": 2838,
+            "macro": 0.013611709616275827,
+            "micro": 0.012869565217391304,
+            "rows": 2875
+          },
+          "flipped_vs_native": {
+            "both_wrong": 2838,
+            "changed": 298,
+            "corrections": 37,
+            "net": 37,
+            "regressions": 0,
+            "rows": 2875
+          },
+          "native": {
+            "classes": 657,
+            "correct": 0,
+            "errors": 2875,
+            "macro": 0.0,
+            "micro": 0.0,
+            "rows": 2875
+          },
+          "original": {
+            "classes": 657,
+            "correct": 21,
+            "errors": 2854,
+            "macro": 0.010055628035080089,
+            "micro": 0.007304347826086957,
+            "rows": 2875
+          },
+          "original_vs_native": {
+            "both_wrong": 2854,
+            "changed": 282,
+            "corrections": 21,
+            "net": 21,
+            "regressions": 0,
+            "rows": 2875
+          }
+        },
+        "common_wrong_high_instability": {
+          "flipped": {
+            "classes": 24,
+            "correct": 1,
+            "errors": 23,
+            "macro": 0.041666666666666664,
+            "micro": 0.041666666666666664,
+            "rows": 24
+          },
+          "flipped_vs_native": {
+            "both_wrong": 23,
+            "changed": 13,
+            "corrections": 1,
+            "net": 1,
+            "regressions": 0,
+            "rows": 24
+          },
+          "native": {
+            "classes": 24,
+            "correct": 0,
+            "errors": 24,
+            "macro": 0.0,
+            "micro": 0.0,
+            "rows": 24
+          },
+          "original": {
+            "classes": 24,
+            "correct": 1,
+            "errors": 23,
+            "macro": 0.041666666666666664,
+            "micro": 0.041666666666666664,
+            "rows": 24
+          },
+          "original_vs_native": {
+            "both_wrong": 23,
+            "changed": 14,
+            "corrections": 1,
+            "net": 1,
+            "regressions": 0,
+            "rows": 24
+          }
+        },
+        "disagreement": {
+          "flipped": {
+            "classes": 492,
+            "correct": 214,
+            "errors": 796,
+            "macro": 0.21348238482384824,
+            "micro": 0.21188118811881188,
+            "rows": 1010
+          },
+          "flipped_vs_native": {
+            "both_wrong": 660,
+            "changed": 533,
+            "corrections": 93,
+            "net": -43,
+            "regressions": 136,
+            "rows": 1010
+          },
+          "native": {
+            "classes": 492,
+            "correct": 257,
+            "errors": 753,
+            "macro": 0.2524728997289973,
+            "micro": 0.25445544554455446,
+            "rows": 1010
+          },
+          "original": {
+            "classes": 492,
+            "correct": 229,
+            "errors": 781,
+            "macro": 0.22306910569105687,
+            "micro": 0.22673267326732674,
+            "rows": 1010
+          },
+          "original_vs_native": {
+            "both_wrong": 658,
+            "changed": 518,
+            "corrections": 95,
+            "net": -28,
+            "regressions": 123,
+            "rows": 1010
+          }
+        },
+        "high_instability": {
+          "flipped": {
+            "classes": 39,
+            "correct": 10,
+            "errors": 32,
+            "macro": 0.23931623931623933,
+            "micro": 0.23809523809523808,
+            "rows": 42
+          },
+          "flipped_vs_native": {
+            "both_wrong": 27,
+            "changed": 19,
+            "corrections": 2,
+            "net": -3,
+            "regressions": 5,
+            "rows": 42
+          },
+          "native": {
+            "classes": 39,
+            "correct": 13,
+            "errors": 29,
+            "macro": 0.3162393162393163,
+            "micro": 0.30952380952380953,
+            "rows": 42
+          },
+          "original": {
+            "classes": 39,
+            "correct": 8,
+            "errors": 34,
+            "macro": 0.19230769230769232,
+            "micro": 0.19047619047619047,
+            "rows": 42
+          },
+          "original_vs_native": {
+            "both_wrong": 26,
+            "changed": 26,
+            "corrections": 3,
+            "net": -5,
+            "regressions": 8,
+            "rows": 42
+          }
+        },
+        "low_instability": {
+          "flipped": {
+            "classes": 750,
+            "correct": 11369,
+            "errors": 3469,
+            "macro": 0.7562579309444339,
+            "micro": 0.766208383879229,
+            "rows": 14838
+          },
+          "flipped_vs_native": {
+            "both_wrong": 3338,
+            "changed": 514,
+            "corrections": 91,
+            "net": -40,
+            "regressions": 131,
+            "rows": 14838
+          },
+          "native": {
+            "classes": 750,
+            "correct": 11409,
+            "errors": 3429,
+            "macro": 0.7587687684961771,
+            "micro": 0.7689041649818035,
+            "rows": 14838
+          },
+          "original": {
+            "classes": 750,
+            "correct": 11386,
+            "errors": 3452,
+            "macro": 0.7574117518043791,
+            "micro": 0.7673540908478231,
+            "rows": 14838
+          },
+          "original_vs_native": {
+            "both_wrong": 3337,
+            "changed": 492,
+            "corrections": 92,
+            "net": -23,
+            "regressions": 115,
+            "rows": 14838
+          }
+        },
+        "small": {
+          "flipped": {
+            "classes": 571,
+            "correct": 1222,
+            "errors": 626,
+            "macro": 0.6768614388141534,
+            "micro": 0.6612554112554112,
+            "rows": 1848
+          },
+          "flipped_vs_native": {
+            "both_wrong": 598,
+            "changed": 95,
+            "corrections": 14,
+            "net": -14,
+            "regressions": 28,
+            "rows": 1848
+          },
+          "native": {
+            "classes": 571,
+            "correct": 1236,
+            "errors": 612,
+            "macro": 0.6849869774125465,
+            "micro": 0.6688311688311688,
+            "rows": 1848
+          },
+          "original": {
+            "classes": 571,
+            "correct": 1222,
+            "errors": 626,
+            "macro": 0.6804544113213115,
+            "micro": 0.6612554112554112,
+            "rows": 1848
+          },
+          "original_vs_native": {
+            "both_wrong": 596,
+            "changed": 111,
+            "corrections": 16,
+            "net": -14,
+            "regressions": 30,
+            "rows": 1848
+          }
+        },
+        "tail75": {
+          "flipped": {
+            "classes": 75,
+            "correct": 675,
+            "errors": 328,
+            "macro": 0.6084978213507626,
+            "micro": 0.6729810568295115,
+            "rows": 1003
+          },
+          "flipped_vs_native": {
+            "both_wrong": 321,
+            "changed": 57,
+            "corrections": 12,
+            "net": 5,
+            "regressions": 7,
+            "rows": 1003
+          },
+          "native": {
+            "classes": 75,
+            "correct": 670,
+            "errors": 333,
+            "macro": 0.6038376906318081,
+            "micro": 0.6679960119641076,
+            "rows": 1003
+          },
+          "original": {
+            "classes": 75,
+            "correct": 676,
+            "errors": 327,
+            "macro": 0.6092265795206971,
+            "micro": 0.6739780658025922,
+            "rows": 1003
+          },
+          "original_vs_native": {
+            "both_wrong": 323,
+            "changed": 36,
+            "corrections": 10,
+            "net": 6,
+            "regressions": 4,
+            "rows": 1003
+          }
+        }
+      }
+    },
+    "native_parent": {
+      "aggregate": {
+        "common_wrong_high_instability_either_view_top5": 7,
+        "disagreement_rows": 912,
+        "high_instability_native_errors_either_view_top1": 3,
+        "high_instability_native_errors_either_view_top5": 10,
+        "high_instability_rows": 21,
+        "js_max_nats": 0.21759353169227552,
+        "js_mean_nats": 0.007296989370230136,
+        "native_errors_either_view_top1": 200,
+        "native_errors_either_view_top5": 1978
+      },
+      "decision": "close_fixed_reflection_instability_entry",
+      "high_instability_error_rate_excess_over_all": 0.5697388632872504,
+      "mechanism_gate_passed": false,
+      "validation": {
+        "all": {
+          "flipped": {
+            "classes": 750,
+            "correct": 11294,
+            "errors": 3586,
+            "macro": 0.7490609789256525,
+            "micro": 0.759005376344086,
+            "rows": 14880
+          },
+          "flipped_vs_native": {
+            "both_wrong": 3476,
+            "changed": 466,
+            "corrections": 92,
+            "net": -18,
+            "regressions": 110,
+            "rows": 14880
+          },
+          "native": {
+            "classes": 750,
+            "correct": 11312,
+            "errors": 3568,
+            "macro": 0.7502871585775517,
+            "micro": 0.7602150537634409,
+            "rows": 14880
+          },
+          "original": {
+            "classes": 750,
+            "correct": 11314,
+            "errors": 3566,
+            "macro": 0.7505524784357495,
+            "micro": 0.7603494623655914,
+            "rows": 14880
+          },
+          "original_vs_native": {
+            "both_wrong": 3460,
+            "changed": 479,
+            "corrections": 108,
+            "net": 2,
+            "regressions": 106,
+            "rows": 14880
+          }
+        },
+        "common_candidate_wrong": {
+          "flipped": {
+            "classes": 657,
+            "correct": 69,
+            "errors": 2806,
+            "macro": 0.029369504362789345,
+            "micro": 0.024,
+            "rows": 2875
+          },
+          "flipped_vs_native": {
+            "both_wrong": 2792,
+            "changed": 257,
+            "corrections": 24,
+            "net": 10,
+            "regressions": 14,
+            "rows": 2875
+          },
+          "native": {
+            "classes": 657,
+            "correct": 59,
+            "errors": 2816,
+            "macro": 0.028215817021887395,
+            "micro": 0.02052173913043478,
+            "rows": 2875
+          },
+          "original": {
+            "classes": 657,
+            "correct": 69,
+            "errors": 2806,
+            "macro": 0.033603830635794106,
+            "micro": 0.024,
+            "rows": 2875
+          },
+          "original_vs_native": {
+            "both_wrong": 2794,
+            "changed": 268,
+            "corrections": 22,
+            "net": 10,
+            "regressions": 12,
+            "rows": 2875
+          }
+        },
+        "common_wrong_high_instability": {
+          "flipped": {
+            "classes": 14,
+            "correct": 1,
+            "errors": 13,
+            "macro": 0.07142857142857142,
+            "micro": 0.07142857142857142,
+            "rows": 14
+          },
+          "flipped_vs_native": {
+            "both_wrong": 12,
+            "changed": 10,
+            "corrections": 1,
+            "net": 0,
+            "regressions": 1,
+            "rows": 14
+          },
+          "native": {
+            "classes": 14,
+            "correct": 1,
+            "errors": 13,
+            "macro": 0.07142857142857142,
+            "micro": 0.07142857142857142,
+            "rows": 14
+          },
+          "original": {
+            "classes": 14,
+            "correct": 1,
+            "errors": 13,
+            "macro": 0.07142857142857142,
+            "micro": 0.07142857142857142,
+            "rows": 14
+          },
+          "original_vs_native": {
+            "both_wrong": 13,
+            "changed": 6,
+            "corrections": 0,
+            "net": 0,
+            "regressions": 0,
+            "rows": 14
+          }
+        },
+        "disagreement": {
+          "flipped": {
+            "classes": 486,
+            "correct": 194,
+            "errors": 718,
+            "macro": 0.2294238683127572,
+            "micro": 0.21271929824561403,
+            "rows": 912
+          },
+          "flipped_vs_native": {
+            "both_wrong": 608,
+            "changed": 466,
+            "corrections": 92,
+            "net": -18,
+            "regressions": 110,
+            "rows": 912
+          },
+          "native": {
+            "classes": 486,
+            "correct": 212,
+            "errors": 700,
+            "macro": 0.2463991769547325,
+            "micro": 0.2324561403508772,
+            "rows": 912
+          },
+          "original": {
+            "classes": 486,
+            "correct": 214,
+            "errors": 698,
+            "macro": 0.2251371742112483,
+            "micro": 0.23464912280701755,
+            "rows": 912
+          },
+          "original_vs_native": {
+            "both_wrong": 592,
+            "changed": 479,
+            "corrections": 108,
+            "net": 2,
+            "regressions": 106,
+            "rows": 912
+          }
+        },
+        "high_instability": {
+          "flipped": {
+            "classes": 21,
+            "correct": 3,
+            "errors": 18,
+            "macro": 0.14285714285714285,
+            "micro": 0.14285714285714285,
+            "rows": 21
+          },
+          "flipped_vs_native": {
+            "both_wrong": 14,
+            "changed": 15,
+            "corrections": 3,
+            "net": -1,
+            "regressions": 4,
+            "rows": 21
+          },
+          "native": {
+            "classes": 21,
+            "correct": 4,
+            "errors": 17,
+            "macro": 0.19047619047619047,
+            "micro": 0.19047619047619047,
+            "rows": 21
+          },
+          "original": {
+            "classes": 21,
+            "correct": 4,
+            "errors": 17,
+            "macro": 0.19047619047619047,
+            "micro": 0.19047619047619047,
+            "rows": 21
+          },
+          "original_vs_native": {
+            "both_wrong": 17,
+            "changed": 8,
+            "corrections": 0,
+            "net": 0,
+            "regressions": 0,
+            "rows": 21
+          }
+        },
+        "low_instability": {
+          "flipped": {
+            "classes": 750,
+            "correct": 11291,
+            "errors": 3568,
+            "macro": 0.749842861509499,
+            "micro": 0.7598761693249882,
+            "rows": 14859
+          },
+          "flipped_vs_native": {
+            "both_wrong": 3462,
+            "changed": 451,
+            "corrections": 89,
+            "net": -17,
+            "regressions": 106,
+            "rows": 14859
+          },
+          "native": {
+            "classes": 750,
+            "correct": 11308,
+            "errors": 3551,
+            "macro": 0.7509910551289943,
+            "micro": 0.7610202570832492,
+            "rows": 14859
+          },
+          "original": {
+            "classes": 750,
+            "correct": 11310,
+            "errors": 3549,
+            "macro": 0.7512519349827521,
+            "micro": 0.7611548556430446,
+            "rows": 14859
+          },
+          "original_vs_native": {
+            "both_wrong": 3443,
+            "changed": 471,
+            "corrections": 108,
+            "net": 2,
+            "regressions": 106,
+            "rows": 14859
+          }
+        },
+        "small": {
+          "flipped": {
+            "classes": 571,
+            "correct": 1190,
+            "errors": 658,
+            "macro": 0.6627056831084852,
+            "micro": 0.6439393939393939,
+            "rows": 1848
+          },
+          "flipped_vs_native": {
+            "both_wrong": 634,
+            "changed": 86,
+            "corrections": 16,
+            "net": -8,
+            "regressions": 24,
+            "rows": 1848
+          },
+          "native": {
+            "classes": 571,
+            "correct": 1198,
+            "errors": 650,
+            "macro": 0.6649698812570967,
+            "micro": 0.6482683982683982,
+            "rows": 1848
+          },
+          "original": {
+            "classes": 571,
+            "correct": 1198,
+            "errors": 650,
+            "macro": 0.6671854318088993,
+            "micro": 0.6482683982683982,
+            "rows": 1848
+          },
+          "original_vs_native": {
+            "both_wrong": 628,
+            "changed": 92,
+            "corrections": 22,
+            "net": 0,
+            "regressions": 22,
+            "rows": 1848
+          }
+        },
+        "tail75": {
+          "flipped": {
+            "classes": 75,
+            "correct": 658,
+            "errors": 345,
+            "macro": 0.5920574229691877,
+            "micro": 0.6560319042871385,
+            "rows": 1003
+          },
+          "flipped_vs_native": {
+            "both_wrong": 338,
+            "changed": 49,
+            "corrections": 9,
+            "net": 2,
+            "regressions": 7,
+            "rows": 1003
+          },
+          "native": {
+            "classes": 75,
+            "correct": 656,
+            "errors": 347,
+            "macro": 0.5896764705882354,
+            "micro": 0.654037886340977,
+            "rows": 1003
+          },
+          "original": {
+            "classes": 75,
+            "correct": 662,
+            "errors": 341,
+            "macro": 0.5958482726423903,
+            "micro": 0.6600199401794616,
+            "rows": 1003
+          },
+          "original_vs_native": {
+            "both_wrong": 334,
+            "changed": 46,
+            "corrections": 13,
+            "net": 6,
+            "regressions": 7,
+            "rows": 1003
+          }
+        }
+      }
+    }
+  },
+  "native_parity": {
+    "lr512_swa": {
+      "matches": 64,
+      "rows": 64
+    },
+    "native_parent": {
+      "matches": 64,
+      "rows": 64
+    }
+  },
+  "new_candidate": false,
+  "oracle_view_selection_is_deliverable": false,
+  "original_labels_noisy": true,
+  "parameter_search": false,
+  "peak_allocated_cuda_bytes": 1321570816,
+  "platform_gain_known": false,
+  "preflight_sha256": "2666c2f8009b8f5c305096f07068d304efcfe400f6dfeec5eee722e50104646a",
+  "primary_model": "lr512_swa",
+  "reflection_is_label_preserving_proven": false,
+  "source_files": {
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/baseline.npz": "af595985fd28eb1bfa4ee4477dffd206ccd62bd2e8e55de86e6ddb3373bd29ac",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.pt": "c103dc3e6039c9fe156a56dfcd196500975b5bd21354be6506447bb1ee636e2e",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.sha256.json": "8be06d426e4b40d369da7e4c940d228a5bb59206d264f755d95c26483e2f11fa",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/val_epoch04_ema_swa_2_4.npz": "a404e16f2d88d3331dc9caf3c26bda111714369bdcca69cda6e290a3478d8845",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/model.py": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/submission.py": "2e76ad99a05f99488f46297f0991383915d0cd2a59d50ebc1bddd12e6ebbd905",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/v1_pipeline.py": "05e6784d7dff7ea8db89f85fc849c54db2661695ed63e7978d3dc01b9bbe5d31",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/v1_strategy.py": "d843196b921ff801fb1b1156beda011dd025d4f31c29d2c00c75d7b39afa231d",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/model.py": "92b8b4dfb73978feb4558e97d8122af61e7e801eab89c3a6b359e2f21e1c74b6",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/plan.py": "2e7a41063057ba1f3c8ce8e7a34022ea604078bbe4e314f8e683ba4c4a05a4ec",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/runtime.py": "d0515533fc4c6b029416cf7d7d6647c250f1f9d02535630c10ec7fa4ff8cdaa5",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v3/plan.py": "49a4e8fd7ac386da3dc69639e67fa4f21193f1ebae613d305d9b1e0b48f64040",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v3/report.py": "3f8dcb49074437d8ab3eceb55c4307c803f68b5dea3d513f5ee89ec3ef7e9f73",
+    "/home/lux1/noise/worktrees/v1_candidate_error_budget_20261001/outputs/codex/v1_candidate_error_budget_20261001/diagnostic_r3/aligned_predictions.csv": "d94a98acc2b2c6cbb9263547b38a7a678d8e664a3c382f1172784f4b45bcc718",
+    "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5",
+    "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+    "/home/lux1/noise/worktrees/v1_reflection_consistency_probe_20261001/configs/v1_resolution_degradation_probe_20261001.json": "38beb00391cc8285e15e30543ae05969c206dac5d954fa40734928e9178895bf",
+    "/home/lux1/noise/worktrees/v1_reflection_consistency_probe_20261001/results/lr512_dev_20261001/report.json": "cf5b9bcfaebd1163284fcb9347e8b4c724991592c9fcaa009bf99d0b297ea404",
+    "/home/lux1/noise/worktrees/v1_reflection_consistency_probe_20261001/results/v1_candidate_error_budget_20261001/report.json": "2a456105af7e7dc4b1f1e286924d6714d0767d4289cf942abfb014d6ae661b15",
+    "/home/lux1/noise/worktrees/v1_reflection_consistency_probe_20261001/results/v1_full_swa_platform_20261001/artifact_verification.json": "7132effa696592401bbeff0d17815101045a3a46f1aeb0d5ebb6fe7ca88dd9f4",
+    "/home/lux1/noise/worktrees/v1_reflection_consistency_probe_20261001/results/v1_full_swa_platform_20261001/submission_check.log": "edb24cf74b09c551bb82c223e25801a445cc7a4963d9a6294f022b09943c3c59",
+    "/home/lux1/noise/worktrees/v1_reflection_consistency_probe_20261001/scripts/probe_v1_resolution_degradation.py": "51cf6633122eefed555f0405365022a70861dfd8bd533a45290e378559a5beb3",
+    "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/config.yaml": "385fb63fc4cb6d75e068d464e68dea121a42d0b7ee8f60d8558921ec978b9db8",
+    "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.pt": "01caedaa4996d25fa9dfc213d4b2376c147bb99ebdc23dacd93e6e1ff2d6fa20",
+    "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.sha256.json": "dde8be4540ce02985194feed2b5f4064e778e707b46e751c9e33f3f94c2165ff",
+    "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.pt": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2",
+    "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.sha256.json": "e58e91bc3512bf5a853dbdcc1e157fbbbead6e568b0e333f8869f9e1aed98124",
+    "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/model.py": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+    "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/submission.py": "2e76ad99a05f99488f46297f0991383915d0cd2a59d50ebc1bddd12e6ebbd905",
+    "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/v1_pipeline.py": "ce6075b2f01c726614844b3262fefd6ecefb28176522ec114c5461a162545dc5",
+    "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/v1_strategy.py": "d843196b921ff801fb1b1156beda011dd025d4f31c29d2c00c75d7b39afa231d"
+  },
+  "status": "completed_verified_native_diagnostic",
+  "test_data_used": false,
+  "training_recoverable_gain_known": false,
+  "training_updates": 0,
+  "validation_rows": 14880
+}
