@@ -1,0 +1,19 @@
+{
+  "status": "passed_independent_torch64_counter_fraction_replay",
+  "experiment_id": "V1_MIXUP_MASS_DIAGNOSTIC_20261001",
+  "mixed_rows_replayed": 32768,
+  "max_fraction_error": 2.220446049250313e-16,
+  "event_and_flip_membership_identical": true,
+  "class_rows_checked": 750,
+  "cohort_membership_identical": true,
+  "validation_rows": 14880,
+  "metric_groups_checked": 10,
+  "paired_groups_checked": 5,
+  "source_files_checked": 45,
+  "report_sha256": "3e22ede026829614c0ad3f7b45bc21067f0d6ca9bf32939559e870c72fcec470",
+  "verifier_sha256": "4db01d5d9fbd6cb50f69e3bc70b62605a97c9acb737637bf23bd37cc9ab10554",
+  "decision": "close_small_or_unlinked_mixup_mass_effect",
+  "training_started": false,
+  "new_candidate": false,
+  "platform_gain_known": false
+}
