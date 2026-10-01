@@ -1,0 +1,38 @@
+{
+  "correct": 11387,
+  "cost": {
+    "includes_npz_write": false,
+    "rows": 14880,
+    "seconds": 142.9675285139965
+  },
+  "covered_classes": 750,
+  "exact_predictions_match": false,
+  "macro": 0.7561102479493056,
+  "max_abs_logit_delta_from_first_run": 0.0,
+  "micro": 0.765255376344086,
+  "mismatch_count": 3,
+  "mismatches": [
+    {
+      "actual": 730,
+      "expected": 463,
+      "image_path": "train/0115/b3a31fb679bc4945a126860fbd55c97a.jpg"
+    },
+    {
+      "actual": 446,
+      "expected": 647,
+      "image_path": "train/0458/cae8a290cb334e5c8b9ad92834b1ca1b.jpg"
+    },
+    {
+      "actual": 545,
+      "expected": 484,
+      "image_path": "train/0545/d443d23cc4434b8499c8e797c86e4c45.jpg"
+    }
+  ],
+  "parent_prediction_sha256": "2667c2e9d80a22d58322b16d7f720fa8e428a95b5b617c803bdf24b74896a20b",
+  "replay_cli_report_error": "duplicate rows keyword in report construction; corrected before formal run",
+  "report_repaired_from_completed_zero_update_npz": true,
+  "rows": 14880,
+  "same_actual_predictions_as_first_run": true,
+  "status": "failed",
+  "training_started": false
+}

@@ -1,0 +1,13 @@
+{
+  "checkpoint": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/head_only/ema_swa_2_4.pt",
+  "checkpoint_sha256": "f8ea2ecd6b42e0d9e5797c812bfbb1963f9a4406d595e1e7ac0d575dd4e889ca",
+  "checks": 9,
+  "csv": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/head_only/submission/pred_results.csv",
+  "csv_sha256": "9133d13766ede812e7ea2bf440148c5641eef65212949bb5aeee47bfb1dc3a15",
+  "platform_score": null,
+  "rows": 37444,
+  "seconds": 1608.068162829004,
+  "status": "package_verified",
+  "zip": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/head_only/submission/submission.zip",
+  "zip_sha256": "9ecea85fdc99cc2c78211672ddd3b5151ae3c6244ee3b84a630863a15ac44f96"
+}

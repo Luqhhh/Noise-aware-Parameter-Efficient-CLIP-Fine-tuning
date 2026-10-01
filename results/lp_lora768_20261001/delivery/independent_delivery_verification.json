@@ -1,0 +1,1089 @@
+{
+  "status": "independently_verified",
+  "source_replay_exact": false,
+  "source_parent": {
+    "rows": 14880,
+    "correct": 11386,
+    "micro": 0.7651881720430107,
+    "macro": 0.7560269146159723,
+    "covered_classes": 750
+  },
+  "local_parent": {
+    "rows": 14880,
+    "correct": 11387,
+    "micro": 0.765255376344086,
+    "macro": 0.7561102479493056,
+    "covered_classes": 750
+  },
+  "arms": {
+    "head_only": {
+      "updates": 14888,
+      "epochs": 4,
+      "complete_state": true,
+      "ema_average_verified": true,
+      "ema_average_max_abs_delta": 0.0,
+      "frozen_control_lora_exact": true,
+      "batch_population_exact": true
+    },
+    "lora_and_head": {
+      "updates": 14888,
+      "epochs": 4,
+      "complete_state": true,
+      "ema_average_verified": true,
+      "ema_average_max_abs_delta": 0.0,
+      "frozen_control_lora_exact": false,
+      "batch_population_exact": true
+    }
+  },
+  "packages": {
+    "head_only": {
+      "checkpoint": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/head_only/ema_swa_2_4.pt",
+      "checkpoint_sha256": "f8ea2ecd6b42e0d9e5797c812bfbb1963f9a4406d595e1e7ac0d575dd4e889ca",
+      "checks": 9,
+      "csv": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/head_only/submission/pred_results.csv",
+      "csv_sha256": "9133d13766ede812e7ea2bf440148c5641eef65212949bb5aeee47bfb1dc3a15",
+      "platform_score": null,
+      "rows": 37444,
+      "seconds": 1608.068162829004,
+      "status": "package_verified",
+      "zip": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/head_only/submission/submission.zip",
+      "zip_sha256": "9ecea85fdc99cc2c78211672ddd3b5151ae3c6244ee3b84a630863a15ac44f96"
+    },
+    "lora_and_head": {
+      "checkpoint": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/lora_and_head/ema_swa_2_4.pt",
+      "checkpoint_sha256": "f1b99a8a9f505ce69daf3c2d5c49b5837cf5fc2c800443130a43315f565809a8",
+      "checks": 9,
+      "csv": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/lora_and_head/submission/pred_results.csv",
+      "csv_sha256": "eabc0885e1e1971c81eeaece9a8641b9f1dfa196f54818891c477357b0d73f29",
+      "platform_score": null,
+      "rows": 37444,
+      "seconds": 1627.7854188790006,
+      "status": "package_verified",
+      "zip": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/lora_and_head/submission/submission.zip",
+      "zip_sha256": "fb609e40f0d4a8fbb287d527b2515309cd19cfd68f5471fecb29f47dcc97a150"
+    }
+  },
+  "candidate_vs_control": {
+    "all": {
+      "before": {
+        "rows": 14880,
+        "correct": 11373,
+        "micro": 0.7643145161290322,
+        "macro": 0.7551137305863798,
+        "covered_classes": 750
+      },
+      "after": {
+        "rows": 14880,
+        "correct": 11383,
+        "micro": 0.764986559139785,
+        "macro": 0.7555356005769157,
+        "covered_classes": 750
+      },
+      "changed": 1083,
+      "corrections": 236,
+      "regressions": 226,
+      "net_correct": 10,
+      "corrections_to_regressions": 1.0442477876106195
+    },
+    "target": {
+      "before": {
+        "rows": 417,
+        "correct": 252,
+        "micro": 0.60431654676259,
+        "macro": 0.5905597314510022,
+        "covered_classes": 20
+      },
+      "after": {
+        "rows": 417,
+        "correct": 246,
+        "micro": 0.5899280575539568,
+        "macro": 0.5741862159710289,
+        "covered_classes": 20
+      },
+      "changed": 36,
+      "corrections": 7,
+      "regressions": 13,
+      "net_correct": -6,
+      "corrections_to_regressions": 0.5384615384615384
+    },
+    "tail75": {
+      "before": {
+        "rows": 1003,
+        "correct": 679,
+        "micro": 0.6769690927218345,
+        "macro": 0.6146579520697167,
+        "covered_classes": 75
+      },
+      "after": {
+        "rows": 1003,
+        "correct": 672,
+        "micro": 0.6699900299102692,
+        "macro": 0.6078311546840958,
+        "covered_classes": 75
+      },
+      "changed": 92,
+      "corrections": 15,
+      "regressions": 22,
+      "net_correct": -7,
+      "corrections_to_regressions": 0.6818181818181818
+    },
+    "non_target": {
+      "before": {
+        "rows": 14463,
+        "correct": 11121,
+        "micro": 0.7689276083800042,
+        "macro": 0.7596220593298147,
+        "covered_classes": 730
+      },
+      "after": {
+        "rows": 14463,
+        "correct": 11137,
+        "micro": 0.7700338795547258,
+        "macro": 0.7605040768674879,
+        "covered_classes": 730
+      },
+      "changed": 1047,
+      "corrections": 229,
+      "regressions": 213,
+      "net_correct": 16,
+      "corrections_to_regressions": 1.0751173708920188
+    },
+    "other": {
+      "before": {
+        "rows": 13460,
+        "correct": 10442,
+        "micro": 0.7757800891530461,
+        "macro": 0.7762210029092151,
+        "covered_classes": 655
+      },
+      "after": {
+        "rows": 13460,
+        "correct": 10465,
+        "micro": 0.7774888558692422,
+        "macro": 0.7779857091785634,
+        "covered_classes": 655
+      },
+      "changed": 955,
+      "corrections": 214,
+      "regressions": 191,
+      "net_correct": 23,
+      "corrections_to_regressions": 1.1204188481675392
+    },
+    "target_tail_overlap": {
+      "before": {
+        "rows": 0,
+        "correct": 0,
+        "micro": null,
+        "macro": null,
+        "covered_classes": 0
+      },
+      "after": {
+        "rows": 0,
+        "correct": 0,
+        "micro": null,
+        "macro": null,
+        "covered_classes": 0
+      },
+      "changed": 0,
+      "corrections": 0,
+      "regressions": 0,
+      "net_correct": 0,
+      "corrections_to_regressions": null
+    },
+    "per_target_pair": {
+      "179-247": {
+        "before": {
+          "rows": 44,
+          "correct": 25,
+          "micro": 0.5681818181818182,
+          "macro": 0.5681818181818181,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 44,
+          "correct": 22,
+          "micro": 0.5,
+          "macro": 0.5,
+          "covered_classes": 2
+        },
+        "changed": 4,
+        "corrections": 0,
+        "regressions": 3,
+        "net_correct": -3,
+        "corrections_to_regressions": 0.0
+      },
+      "270-612": {
+        "before": {
+          "rows": 39,
+          "correct": 15,
+          "micro": 0.38461538461538464,
+          "macro": 0.3641304347826087,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 39,
+          "correct": 13,
+          "micro": 0.3333333333333333,
+          "macro": 0.3016304347826087,
+          "covered_classes": 2
+        },
+        "changed": 6,
+        "corrections": 1,
+        "regressions": 3,
+        "net_correct": -2,
+        "corrections_to_regressions": 0.3333333333333333
+      },
+      "491-665": {
+        "before": {
+          "rows": 45,
+          "correct": 26,
+          "micro": 0.5777777777777777,
+          "macro": 0.5760869565217391,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 45,
+          "correct": 28,
+          "micro": 0.6222222222222222,
+          "macro": 0.6195652173913043,
+          "covered_classes": 2
+        },
+        "changed": 2,
+        "corrections": 2,
+        "regressions": 0,
+        "net_correct": 2,
+        "corrections_to_regressions": "infinite"
+      },
+      "202-535": {
+        "before": {
+          "rows": 39,
+          "correct": 21,
+          "micro": 0.5384615384615384,
+          "macro": 0.47554347826086957,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 39,
+          "correct": 20,
+          "micro": 0.5128205128205128,
+          "macro": 0.44429347826086957,
+          "covered_classes": 2
+        },
+        "changed": 3,
+        "corrections": 0,
+        "regressions": 1,
+        "net_correct": -1,
+        "corrections_to_regressions": 0.0
+      },
+      "316-441": {
+        "before": {
+          "rows": 43,
+          "correct": 29,
+          "micro": 0.6744186046511628,
+          "macro": 0.6742424242424242,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 43,
+          "correct": 29,
+          "micro": 0.6744186046511628,
+          "macro": 0.6731601731601732,
+          "covered_classes": 2
+        },
+        "changed": 4,
+        "corrections": 1,
+        "regressions": 1,
+        "net_correct": 0,
+        "corrections_to_regressions": 1.0
+      },
+      "189-644": {
+        "before": {
+          "rows": 37,
+          "correct": 21,
+          "micro": 0.5675675675675675,
+          "macro": 0.564327485380117,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 37,
+          "correct": 21,
+          "micro": 0.5675675675675675,
+          "macro": 0.5628654970760234,
+          "covered_classes": 2
+        },
+        "changed": 4,
+        "corrections": 1,
+        "regressions": 1,
+        "net_correct": 0,
+        "corrections_to_regressions": 1.0
+      },
+      "502-640": {
+        "before": {
+          "rows": 44,
+          "correct": 17,
+          "micro": 0.38636363636363635,
+          "macro": 0.3625,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 44,
+          "correct": 17,
+          "micro": 0.38636363636363635,
+          "macro": 0.3625,
+          "covered_classes": 2
+        },
+        "changed": 4,
+        "corrections": 0,
+        "regressions": 0,
+        "net_correct": 0,
+        "corrections_to_regressions": null
+      },
+      "716-739": {
+        "before": {
+          "rows": 39,
+          "correct": 29,
+          "micro": 0.7435897435897436,
+          "macro": 0.7460526315789473,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 39,
+          "correct": 27,
+          "micro": 0.6923076923076923,
+          "macro": 0.6947368421052631,
+          "covered_classes": 2
+        },
+        "changed": 4,
+        "corrections": 1,
+        "regressions": 3,
+        "net_correct": -2,
+        "corrections_to_regressions": 0.3333333333333333
+      },
+      "14-363": {
+        "before": {
+          "rows": 41,
+          "correct": 32,
+          "micro": 0.7804878048780488,
+          "macro": 0.7696078431372549,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 41,
+          "correct": 32,
+          "micro": 0.7804878048780488,
+          "macro": 0.7781862745098038,
+          "covered_classes": 2
+        },
+        "changed": 4,
+        "corrections": 1,
+        "regressions": 1,
+        "net_correct": 0,
+        "corrections_to_regressions": 1.0
+      },
+      "57-519": {
+        "before": {
+          "rows": 46,
+          "correct": 37,
+          "micro": 0.8043478260869565,
+          "macro": 0.8049242424242424,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 46,
+          "correct": 37,
+          "micro": 0.8043478260869565,
+          "macro": 0.8049242424242424,
+          "covered_classes": 2
+        },
+        "changed": 1,
+        "corrections": 0,
+        "regressions": 0,
+        "net_correct": 0,
+        "corrections_to_regressions": null
+      }
+    }
+  },
+  "candidate_vs_local_parent": {
+    "all": {
+      "before": {
+        "rows": 14880,
+        "correct": 11387,
+        "micro": 0.765255376344086,
+        "macro": 0.7561102479493056,
+        "covered_classes": 750
+      },
+      "after": {
+        "rows": 14880,
+        "correct": 11383,
+        "micro": 0.764986559139785,
+        "macro": 0.7555356005769157,
+        "covered_classes": 750
+      },
+      "changed": 1289,
+      "corrections": 282,
+      "regressions": 286,
+      "net_correct": -4,
+      "corrections_to_regressions": 0.986013986013986
+    },
+    "target": {
+      "before": {
+        "rows": 417,
+        "correct": 244,
+        "micro": 0.5851318944844125,
+        "macro": 0.5714192418871716,
+        "covered_classes": 20
+      },
+      "after": {
+        "rows": 417,
+        "correct": 246,
+        "micro": 0.5899280575539568,
+        "macro": 0.5741862159710289,
+        "covered_classes": 20
+      },
+      "changed": 49,
+      "corrections": 15,
+      "regressions": 13,
+      "net_correct": 2,
+      "corrections_to_regressions": 1.1538461538461537
+    },
+    "tail75": {
+      "before": {
+        "rows": 1003,
+        "correct": 680,
+        "micro": 0.6779661016949152,
+        "macro": 0.615943666355431,
+        "covered_classes": 75
+      },
+      "after": {
+        "rows": 1003,
+        "correct": 672,
+        "micro": 0.6699900299102692,
+        "macro": 0.6078311546840958,
+        "covered_classes": 75
+      },
+      "changed": 104,
+      "corrections": 17,
+      "regressions": 25,
+      "net_correct": -8,
+      "corrections_to_regressions": 0.68
+    },
+    "non_target": {
+      "before": {
+        "rows": 14463,
+        "correct": 11143,
+        "micro": 0.7704487312452465,
+        "macro": 0.7611702755126519,
+        "covered_classes": 730
+      },
+      "after": {
+        "rows": 14463,
+        "correct": 11137,
+        "micro": 0.7700338795547258,
+        "macro": 0.7605040768674879,
+        "covered_classes": 730
+      },
+      "changed": 1240,
+      "corrections": 267,
+      "regressions": 273,
+      "net_correct": -6,
+      "corrections_to_regressions": 0.978021978021978
+    },
+    "other": {
+      "before": {
+        "rows": 13460,
+        "correct": 10463,
+        "micro": 0.7773402674591382,
+        "macro": 0.7777992765611885,
+        "covered_classes": 655
+      },
+      "after": {
+        "rows": 13460,
+        "correct": 10465,
+        "micro": 0.7774888558692422,
+        "macro": 0.7779857091785634,
+        "covered_classes": 655
+      },
+      "changed": 1136,
+      "corrections": 250,
+      "regressions": 248,
+      "net_correct": 2,
+      "corrections_to_regressions": 1.0080645161290323
+    },
+    "target_tail_overlap": {
+      "before": {
+        "rows": 0,
+        "correct": 0,
+        "micro": null,
+        "macro": null,
+        "covered_classes": 0
+      },
+      "after": {
+        "rows": 0,
+        "correct": 0,
+        "micro": null,
+        "macro": null,
+        "covered_classes": 0
+      },
+      "changed": 0,
+      "corrections": 0,
+      "regressions": 0,
+      "net_correct": 0,
+      "corrections_to_regressions": null
+    },
+    "per_target_pair": {
+      "179-247": {
+        "before": {
+          "rows": 44,
+          "correct": 21,
+          "micro": 0.4772727272727273,
+          "macro": 0.4772727272727273,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 44,
+          "correct": 22,
+          "micro": 0.5,
+          "macro": 0.5,
+          "covered_classes": 2
+        },
+        "changed": 6,
+        "corrections": 2,
+        "regressions": 1,
+        "net_correct": 1,
+        "corrections_to_regressions": 2.0
+      },
+      "270-612": {
+        "before": {
+          "rows": 39,
+          "correct": 13,
+          "micro": 0.3333333333333333,
+          "macro": 0.31114130434782605,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 39,
+          "correct": 13,
+          "micro": 0.3333333333333333,
+          "macro": 0.3016304347826087,
+          "covered_classes": 2
+        },
+        "changed": 7,
+        "corrections": 2,
+        "regressions": 2,
+        "net_correct": 0,
+        "corrections_to_regressions": 1.0
+      },
+      "491-665": {
+        "before": {
+          "rows": 45,
+          "correct": 26,
+          "micro": 0.5777777777777777,
+          "macro": 0.5760869565217391,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 45,
+          "correct": 28,
+          "micro": 0.6222222222222222,
+          "macro": 0.6195652173913043,
+          "covered_classes": 2
+        },
+        "changed": 5,
+        "corrections": 3,
+        "regressions": 1,
+        "net_correct": 2,
+        "corrections_to_regressions": 3.0
+      },
+      "202-535": {
+        "before": {
+          "rows": 39,
+          "correct": 19,
+          "micro": 0.48717948717948717,
+          "macro": 0.422554347826087,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 39,
+          "correct": 20,
+          "micro": 0.5128205128205128,
+          "macro": 0.44429347826086957,
+          "covered_classes": 2
+        },
+        "changed": 8,
+        "corrections": 3,
+        "regressions": 2,
+        "net_correct": 1,
+        "corrections_to_regressions": 1.5
+      },
+      "316-441": {
+        "before": {
+          "rows": 43,
+          "correct": 29,
+          "micro": 0.6744186046511628,
+          "macro": 0.6742424242424242,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 43,
+          "correct": 29,
+          "micro": 0.6744186046511628,
+          "macro": 0.6731601731601732,
+          "covered_classes": 2
+        },
+        "changed": 7,
+        "corrections": 2,
+        "regressions": 2,
+        "net_correct": 0,
+        "corrections_to_regressions": 1.0
+      },
+      "189-644": {
+        "before": {
+          "rows": 37,
+          "correct": 22,
+          "micro": 0.5945945945945946,
+          "macro": 0.5906432748538011,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 37,
+          "correct": 21,
+          "micro": 0.5675675675675675,
+          "macro": 0.5628654970760234,
+          "covered_classes": 2
+        },
+        "changed": 3,
+        "corrections": 0,
+        "regressions": 1,
+        "net_correct": -1,
+        "corrections_to_regressions": 0.0
+      },
+      "502-640": {
+        "before": {
+          "rows": 44,
+          "correct": 17,
+          "micro": 0.38636363636363635,
+          "macro": 0.3625,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 44,
+          "correct": 17,
+          "micro": 0.38636363636363635,
+          "macro": 0.3625,
+          "covered_classes": 2
+        },
+        "changed": 6,
+        "corrections": 1,
+        "regressions": 1,
+        "net_correct": 0,
+        "corrections_to_regressions": 1.0
+      },
+      "716-739": {
+        "before": {
+          "rows": 39,
+          "correct": 29,
+          "micro": 0.7435897435897436,
+          "macro": 0.7460526315789473,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 39,
+          "correct": 27,
+          "micro": 0.6923076923076923,
+          "macro": 0.6947368421052631,
+          "covered_classes": 2
+        },
+        "changed": 2,
+        "corrections": 0,
+        "regressions": 2,
+        "net_correct": -2,
+        "corrections_to_regressions": 0.0
+      },
+      "14-363": {
+        "before": {
+          "rows": 41,
+          "correct": 31,
+          "micro": 0.7560975609756098,
+          "macro": 0.7487745098039216,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 41,
+          "correct": 32,
+          "micro": 0.7804878048780488,
+          "macro": 0.7781862745098038,
+          "covered_classes": 2
+        },
+        "changed": 3,
+        "corrections": 1,
+        "regressions": 0,
+        "net_correct": 1,
+        "corrections_to_regressions": "infinite"
+      },
+      "57-519": {
+        "before": {
+          "rows": 46,
+          "correct": 37,
+          "micro": 0.8043478260869565,
+          "macro": 0.8049242424242424,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 46,
+          "correct": 37,
+          "micro": 0.8043478260869565,
+          "macro": 0.8049242424242424,
+          "covered_classes": 2
+        },
+        "changed": 2,
+        "corrections": 1,
+        "regressions": 1,
+        "net_correct": 0,
+        "corrections_to_regressions": 1.0
+      }
+    }
+  },
+  "candidate_vs_source_parent": {
+    "all": {
+      "before": {
+        "rows": 14880,
+        "correct": 11386,
+        "micro": 0.7651881720430107,
+        "macro": 0.7560269146159723,
+        "covered_classes": 750
+      },
+      "after": {
+        "rows": 14880,
+        "correct": 11383,
+        "micro": 0.764986559139785,
+        "macro": 0.7555356005769157,
+        "covered_classes": 750
+      },
+      "changed": 1292,
+      "corrections": 283,
+      "regressions": 286,
+      "net_correct": -3,
+      "corrections_to_regressions": 0.9895104895104895
+    },
+    "target": {
+      "before": {
+        "rows": 417,
+        "correct": 244,
+        "micro": 0.5851318944844125,
+        "macro": 0.5714192418871716,
+        "covered_classes": 20
+      },
+      "after": {
+        "rows": 417,
+        "correct": 246,
+        "micro": 0.5899280575539568,
+        "macro": 0.5741862159710289,
+        "covered_classes": 20
+      },
+      "changed": 49,
+      "corrections": 15,
+      "regressions": 13,
+      "net_correct": 2,
+      "corrections_to_regressions": 1.1538461538461537
+    },
+    "tail75": {
+      "before": {
+        "rows": 1003,
+        "correct": 679,
+        "micro": 0.6769690927218345,
+        "macro": 0.6151103330220977,
+        "covered_classes": 75
+      },
+      "after": {
+        "rows": 1003,
+        "correct": 672,
+        "micro": 0.6699900299102692,
+        "macro": 0.6078311546840958,
+        "covered_classes": 75
+      },
+      "changed": 106,
+      "corrections": 18,
+      "regressions": 25,
+      "net_correct": -7,
+      "corrections_to_regressions": 0.72
+    },
+    "non_target": {
+      "before": {
+        "rows": 14463,
+        "correct": 11142,
+        "micro": 0.7703795892968264,
+        "macro": 0.7610846590742957,
+        "covered_classes": 730
+      },
+      "after": {
+        "rows": 14463,
+        "correct": 11137,
+        "micro": 0.7700338795547258,
+        "macro": 0.7605040768674879,
+        "covered_classes": 730
+      },
+      "changed": 1243,
+      "corrections": 268,
+      "regressions": 273,
+      "net_correct": -5,
+      "corrections_to_regressions": 0.9816849816849816
+    },
+    "other": {
+      "before": {
+        "rows": 13460,
+        "correct": 10463,
+        "micro": 0.7773402674591382,
+        "macro": 0.7777992765611885,
+        "covered_classes": 655
+      },
+      "after": {
+        "rows": 13460,
+        "correct": 10465,
+        "micro": 0.7774888558692422,
+        "macro": 0.7779857091785634,
+        "covered_classes": 655
+      },
+      "changed": 1137,
+      "corrections": 250,
+      "regressions": 248,
+      "net_correct": 2,
+      "corrections_to_regressions": 1.0080645161290323
+    },
+    "target_tail_overlap": {
+      "before": {
+        "rows": 0,
+        "correct": 0,
+        "micro": null,
+        "macro": null,
+        "covered_classes": 0
+      },
+      "after": {
+        "rows": 0,
+        "correct": 0,
+        "micro": null,
+        "macro": null,
+        "covered_classes": 0
+      },
+      "changed": 0,
+      "corrections": 0,
+      "regressions": 0,
+      "net_correct": 0,
+      "corrections_to_regressions": null
+    },
+    "per_target_pair": {
+      "179-247": {
+        "before": {
+          "rows": 44,
+          "correct": 21,
+          "micro": 0.4772727272727273,
+          "macro": 0.4772727272727273,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 44,
+          "correct": 22,
+          "micro": 0.5,
+          "macro": 0.5,
+          "covered_classes": 2
+        },
+        "changed": 6,
+        "corrections": 2,
+        "regressions": 1,
+        "net_correct": 1,
+        "corrections_to_regressions": 2.0
+      },
+      "270-612": {
+        "before": {
+          "rows": 39,
+          "correct": 13,
+          "micro": 0.3333333333333333,
+          "macro": 0.31114130434782605,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 39,
+          "correct": 13,
+          "micro": 0.3333333333333333,
+          "macro": 0.3016304347826087,
+          "covered_classes": 2
+        },
+        "changed": 7,
+        "corrections": 2,
+        "regressions": 2,
+        "net_correct": 0,
+        "corrections_to_regressions": 1.0
+      },
+      "491-665": {
+        "before": {
+          "rows": 45,
+          "correct": 26,
+          "micro": 0.5777777777777777,
+          "macro": 0.5760869565217391,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 45,
+          "correct": 28,
+          "micro": 0.6222222222222222,
+          "macro": 0.6195652173913043,
+          "covered_classes": 2
+        },
+        "changed": 5,
+        "corrections": 3,
+        "regressions": 1,
+        "net_correct": 2,
+        "corrections_to_regressions": 3.0
+      },
+      "202-535": {
+        "before": {
+          "rows": 39,
+          "correct": 19,
+          "micro": 0.48717948717948717,
+          "macro": 0.422554347826087,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 39,
+          "correct": 20,
+          "micro": 0.5128205128205128,
+          "macro": 0.44429347826086957,
+          "covered_classes": 2
+        },
+        "changed": 8,
+        "corrections": 3,
+        "regressions": 2,
+        "net_correct": 1,
+        "corrections_to_regressions": 1.5
+      },
+      "316-441": {
+        "before": {
+          "rows": 43,
+          "correct": 29,
+          "micro": 0.6744186046511628,
+          "macro": 0.6742424242424242,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 43,
+          "correct": 29,
+          "micro": 0.6744186046511628,
+          "macro": 0.6731601731601732,
+          "covered_classes": 2
+        },
+        "changed": 7,
+        "corrections": 2,
+        "regressions": 2,
+        "net_correct": 0,
+        "corrections_to_regressions": 1.0
+      },
+      "189-644": {
+        "before": {
+          "rows": 37,
+          "correct": 22,
+          "micro": 0.5945945945945946,
+          "macro": 0.5906432748538011,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 37,
+          "correct": 21,
+          "micro": 0.5675675675675675,
+          "macro": 0.5628654970760234,
+          "covered_classes": 2
+        },
+        "changed": 3,
+        "corrections": 0,
+        "regressions": 1,
+        "net_correct": -1,
+        "corrections_to_regressions": 0.0
+      },
+      "502-640": {
+        "before": {
+          "rows": 44,
+          "correct": 17,
+          "micro": 0.38636363636363635,
+          "macro": 0.3625,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 44,
+          "correct": 17,
+          "micro": 0.38636363636363635,
+          "macro": 0.3625,
+          "covered_classes": 2
+        },
+        "changed": 6,
+        "corrections": 1,
+        "regressions": 1,
+        "net_correct": 0,
+        "corrections_to_regressions": 1.0
+      },
+      "716-739": {
+        "before": {
+          "rows": 39,
+          "correct": 29,
+          "micro": 0.7435897435897436,
+          "macro": 0.7460526315789473,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 39,
+          "correct": 27,
+          "micro": 0.6923076923076923,
+          "macro": 0.6947368421052631,
+          "covered_classes": 2
+        },
+        "changed": 2,
+        "corrections": 0,
+        "regressions": 2,
+        "net_correct": -2,
+        "corrections_to_regressions": 0.0
+      },
+      "14-363": {
+        "before": {
+          "rows": 41,
+          "correct": 31,
+          "micro": 0.7560975609756098,
+          "macro": 0.7487745098039216,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 41,
+          "correct": 32,
+          "micro": 0.7804878048780488,
+          "macro": 0.7781862745098038,
+          "covered_classes": 2
+        },
+        "changed": 3,
+        "corrections": 1,
+        "regressions": 0,
+        "net_correct": 1,
+        "corrections_to_regressions": "infinite"
+      },
+      "57-519": {
+        "before": {
+          "rows": 46,
+          "correct": 37,
+          "micro": 0.8043478260869565,
+          "macro": 0.8049242424242424,
+          "covered_classes": 2
+        },
+        "after": {
+          "rows": 46,
+          "correct": 37,
+          "micro": 0.8043478260869565,
+          "macro": 0.8049242424242424,
+          "covered_classes": 2
+        },
+        "changed": 2,
+        "corrections": 1,
+        "regressions": 1,
+        "net_correct": 0,
+        "corrections_to_regressions": 1.0
+      }
+    }
+  },
+  "paired_batch_sha256": "85d4d588b9a3b58bb3681b965ac3bb942c58acc9f41e144c412b171fcd2ecd1e",
+  "decision": "closed_fixed_recipe",
+  "platform_score": null
+}

@@ -1,0 +1,3224 @@
+{
+  "automatic_full_training": false,
+  "baseline": "local_actual_parent",
+  "candidate_vs_control": {
+    "all": {
+      "after": {
+        "correct": 11383,
+        "covered_classes": 750,
+        "macro": 0.7555356005769157,
+        "micro": 0.764986559139785,
+        "rows": 14880
+      },
+      "before": {
+        "correct": 11373,
+        "covered_classes": 750,
+        "macro": 0.7551137305863798,
+        "micro": 0.7643145161290322,
+        "rows": 14880
+      },
+      "changed": 1083,
+      "corrections": 236,
+      "corrections_to_regressions": 1.0442477876106195,
+      "net_correct": 10,
+      "regressions": 226
+    },
+    "non_target": {
+      "after": {
+        "correct": 11137,
+        "covered_classes": 730,
+        "macro": 0.7605040768674879,
+        "micro": 0.7700338795547258,
+        "rows": 14463
+      },
+      "before": {
+        "correct": 11121,
+        "covered_classes": 730,
+        "macro": 0.7596220593298147,
+        "micro": 0.7689276083800042,
+        "rows": 14463
+      },
+      "changed": 1047,
+      "corrections": 229,
+      "corrections_to_regressions": 1.0751173708920188,
+      "net_correct": 16,
+      "regressions": 213
+    },
+    "other": {
+      "after": {
+        "correct": 10465,
+        "covered_classes": 655,
+        "macro": 0.7779857091785634,
+        "micro": 0.7774888558692422,
+        "rows": 13460
+      },
+      "before": {
+        "correct": 10442,
+        "covered_classes": 655,
+        "macro": 0.7762210029092151,
+        "micro": 0.7757800891530461,
+        "rows": 13460
+      },
+      "changed": 955,
+      "corrections": 214,
+      "corrections_to_regressions": 1.1204188481675392,
+      "net_correct": 23,
+      "regressions": 191
+    },
+    "per_target_pair": {
+      "14-363": {
+        "after": {
+          "correct": 32,
+          "covered_classes": 2,
+          "macro": 0.7781862745098038,
+          "micro": 0.7804878048780488,
+          "rows": 41
+        },
+        "before": {
+          "correct": 32,
+          "covered_classes": 2,
+          "macro": 0.7696078431372549,
+          "micro": 0.7804878048780488,
+          "rows": 41
+        },
+        "changed": 4,
+        "corrections": 1,
+        "corrections_to_regressions": 1.0,
+        "net_correct": 0,
+        "regressions": 1
+      },
+      "179-247": {
+        "after": {
+          "correct": 22,
+          "covered_classes": 2,
+          "macro": 0.5,
+          "micro": 0.5,
+          "rows": 44
+        },
+        "before": {
+          "correct": 25,
+          "covered_classes": 2,
+          "macro": 0.5681818181818181,
+          "micro": 0.5681818181818182,
+          "rows": 44
+        },
+        "changed": 4,
+        "corrections": 0,
+        "corrections_to_regressions": 0.0,
+        "net_correct": -3,
+        "regressions": 3
+      },
+      "189-644": {
+        "after": {
+          "correct": 21,
+          "covered_classes": 2,
+          "macro": 0.5628654970760234,
+          "micro": 0.5675675675675675,
+          "rows": 37
+        },
+        "before": {
+          "correct": 21,
+          "covered_classes": 2,
+          "macro": 0.564327485380117,
+          "micro": 0.5675675675675675,
+          "rows": 37
+        },
+        "changed": 4,
+        "corrections": 1,
+        "corrections_to_regressions": 1.0,
+        "net_correct": 0,
+        "regressions": 1
+      },
+      "202-535": {
+        "after": {
+          "correct": 20,
+          "covered_classes": 2,
+          "macro": 0.44429347826086957,
+          "micro": 0.5128205128205128,
+          "rows": 39
+        },
+        "before": {
+          "correct": 21,
+          "covered_classes": 2,
+          "macro": 0.47554347826086957,
+          "micro": 0.5384615384615384,
+          "rows": 39
+        },
+        "changed": 3,
+        "corrections": 0,
+        "corrections_to_regressions": 0.0,
+        "net_correct": -1,
+        "regressions": 1
+      },
+      "270-612": {
+        "after": {
+          "correct": 13,
+          "covered_classes": 2,
+          "macro": 0.3016304347826087,
+          "micro": 0.3333333333333333,
+          "rows": 39
+        },
+        "before": {
+          "correct": 15,
+          "covered_classes": 2,
+          "macro": 0.3641304347826087,
+          "micro": 0.38461538461538464,
+          "rows": 39
+        },
+        "changed": 6,
+        "corrections": 1,
+        "corrections_to_regressions": 0.3333333333333333,
+        "net_correct": -2,
+        "regressions": 3
+      },
+      "316-441": {
+        "after": {
+          "correct": 29,
+          "covered_classes": 2,
+          "macro": 0.6731601731601732,
+          "micro": 0.6744186046511628,
+          "rows": 43
+        },
+        "before": {
+          "correct": 29,
+          "covered_classes": 2,
+          "macro": 0.6742424242424242,
+          "micro": 0.6744186046511628,
+          "rows": 43
+        },
+        "changed": 4,
+        "corrections": 1,
+        "corrections_to_regressions": 1.0,
+        "net_correct": 0,
+        "regressions": 1
+      },
+      "491-665": {
+        "after": {
+          "correct": 28,
+          "covered_classes": 2,
+          "macro": 0.6195652173913043,
+          "micro": 0.6222222222222222,
+          "rows": 45
+        },
+        "before": {
+          "correct": 26,
+          "covered_classes": 2,
+          "macro": 0.5760869565217391,
+          "micro": 0.5777777777777777,
+          "rows": 45
+        },
+        "changed": 2,
+        "corrections": 2,
+        "corrections_to_regressions": "infinite",
+        "net_correct": 2,
+        "regressions": 0
+      },
+      "502-640": {
+        "after": {
+          "correct": 17,
+          "covered_classes": 2,
+          "macro": 0.3625,
+          "micro": 0.38636363636363635,
+          "rows": 44
+        },
+        "before": {
+          "correct": 17,
+          "covered_classes": 2,
+          "macro": 0.3625,
+          "micro": 0.38636363636363635,
+          "rows": 44
+        },
+        "changed": 4,
+        "corrections": 0,
+        "corrections_to_regressions": null,
+        "net_correct": 0,
+        "regressions": 0
+      },
+      "57-519": {
+        "after": {
+          "correct": 37,
+          "covered_classes": 2,
+          "macro": 0.8049242424242424,
+          "micro": 0.8043478260869565,
+          "rows": 46
+        },
+        "before": {
+          "correct": 37,
+          "covered_classes": 2,
+          "macro": 0.8049242424242424,
+          "micro": 0.8043478260869565,
+          "rows": 46
+        },
+        "changed": 1,
+        "corrections": 0,
+        "corrections_to_regressions": null,
+        "net_correct": 0,
+        "regressions": 0
+      },
+      "716-739": {
+        "after": {
+          "correct": 27,
+          "covered_classes": 2,
+          "macro": 0.6947368421052631,
+          "micro": 0.6923076923076923,
+          "rows": 39
+        },
+        "before": {
+          "correct": 29,
+          "covered_classes": 2,
+          "macro": 0.7460526315789473,
+          "micro": 0.7435897435897436,
+          "rows": 39
+        },
+        "changed": 4,
+        "corrections": 1,
+        "corrections_to_regressions": 0.3333333333333333,
+        "net_correct": -2,
+        "regressions": 3
+      }
+    },
+    "tail75": {
+      "after": {
+        "correct": 672,
+        "covered_classes": 75,
+        "macro": 0.6078311546840958,
+        "micro": 0.6699900299102692,
+        "rows": 1003
+      },
+      "before": {
+        "correct": 679,
+        "covered_classes": 75,
+        "macro": 0.6146579520697167,
+        "micro": 0.6769690927218345,
+        "rows": 1003
+      },
+      "changed": 92,
+      "corrections": 15,
+      "corrections_to_regressions": 0.6818181818181818,
+      "net_correct": -7,
+      "regressions": 22
+    },
+    "target": {
+      "after": {
+        "correct": 246,
+        "covered_classes": 20,
+        "macro": 0.5741862159710289,
+        "micro": 0.5899280575539568,
+        "rows": 417
+      },
+      "before": {
+        "correct": 252,
+        "covered_classes": 20,
+        "macro": 0.5905597314510022,
+        "micro": 0.60431654676259,
+        "rows": 417
+      },
+      "changed": 36,
+      "corrections": 7,
+      "corrections_to_regressions": 0.5384615384615384,
+      "net_correct": -6,
+      "regressions": 13
+    },
+    "target_tail_overlap": {
+      "after": {
+        "correct": 0,
+        "covered_classes": 0,
+        "macro": null,
+        "micro": null,
+        "rows": 0
+      },
+      "before": {
+        "correct": 0,
+        "covered_classes": 0,
+        "macro": null,
+        "micro": null,
+        "rows": 0
+      },
+      "changed": 0,
+      "corrections": 0,
+      "corrections_to_regressions": null,
+      "net_correct": 0,
+      "regressions": 0
+    }
+  },
+  "candidate_vs_parent": {
+    "all": {
+      "after": {
+        "correct": 11383,
+        "covered_classes": 750,
+        "macro": 0.7555356005769157,
+        "micro": 0.764986559139785,
+        "rows": 14880
+      },
+      "before": {
+        "correct": 11387,
+        "covered_classes": 750,
+        "macro": 0.7561102479493056,
+        "micro": 0.765255376344086,
+        "rows": 14880
+      },
+      "changed": 1289,
+      "corrections": 282,
+      "corrections_to_regressions": 0.986013986013986,
+      "net_correct": -4,
+      "regressions": 286
+    },
+    "non_target": {
+      "after": {
+        "correct": 11137,
+        "covered_classes": 730,
+        "macro": 0.7605040768674879,
+        "micro": 0.7700338795547258,
+        "rows": 14463
+      },
+      "before": {
+        "correct": 11143,
+        "covered_classes": 730,
+        "macro": 0.7611702755126519,
+        "micro": 0.7704487312452465,
+        "rows": 14463
+      },
+      "changed": 1240,
+      "corrections": 267,
+      "corrections_to_regressions": 0.978021978021978,
+      "net_correct": -6,
+      "regressions": 273
+    },
+    "other": {
+      "after": {
+        "correct": 10465,
+        "covered_classes": 655,
+        "macro": 0.7779857091785634,
+        "micro": 0.7774888558692422,
+        "rows": 13460
+      },
+      "before": {
+        "correct": 10463,
+        "covered_classes": 655,
+        "macro": 0.7777992765611885,
+        "micro": 0.7773402674591382,
+        "rows": 13460
+      },
+      "changed": 1136,
+      "corrections": 250,
+      "corrections_to_regressions": 1.0080645161290323,
+      "net_correct": 2,
+      "regressions": 248
+    },
+    "per_target_pair": {
+      "14-363": {
+        "after": {
+          "correct": 32,
+          "covered_classes": 2,
+          "macro": 0.7781862745098038,
+          "micro": 0.7804878048780488,
+          "rows": 41
+        },
+        "before": {
+          "correct": 31,
+          "covered_classes": 2,
+          "macro": 0.7487745098039216,
+          "micro": 0.7560975609756098,
+          "rows": 41
+        },
+        "changed": 3,
+        "corrections": 1,
+        "corrections_to_regressions": "infinite",
+        "net_correct": 1,
+        "regressions": 0
+      },
+      "179-247": {
+        "after": {
+          "correct": 22,
+          "covered_classes": 2,
+          "macro": 0.5,
+          "micro": 0.5,
+          "rows": 44
+        },
+        "before": {
+          "correct": 21,
+          "covered_classes": 2,
+          "macro": 0.4772727272727273,
+          "micro": 0.4772727272727273,
+          "rows": 44
+        },
+        "changed": 6,
+        "corrections": 2,
+        "corrections_to_regressions": 2.0,
+        "net_correct": 1,
+        "regressions": 1
+      },
+      "189-644": {
+        "after": {
+          "correct": 21,
+          "covered_classes": 2,
+          "macro": 0.5628654970760234,
+          "micro": 0.5675675675675675,
+          "rows": 37
+        },
+        "before": {
+          "correct": 22,
+          "covered_classes": 2,
+          "macro": 0.5906432748538011,
+          "micro": 0.5945945945945946,
+          "rows": 37
+        },
+        "changed": 3,
+        "corrections": 0,
+        "corrections_to_regressions": 0.0,
+        "net_correct": -1,
+        "regressions": 1
+      },
+      "202-535": {
+        "after": {
+          "correct": 20,
+          "covered_classes": 2,
+          "macro": 0.44429347826086957,
+          "micro": 0.5128205128205128,
+          "rows": 39
+        },
+        "before": {
+          "correct": 19,
+          "covered_classes": 2,
+          "macro": 0.422554347826087,
+          "micro": 0.48717948717948717,
+          "rows": 39
+        },
+        "changed": 8,
+        "corrections": 3,
+        "corrections_to_regressions": 1.5,
+        "net_correct": 1,
+        "regressions": 2
+      },
+      "270-612": {
+        "after": {
+          "correct": 13,
+          "covered_classes": 2,
+          "macro": 0.3016304347826087,
+          "micro": 0.3333333333333333,
+          "rows": 39
+        },
+        "before": {
+          "correct": 13,
+          "covered_classes": 2,
+          "macro": 0.31114130434782605,
+          "micro": 0.3333333333333333,
+          "rows": 39
+        },
+        "changed": 7,
+        "corrections": 2,
+        "corrections_to_regressions": 1.0,
+        "net_correct": 0,
+        "regressions": 2
+      },
+      "316-441": {
+        "after": {
+          "correct": 29,
+          "covered_classes": 2,
+          "macro": 0.6731601731601732,
+          "micro": 0.6744186046511628,
+          "rows": 43
+        },
+        "before": {
+          "correct": 29,
+          "covered_classes": 2,
+          "macro": 0.6742424242424242,
+          "micro": 0.6744186046511628,
+          "rows": 43
+        },
+        "changed": 7,
+        "corrections": 2,
+        "corrections_to_regressions": 1.0,
+        "net_correct": 0,
+        "regressions": 2
+      },
+      "491-665": {
+        "after": {
+          "correct": 28,
+          "covered_classes": 2,
+          "macro": 0.6195652173913043,
+          "micro": 0.6222222222222222,
+          "rows": 45
+        },
+        "before": {
+          "correct": 26,
+          "covered_classes": 2,
+          "macro": 0.5760869565217391,
+          "micro": 0.5777777777777777,
+          "rows": 45
+        },
+        "changed": 5,
+        "corrections": 3,
+        "corrections_to_regressions": 3.0,
+        "net_correct": 2,
+        "regressions": 1
+      },
+      "502-640": {
+        "after": {
+          "correct": 17,
+          "covered_classes": 2,
+          "macro": 0.3625,
+          "micro": 0.38636363636363635,
+          "rows": 44
+        },
+        "before": {
+          "correct": 17,
+          "covered_classes": 2,
+          "macro": 0.3625,
+          "micro": 0.38636363636363635,
+          "rows": 44
+        },
+        "changed": 6,
+        "corrections": 1,
+        "corrections_to_regressions": 1.0,
+        "net_correct": 0,
+        "regressions": 1
+      },
+      "57-519": {
+        "after": {
+          "correct": 37,
+          "covered_classes": 2,
+          "macro": 0.8049242424242424,
+          "micro": 0.8043478260869565,
+          "rows": 46
+        },
+        "before": {
+          "correct": 37,
+          "covered_classes": 2,
+          "macro": 0.8049242424242424,
+          "micro": 0.8043478260869565,
+          "rows": 46
+        },
+        "changed": 2,
+        "corrections": 1,
+        "corrections_to_regressions": 1.0,
+        "net_correct": 0,
+        "regressions": 1
+      },
+      "716-739": {
+        "after": {
+          "correct": 27,
+          "covered_classes": 2,
+          "macro": 0.6947368421052631,
+          "micro": 0.6923076923076923,
+          "rows": 39
+        },
+        "before": {
+          "correct": 29,
+          "covered_classes": 2,
+          "macro": 0.7460526315789473,
+          "micro": 0.7435897435897436,
+          "rows": 39
+        },
+        "changed": 2,
+        "corrections": 0,
+        "corrections_to_regressions": 0.0,
+        "net_correct": -2,
+        "regressions": 2
+      }
+    },
+    "tail75": {
+      "after": {
+        "correct": 672,
+        "covered_classes": 75,
+        "macro": 0.6078311546840958,
+        "micro": 0.6699900299102692,
+        "rows": 1003
+      },
+      "before": {
+        "correct": 680,
+        "covered_classes": 75,
+        "macro": 0.615943666355431,
+        "micro": 0.6779661016949152,
+        "rows": 1003
+      },
+      "changed": 104,
+      "corrections": 17,
+      "corrections_to_regressions": 0.68,
+      "net_correct": -8,
+      "regressions": 25
+    },
+    "target": {
+      "after": {
+        "correct": 246,
+        "covered_classes": 20,
+        "macro": 0.5741862159710289,
+        "micro": 0.5899280575539568,
+        "rows": 417
+      },
+      "before": {
+        "correct": 244,
+        "covered_classes": 20,
+        "macro": 0.5714192418871716,
+        "micro": 0.5851318944844125,
+        "rows": 417
+      },
+      "changed": 49,
+      "corrections": 15,
+      "corrections_to_regressions": 1.1538461538461537,
+      "net_correct": 2,
+      "regressions": 13
+    },
+    "target_tail_overlap": {
+      "after": {
+        "correct": 0,
+        "covered_classes": 0,
+        "macro": null,
+        "micro": null,
+        "rows": 0
+      },
+      "before": {
+        "correct": 0,
+        "covered_classes": 0,
+        "macro": null,
+        "micro": null,
+        "rows": 0
+      },
+      "changed": 0,
+      "corrections": 0,
+      "corrections_to_regressions": null,
+      "net_correct": 0,
+      "regressions": 0
+    }
+  },
+  "decision": "closed_fixed_recipe",
+  "experiment_id": "LP_LORA768_20261001",
+  "frozen_groups": {
+    "clean_labels_known": false,
+    "definition": "Top10 unordered parent768 error class pairs; target population includes ALL validation rows whose original label is in their class union",
+    "experiment_id": "LP_LORA768_20261001",
+    "mechanism_entry_gate": true,
+    "parent_correct": 11386,
+    "parent_errors": 3494,
+    "parent_target_errors": 173,
+    "platform_transfer_gain": null,
+    "recoverable_errors": null,
+    "source_npz": "/home/lux1/noise-worktrees/v1_crt768_dev_20261001/outputs/codex/v1_crt768_dev_20261001/validation_predictions.npz",
+    "source_sha256": "6a2827c4f65fa154dd03fcc50f4723142c4e859101dc1b9efc6292f067a2141c",
+    "status": "frozen_before_new_candidate",
+    "tail_classes": [
+      183,
+      46,
+      413,
+      19,
+      305,
+      671,
+      589,
+      114,
+      555,
+      330,
+      682,
+      145,
+      407,
+      723,
+      318,
+      58,
+      324,
+      498,
+      458,
+      431,
+      304,
+      706,
+      361,
+      418,
+      611,
+      627,
+      686,
+      97,
+      237,
+      272,
+      280,
+      341,
+      659,
+      284,
+      573,
+      597,
+      620,
+      679,
+      163,
+      317,
+      389,
+      400,
+      251,
+      370,
+      375,
+      379,
+      515,
+      581,
+      590,
+      628,
+      152,
+      225,
+      378,
+      410,
+      545,
+      677,
+      722,
+      724,
+      299,
+      352,
+      387,
+      415,
+      617,
+      621,
+      653,
+      256,
+      264,
+      335,
+      507,
+      529,
+      17,
+      81,
+      144,
+      274,
+      480
+    ],
+    "target_classes": [
+      14,
+      57,
+      179,
+      189,
+      202,
+      247,
+      270,
+      316,
+      363,
+      441,
+      491,
+      502,
+      519,
+      535,
+      612,
+      640,
+      644,
+      665,
+      716,
+      739
+    ],
+    "target_rows": 417,
+    "target_tail_overlap_rows": 0,
+    "top_pairs": [
+      {
+        "classes": [
+          179,
+          247
+        ],
+        "error_count": 17
+      },
+      {
+        "classes": [
+          270,
+          612
+        ],
+        "error_count": 15
+      },
+      {
+        "classes": [
+          491,
+          665
+        ],
+        "error_count": 13
+      },
+      {
+        "classes": [
+          202,
+          535
+        ],
+        "error_count": 12
+      },
+      {
+        "classes": [
+          316,
+          441
+        ],
+        "error_count": 10
+      },
+      {
+        "classes": [
+          189,
+          644
+        ],
+        "error_count": 9
+      },
+      {
+        "classes": [
+          502,
+          640
+        ],
+        "error_count": 9
+      },
+      {
+        "classes": [
+          716,
+          739
+        ],
+        "error_count": 9
+      },
+      {
+        "classes": [
+          14,
+          363
+        ],
+        "error_count": 8
+      },
+      {
+        "classes": [
+          57,
+          519
+        ],
+        "error_count": 8
+      }
+    ],
+    "validation_rows": 14880
+  },
+  "numeric_review_gate": false,
+  "packages": {
+    "head_only": {
+      "checkpoint": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/head_only/ema_swa_2_4.pt",
+      "checkpoint_sha256": "f8ea2ecd6b42e0d9e5797c812bfbb1963f9a4406d595e1e7ac0d575dd4e889ca",
+      "checks": 9,
+      "csv": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/head_only/submission/pred_results.csv",
+      "csv_sha256": "9133d13766ede812e7ea2bf440148c5641eef65212949bb5aeee47bfb1dc3a15",
+      "platform_score": null,
+      "rows": 37444,
+      "seconds": 1608.068162829004,
+      "status": "package_verified",
+      "zip": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/head_only/submission/submission.zip",
+      "zip_sha256": "9ecea85fdc99cc2c78211672ddd3b5151ae3c6244ee3b84a630863a15ac44f96"
+    },
+    "lora_and_head": {
+      "checkpoint": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/lora_and_head/ema_swa_2_4.pt",
+      "checkpoint_sha256": "f1b99a8a9f505ce69daf3c2d5c49b5837cf5fc2c800443130a43315f565809a8",
+      "checks": 9,
+      "csv": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/lora_and_head/submission/pred_results.csv",
+      "csv_sha256": "eabc0885e1e1971c81eeaece9a8641b9f1dfa196f54818891c477357b0d73f29",
+      "platform_score": null,
+      "rows": 37444,
+      "seconds": 1627.7854188790006,
+      "status": "package_verified",
+      "zip": "/home/clairvoyant/code/Noise-aware-Parameter-Efficient-CLIP-Fine-tuning/outputs/clairvoyanttt/lp_lora768_20261001/20261001T222332_retry1/lora_and_head/submission/submission.zip",
+      "zip_sha256": "fb609e40f0d4a8fbb287d527b2515309cd19cfd68f5471fecb29f47dcc97a150"
+    }
+  },
+  "paired_batch_sha256": "85d4d588b9a3b58bb3681b965ac3bb942c58acc9f41e144c412b171fcd2ecd1e",
+  "paired_batches_exact": true,
+  "parent_replay": {
+    "correct": 11387,
+    "cost": {
+      "includes_npz_write": false,
+      "rows": 14880,
+      "seconds": 142.9675285139965
+    },
+    "covered_classes": 750,
+    "exact_predictions_match": false,
+    "macro": 0.7561102479493056,
+    "max_abs_logit_delta_from_first_run": 0.0,
+    "micro": 0.765255376344086,
+    "mismatch_count": 3,
+    "mismatches": [
+      {
+        "actual": 730,
+        "expected": 463,
+        "image_path": "train/0115/b3a31fb679bc4945a126860fbd55c97a.jpg"
+      },
+      {
+        "actual": 446,
+        "expected": 647,
+        "image_path": "train/0458/cae8a290cb334e5c8b9ad92834b1ca1b.jpg"
+      },
+      {
+        "actual": 545,
+        "expected": 484,
+        "image_path": "train/0545/d443d23cc4434b8499c8e797c86e4c45.jpg"
+      }
+    ],
+    "parent_prediction_sha256": "2667c2e9d80a22d58322b16d7f720fa8e428a95b5b617c803bdf24b74896a20b",
+    "replay_cli_report_error": "duplicate rows keyword in report construction; corrected before formal run",
+    "report_repaired_from_completed_zero_update_npz": true,
+    "rows": 14880,
+    "same_actual_predictions_as_first_run": true,
+    "status": "failed",
+    "training_started": false
+  },
+  "platform_score": null,
+  "reports": {
+    "head_only": {
+      "arm": "head_only",
+      "complete_state_recovery": false,
+      "epochs": 4,
+      "evaluations": {
+        "ema_swa_2_4": {
+          "cost": {
+            "rows": 14880,
+            "seconds": 121.75682494800276
+          },
+          "metrics": {
+            "correct": 11373,
+            "covered_classes": 750,
+            "macro": 0.7551137305863798,
+            "micro": 0.7643145161290322,
+            "rows": 14880
+          },
+          "paired_vs_local_parent": {
+            "all": {
+              "after": {
+                "correct": 11373,
+                "covered_classes": 750,
+                "macro": 0.7551137305863798,
+                "micro": 0.7643145161290322,
+                "rows": 14880
+              },
+              "before": {
+                "correct": 11387,
+                "covered_classes": 750,
+                "macro": 0.7561102479493056,
+                "micro": 0.765255376344086,
+                "rows": 14880
+              },
+              "changed": 842,
+              "corrections": 184,
+              "corrections_to_regressions": 0.9292929292929293,
+              "net_correct": -14,
+              "regressions": 198
+            },
+            "non_target": {
+              "after": {
+                "correct": 11121,
+                "covered_classes": 730,
+                "macro": 0.7596220593298147,
+                "micro": 0.7689276083800042,
+                "rows": 14463
+              },
+              "before": {
+                "correct": 11143,
+                "covered_classes": 730,
+                "macro": 0.7611702755126519,
+                "micro": 0.7704487312452465,
+                "rows": 14463
+              },
+              "changed": 810,
+              "corrections": 168,
+              "corrections_to_regressions": 0.8842105263157894,
+              "net_correct": -22,
+              "regressions": 190
+            },
+            "other": {
+              "after": {
+                "correct": 10442,
+                "covered_classes": 655,
+                "macro": 0.7762210029092151,
+                "micro": 0.7757800891530461,
+                "rows": 13460
+              },
+              "before": {
+                "correct": 10463,
+                "covered_classes": 655,
+                "macro": 0.7777992765611885,
+                "micro": 0.7773402674591382,
+                "rows": 13460
+              },
+              "changed": 750,
+              "corrections": 156,
+              "corrections_to_regressions": 0.8813559322033898,
+              "net_correct": -21,
+              "regressions": 177
+            },
+            "per_target_pair": {
+              "14-363": {
+                "after": {
+                  "correct": 32,
+                  "covered_classes": 2,
+                  "macro": 0.7696078431372549,
+                  "micro": 0.7804878048780488,
+                  "rows": 41
+                },
+                "before": {
+                  "correct": 31,
+                  "covered_classes": 2,
+                  "macro": 0.7487745098039216,
+                  "micro": 0.7560975609756098,
+                  "rows": 41
+                },
+                "changed": 1,
+                "corrections": 1,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 1,
+                "regressions": 0
+              },
+              "179-247": {
+                "after": {
+                  "correct": 25,
+                  "covered_classes": 2,
+                  "macro": 0.5681818181818181,
+                  "micro": 0.5681818181818182,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.4772727272727273,
+                  "micro": 0.4772727272727273,
+                  "rows": 44
+                },
+                "changed": 5,
+                "corrections": 4,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 4,
+                "regressions": 0
+              },
+              "189-644": {
+                "after": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.564327485380117,
+                  "micro": 0.5675675675675675,
+                  "rows": 37
+                },
+                "before": {
+                  "correct": 22,
+                  "covered_classes": 2,
+                  "macro": 0.5906432748538011,
+                  "micro": 0.5945945945945946,
+                  "rows": 37
+                },
+                "changed": 1,
+                "corrections": 0,
+                "corrections_to_regressions": 0.0,
+                "net_correct": -1,
+                "regressions": 1
+              },
+              "202-535": {
+                "after": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.47554347826086957,
+                  "micro": 0.5384615384615384,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 19,
+                  "covered_classes": 2,
+                  "macro": 0.422554347826087,
+                  "micro": 0.48717948717948717,
+                  "rows": 39
+                },
+                "changed": 6,
+                "corrections": 3,
+                "corrections_to_regressions": 3.0,
+                "net_correct": 2,
+                "regressions": 1
+              },
+              "270-612": {
+                "after": {
+                  "correct": 15,
+                  "covered_classes": 2,
+                  "macro": 0.3641304347826087,
+                  "micro": 0.38461538461538464,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 13,
+                  "covered_classes": 2,
+                  "macro": 0.31114130434782605,
+                  "micro": 0.3333333333333333,
+                  "rows": 39
+                },
+                "changed": 3,
+                "corrections": 2,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 2,
+                "regressions": 0
+              },
+              "316-441": {
+                "after": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.6742424242424242,
+                  "micro": 0.6744186046511628,
+                  "rows": 43
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.6742424242424242,
+                  "micro": 0.6744186046511628,
+                  "rows": 43
+                },
+                "changed": 4,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              },
+              "491-665": {
+                "after": {
+                  "correct": 26,
+                  "covered_classes": 2,
+                  "macro": 0.5760869565217391,
+                  "micro": 0.5777777777777777,
+                  "rows": 45
+                },
+                "before": {
+                  "correct": 26,
+                  "covered_classes": 2,
+                  "macro": 0.5760869565217391,
+                  "micro": 0.5777777777777777,
+                  "rows": 45
+                },
+                "changed": 5,
+                "corrections": 2,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 2
+              },
+              "502-640": {
+                "after": {
+                  "correct": 17,
+                  "covered_classes": 2,
+                  "macro": 0.3625,
+                  "micro": 0.38636363636363635,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 17,
+                  "covered_classes": 2,
+                  "macro": 0.3625,
+                  "micro": 0.38636363636363635,
+                  "rows": 44
+                },
+                "changed": 3,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              },
+              "57-519": {
+                "after": {
+                  "correct": 37,
+                  "covered_classes": 2,
+                  "macro": 0.8049242424242424,
+                  "micro": 0.8043478260869565,
+                  "rows": 46
+                },
+                "before": {
+                  "correct": 37,
+                  "covered_classes": 2,
+                  "macro": 0.8049242424242424,
+                  "micro": 0.8043478260869565,
+                  "rows": 46
+                },
+                "changed": 2,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              },
+              "716-739": {
+                "after": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.7460526315789473,
+                  "micro": 0.7435897435897436,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.7460526315789473,
+                  "micro": 0.7435897435897436,
+                  "rows": 39
+                },
+                "changed": 2,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              }
+            },
+            "tail75": {
+              "after": {
+                "correct": 679,
+                "covered_classes": 75,
+                "macro": 0.6146579520697167,
+                "micro": 0.6769690927218345,
+                "rows": 1003
+              },
+              "before": {
+                "correct": 680,
+                "covered_classes": 75,
+                "macro": 0.615943666355431,
+                "micro": 0.6779661016949152,
+                "rows": 1003
+              },
+              "changed": 60,
+              "corrections": 12,
+              "corrections_to_regressions": 0.9230769230769231,
+              "net_correct": -1,
+              "regressions": 13
+            },
+            "target": {
+              "after": {
+                "correct": 252,
+                "covered_classes": 20,
+                "macro": 0.5905597314510022,
+                "micro": 0.60431654676259,
+                "rows": 417
+              },
+              "before": {
+                "correct": 244,
+                "covered_classes": 20,
+                "macro": 0.5714192418871716,
+                "micro": 0.5851318944844125,
+                "rows": 417
+              },
+              "changed": 32,
+              "corrections": 16,
+              "corrections_to_regressions": 2.0,
+              "net_correct": 8,
+              "regressions": 8
+            },
+            "target_tail_overlap": {
+              "after": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "before": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "changed": 0,
+              "corrections": 0,
+              "corrections_to_regressions": null,
+              "net_correct": 0,
+              "regressions": 0
+            }
+          }
+        },
+        "last_ema": {
+          "cost": {
+            "rows": 14880,
+            "seconds": 122.94476780599507
+          },
+          "metrics": {
+            "correct": 11365,
+            "covered_classes": 750,
+            "macro": 0.7545906700306269,
+            "micro": 0.7637768817204301,
+            "rows": 14880
+          },
+          "paired_vs_local_parent": {
+            "all": {
+              "after": {
+                "correct": 11365,
+                "covered_classes": 750,
+                "macro": 0.7545906700306269,
+                "micro": 0.7637768817204301,
+                "rows": 14880
+              },
+              "before": {
+                "correct": 11387,
+                "covered_classes": 750,
+                "macro": 0.7561102479493056,
+                "micro": 0.765255376344086,
+                "rows": 14880
+              },
+              "changed": 865,
+              "corrections": 176,
+              "corrections_to_regressions": 0.8888888888888888,
+              "net_correct": -22,
+              "regressions": 198
+            },
+            "non_target": {
+              "after": {
+                "correct": 11113,
+                "covered_classes": 730,
+                "macro": 0.7590784416978146,
+                "micro": 0.7683744727926433,
+                "rows": 14463
+              },
+              "before": {
+                "correct": 11143,
+                "covered_classes": 730,
+                "macro": 0.7611702755126519,
+                "micro": 0.7704487312452465,
+                "rows": 14463
+              },
+              "changed": 832,
+              "corrections": 160,
+              "corrections_to_regressions": 0.8421052631578947,
+              "net_correct": -30,
+              "regressions": 190
+            },
+            "other": {
+              "after": {
+                "correct": 10431,
+                "covered_classes": 655,
+                "macro": 0.77532887944149,
+                "micro": 0.774962852897474,
+                "rows": 13460
+              },
+              "before": {
+                "correct": 10463,
+                "covered_classes": 655,
+                "macro": 0.7777992765611885,
+                "micro": 0.7773402674591382,
+                "rows": 13460
+              },
+              "changed": 770,
+              "corrections": 147,
+              "corrections_to_regressions": 0.8212290502793296,
+              "net_correct": -32,
+              "regressions": 179
+            },
+            "per_target_pair": {
+              "14-363": {
+                "after": {
+                  "correct": 32,
+                  "covered_classes": 2,
+                  "macro": 0.7696078431372549,
+                  "micro": 0.7804878048780488,
+                  "rows": 41
+                },
+                "before": {
+                  "correct": 31,
+                  "covered_classes": 2,
+                  "macro": 0.7487745098039216,
+                  "micro": 0.7560975609756098,
+                  "rows": 41
+                },
+                "changed": 1,
+                "corrections": 1,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 1,
+                "regressions": 0
+              },
+              "179-247": {
+                "after": {
+                  "correct": 24,
+                  "covered_classes": 2,
+                  "macro": 0.5454545454545454,
+                  "micro": 0.5454545454545454,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.4772727272727273,
+                  "micro": 0.4772727272727273,
+                  "rows": 44
+                },
+                "changed": 4,
+                "corrections": 3,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 3,
+                "regressions": 0
+              },
+              "189-644": {
+                "after": {
+                  "correct": 22,
+                  "covered_classes": 2,
+                  "macro": 0.5906432748538011,
+                  "micro": 0.5945945945945946,
+                  "rows": 37
+                },
+                "before": {
+                  "correct": 22,
+                  "covered_classes": 2,
+                  "macro": 0.5906432748538011,
+                  "micro": 0.5945945945945946,
+                  "rows": 37
+                },
+                "changed": 0,
+                "corrections": 0,
+                "corrections_to_regressions": null,
+                "net_correct": 0,
+                "regressions": 0
+              },
+              "202-535": {
+                "after": {
+                  "correct": 20,
+                  "covered_classes": 2,
+                  "macro": 0.453804347826087,
+                  "micro": 0.5128205128205128,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 19,
+                  "covered_classes": 2,
+                  "macro": 0.422554347826087,
+                  "micro": 0.48717948717948717,
+                  "rows": 39
+                },
+                "changed": 5,
+                "corrections": 2,
+                "corrections_to_regressions": 2.0,
+                "net_correct": 1,
+                "regressions": 1
+              },
+              "270-612": {
+                "after": {
+                  "correct": 15,
+                  "covered_classes": 2,
+                  "macro": 0.3641304347826087,
+                  "micro": 0.38461538461538464,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 13,
+                  "covered_classes": 2,
+                  "macro": 0.31114130434782605,
+                  "micro": 0.3333333333333333,
+                  "rows": 39
+                },
+                "changed": 3,
+                "corrections": 2,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 2,
+                "regressions": 0
+              },
+              "316-441": {
+                "after": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.6742424242424242,
+                  "micro": 0.6744186046511628,
+                  "rows": 43
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.6742424242424242,
+                  "micro": 0.6744186046511628,
+                  "rows": 43
+                },
+                "changed": 4,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              },
+              "491-665": {
+                "after": {
+                  "correct": 27,
+                  "covered_classes": 2,
+                  "macro": 0.5978260869565217,
+                  "micro": 0.6,
+                  "rows": 45
+                },
+                "before": {
+                  "correct": 26,
+                  "covered_classes": 2,
+                  "macro": 0.5760869565217391,
+                  "micro": 0.5777777777777777,
+                  "rows": 45
+                },
+                "changed": 6,
+                "corrections": 3,
+                "corrections_to_regressions": 1.5,
+                "net_correct": 1,
+                "regressions": 2
+              },
+              "502-640": {
+                "after": {
+                  "correct": 16,
+                  "covered_classes": 2,
+                  "macro": 0.3416666666666667,
+                  "micro": 0.36363636363636365,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 17,
+                  "covered_classes": 2,
+                  "macro": 0.3625,
+                  "micro": 0.38636363636363635,
+                  "rows": 44
+                },
+                "changed": 5,
+                "corrections": 1,
+                "corrections_to_regressions": 0.5,
+                "net_correct": -1,
+                "regressions": 2
+              },
+              "57-519": {
+                "after": {
+                  "correct": 38,
+                  "covered_classes": 2,
+                  "macro": 0.8257575757575758,
+                  "micro": 0.8260869565217391,
+                  "rows": 46
+                },
+                "before": {
+                  "correct": 37,
+                  "covered_classes": 2,
+                  "macro": 0.8049242424242424,
+                  "micro": 0.8043478260869565,
+                  "rows": 46
+                },
+                "changed": 1,
+                "corrections": 1,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 1,
+                "regressions": 0
+              },
+              "716-739": {
+                "after": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.7447368421052631,
+                  "micro": 0.7435897435897436,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.7460526315789473,
+                  "micro": 0.7435897435897436,
+                  "rows": 39
+                },
+                "changed": 4,
+                "corrections": 2,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 2
+              }
+            },
+            "tail75": {
+              "after": {
+                "correct": 682,
+                "covered_classes": 75,
+                "macro": 0.6171579520697169,
+                "micro": 0.6799601196410767,
+                "rows": 1003
+              },
+              "before": {
+                "correct": 680,
+                "covered_classes": 75,
+                "macro": 0.615943666355431,
+                "micro": 0.6779661016949152,
+                "rows": 1003
+              },
+              "changed": 62,
+              "corrections": 13,
+              "corrections_to_regressions": 1.1818181818181819,
+              "net_correct": 2,
+              "regressions": 11
+            },
+            "target": {
+              "after": {
+                "correct": 252,
+                "covered_classes": 20,
+                "macro": 0.5907870041782748,
+                "micro": 0.60431654676259,
+                "rows": 417
+              },
+              "before": {
+                "correct": 244,
+                "covered_classes": 20,
+                "macro": 0.5714192418871716,
+                "micro": 0.5851318944844125,
+                "rows": 417
+              },
+              "changed": 33,
+              "corrections": 16,
+              "corrections_to_regressions": 2.0,
+              "net_correct": 8,
+              "regressions": 8
+            },
+            "target_tail_overlap": {
+              "after": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "before": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "changed": 0,
+              "corrections": 0,
+              "corrections_to_regressions": null,
+              "net_correct": 0,
+              "regressions": 0
+            }
+          }
+        },
+        "last_raw": {
+          "cost": {
+            "rows": 14880,
+            "seconds": 121.74161694799841
+          },
+          "metrics": {
+            "correct": 11369,
+            "covered_classes": 750,
+            "macro": 0.7548130407971154,
+            "micro": 0.7640456989247312,
+            "rows": 14880
+          },
+          "paired_vs_local_parent": {
+            "all": {
+              "after": {
+                "correct": 11369,
+                "covered_classes": 750,
+                "macro": 0.7548130407971154,
+                "micro": 0.7640456989247312,
+                "rows": 14880
+              },
+              "before": {
+                "correct": 11387,
+                "covered_classes": 750,
+                "macro": 0.7561102479493056,
+                "micro": 0.765255376344086,
+                "rows": 14880
+              },
+              "changed": 864,
+              "corrections": 179,
+              "corrections_to_regressions": 0.9086294416243654,
+              "net_correct": -18,
+              "regressions": 197
+            },
+            "non_target": {
+              "after": {
+                "correct": 11117,
+                "covered_classes": 730,
+                "macro": 0.7593069048140699,
+                "micro": 0.7686510405863237,
+                "rows": 14463
+              },
+              "before": {
+                "correct": 11143,
+                "covered_classes": 730,
+                "macro": 0.7611702755126519,
+                "micro": 0.7704487312452465,
+                "rows": 14463
+              },
+              "changed": 831,
+              "corrections": 163,
+              "corrections_to_regressions": 0.8624338624338624,
+              "net_correct": -26,
+              "regressions": 189
+            },
+            "other": {
+              "after": {
+                "correct": 10435,
+                "covered_classes": 655,
+                "macro": 0.775583502456553,
+                "micro": 0.775260029717682,
+                "rows": 13460
+              },
+              "before": {
+                "correct": 10463,
+                "covered_classes": 655,
+                "macro": 0.7777992765611885,
+                "micro": 0.7773402674591382,
+                "rows": 13460
+              },
+              "changed": 770,
+              "corrections": 150,
+              "corrections_to_regressions": 0.8426966292134831,
+              "net_correct": -28,
+              "regressions": 178
+            },
+            "per_target_pair": {
+              "14-363": {
+                "after": {
+                  "correct": 32,
+                  "covered_classes": 2,
+                  "macro": 0.7696078431372549,
+                  "micro": 0.7804878048780488,
+                  "rows": 41
+                },
+                "before": {
+                  "correct": 31,
+                  "covered_classes": 2,
+                  "macro": 0.7487745098039216,
+                  "micro": 0.7560975609756098,
+                  "rows": 41
+                },
+                "changed": 1,
+                "corrections": 1,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 1,
+                "regressions": 0
+              },
+              "179-247": {
+                "after": {
+                  "correct": 24,
+                  "covered_classes": 2,
+                  "macro": 0.5454545454545454,
+                  "micro": 0.5454545454545454,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.4772727272727273,
+                  "micro": 0.4772727272727273,
+                  "rows": 44
+                },
+                "changed": 4,
+                "corrections": 3,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 3,
+                "regressions": 0
+              },
+              "189-644": {
+                "after": {
+                  "correct": 22,
+                  "covered_classes": 2,
+                  "macro": 0.5906432748538011,
+                  "micro": 0.5945945945945946,
+                  "rows": 37
+                },
+                "before": {
+                  "correct": 22,
+                  "covered_classes": 2,
+                  "macro": 0.5906432748538011,
+                  "micro": 0.5945945945945946,
+                  "rows": 37
+                },
+                "changed": 0,
+                "corrections": 0,
+                "corrections_to_regressions": null,
+                "net_correct": 0,
+                "regressions": 0
+              },
+              "202-535": {
+                "after": {
+                  "correct": 20,
+                  "covered_classes": 2,
+                  "macro": 0.453804347826087,
+                  "micro": 0.5128205128205128,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 19,
+                  "covered_classes": 2,
+                  "macro": 0.422554347826087,
+                  "micro": 0.48717948717948717,
+                  "rows": 39
+                },
+                "changed": 5,
+                "corrections": 2,
+                "corrections_to_regressions": 2.0,
+                "net_correct": 1,
+                "regressions": 1
+              },
+              "270-612": {
+                "after": {
+                  "correct": 15,
+                  "covered_classes": 2,
+                  "macro": 0.3641304347826087,
+                  "micro": 0.38461538461538464,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 13,
+                  "covered_classes": 2,
+                  "macro": 0.31114130434782605,
+                  "micro": 0.3333333333333333,
+                  "rows": 39
+                },
+                "changed": 3,
+                "corrections": 2,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 2,
+                "regressions": 0
+              },
+              "316-441": {
+                "after": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.6742424242424242,
+                  "micro": 0.6744186046511628,
+                  "rows": 43
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.6742424242424242,
+                  "micro": 0.6744186046511628,
+                  "rows": 43
+                },
+                "changed": 4,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              },
+              "491-665": {
+                "after": {
+                  "correct": 27,
+                  "covered_classes": 2,
+                  "macro": 0.5978260869565217,
+                  "micro": 0.6,
+                  "rows": 45
+                },
+                "before": {
+                  "correct": 26,
+                  "covered_classes": 2,
+                  "macro": 0.5760869565217391,
+                  "micro": 0.5777777777777777,
+                  "rows": 45
+                },
+                "changed": 6,
+                "corrections": 3,
+                "corrections_to_regressions": 1.5,
+                "net_correct": 1,
+                "regressions": 2
+              },
+              "502-640": {
+                "after": {
+                  "correct": 16,
+                  "covered_classes": 2,
+                  "macro": 0.3416666666666667,
+                  "micro": 0.36363636363636365,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 17,
+                  "covered_classes": 2,
+                  "macro": 0.3625,
+                  "micro": 0.38636363636363635,
+                  "rows": 44
+                },
+                "changed": 5,
+                "corrections": 1,
+                "corrections_to_regressions": 0.5,
+                "net_correct": -1,
+                "regressions": 2
+              },
+              "57-519": {
+                "after": {
+                  "correct": 38,
+                  "covered_classes": 2,
+                  "macro": 0.8257575757575758,
+                  "micro": 0.8260869565217391,
+                  "rows": 46
+                },
+                "before": {
+                  "correct": 37,
+                  "covered_classes": 2,
+                  "macro": 0.8049242424242424,
+                  "micro": 0.8043478260869565,
+                  "rows": 46
+                },
+                "changed": 1,
+                "corrections": 1,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 1,
+                "regressions": 0
+              },
+              "716-739": {
+                "after": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.7447368421052631,
+                  "micro": 0.7435897435897436,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.7460526315789473,
+                  "micro": 0.7435897435897436,
+                  "rows": 39
+                },
+                "changed": 4,
+                "corrections": 2,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 2
+              }
+            },
+            "tail75": {
+              "after": {
+                "correct": 682,
+                "covered_classes": 75,
+                "macro": 0.6171579520697169,
+                "micro": 0.6799601196410767,
+                "rows": 1003
+              },
+              "before": {
+                "correct": 680,
+                "covered_classes": 75,
+                "macro": 0.615943666355431,
+                "micro": 0.6779661016949152,
+                "rows": 1003
+              },
+              "changed": 61,
+              "corrections": 13,
+              "corrections_to_regressions": 1.1818181818181819,
+              "net_correct": 2,
+              "regressions": 11
+            },
+            "target": {
+              "after": {
+                "correct": 252,
+                "covered_classes": 20,
+                "macro": 0.5907870041782748,
+                "micro": 0.60431654676259,
+                "rows": 417
+              },
+              "before": {
+                "correct": 244,
+                "covered_classes": 20,
+                "macro": 0.5714192418871716,
+                "micro": 0.5851318944844125,
+                "rows": 417
+              },
+              "changed": 33,
+              "corrections": 16,
+              "corrections_to_regressions": 2.0,
+              "net_correct": 8,
+              "regressions": 8
+            },
+            "target_tail_overlap": {
+              "after": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "before": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "changed": 0,
+              "corrections": 0,
+              "corrections_to_regressions": null,
+              "net_correct": 0,
+              "regressions": 0
+            }
+          }
+        }
+      },
+      "history": [
+        {
+          "ema": {
+            "correct": 11372,
+            "covered_classes": 750,
+            "macro": 0.7544278265589572,
+            "micro": 0.764247311827957,
+            "rows": 14880
+          },
+          "epoch": 1,
+          "loss": 1.929472799325329,
+          "updates": 3722,
+          "validation_cost": {
+            "rows": 14880,
+            "seconds": 122.22632271500333
+          }
+        },
+        {
+          "ema": {
+            "correct": 11361,
+            "covered_classes": 750,
+            "macro": 0.7542049187915927,
+            "micro": 0.7635080645161291,
+            "rows": 14880
+          },
+          "epoch": 2,
+          "loss": 1.8869322959107457,
+          "updates": 7444,
+          "validation_cost": {
+            "rows": 14880,
+            "seconds": 145.64864717300225
+          }
+        },
+        {
+          "ema": {
+            "correct": 11347,
+            "covered_classes": 750,
+            "macro": 0.7534071931689256,
+            "micro": 0.7625672043010753,
+            "rows": 14880
+          },
+          "epoch": 3,
+          "loss": 1.872461004592058,
+          "updates": 11166,
+          "validation_cost": {
+            "rows": 14880,
+            "seconds": 124.9315730390008
+          }
+        },
+        {
+          "ema": {
+            "correct": 11365,
+            "covered_classes": 750,
+            "macro": 0.7545906700306269,
+            "micro": 0.7637768817204301,
+            "rows": 14880
+          },
+          "epoch": 4,
+          "loss": 1.8549747711256714,
+          "updates": 14888,
+          "validation_cost": {
+            "rows": 14880,
+            "seconds": 122.59226965400012
+          }
+        }
+      ],
+      "optimizer_updates": 14888,
+      "platform_score": null,
+      "primary": "ema_swa_2_4",
+      "recovery_every_updates": 1000,
+      "seconds": 4453.567728870999,
+      "status": "four_epochs_complete"
+    },
+    "lora_and_head": {
+      "arm": "lora_and_head",
+      "complete_state_recovery": true,
+      "epochs": 4,
+      "evaluations": {
+        "ema_swa_2_4": {
+          "cost": {
+            "rows": 14880,
+            "seconds": 116.93079191500146
+          },
+          "metrics": {
+            "correct": 11383,
+            "covered_classes": 750,
+            "macro": 0.7555356005769157,
+            "micro": 0.764986559139785,
+            "rows": 14880
+          },
+          "paired_vs_local_parent": {
+            "all": {
+              "after": {
+                "correct": 11383,
+                "covered_classes": 750,
+                "macro": 0.7555356005769157,
+                "micro": 0.764986559139785,
+                "rows": 14880
+              },
+              "before": {
+                "correct": 11387,
+                "covered_classes": 750,
+                "macro": 0.7561102479493056,
+                "micro": 0.765255376344086,
+                "rows": 14880
+              },
+              "changed": 1289,
+              "corrections": 282,
+              "corrections_to_regressions": 0.986013986013986,
+              "net_correct": -4,
+              "regressions": 286
+            },
+            "non_target": {
+              "after": {
+                "correct": 11137,
+                "covered_classes": 730,
+                "macro": 0.7605040768674879,
+                "micro": 0.7700338795547258,
+                "rows": 14463
+              },
+              "before": {
+                "correct": 11143,
+                "covered_classes": 730,
+                "macro": 0.7611702755126519,
+                "micro": 0.7704487312452465,
+                "rows": 14463
+              },
+              "changed": 1240,
+              "corrections": 267,
+              "corrections_to_regressions": 0.978021978021978,
+              "net_correct": -6,
+              "regressions": 273
+            },
+            "other": {
+              "after": {
+                "correct": 10465,
+                "covered_classes": 655,
+                "macro": 0.7779857091785634,
+                "micro": 0.7774888558692422,
+                "rows": 13460
+              },
+              "before": {
+                "correct": 10463,
+                "covered_classes": 655,
+                "macro": 0.7777992765611885,
+                "micro": 0.7773402674591382,
+                "rows": 13460
+              },
+              "changed": 1136,
+              "corrections": 250,
+              "corrections_to_regressions": 1.0080645161290323,
+              "net_correct": 2,
+              "regressions": 248
+            },
+            "per_target_pair": {
+              "14-363": {
+                "after": {
+                  "correct": 32,
+                  "covered_classes": 2,
+                  "macro": 0.7781862745098038,
+                  "micro": 0.7804878048780488,
+                  "rows": 41
+                },
+                "before": {
+                  "correct": 31,
+                  "covered_classes": 2,
+                  "macro": 0.7487745098039216,
+                  "micro": 0.7560975609756098,
+                  "rows": 41
+                },
+                "changed": 3,
+                "corrections": 1,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 1,
+                "regressions": 0
+              },
+              "179-247": {
+                "after": {
+                  "correct": 22,
+                  "covered_classes": 2,
+                  "macro": 0.5,
+                  "micro": 0.5,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.4772727272727273,
+                  "micro": 0.4772727272727273,
+                  "rows": 44
+                },
+                "changed": 6,
+                "corrections": 2,
+                "corrections_to_regressions": 2.0,
+                "net_correct": 1,
+                "regressions": 1
+              },
+              "189-644": {
+                "after": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.5628654970760234,
+                  "micro": 0.5675675675675675,
+                  "rows": 37
+                },
+                "before": {
+                  "correct": 22,
+                  "covered_classes": 2,
+                  "macro": 0.5906432748538011,
+                  "micro": 0.5945945945945946,
+                  "rows": 37
+                },
+                "changed": 3,
+                "corrections": 0,
+                "corrections_to_regressions": 0.0,
+                "net_correct": -1,
+                "regressions": 1
+              },
+              "202-535": {
+                "after": {
+                  "correct": 20,
+                  "covered_classes": 2,
+                  "macro": 0.44429347826086957,
+                  "micro": 0.5128205128205128,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 19,
+                  "covered_classes": 2,
+                  "macro": 0.422554347826087,
+                  "micro": 0.48717948717948717,
+                  "rows": 39
+                },
+                "changed": 8,
+                "corrections": 3,
+                "corrections_to_regressions": 1.5,
+                "net_correct": 1,
+                "regressions": 2
+              },
+              "270-612": {
+                "after": {
+                  "correct": 13,
+                  "covered_classes": 2,
+                  "macro": 0.3016304347826087,
+                  "micro": 0.3333333333333333,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 13,
+                  "covered_classes": 2,
+                  "macro": 0.31114130434782605,
+                  "micro": 0.3333333333333333,
+                  "rows": 39
+                },
+                "changed": 7,
+                "corrections": 2,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 2
+              },
+              "316-441": {
+                "after": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.6731601731601732,
+                  "micro": 0.6744186046511628,
+                  "rows": 43
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.6742424242424242,
+                  "micro": 0.6744186046511628,
+                  "rows": 43
+                },
+                "changed": 7,
+                "corrections": 2,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 2
+              },
+              "491-665": {
+                "after": {
+                  "correct": 28,
+                  "covered_classes": 2,
+                  "macro": 0.6195652173913043,
+                  "micro": 0.6222222222222222,
+                  "rows": 45
+                },
+                "before": {
+                  "correct": 26,
+                  "covered_classes": 2,
+                  "macro": 0.5760869565217391,
+                  "micro": 0.5777777777777777,
+                  "rows": 45
+                },
+                "changed": 5,
+                "corrections": 3,
+                "corrections_to_regressions": 3.0,
+                "net_correct": 2,
+                "regressions": 1
+              },
+              "502-640": {
+                "after": {
+                  "correct": 17,
+                  "covered_classes": 2,
+                  "macro": 0.3625,
+                  "micro": 0.38636363636363635,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 17,
+                  "covered_classes": 2,
+                  "macro": 0.3625,
+                  "micro": 0.38636363636363635,
+                  "rows": 44
+                },
+                "changed": 6,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              },
+              "57-519": {
+                "after": {
+                  "correct": 37,
+                  "covered_classes": 2,
+                  "macro": 0.8049242424242424,
+                  "micro": 0.8043478260869565,
+                  "rows": 46
+                },
+                "before": {
+                  "correct": 37,
+                  "covered_classes": 2,
+                  "macro": 0.8049242424242424,
+                  "micro": 0.8043478260869565,
+                  "rows": 46
+                },
+                "changed": 2,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              },
+              "716-739": {
+                "after": {
+                  "correct": 27,
+                  "covered_classes": 2,
+                  "macro": 0.6947368421052631,
+                  "micro": 0.6923076923076923,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.7460526315789473,
+                  "micro": 0.7435897435897436,
+                  "rows": 39
+                },
+                "changed": 2,
+                "corrections": 0,
+                "corrections_to_regressions": 0.0,
+                "net_correct": -2,
+                "regressions": 2
+              }
+            },
+            "tail75": {
+              "after": {
+                "correct": 672,
+                "covered_classes": 75,
+                "macro": 0.6078311546840958,
+                "micro": 0.6699900299102692,
+                "rows": 1003
+              },
+              "before": {
+                "correct": 680,
+                "covered_classes": 75,
+                "macro": 0.615943666355431,
+                "micro": 0.6779661016949152,
+                "rows": 1003
+              },
+              "changed": 104,
+              "corrections": 17,
+              "corrections_to_regressions": 0.68,
+              "net_correct": -8,
+              "regressions": 25
+            },
+            "target": {
+              "after": {
+                "correct": 246,
+                "covered_classes": 20,
+                "macro": 0.5741862159710289,
+                "micro": 0.5899280575539568,
+                "rows": 417
+              },
+              "before": {
+                "correct": 244,
+                "covered_classes": 20,
+                "macro": 0.5714192418871716,
+                "micro": 0.5851318944844125,
+                "rows": 417
+              },
+              "changed": 49,
+              "corrections": 15,
+              "corrections_to_regressions": 1.1538461538461537,
+              "net_correct": 2,
+              "regressions": 13
+            },
+            "target_tail_overlap": {
+              "after": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "before": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "changed": 0,
+              "corrections": 0,
+              "corrections_to_regressions": null,
+              "net_correct": 0,
+              "regressions": 0
+            }
+          }
+        },
+        "last_ema": {
+          "cost": {
+            "rows": 14880,
+            "seconds": 116.75522452400037
+          },
+          "metrics": {
+            "correct": 11378,
+            "covered_classes": 750,
+            "macro": 0.7552663894818034,
+            "micro": 0.7646505376344086,
+            "rows": 14880
+          },
+          "paired_vs_local_parent": {
+            "all": {
+              "after": {
+                "correct": 11378,
+                "covered_classes": 750,
+                "macro": 0.7552663894818034,
+                "micro": 0.7646505376344086,
+                "rows": 14880
+              },
+              "before": {
+                "correct": 11387,
+                "covered_classes": 750,
+                "macro": 0.7561102479493056,
+                "micro": 0.765255376344086,
+                "rows": 14880
+              },
+              "changed": 1374,
+              "corrections": 296,
+              "corrections_to_regressions": 0.9704918032786886,
+              "net_correct": -9,
+              "regressions": 305
+            },
+            "non_target": {
+              "after": {
+                "correct": 11128,
+                "covered_classes": 730,
+                "macro": 0.7599526553116258,
+                "micro": 0.7694116020189449,
+                "rows": 14463
+              },
+              "before": {
+                "correct": 11143,
+                "covered_classes": 730,
+                "macro": 0.7611702755126519,
+                "micro": 0.7704487312452465,
+                "rows": 14463
+              },
+              "changed": 1323,
+              "corrections": 277,
+              "corrections_to_regressions": 0.9486301369863014,
+              "net_correct": -15,
+              "regressions": 292
+            },
+            "other": {
+              "after": {
+                "correct": 10456,
+                "covered_classes": 655,
+                "macro": 0.7772630052562538,
+                "micro": 0.7768202080237742,
+                "rows": 13460
+              },
+              "before": {
+                "correct": 10463,
+                "covered_classes": 655,
+                "macro": 0.7777992765611885,
+                "micro": 0.7773402674591382,
+                "rows": 13460
+              },
+              "changed": 1208,
+              "corrections": 257,
+              "corrections_to_regressions": 0.9734848484848485,
+              "net_correct": -7,
+              "regressions": 264
+            },
+            "per_target_pair": {
+              "14-363": {
+                "after": {
+                  "correct": 34,
+                  "covered_classes": 2,
+                  "macro": 0.8198529411764706,
+                  "micro": 0.8292682926829268,
+                  "rows": 41
+                },
+                "before": {
+                  "correct": 31,
+                  "covered_classes": 2,
+                  "macro": 0.7487745098039216,
+                  "micro": 0.7560975609756098,
+                  "rows": 41
+                },
+                "changed": 3,
+                "corrections": 3,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 3,
+                "regressions": 0
+              },
+              "179-247": {
+                "after": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.4772727272727273,
+                  "micro": 0.4772727272727273,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.4772727272727273,
+                  "micro": 0.4772727272727273,
+                  "rows": 44
+                },
+                "changed": 7,
+                "corrections": 3,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 3
+              },
+              "189-644": {
+                "after": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.5628654970760234,
+                  "micro": 0.5675675675675675,
+                  "rows": 37
+                },
+                "before": {
+                  "correct": 22,
+                  "covered_classes": 2,
+                  "macro": 0.5906432748538011,
+                  "micro": 0.5945945945945946,
+                  "rows": 37
+                },
+                "changed": 4,
+                "corrections": 0,
+                "corrections_to_regressions": 0.0,
+                "net_correct": -1,
+                "regressions": 1
+              },
+              "202-535": {
+                "after": {
+                  "correct": 22,
+                  "covered_classes": 2,
+                  "macro": 0.49728260869565216,
+                  "micro": 0.5641025641025641,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 19,
+                  "covered_classes": 2,
+                  "macro": 0.422554347826087,
+                  "micro": 0.48717948717948717,
+                  "rows": 39
+                },
+                "changed": 8,
+                "corrections": 4,
+                "corrections_to_regressions": 4.0,
+                "net_correct": 3,
+                "regressions": 1
+              },
+              "270-612": {
+                "after": {
+                  "correct": 13,
+                  "covered_classes": 2,
+                  "macro": 0.3016304347826087,
+                  "micro": 0.3333333333333333,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 13,
+                  "covered_classes": 2,
+                  "macro": 0.31114130434782605,
+                  "micro": 0.3333333333333333,
+                  "rows": 39
+                },
+                "changed": 7,
+                "corrections": 2,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 2
+              },
+              "316-441": {
+                "after": {
+                  "correct": 30,
+                  "covered_classes": 2,
+                  "macro": 0.696969696969697,
+                  "micro": 0.6976744186046512,
+                  "rows": 43
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.6742424242424242,
+                  "micro": 0.6744186046511628,
+                  "rows": 43
+                },
+                "changed": 6,
+                "corrections": 2,
+                "corrections_to_regressions": 2.0,
+                "net_correct": 1,
+                "regressions": 1
+              },
+              "491-665": {
+                "after": {
+                  "correct": 27,
+                  "covered_classes": 2,
+                  "macro": 0.5978260869565217,
+                  "micro": 0.6,
+                  "rows": 45
+                },
+                "before": {
+                  "correct": 26,
+                  "covered_classes": 2,
+                  "macro": 0.5760869565217391,
+                  "micro": 0.5777777777777777,
+                  "rows": 45
+                },
+                "changed": 6,
+                "corrections": 3,
+                "corrections_to_regressions": 1.5,
+                "net_correct": 1,
+                "regressions": 2
+              },
+              "502-640": {
+                "after": {
+                  "correct": 17,
+                  "covered_classes": 2,
+                  "macro": 0.3625,
+                  "micro": 0.38636363636363635,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 17,
+                  "covered_classes": 2,
+                  "macro": 0.3625,
+                  "micro": 0.38636363636363635,
+                  "rows": 44
+                },
+                "changed": 7,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              },
+              "57-519": {
+                "after": {
+                  "correct": 37,
+                  "covered_classes": 2,
+                  "macro": 0.8049242424242424,
+                  "micro": 0.8043478260869565,
+                  "rows": 46
+                },
+                "before": {
+                  "correct": 37,
+                  "covered_classes": 2,
+                  "macro": 0.8049242424242424,
+                  "micro": 0.8043478260869565,
+                  "rows": 46
+                },
+                "changed": 2,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              },
+              "716-739": {
+                "after": {
+                  "correct": 28,
+                  "covered_classes": 2,
+                  "macro": 0.7210526315789474,
+                  "micro": 0.717948717948718,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.7460526315789473,
+                  "micro": 0.7435897435897436,
+                  "rows": 39
+                },
+                "changed": 1,
+                "corrections": 0,
+                "corrections_to_regressions": 0.0,
+                "net_correct": -1,
+                "regressions": 1
+              }
+            },
+            "tail75": {
+              "after": {
+                "correct": 672,
+                "covered_classes": 75,
+                "macro": 0.6087755991285403,
+                "micro": 0.6699900299102692,
+                "rows": 1003
+              },
+              "before": {
+                "correct": 680,
+                "covered_classes": 75,
+                "macro": 0.615943666355431,
+                "micro": 0.6779661016949152,
+                "rows": 1003
+              },
+              "changed": 115,
+              "corrections": 20,
+              "corrections_to_regressions": 0.7142857142857143,
+              "net_correct": -8,
+              "regressions": 28
+            },
+            "target": {
+              "after": {
+                "correct": 250,
+                "covered_classes": 20,
+                "macro": 0.584217686693289,
+                "micro": 0.5995203836930456,
+                "rows": 417
+              },
+              "before": {
+                "correct": 244,
+                "covered_classes": 20,
+                "macro": 0.5714192418871716,
+                "micro": 0.5851318944844125,
+                "rows": 417
+              },
+              "changed": 51,
+              "corrections": 19,
+              "corrections_to_regressions": 1.4615384615384615,
+              "net_correct": 6,
+              "regressions": 13
+            },
+            "target_tail_overlap": {
+              "after": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "before": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "changed": 0,
+              "corrections": 0,
+              "corrections_to_regressions": null,
+              "net_correct": 0,
+              "regressions": 0
+            }
+          }
+        },
+        "last_raw": {
+          "cost": {
+            "rows": 14880,
+            "seconds": 119.44193936399824
+          },
+          "metrics": {
+            "correct": 11378,
+            "covered_classes": 750,
+            "macro": 0.7552624673421132,
+            "micro": 0.7646505376344086,
+            "rows": 14880
+          },
+          "paired_vs_local_parent": {
+            "all": {
+              "after": {
+                "correct": 11378,
+                "covered_classes": 750,
+                "macro": 0.7552624673421132,
+                "micro": 0.7646505376344086,
+                "rows": 14880
+              },
+              "before": {
+                "correct": 11387,
+                "covered_classes": 750,
+                "macro": 0.7561102479493056,
+                "micro": 0.765255376344086,
+                "rows": 14880
+              },
+              "changed": 1374,
+              "corrections": 295,
+              "corrections_to_regressions": 0.9703947368421053,
+              "net_correct": -9,
+              "regressions": 304
+            },
+            "non_target": {
+              "after": {
+                "correct": 11130,
+                "covered_classes": 730,
+                "macro": 0.7600968272701673,
+                "micro": 0.7695498859157851,
+                "rows": 14463
+              },
+              "before": {
+                "correct": 11143,
+                "covered_classes": 730,
+                "macro": 0.7611702755126519,
+                "micro": 0.7704487312452465,
+                "rows": 14463
+              },
+              "changed": 1321,
+              "corrections": 276,
+              "corrections_to_regressions": 0.9550173010380623,
+              "net_correct": -13,
+              "regressions": 289
+            },
+            "other": {
+              "after": {
+                "correct": 10459,
+                "covered_classes": 655,
+                "macro": 0.7775254666248065,
+                "micro": 0.7770430906389302,
+                "rows": 13460
+              },
+              "before": {
+                "correct": 10463,
+                "covered_classes": 655,
+                "macro": 0.7777992765611885,
+                "micro": 0.7773402674591382,
+                "rows": 13460
+              },
+              "changed": 1210,
+              "corrections": 257,
+              "corrections_to_regressions": 0.9846743295019157,
+              "net_correct": -4,
+              "regressions": 261
+            },
+            "per_target_pair": {
+              "14-363": {
+                "after": {
+                  "correct": 34,
+                  "covered_classes": 2,
+                  "macro": 0.8198529411764706,
+                  "micro": 0.8292682926829268,
+                  "rows": 41
+                },
+                "before": {
+                  "correct": 31,
+                  "covered_classes": 2,
+                  "macro": 0.7487745098039216,
+                  "micro": 0.7560975609756098,
+                  "rows": 41
+                },
+                "changed": 3,
+                "corrections": 3,
+                "corrections_to_regressions": "infinite",
+                "net_correct": 3,
+                "regressions": 0
+              },
+              "179-247": {
+                "after": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.4772727272727273,
+                  "micro": 0.4772727272727273,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 21,
+                  "covered_classes": 2,
+                  "macro": 0.4772727272727273,
+                  "micro": 0.4772727272727273,
+                  "rows": 44
+                },
+                "changed": 7,
+                "corrections": 3,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 3
+              },
+              "189-644": {
+                "after": {
+                  "correct": 20,
+                  "covered_classes": 2,
+                  "macro": 0.5350877192982456,
+                  "micro": 0.5405405405405406,
+                  "rows": 37
+                },
+                "before": {
+                  "correct": 22,
+                  "covered_classes": 2,
+                  "macro": 0.5906432748538011,
+                  "micro": 0.5945945945945946,
+                  "rows": 37
+                },
+                "changed": 5,
+                "corrections": 0,
+                "corrections_to_regressions": 0.0,
+                "net_correct": -2,
+                "regressions": 2
+              },
+              "202-535": {
+                "after": {
+                  "correct": 22,
+                  "covered_classes": 2,
+                  "macro": 0.49728260869565216,
+                  "micro": 0.5641025641025641,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 19,
+                  "covered_classes": 2,
+                  "macro": 0.422554347826087,
+                  "micro": 0.48717948717948717,
+                  "rows": 39
+                },
+                "changed": 8,
+                "corrections": 4,
+                "corrections_to_regressions": 4.0,
+                "net_correct": 3,
+                "regressions": 1
+              },
+              "270-612": {
+                "after": {
+                  "correct": 13,
+                  "covered_classes": 2,
+                  "macro": 0.3016304347826087,
+                  "micro": 0.3333333333333333,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 13,
+                  "covered_classes": 2,
+                  "macro": 0.31114130434782605,
+                  "micro": 0.3333333333333333,
+                  "rows": 39
+                },
+                "changed": 7,
+                "corrections": 2,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 2
+              },
+              "316-441": {
+                "after": {
+                  "correct": 30,
+                  "covered_classes": 2,
+                  "macro": 0.696969696969697,
+                  "micro": 0.6976744186046512,
+                  "rows": 43
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.6742424242424242,
+                  "micro": 0.6744186046511628,
+                  "rows": 43
+                },
+                "changed": 6,
+                "corrections": 2,
+                "corrections_to_regressions": 2.0,
+                "net_correct": 1,
+                "regressions": 1
+              },
+              "491-665": {
+                "after": {
+                  "correct": 27,
+                  "covered_classes": 2,
+                  "macro": 0.5978260869565217,
+                  "micro": 0.6,
+                  "rows": 45
+                },
+                "before": {
+                  "correct": 26,
+                  "covered_classes": 2,
+                  "macro": 0.5760869565217391,
+                  "micro": 0.5777777777777777,
+                  "rows": 45
+                },
+                "changed": 6,
+                "corrections": 3,
+                "corrections_to_regressions": 1.5,
+                "net_correct": 1,
+                "regressions": 2
+              },
+              "502-640": {
+                "after": {
+                  "correct": 17,
+                  "covered_classes": 2,
+                  "macro": 0.3625,
+                  "micro": 0.38636363636363635,
+                  "rows": 44
+                },
+                "before": {
+                  "correct": 17,
+                  "covered_classes": 2,
+                  "macro": 0.3625,
+                  "micro": 0.38636363636363635,
+                  "rows": 44
+                },
+                "changed": 7,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              },
+              "57-519": {
+                "after": {
+                  "correct": 37,
+                  "covered_classes": 2,
+                  "macro": 0.8049242424242424,
+                  "micro": 0.8043478260869565,
+                  "rows": 46
+                },
+                "before": {
+                  "correct": 37,
+                  "covered_classes": 2,
+                  "macro": 0.8049242424242424,
+                  "micro": 0.8043478260869565,
+                  "rows": 46
+                },
+                "changed": 2,
+                "corrections": 1,
+                "corrections_to_regressions": 1.0,
+                "net_correct": 0,
+                "regressions": 1
+              },
+              "716-739": {
+                "after": {
+                  "correct": 27,
+                  "covered_classes": 2,
+                  "macro": 0.6947368421052631,
+                  "micro": 0.6923076923076923,
+                  "rows": 39
+                },
+                "before": {
+                  "correct": 29,
+                  "covered_classes": 2,
+                  "macro": 0.7460526315789473,
+                  "micro": 0.7435897435897436,
+                  "rows": 39
+                },
+                "changed": 2,
+                "corrections": 0,
+                "corrections_to_regressions": 0.0,
+                "net_correct": -2,
+                "regressions": 2
+              }
+            },
+            "tail75": {
+              "after": {
+                "correct": 671,
+                "covered_classes": 75,
+                "macro": 0.6078867102396515,
+                "micro": 0.6689930209371885,
+                "rows": 1003
+              },
+              "before": {
+                "correct": 680,
+                "covered_classes": 75,
+                "macro": 0.615943666355431,
+                "micro": 0.6779661016949152,
+                "rows": 1003
+              },
+              "changed": 111,
+              "corrections": 19,
+              "corrections_to_regressions": 0.6785714285714286,
+              "net_correct": -9,
+              "regressions": 28
+            },
+            "target": {
+              "after": {
+                "correct": 248,
+                "covered_classes": 20,
+                "macro": 0.5788083299681428,
+                "micro": 0.5947242206235012,
+                "rows": 417
+              },
+              "before": {
+                "correct": 244,
+                "covered_classes": 20,
+                "macro": 0.5714192418871716,
+                "micro": 0.5851318944844125,
+                "rows": 417
+              },
+              "changed": 53,
+              "corrections": 19,
+              "corrections_to_regressions": 1.2666666666666666,
+              "net_correct": 4,
+              "regressions": 15
+            },
+            "target_tail_overlap": {
+              "after": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "before": {
+                "correct": 0,
+                "covered_classes": 0,
+                "macro": null,
+                "micro": null,
+                "rows": 0
+              },
+              "changed": 0,
+              "corrections": 0,
+              "corrections_to_regressions": null,
+              "net_correct": 0,
+              "regressions": 0
+            }
+          }
+        }
+      },
+      "history": [
+        {
+          "ema": {
+            "correct": 11360,
+            "covered_classes": 750,
+            "macro": 0.7543207338938164,
+            "micro": 0.7634408602150538,
+            "rows": 14880
+          },
+          "epoch": 1,
+          "loss": 1.9374333207466985,
+          "updates": 3722,
+          "validation_cost": {
+            "rows": 14880,
+            "seconds": 134.13140474900138
+          }
+        },
+        {
+          "ema": {
+            "correct": 11338,
+            "covered_classes": 750,
+            "macro": 0.7523421055661708,
+            "micro": 0.7619623655913978,
+            "rows": 14880
+          },
+          "epoch": 2,
+          "loss": 1.8799964093684767,
+          "updates": 7444,
+          "validation_cost": {
+            "rows": 14880,
+            "seconds": 129.27697404100036
+          }
+        },
+        {
+          "ema": {
+            "correct": 11378,
+            "covered_classes": 750,
+            "macro": 0.7551116968109389,
+            "micro": 0.7646505376344086,
+            "rows": 14880
+          },
+          "epoch": 3,
+          "loss": 1.8287735009092532,
+          "updates": 11166,
+          "validation_cost": {
+            "rows": 14880,
+            "seconds": 127.24567287800164
+          }
+        },
+        {
+          "ema": {
+            "correct": 11378,
+            "covered_classes": 750,
+            "macro": 0.7552663894818034,
+            "micro": 0.7646505376344086,
+            "rows": 14880
+          },
+          "epoch": 4,
+          "loss": 1.7887982595782008,
+          "updates": 14888,
+          "validation_cost": {
+            "rows": 14880,
+            "seconds": 120.0935018740056
+          }
+        }
+      ],
+      "optimizer_updates": 14888,
+      "platform_score": null,
+      "primary": "ema_swa_2_4",
+      "recovery_every_updates": 1000,
+      "seconds": 6073.243009580998,
+      "status": "four_epochs_complete"
+    }
+  },
+  "source_replay_exact": false,
+  "status": "completed_verified_delivery"
+}

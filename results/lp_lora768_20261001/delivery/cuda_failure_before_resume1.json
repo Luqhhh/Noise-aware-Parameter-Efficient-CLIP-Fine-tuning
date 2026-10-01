@@ -1,0 +1,19 @@
+{
+  "failure": {
+    "status": "incomplete_failed_run",
+    "error_type": "AcceleratorError",
+    "reason": "CUDA error: unknown error\nSearch for `cudaErrorUnknown' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.\nFor more detailed error information, run with CUDA_LOG_FILE=stderr\n",
+    "utc": "2026-10-01T16:05:14.479985+00:00",
+    "four_epoch_delivery_complete": false
+  },
+  "fresh_cuda_matmul_finite": true,
+  "cuda_device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "latest_recovery": {
+    "path": "step_000000_ff4ae7f4.pt",
+    "sha256": "772cdbf585f0b031082817bd9beeaad145fbac81efd1db3cc4fa22d8cca135c9",
+    "updates": 0
+  },
+  "attempted_batches": 556,
+  "head_only_completed_report_preserved": true,
+  "root_cause": "unknown"
+}
