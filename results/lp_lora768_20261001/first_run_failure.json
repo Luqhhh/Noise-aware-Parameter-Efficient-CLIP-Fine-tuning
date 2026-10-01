@@ -1,0 +1,23 @@
+{
+  "status": "incomplete_failed_trajectory",
+  "failure": "CUDA unknown error; root cause not established",
+  "arm": "head_only",
+  "last_attempted_epoch": 2,
+  "last_attempted_batch": 1268,
+  "attempted_batches": 4990,
+  "completed_epochs": 1,
+  "complete_four_epochs": false,
+  "fresh_process_cuda_tensor_probe_passed": true,
+  "exact_failed_batch_reconstruction": true,
+  "original_parent_failed_batch_update_passed": true,
+  "discarded_diagnostic_update": true,
+  "loss": 1.3323449790477753,
+  "numeric": {
+    "gradient_norm": 0.9105755686759949,
+    "amp_initial_scale": 65536.0,
+    "amp_final_scale": 65536.0,
+    "amp_retries": []
+  },
+  "retry_policy": "fresh unique run, reload original parent and execute all four epochs for both arms",
+  "platform_score": null
+}

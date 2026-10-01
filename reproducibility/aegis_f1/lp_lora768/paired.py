@@ -40,11 +40,11 @@ class PairedImages(Images):
         return image, original
 
 
-def training_loader(context, epoch):
+def training_loader(context, epoch, start_batch=0):
     seed = context.protocol["seed"]
     order = torch.randperm(len(context.active), generator=torch.Generator().manual_seed(stream_seed(seed, "sampling", epoch)))
     worker_rng = torch.Generator().manual_seed(stream_seed(seed, "workers", epoch))
-    return DataLoader(PairedImages(context, epoch), sampler=order.tolist(), batch_size=32,
+    return DataLoader(PairedImages(context, epoch), sampler=order.tolist()[start_batch*32:], batch_size=32,
                       num_workers=2, worker_init_fn=seed_worker, generator=worker_rng, drop_last=False)
 
 

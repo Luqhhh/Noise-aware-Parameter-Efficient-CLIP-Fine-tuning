@@ -1,0 +1,7 @@
+{
+  "cross_machine_bit_exact_claim": false,
+  "ruling": "User 2026-10-01 prioritized actual local execution after being told about strict source replay differences; both arms share the recorded local parent baseline.",
+  "source_gate_passed": false,
+  "source_mismatch_count": 3,
+  "train_recipe_changed": false
+}
