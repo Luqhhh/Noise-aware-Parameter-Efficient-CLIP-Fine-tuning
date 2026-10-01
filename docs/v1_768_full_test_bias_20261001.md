@@ -48,3 +48,5 @@ PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 \
 ```
 
 独立核验将重放全部两份CSV、核对ZIP逐字节、重新执行提交校验，并用NumPy FP64独立拟合固定200次bias；无新平台分。
+
+完成收尾服务noise-v1-768-full-finalize-20261001.service运行scripts/finalize_v1_768_full.py，监控现有训练，不启动/重试训练。成功交付后依次独立核验、复制无bias桌面包、归档结果、方案commit/push、main自动autostash pull/merge/75项检查/push。状态在独立输出completion_status.json，失败则记录确切阶段并停止，不把失败写成完成。
