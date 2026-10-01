@@ -46,8 +46,8 @@
   },
   "files": {
     ".gitattributes": {
-      "bytes": 78,
-      "sha256": "ad0cc5575cfed463b62ef301f0714fde10de973bbe15a6e1623702cdbe6551a1"
+      "bytes": 96,
+      "sha256": "75512ed665cde30894059756f34f1cea903e18327828237bdd2c0d6d86488169"
     },
     "cuda_failure_before_resume1.json": {
       "bytes": 790,
