@@ -1,0 +1,16 @@
+experiment_id: V1_512_TEST_BIAS_CONTROL_20261001
+route: 512_control
+parent_config: /home/lux1/noise/worktrees/v1_full_swa_20260930/configs/v1_full_swa_20260930.yaml
+parent_checkpoint: /home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/training/selected.pt
+targets: null
+output: /home/lux1/noise-worktrees/v1_512_test_bias_control_20261001/outputs/codex/v1_512_test_bias_control_20261001
+desktop_prefix: /mnt/c/Users/lqh22/Desktop/v1_512_test_bias_control_20261001
+head_fit:
+  epochs: 20
+  batch_size: 8192
+  lr: 0.001
+  minimum_lr: 0.0001
+  weight_decay: 0.01
+  dropout: 0.1
+  label_smoothing: 0.1
+  seed: 42
