@@ -33,10 +33,10 @@
   "cpus": 128,
   "disk": {
     "total": 53687091200,
-    "used": 4272717824,
-    "free": 49414373376
+    "used": 35871137792,
+    "free": 17815953408
   },
-  "repository_commit": "8b54be43ffa5006e7340c86f742321ed43367672",
+  "repository_commit": "80716d20246bf5699cdb84baf057caa61c20d376",
   "training_started": false,
   "s1_parent_available": false
 }

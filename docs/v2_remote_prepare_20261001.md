@@ -17,7 +17,7 @@
 | s1交接暂存目录 | `/root/autodl-tmp/noise/handoff/s1_pending` |
 
 实测RTX4090，24,564MiB显存；准备时GPU利用率0%、无计算进程。
-数据盘限额50GiB。环境为Python3.12.3、torch2.12.1+cu130、torchvision0.27.1+cu130，
+数据盘限额50GiB，数据及准备完成后剩余约16.59GiB。环境为Python3.12.3、torch2.12.1+cu130、torchvision0.27.1+cu130，
 CUDA可用并支持BF16。虚拟环境复用镜像内已有Torch，仅在自己的venv内补齐依赖。
 这不是 `pyproject.toml` 锁定环境，也不是队友Windows/Torch2.6环境；本段只验证兼容性，
 不声称跨后端逐位复现。实际版本及官方CLIP代码commit见
@@ -97,13 +97,19 @@ CPU官方模型前向通过：224原生与插值最大差0.0；384/448/576均为
 [服务器recipe](../configs/v2/remote_39385.recipe.json)只改四个资源路径；
 micro batch2、workers2、所有训练超参数及 `execution_authorized=false` 保持原固定配置。
 `preflight_template` 是禁用训练的环境检查模板，**不是接纳Windows s1的续训plan**。
-其plan SHA256为 `ccb74ad8848b0b32897929cb1b3f50d0fea6bfbe6e18f8ea407d2712375ceee0`。
+其初始plan SHA256为 `ccb74ad8848b0b32897929cb1b3f50d0fea6bfbe6e18f8ea407d2712375ceee0`。
+随后同步最新main到方案commit `80716d20246bf5699cdb84baf057caa61c20d376`，
+因绑定的 `v1_strategy.py` 已更新，在新目录 `preflight_synced` 重新prepare/verify。
+最终plan SHA256为 `a61edd85f173cdb40328e5825c05d9556b130f1f3545e63c31b47148a03ba53f`，
+133,815/14,880划分、零组交集、禁用训练均保持；服务器再次67项CPU测试通过。
+实测只读目录中可写项为0，未创建checkpoint、GPU计算进程为空；
+见[最终准备记录](../results/v2_remote_prepare_20261001/preparation.json)。
 在服务器仓库根目录执行：
 
 ```bash
 source scripts/activate_v2_remote_39385.sh
 CUDA_VISIBLE_DEVICES='' python -m pytest tests/test_v2.py tests/test_v2_swa.py reproducibility/aegis_f1/tests/test_model.py -q
-python -m v2.plan verify --plan /root/autodl-tmp/noise/runs/codex/v2_remote_prepare_20261001/preflight_template/plan.json
+python -m v2.plan verify --plan /root/autodl-tmp/noise/runs/codex/v2_remote_prepare_20261001/preflight_synced/plan.json
 CUDA_VISIBLE_DEVICES='' python scripts/check_v2_cpu.py --recipe configs/v2/remote_39385.recipe.json --output <new_cpu_report.json>
 python scripts/verify_remote_data_assets.py \
   --data-root /root/autodl-tmp/noise/data \
@@ -116,6 +122,14 @@ python scripts/verify_remote_data_assets.py \
 不要在已存在目录再次prepare；新检查使用新输出目录，保护不可变plan。
 本段首次prepare的实际命令为
 `python -m v2.plan prepare --recipe configs/v2/remote_39385.recipe.json --output /root/autodl-tmp/noise/runs/codex/v2_remote_prepare_20261001/preflight_template`。
+同步代码后的prepare使用同一recipe，output为
+`/root/autodl-tmp/noise/runs/codex/v2_remote_prepare_20261001/preflight_synced`；旧模板保留为历史记录。
+
+改动文件为 `CLAUDE.md`、`docs/current_execution_plan.md`、`docs/v2.md`、本报告，
+独立recipe `configs/v2/remote_39385.recipe.json`、环境入口
+`scripts/activate_v2_remote_39385.sh`、资产校验
+`scripts/verify_remote_data_assets.py`，以及
+`results/v2_remote_prepare_20261001/` 内的环境、CPU、数据、传输、准备和关机证据。
 
 ## s1交接与停止边界
 
