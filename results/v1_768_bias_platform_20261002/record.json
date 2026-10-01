@@ -1,0 +1,109 @@
+{
+  "record_id": "V1_768_BIAS_PLATFORM_20261002",
+  "experiment_id": "V1_768_FULL_TEST_BIAS_20261001",
+  "recorded_at": "2026-10-01T17:38:53.895817+00:00",
+  "source": "explicit_user_report",
+  "source_message": "768 bias合规吗 74.41512658903963",
+  "raw_source_message": "71.53883132144003 无Bias",
+  "platform_score_reported_text": "74.41512658903963",
+  "platform_score_percent": 74.41512658903963,
+  "raw_platform_score_reported_text": "71.53883132144003",
+  "raw_platform_score_percent": 71.53883132144003,
+  "platform_submission_id": null,
+  "raw_platform_submission_id": null,
+  "platform_submitted_at": null,
+  "platform_package_binding_verified": false,
+  "independent_platform_receipt_verified": false,
+  "previous_best_record": "results/v1_full_swa_platform_20261001/artifact_verification.json",
+  "base_origin_main_commit": "e11a5335d91f18454c1a01a6235c8ef87b5c6d29",
+  "feedback_branch": "codex/v1_768_bias_platform_20261002",
+  "feedback_worktree": "/home/lux1/noise/worktrees/v1_768_bias_platform_20261002",
+  "delivery_result": "results/v1_768_full_test_bias_20261001/delivery_summary.json",
+  "delivery_verification": "results/v1_768_full_test_bias_20261001/delivery_verification.json",
+  "artifacts": {
+    "csv": {
+      "path": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission/pred_results.csv",
+      "sha256": "3e9776cb262480eb251fd84334885bf0526274f0099d435684790d41480c88aa"
+    },
+    "zip": {
+      "path": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission/submission.zip",
+      "sha256": "0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca"
+    },
+    "desktop_zip": {
+      "path": "/mnt/c/Users/lqh22/Desktop/noise/v1_768_full_test_bias_submission.zip",
+      "sha256": "0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca"
+    }
+  },
+  "raw_artifacts": {
+    "csv": {
+      "path": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission_raw/pred_results.csv",
+      "sha256": "6bbb5e81914adeb31bcc685bbb2b2d53802fb97b4d1a55f64f145ba95900f993"
+    },
+    "zip": {
+      "path": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission_raw/submission.zip",
+      "sha256": "c8d7e0a5fb74f78bbb86796c67bc419f66dfd47733ac6cbe9d26d03875bf462e"
+    },
+    "desktop_zip": {
+      "path": "/mnt/c/Users/lqh22/Desktop/noise/v1_768_full_raw_submission.zip",
+      "sha256": "c8d7e0a5fb74f78bbb86796c67bc419f66dfd47733ac6cbe9d26d03875bf462e"
+    }
+  },
+  "checkpoint": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/training/selected.pt",
+  "checkpoint_sha256": "013b8e9c038d21e4dbb677f3cd52ac3ed9fb1bf7d2f74ae826056138275dacfe",
+  "bias_report": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/test_bias_report.json",
+  "calibration": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/test_calibration.pt",
+  "submission_rows": 37444,
+  "test_dir": "/home/lux1/noise/test",
+  "class_mapping": "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+  "platform_comparison": {
+    "previous_best_score_percent": "70.98600576861446",
+    "delta_pp_exact": "3.42912082042517",
+    "candidate_correct_implied": 27864,
+    "raw_correct_implied": 26787,
+    "previous_correct_implied": 26580,
+    "delta_correct_implied": 1284,
+    "bias_minus_raw_pp_exact": "2.87629526759960",
+    "raw_minus_previous_pp_exact": "0.55282555282557",
+    "bias_minus_raw_correct_implied": 1077,
+    "raw_minus_previous_correct_implied": 207,
+    "counts_source": "inferred_from_user_reported_accuracy_and_37444_samples_not_individual_ground_truth",
+    "bias_pair_is_same_checkpoint_and_logits": true,
+    "raw_minus_previous_is_not_feature_dimension_only": true
+  },
+  "target_75_percent": {
+    "required_correct": 28083,
+    "remaining_correct_implied": 219,
+    "remaining_pp_exact": "0.58487341096037"
+  },
+  "bias_compliance": {
+    "decision": "within_recorded_user_relayed_official_permission",
+    "permission_source": "user-relayed official confirmation 2026-10-01",
+    "permission_quote": "利用测试集类别均衡做先验合规，来自官方",
+    "permission_record": "docs/v1_test_prior_authorization_20261001.md",
+    "public_rules_url": "https://www.aicomp.cn/tracks/tracks-1/3714.html",
+    "public_rules_rechecked_on": "2026-10-02",
+    "bias_permission_explicit_on_public_page": false,
+    "target_prior": "fixed_uniform_1_over_750_from_official_balanced_test_description",
+    "test_statistical_fitting": true,
+    "test_labels_used": false,
+    "model_parameter_updates": false,
+    "iterations": 200,
+    "strength": 1.0,
+    "hard_prediction_count_constraint": false,
+    "full_package_official_compliance_certified": false,
+    "swa_separate_official_reply_saved": false
+  },
+  "decision": {
+    "current_highest_user_reported_package": "768_full_swa_test_uniform_bias",
+    "previous_best_preserved": true,
+    "automatic_new_training_or_parameter_sweep": false
+  },
+  "verification_command": [
+    "python3",
+    "results/v1_768_bias_platform_20261002/verify.py"
+  ],
+  "implementation_changed": false,
+  "new_training_started": false,
+  "new_inference_started": false,
+  "platform_uploaded_by_agent": false
+}
