@@ -58,4 +58,8 @@ env PYTHONPATH=/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aeg
 ## 当前状态
 
 实现及共享随机过程的3项测试已通过；CPU严格初始权重加载、内容隔离和冻结输入检查通过。
-GPU成本与正式训练尚未完成，没有新实测候选收益。此处在交付时用实际报告更新。
+协议在GPU结果前以`5669788`提交并推送。
+[成本检查](../results/v1_detail_aug_pair_20261001/cost.json)每臂8次真实更新均成功，稳定更新控制0.4784秒/步、
+候选0.3972秒/步；CUDA峰值分配分别0.8701/1.2227GiB，各有一次已恢复AMP重算，无跳过更新。
+正式训练已丢弃探测状态、重新从原父开始；尚未完成，没有新实测候选收益。
+独立核验入口为`scripts/verify_v1_detail_aug_pair.py`，交付时完整复算val配对并从test logits重建两包字节。

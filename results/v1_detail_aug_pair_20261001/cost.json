@@ -1,0 +1,42 @@
+{
+  "arms": {
+    "control": {
+      "amp_retries": 1,
+      "peak_allocated_cuda_bytes": 934223872,
+      "real_updates": 8,
+      "seconds": [
+        1.5602398740011267,
+        0.5207709039968904,
+        0.4048953879973851,
+        0.4393724870024016,
+        0.7588114179961849,
+        0.370519462012453,
+        0.37525166099658236,
+        0.4090348400059156
+      ],
+      "steady_seconds_per_update": 0.47840434525278397
+    },
+    "detail_aug": {
+      "amp_retries": 1,
+      "peak_allocated_cuda_bytes": 1312828928,
+      "real_updates": 8,
+      "seconds": [
+        0.9919538280082634,
+        0.3973582580074435,
+        0.386406176010496,
+        0.46047324599931017,
+        0.39284081099322066,
+        0.38483085299958475,
+        0.3863763949921122,
+        0.42462180501024704
+      ],
+      "steady_seconds_per_update": 0.39716746599879116
+    }
+  },
+  "estimated_eval_and_package_seconds": 2640,
+  "estimated_training_seconds": 896.5855347216129,
+  "eval_estimate_source": "prior complete native512 two-view validation/inference throughput",
+  "formal_initialization": "original LR512 EMA2-4, probe states discarded",
+  "status": "passed_discarded_probe_weights",
+  "wall_clock_time_limit": null
+}
