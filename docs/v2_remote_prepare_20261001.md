@@ -154,7 +154,9 @@ python scripts/verify_remote_data_assets.py \
 [正式提交校验](../results/v1_full_swa_platform_20261001/submission_check.log)。
 
 用户本次授权覆盖新服务器准备；后续训练、GPU成本probe、推理和平台上传未执行。
-用户随后明确要求准备完成后关闭服务器。本段将在数据校验、仓库同步及报告交付完成后
-通过镜像提供的 `/usr/bin/shutdown` 关机，等待s1产物交接；实际关机结果记录于本段报告。
-已只读确认该入口通过终止supervisord执行关闭，准备期间supervisord进程存在；
-不使用本容器内无效的systemctl关机命令。
+用户曾要求准备完成后关闭服务器。全部准备报告推送并集成到main后，北京时间12:49
+执行 `sync && /usr/bin/shutdown`，命令返回0，随后3次SSH检查均不可连接。
+用户随后改为“不关机”；北京时间12:56实测原端点SSH已恢复在线，后续保持运行。
+历史调用及恢复检查见[服务器状态记录](../results/v2_remote_prepare_20261001/shutdown.json)。
+原关机指令已撤回，不能据此再次关闭服务器。用户随后提供s1交接包并要求续跑v2；
+本准备报告中的“尚未取得产物”描述当时状态，后续交接与训练另开独立方案段记录。
