@@ -6,7 +6,7 @@ import torch
 import pytest
 
 ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(ROOT/'scripts'))
-from v1_cosine_margin_loss import component_loss,margin_mixup_loss,mixed_backward
+from v1_cosine_margin_loss import component_loss,margin_mixup_loss,mixed_backward,logical_update
 
 
 def tensors():
@@ -52,3 +52,37 @@ def test_microbatch_reduction_preserves_the_logical_weighted_gradient():
     full.backward();expected={n:v.grad.clone() for n,v in m.named_parameters()};m.zero_grad()
     mixed_backward(m,x,q,w,p,.63,2,scaler,.05,False)
     for n,v in m.named_parameters():assert torch.allclose(v.grad,expected[n],rtol=1e-6,atol=1e-7)
+
+
+@pytest.mark.parametrize('bad_gradient', [False, True])
+def test_logical_update_steps_once_only_for_finite_gradients(bad_gradient):
+    class Model(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.head = torch.nn.Linear(3, 7, bias=False)
+            self.head.logit_scale = torch.nn.Parameter(torch.tensor(2.))
+        def forward(self, x):
+            return self.head(x)
+    class CountedSGD(torch.optim.SGD):
+        calls = 0
+        def step(self, *args, **kwargs):
+            self.calls += 1
+            return super().step(*args, **kwargs)
+    _, q, w, permutation = tensors()
+    model = Model()
+    optimizer = CountedSGD(model.parameters(), lr=.01)
+    initial = {k: v.clone() for k, v in model.state_dict().items()}
+    scaler = torch.amp.GradScaler('cpu', enabled=False)
+    if bad_gradient:
+        model.head.weight.register_hook(lambda gradient: torch.full_like(gradient, float('inf')))
+        with pytest.raises(ValueError, match='Persistent nonfinite'):
+            logical_update(model, optimizer, torch.randn(4, 3), q.float(), w.float(),
+                           permutation, .63, 2, scaler, .05, 1., amp=False)
+        assert optimizer.calls == 0
+        assert all(torch.equal(v, initial[k]) for k, v in model.state_dict().items())
+    else:
+        loss, numeric = logical_update(model, optimizer, torch.randn(4, 3), q.float(), w.float(),
+                                       permutation, .63, 2, scaler, .05, 1., amp=False)
+        assert optimizer.calls == 1 and np.isfinite(loss) and np.isfinite(numeric['gradient_norm'])
+        assert numeric['amp_retries'] == []
+        assert not torch.equal(model.head.weight, initial['head.weight'])

@@ -1,0 +1,476 @@
+{
+  "accuracy_early_stop": false,
+  "amp_retry_batches": 2,
+  "automatic_full": false,
+  "binding": {
+    "config_sha256": "28d6371d6a2b73698ac550d9fb361432233d32229295625891561a8d5621f897",
+    "data_version": "20260921",
+    "implementation_sha256": "1c0f287abe44ac0892917b4df7129d6d847d59f14a50c7d4e84a08a889d06a01",
+    "loss_sha256": "0101f91759ac3af43084baf881f0899d6fb798576a4d95b51b549180e3c91206",
+    "parent_sources": {
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/baseline.npz": "af595985fd28eb1bfa4ee4477dffd206ccd62bd2e8e55de86e6ddb3373bd29ac",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.pt": "c103dc3e6039c9fe156a56dfcd196500975b5bd21354be6506447bb1ee636e2e",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.sha256.json": "8be06d426e4b40d369da7e4c940d228a5bb59206d264f755d95c26483e2f11fa",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/val_epoch04_ema_swa_2_4.npz": "a404e16f2d88d3331dc9caf3c26bda111714369bdcca69cda6e290a3478d8845",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/model.py": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/submission.py": "2e76ad99a05f99488f46297f0991383915d0cd2a59d50ebc1bddd12e6ebbd905",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/v1_pipeline.py": "05e6784d7dff7ea8db89f85fc849c54db2661695ed63e7978d3dc01b9bbe5d31",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/v1_strategy.py": "d843196b921ff801fb1b1156beda011dd025d4f31c29d2c00c75d7b39afa231d",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/model.py": "92b8b4dfb73978feb4558e97d8122af61e7e801eab89c3a6b359e2f21e1c74b6",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/plan.py": "2e7a41063057ba1f3c8ce8e7a34022ea604078bbe4e314f8e683ba4c4a05a4ec",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/runtime.py": "d0515533fc4c6b029416cf7d7d6647c250f1f9d02535630c10ec7fa4ff8cdaa5",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v3/plan.py": "49a4e8fd7ac386da3dc69639e67fa4f21193f1ebae613d305d9b1e0b48f64040",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v3/report.py": "3f8dcb49074437d8ab3eceb55c4307c803f68b5dea3d513f5ee89ec3ef7e9f73",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/lr512_dev_20261001/report.json": "cf5b9bcfaebd1163284fcb9347e8b4c724991592c9fcaa009bf99d0b297ea404",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/v1_detail_aug_pair_20261001/independent_verification.json": "1676ba6a1e62aa2e69c373a4dc336b574ecd7bf12bcf4c19804b406cd7ddcb52",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/v1_detail_aug_pair_20261001/report.json": "79d6e8e102114610138fa2627761b3d578a1be310c939b32d7b993a5b85b5684",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/v1_full_swa_platform_20261001/artifact_verification.json": "7132effa696592401bbeff0d17815101045a3a46f1aeb0d5ebb6fe7ca88dd9f4",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/v1_full_swa_platform_20261001/submission_check.log": "edb24cf74b09c551bb82c223e25801a445cc7a4963d9a6294f022b09943c3c59",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/v1_reflection_consistency_probe_20261001/report.json": "8ed796ab75ba08c3a4223d6fc0653d4b5d1ad7cde694a907f7da5b1569f9f55a",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/scripts/train_v1_detail_aug_pair.py": "25970b879a910a4db585c8d032296ee9b85312f487b7856c401c22d694ca4555",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/configs/v1_detail_aug_pair_20261001.json": "24f90ef437f1071c11fc78f12df16be3f6a3afd01f827af30bec294260626782",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/selected.pt": "7ccf90560293dfdb4456e98f6c9a8f543a34a2960dc4bee9f369eaeaf1bdcaa1",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/submission/pred_results.csv": "1c1510e0370e24c5a192e0d58c9b24417660e919481f2295ebcb23b03a02cb4e",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/submission/submission.zip": "628240b92a7a46efa354196f0f3f7d463fabf4ea21497f2cceca45e6ecd48abc",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/val_step1024.npz": "7b9d2a7a0c6aff64d4f7a23b0e0f5004768d2a178a16a415e54743febd10ba8d",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/preflight.json": "03bd97d5aadac1c13751130b1760eb15f8bf27867fa20b4f4c6b79139feb91ae",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/report.json": "79d6e8e102114610138fa2627761b3d578a1be310c939b32d7b993a5b85b5684",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/schedule.npz": "42cf04b89482d279c8b2a4fd251cecc58d590dfb546b50761aefaae05f231ff4",
+      "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5",
+      "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+      "/home/lux1/noise/worktrees/v1_reflection_consistency_probe_20261001/outputs/codex/v1_reflection_consistency_probe_20261001/probe_r1/lr512_swa.npz": "1f877a07d3e68ae95278302cb61229db7bfc57cdd5d620e820edc37b5440c417",
+      "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/config.yaml": "385fb63fc4cb6d75e068d464e68dea121a42d0b7ee8f60d8558921ec978b9db8",
+      "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.pt": "01caedaa4996d25fa9dfc213d4b2376c147bb99ebdc23dacd93e6e1ff2d6fa20",
+      "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.sha256.json": "dde8be4540ce02985194feed2b5f4064e778e707b46e751c9e33f3f94c2165ff",
+      "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.pt": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2",
+      "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.sha256.json": "e58e91bc3512bf5a853dbdcc1e157fbbbead6e568b0e333f8869f9e1aed98124",
+      "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/model.py": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+      "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/submission.py": "2e76ad99a05f99488f46297f0991383915d0cd2a59d50ebc1bddd12e6ebbd905",
+      "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/v1_pipeline.py": "ce6075b2f01c726614844b3262fefd6ecefb28176522ec114c5461a162545dc5",
+      "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/v1_strategy.py": "d843196b921ff801fb1b1156beda011dd025d4f31c29d2c00c75d7b39afa231d"
+    },
+    "partition": "train_dev",
+    "schedule_sha256": "42cf04b89482d279c8b2a4fd251cecc58d590dfb546b50761aefaae05f231ff4",
+    "stage": "repechage"
+  },
+  "common_augmentation_pixel_hash_matches": true,
+  "control_training_repeated": false,
+  "cosine_margin": 0.05,
+  "decision": "close_fixed_cosine_margin_recipe",
+  "elapsed_seconds": 1558.0837355249969,
+  "experiment_id": "V1_COSINE_MARGIN_PROBE_20261001",
+  "history": [
+    {
+      "metrics": {
+        "all": {
+          "classes": 750,
+          "correct": 11385,
+          "errors": 3495,
+          "macro": 0.7550057170652743,
+          "micro": 0.7651209677419355,
+          "rows": 14880
+        },
+        "common_candidate_wrong": {
+          "classes": 657,
+          "correct": 73,
+          "errors": 2802,
+          "macro": 0.026420296682853756,
+          "micro": 0.025391304347826087,
+          "rows": 2875
+        },
+        "low_gap": {
+          "classes": 707,
+          "correct": 1322,
+          "errors": 2398,
+          "macro": 0.36869129809370266,
+          "micro": 0.3553763440860215,
+          "rows": 3720
+        },
+        "other_gap": {
+          "classes": 748,
+          "correct": 10063,
+          "errors": 1097,
+          "macro": 0.8675414404693425,
+          "micro": 0.9017025089605735,
+          "rows": 11160
+        },
+        "small": {
+          "classes": 571,
+          "correct": 1222,
+          "errors": 626,
+          "macro": 0.6778628843427443,
+          "micro": 0.6612554112554112,
+          "rows": 1848
+        },
+        "tail75": {
+          "classes": 75,
+          "correct": 673,
+          "errors": 330,
+          "macro": 0.6058761282290693,
+          "micro": 0.67098703888335,
+          "rows": 1003
+        }
+      },
+      "paired_to_control": {
+        "all": {
+          "both_wrong": 3307,
+          "changed": 856,
+          "corrections": 190,
+          "net": 2,
+          "regressions": 188,
+          "rows": 14880
+        },
+        "common_candidate_wrong": {
+          "both_wrong": 2780,
+          "changed": 466,
+          "corrections": 39,
+          "net": 17,
+          "regressions": 22,
+          "rows": 2875
+        },
+        "low_gap": {
+          "both_wrong": 2219,
+          "changed": 836,
+          "corrections": 185,
+          "net": 6,
+          "regressions": 179,
+          "rows": 3720
+        },
+        "other_gap": {
+          "both_wrong": 1088,
+          "changed": 20,
+          "corrections": 5,
+          "net": -4,
+          "regressions": 9,
+          "rows": 11160
+        },
+        "small": {
+          "both_wrong": 594,
+          "changed": 173,
+          "corrections": 37,
+          "net": 5,
+          "regressions": 32,
+          "rows": 1848
+        },
+        "tail75": {
+          "both_wrong": 320,
+          "changed": 82,
+          "corrections": 17,
+          "net": 7,
+          "regressions": 10,
+          "rows": 1003
+        }
+      },
+      "paired_to_parent": {
+        "all": {
+          "both_wrong": 3245,
+          "changed": 1024,
+          "corrections": 213,
+          "net": -37,
+          "regressions": 250,
+          "rows": 14880
+        },
+        "common_candidate_wrong": {
+          "both_wrong": 2802,
+          "changed": 572,
+          "corrections": 73,
+          "net": 73,
+          "regressions": 0,
+          "rows": 2875
+        },
+        "low_gap": {
+          "both_wrong": 2158,
+          "changed": 1006,
+          "corrections": 211,
+          "net": -29,
+          "regressions": 240,
+          "rows": 3720
+        },
+        "other_gap": {
+          "both_wrong": 1087,
+          "changed": 18,
+          "corrections": 2,
+          "net": -8,
+          "regressions": 10,
+          "rows": 11160
+        },
+        "small": {
+          "both_wrong": 578,
+          "changed": 208,
+          "corrections": 34,
+          "net": -14,
+          "regressions": 48,
+          "rows": 1848
+        },
+        "tail75": {
+          "both_wrong": 319,
+          "changed": 84,
+          "corrections": 14,
+          "net": 3,
+          "regressions": 11,
+          "rows": 1003
+        }
+      },
+      "step": 512
+    },
+    {
+      "metrics": {
+        "all": {
+          "classes": 750,
+          "correct": 11408,
+          "errors": 3472,
+          "macro": 0.7565873373564111,
+          "micro": 0.7666666666666667,
+          "rows": 14880
+        },
+        "common_candidate_wrong": {
+          "classes": 657,
+          "correct": 54,
+          "errors": 2821,
+          "macro": 0.01973447869566591,
+          "micro": 0.018782608695652174,
+          "rows": 2875
+        },
+        "low_gap": {
+          "classes": 707,
+          "correct": 1338,
+          "errors": 2382,
+          "macro": 0.374257745633276,
+          "micro": 0.3596774193548387,
+          "rows": 3720
+        },
+        "other_gap": {
+          "classes": 748,
+          "correct": 10070,
+          "errors": 1090,
+          "macro": 0.8684157295789258,
+          "micro": 0.9023297491039427,
+          "rows": 11160
+        },
+        "small": {
+          "classes": 571,
+          "correct": 1229,
+          "errors": 619,
+          "macro": 0.6790276468034787,
+          "micro": 0.66504329004329,
+          "rows": 1848
+        },
+        "tail75": {
+          "classes": 75,
+          "correct": 668,
+          "errors": 335,
+          "macro": 0.6017505446623094,
+          "micro": 0.6660019940179461,
+          "rows": 1003
+        }
+      },
+      "paired_to_control": {
+        "all": {
+          "both_wrong": 3396,
+          "changed": 436,
+          "corrections": 101,
+          "net": 25,
+          "regressions": 76,
+          "rows": 14880
+        },
+        "common_candidate_wrong": {
+          "both_wrong": 2806,
+          "changed": 256,
+          "corrections": 13,
+          "net": -2,
+          "regressions": 15,
+          "rows": 2875
+        },
+        "low_gap": {
+          "both_wrong": 2306,
+          "changed": 428,
+          "corrections": 98,
+          "net": 22,
+          "regressions": 76,
+          "rows": 3720
+        },
+        "other_gap": {
+          "both_wrong": 1090,
+          "changed": 8,
+          "corrections": 3,
+          "net": 3,
+          "regressions": 0,
+          "rows": 11160
+        },
+        "small": {
+          "both_wrong": 603,
+          "changed": 107,
+          "corrections": 28,
+          "net": 12,
+          "regressions": 16,
+          "rows": 1848
+        },
+        "tail75": {
+          "both_wrong": 325,
+          "changed": 51,
+          "corrections": 12,
+          "net": 2,
+          "regressions": 10,
+          "rows": 1003
+        }
+      },
+      "paired_to_parent": {
+        "all": {
+          "both_wrong": 3277,
+          "changed": 883,
+          "corrections": 181,
+          "net": -14,
+          "regressions": 195,
+          "rows": 14880
+        },
+        "common_candidate_wrong": {
+          "both_wrong": 2821,
+          "changed": 504,
+          "corrections": 54,
+          "net": 54,
+          "regressions": 0,
+          "rows": 2875
+        },
+        "low_gap": {
+          "both_wrong": 2189,
+          "changed": 871,
+          "corrections": 180,
+          "net": -13,
+          "regressions": 193,
+          "rows": 3720
+        },
+        "other_gap": {
+          "both_wrong": 1088,
+          "changed": 12,
+          "corrections": 1,
+          "net": -1,
+          "regressions": 2,
+          "rows": 11160
+        },
+        "small": {
+          "both_wrong": 579,
+          "changed": 192,
+          "corrections": 33,
+          "net": -7,
+          "regressions": 40,
+          "rows": 1848
+        },
+        "tail75": {
+          "both_wrong": 322,
+          "changed": 74,
+          "corrections": 11,
+          "net": -2,
+          "regressions": 13,
+          "rows": 1003
+        }
+      },
+      "step": 1024
+    }
+  ],
+  "incumbent": {
+    "csv": {
+      "matches_delivery_record": true,
+      "path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv",
+      "sha256": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5"
+    },
+    "desktop_zip": {
+      "matches_delivery_record": true,
+      "path": "/mnt/c/Users/lqh22/Desktop/v1_full_swa_submission.zip",
+      "sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e"
+    },
+    "zip": {
+      "matches_delivery_record": true,
+      "path": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+      "sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e"
+    }
+  },
+  "margin_applied_at_inference": false,
+  "optimizer_updates": 1024,
+  "original_labels_noisy": true,
+  "package": {
+    "checkpoint": "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/outputs/codex/v1_cosine_margin_probe_20261001/probe_r1/candidate/selected.pt",
+    "checkpoint_sha256": "f9313b247c335102c2ab1f44af2ce93767f5dc106429c88a6eafb70dffc39afa",
+    "checks_passed": 9,
+    "cold_validation_matches": 64,
+    "csv": "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/outputs/codex/v1_cosine_margin_probe_20261001/probe_r1/candidate/submission/pred_results.csv",
+    "csv_sha256": "70aa47749c7be066d243118109e8e33afc28d5a99963add5987a5fc4e8b86f45",
+    "margin_applied_at_inference": false,
+    "rows": 37444,
+    "zip": "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/outputs/codex/v1_cosine_margin_probe_20261001/probe_r1/candidate/submission/submission.zip",
+    "zip_csv_identical": true,
+    "zip_sha256": "ff65d4430b27ae6e6608f192f4e5ead19c9093b194f12a59b5706ba149c3b647"
+  },
+  "parameter_search": false,
+  "platform_gain_known": false,
+  "platform_upload": false,
+  "primary_checkpoint": "last_raw_step1024",
+  "read_only_control": true,
+  "reused_control": {
+    "all": {
+      "classes": 750,
+      "correct": 11383,
+      "errors": 3497,
+      "macro": 0.7548192449645645,
+      "micro": 0.764986559139785,
+      "rows": 14880
+    },
+    "common_candidate_wrong": {
+      "classes": 657,
+      "correct": 56,
+      "errors": 2819,
+      "macro": 0.019544780211581177,
+      "micro": 0.019478260869565216,
+      "rows": 2875
+    },
+    "low_gap": {
+      "classes": 707,
+      "correct": 1316,
+      "errors": 2404,
+      "macro": 0.36991928195959306,
+      "micro": 0.35376344086021505,
+      "rows": 3720
+    },
+    "other_gap": {
+      "classes": 748,
+      "correct": 10067,
+      "errors": 1093,
+      "macro": 0.8679162494838574,
+      "micro": 0.9020609318996415,
+      "rows": 11160
+    },
+    "small": {
+      "classes": 571,
+      "correct": 1217,
+      "errors": 631,
+      "macro": 0.6753193099953171,
+      "micro": 0.6585497835497836,
+      "rows": 1848
+    },
+    "tail75": {
+      "classes": 75,
+      "correct": 666,
+      "errors": 337,
+      "macro": 0.5990269218798632,
+      "micro": 0.6640079760717846,
+      "rows": 1003
+    }
+  },
+  "reused_control_package": {
+    "checkpoint": "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/selected.pt",
+    "checkpoint_sha256": "7ccf90560293dfdb4456e98f6c9a8f543a34a2960dc4bee9f369eaeaf1bdcaa1",
+    "checks_passed": 9,
+    "cold_validation_matches": 64,
+    "csv": "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/submission/pred_results.csv",
+    "csv_sha256": "1c1510e0370e24c5a192e0d58c9b24417660e919481f2295ebcb23b03a02cb4e",
+    "rows": 37444,
+    "zip": "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/submission/submission.zip",
+    "zip_csv_identical": true,
+    "zip_sha256": "628240b92a7a46efa354196f0f3f7d463fabf4ea21497f2cceca45e6ecd48abc"
+  },
+  "source_first_batch_pixel_sha256": "10ded13e1e6b3c35663cff7edd2947d5e3ad1380a62e2364971cb2cf6f0c5595",
+  "status": "completed_packaged_single_candidate",
+  "supports_review": false,
+  "training_population": "32768 original frozen active train_dev rows without replacement",
+  "validation_rows": 14880
+}
