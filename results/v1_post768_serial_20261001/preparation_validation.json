@@ -1,0 +1,33 @@
+{
+  "experiment_id": "V1_POST768_SERIAL_20261001",
+  "status": "prepared_not_started",
+  "training_started": false,
+  "platform_score": null,
+  "regression_tests": {
+    "passed": 80,
+    "command": "PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 python3 -m pytest tests/test_v1_post768_jobs.py reproducibility/aegis_f1/tests/test_v1.py reproducibility/aegis_f1/tests/test_v1_preprojection_test_bias.py reproducibility/aegis_f1/tests/test_v1_export.py reproducibility/aegis_f1/tests/test_prior_alignment.py reproducibility/aegis_f1/tests/test_calibration_binding.py -q"
+  },
+  "cpu_smoke": {
+    "device": "cpu",
+    "real_images": 1,
+    "feature_dimension": 768,
+    "independent_candidate_count": 2,
+    "output_shape": [
+      1,
+      1500
+    ],
+    "standalone_head_max_errors": [
+      0.0,
+      0.0
+    ],
+    "visual_requires_grad": false,
+    "cuda_used": false
+  },
+  "control_parent_population": "full_train",
+  "probe_parent_population": "train_dev",
+  "probe_active_train_rows": 119074,
+  "probe_reliable_class_mass_min": 0.6447523236274719,
+  "probe_reliable_class_mass_max": 172.2667694091797,
+  "automatic_full_training": false,
+  "dependency_requires_verified_git_integration": true
+}
