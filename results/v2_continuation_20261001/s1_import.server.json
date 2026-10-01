@@ -1,0 +1,37 @@
+{
+  "status": "completed_s1_imported",
+  "original_checkpoint_preserved": true,
+  "source_plan_sha256": "1aea2bbf37162ba44d7741a908fd540070d585658c1fbb360e1740426da4c727",
+  "source_checkpoint_plan_sha256": "be3206eff072bd54c3af2f25fb11aea56daa187aaa02d16f54a0bb0aadcb873b",
+  "source_plan_hash_matches_checkpoint": false,
+  "source_checkpoint_sha256": "3643b9a10a8cf3b330db6537a4b1d9c4cc630a78649099fce9f81b7f1538b817",
+  "source_stage_config_sha256": "90437166509657177839851367e27ecb8d1a22f33aa9f4ce3399cf1b239b03fa",
+  "source_manifest_sha256": "9fcb881591e8c0b9ccffe009aeb9911941be8dd69ca31a6e34313478403e30b8",
+  "source_epoch": 9,
+  "source_updates": 13930,
+  "chosen": "raw",
+  "completed_epochs": 10,
+  "source_metrics": {
+    "epoch": 9,
+    "chosen": "raw",
+    "val": {
+      "accuracy": 0.7515456989247312,
+      "macro_accuracy": 0.7422943699117074,
+      "classes_present": 750
+    },
+    "val_ema": {
+      "accuracy": 0.7499327956989247,
+      "macro_accuracy": 0.7406175469784799,
+      "classes_present": 750
+    },
+    "selection_score": 1.118067219374073,
+    "train_loss": 2.931289952368678,
+    "validation_is_independent": true,
+    "validation_seconds": 668.8120000000054
+  },
+  "baseline_commit": "bde43f7f1fc9f21c2172c7f295babf0368bbb455",
+  "source_bundle": "/root/autodl-tmp/noise/handoff/s1_pending/v2_s1_384_bundle_20261001",
+  "destination": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared",
+  "training_started": false,
+  "note": "The exported plan and checkpoint-recorded plan hashes differ. Both are retained. Original frozen inputs, stage config, manifest, completed endpoint and checkpoint sidecar are validated; no checkpoint metadata is rewritten."
+}

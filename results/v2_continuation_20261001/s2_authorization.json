@@ -1,0 +1,13 @@
+{
+  "authorized": true,
+  "operation": "train",
+  "stage": "s2_448",
+  "plan_sha256": "596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e",
+  "measured_seconds_per_update": 4.574835821986198,
+  "measured_validation_seconds": 447.77484092023224,
+  "measured_overhead_seconds": 110.63377147866413,
+  "estimated_seconds": 41033.760617160704,
+  "max_seconds": 57448,
+  "cost_source": "s2_448 real CUDA probe",
+  "user_instruction": "Provided S1 bundle and explicitly requested remaining V2 continuation and hourly health monitoring; keep server running."
+}

@@ -1,7 +1,7 @@
 # V2_CONTINUATION_20261001
 
-用户提供 `v2_s1_384_bundle_20261001_r3.zip`，授权准备完成后继续固定v2，以及每小时监控。
-最新要求是保持服务器开机。独立分支 `codex/v2_continuation_20261001`，
+用户提供 `v2_s1_384_bundle_20261001_r3.zip`，授权准备完成后继续固定v2。
+最新要求是每20分钟监控，保持服务器开机。独立分支 `codex/v2_continuation_20261001`，
 本机目录 `/home/lux1/noise/worktrees/v2_continuation_20261001`。
 本记录封存实现、CPU验证和真实启动；正式阶段训练尚在持续执行。
 
@@ -11,10 +11,26 @@
 服务器代码commit `ca590906c786c6796ed2f54d3d9281cc44fbd2ae`，原s1已导入；
 新冻结plan SHA `596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e`。
 服务器96项回归通过（4.13秒），[原日志](../results/v2_continuation_20261001/server_tests.log)。
-服务器小时watcher PID5804、interval3600已启动；[启动记录](../results/v2_continuation_20261001/health_watcher.json)。
-本机timer已安装、enabled/active，首次服务 `Result=success` / `ExecMainStatus=0`，
-下一次北京时间16:00；[首次真实健康记录](../results/v2_continuation_20261001/initial_health.json)。
-仅在成本结果通过后自动正式训练；当前检查点没有新完整候选或新提交包。
+最初小时watcher PID5804与小时timer激活，首次服务成功，16:00也成功核查；
+[历史启动记录](../results/v2_continuation_20261001/health_watcher.json)、[首次健康记录](../results/v2_continuation_20261001/initial_health.json)。
+随后用户明确改为每20分钟：旧watcher已停止、旧timer disabled/inactive，
+新watcher PID6439、interval1200；[新进程记录](../results/v2_continuation_20261001/health_watcher_20min.json)。
+新timer `noise-v2-monitor-20261001.timer` enabled/active，calendar每小时00/20/40分，
+首次服务Result=success/ExecMainStatus=0，下一次北京时间16:20；
+[定时器核验](../results/v2_continuation_20261001/monitor_schedule_20min.log)、
+[20分钟监控首次真实报告](../results/v2_continuation_20261001/health_20min_initial.json)。
+
+s2探针529.304秒完成，8次更新全部通过有限梯度检查，完整14,880张raw/EMA holdout两遍，
+验证447.775秒；峰值2,717,040,640 bytes（约2.53 GiB），checkpoint写盘3.930秒，
+更新计时包含数据加载。保守取除首步外最慢4.574836秒/更新；
+[成本原输出](../results/v2_continuation_20261001/s2_cost.json)。
+估算s2 41,033.761秒（11.398小时）、上限57,448秒（15.958小时），
+北京时间16:05:49已自动正式开训；[原预算](../results/v2_continuation_20261001/s2_authorization.json)。
+已观察到epoch0、200/8,358次更新，loss3.6736203432、elapsed529.795秒；
+这是正式训练进度，尚无完整阶段验证结果、完整候选或新提交包。
+前200步含初始化均摊2.649秒/更新，低于探针保守上界，不能当作576速度测量。
+完整v2（含固定推理）暂估还需18–36小时，即10月2日上午至10月3日凌晨；
+该区间基于448实测、三个后续阶段共24,336次计划更新与未测576路径，s3探针后再校准，非保证截止时间。
 
 ## 原始s1核验
 
@@ -41,7 +57,9 @@ checkpoint记录plan SHA `be3206eff072bd54c3af2f25fb11aea56daa187aaa02d16f54a0bb
 后续s2/s3/full配置只转换资源路径与Linuxworkers，训练参数逐字段相等。
 实验血缘ID仍为 `V2_20260929` / `v2_recipe_1` / `20260921`，本段执行标识另记。
 禁止在导入工作区重新train/probe s1；既有read_checkpoint/check_checkpoint防护保持原样。
-[导入收据](../results/v2_continuation_20261001/s1_import.local.json)显式记录哈希差异。
+[本机导入收据](../results/v2_continuation_20261001/s1_import.local.json)、
+[服务器原收据](../results/v2_continuation_20261001/s1_import.server.json)显式记录哈希差异。
+[实际服务器plan](../results/v2_continuation_20261001/server.plan.json)保留执行参数和绑定。
 
 ## 固定执行与边界
 
@@ -72,14 +90,16 @@ controller按s2_448 → s3_576 → full_576串行执行。每个DEV先8次真实
 推理只用原固定full第5轮raw last、四视图，37,444行CSV/ZIP与9项检查；平台上传由用户决定。
 遇其他GPU任务等待，已有部分训练/失败探针要求诊断，不能隐式重复或删除产物。
 
-## 每小时监控与交付
+## 每20分钟监控与交付
 
-服务器 `python -u -m v2.health --watch --interval 3600 --plan ...` 持久进程每小时记录，
+服务器 `python -u -m v2.health --watch --interval 1200 --plan ...` 持久进程每20分钟记录，
 独立flock防重复；读取真实updates/loss/epoch、进程命令、GPU、磁盘、日志新鲜度和失败状态。
-报告在workspace的 `monitoring/latest.json` 与逐小时JSON，完成后停止监控进程，保持服务器开机。
-本机systemd用户timer `noise-v2-hourly-20261001.timer` 同时每小时SSH读取，
+报告在workspace的 `monitoring/latest.json` 与各次JSON，完成后停止监控进程，保持服务器开机。
+本机systemd用户timer `noise-v2-monitor-20261001.timer` 同时每20分钟SSH读取，
 连接失败重试3次；异常写 `ALERT.json`，不会自动重跑未完成训练。
-本机timer依赖本机Linux运行；服务器小时记录独立于本机。
+本机timer依赖本机Linux运行；服务器监控独立于本机。原小时timer不再运行。
+训练授权JSON保留生成时的小时监控说明作为历史，实际周期以1200参数和当前timer为准；
+修改监控周期未修改冻结的训练源文件、plan、训练配置或正在执行的controller PID5764。
 
 本机报告目录：`outputs/codex/v2_continuation_20261001/monitoring/`。
 最终自动取回CSV/ZIP/report/服务器检查记录，核对SHA，执行本机9项正式检查；

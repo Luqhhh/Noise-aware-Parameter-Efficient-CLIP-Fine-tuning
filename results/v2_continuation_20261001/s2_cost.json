@@ -1,0 +1,31 @@
+{
+  "status": "cost_probe_only",
+  "no_candidate": true,
+  "seconds_per_update": [
+    7.599736450705677,
+    0.28729438595473766,
+    4.320032460149378,
+    0.3013656623661518,
+    4.574835821986198,
+    0.28758004680275917,
+    4.312713467981666,
+    0.30018548015505075
+  ],
+  "measured_seconds_per_update": 4.574835821986198,
+  "measured_validation_seconds": 447.77484092023224,
+  "measured_checkpoint_seconds": 3.9298723181709647,
+  "measured_setup_seconds": 55.615559024270624,
+  "measured_overhead_seconds": 110.63377147866413,
+  "dataloader_wait_included": true,
+  "elapsed_seconds": 529.3040160387754,
+  "peak_allocated_bytes": 2717040640,
+  "complete_holdout_rows": 14880,
+  "validation_passes": 2,
+  "ema_enabled": true,
+  "parent": {
+    "path": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/runs/s1_384/best.pt",
+    "sha256": "3643b9a10a8cf3b330db6537a4b1d9c4cc630a78649099fce9f81b7f1538b817",
+    "weights": "raw"
+  },
+  "plan_sha256": "596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e"
+}

@@ -1,4 +1,4 @@
-"""Hourly SSH health collection and verified local delivery for the fixed V2 run.
+"""Periodic SSH health collection and verified local delivery for the fixed V2 run.
 
 Credentials and transport command are private configuration, never repository
 content. This monitor never powers off, uploads to the competition or repeats a
@@ -64,6 +64,7 @@ def run(config_path):
     except Exception as error:
         report = dict(health='monitor_or_delivery_needs_diagnosis', error=str(error), keep_server_running=True)
     report['local_recorded_at_utc'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    report['monitor_interval_seconds'] = config.get('monitor_interval_seconds', 1200)
     name = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '.json'
     content = json.dumps(report, indent=2) + '\n'
     (output / name).write_text(content)
