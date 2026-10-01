@@ -1,0 +1,27 @@
+{
+  "passed": true,
+  "images": 5,
+  "num_workers": 2,
+  "shapes": [
+    [
+      2,
+      3,
+      448,
+      448
+    ],
+    [
+      2,
+      3,
+      448,
+      448
+    ],
+    [
+      1,
+      3,
+      448,
+      448
+    ]
+  ],
+  "malformed_exif_image_included": true,
+  "training_started": false
+}

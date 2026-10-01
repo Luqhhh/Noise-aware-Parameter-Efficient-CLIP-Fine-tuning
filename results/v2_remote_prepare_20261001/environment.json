@@ -1,0 +1,42 @@
+{
+  "python": "3.12.3 | packaged by Anaconda, Inc. | (main, May  6 2024, 19:46:43) [GCC 11.2.0]",
+  "platform": "Linux-5.15.0-97-generic-x86_64-with-glibc2.35",
+  "versions": {
+    "torch": "2.12.1+cu130",
+    "torchvision": "0.27.1+cu130",
+    "numpy": "2.4.6",
+    "pandas": "2.3.3",
+    "Pillow": "12.2.0",
+    "PyYAML": "6.0.3",
+    "scikit-learn": "1.7.2",
+    "tqdm": "4.66.2",
+    "ftfy": "6.3.1",
+    "regex": "2026.9.10",
+    "pytest": "9.1.0",
+    "clip": "1.0"
+  },
+  "clip_install": {
+    "url": "https://github.com/openai/CLIP.git",
+    "vcs_info": {
+      "commit_id": "d05afc436d78f1c48dc0dbf8e5980a9d471f35f6",
+      "requested_revision": "d05afc436d78f1c48dc0dbf8e5980a9d471f35f6",
+      "vcs": "git"
+    }
+  },
+  "venv": "/root/autodl-tmp/noise/venv",
+  "base_python": "/root/miniconda3",
+  "cuda_available": true,
+  "torch_cuda": "13.0",
+  "gpu_name": "NVIDIA GeForce RTX 4090",
+  "gpu_total_bytes": 25252724736,
+  "bf16_supported": true,
+  "cpus": 128,
+  "disk": {
+    "total": 53687091200,
+    "used": 35871137792,
+    "free": 17815953408
+  },
+  "repository_commit": "80716d20246bf5699cdb84baf057caa61c20d376",
+  "training_started": false,
+  "s1_parent_available": false
+}

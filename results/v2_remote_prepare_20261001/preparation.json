@@ -1,0 +1,30 @@
+{
+  "experiment_id": "V2_REMOTE_PREPARE_20261001",
+  "status": "prepared_waiting_s1",
+  "recorded_at_utc": "2026-10-01T04:42:10.663625+00:00",
+  "repository_commit": "80716d20246bf5699cdb84baf057caa61c20d376",
+  "plan_path": "/root/autodl-tmp/noise/runs/codex/v2_remote_prepare_20261001/preflight_synced/plan.json",
+  "plan_sha256": "a61edd85f173cdb40328e5825c05d9556b130f1f3545e63c31b47148a03ba53f",
+  "plan_verified": true,
+  "plan_status": "prepared_no_gpu",
+  "execution_authorized": false,
+  "split": {
+    "train_rows": 133815,
+    "val_rows": 14880,
+    "overlapping_content_groups": 0,
+    "val_rows_in_overlapping_groups": 0
+  },
+  "runtime_dependencies": {
+    "torch": true,
+    "torchvision": true,
+    "clip": true
+  },
+  "raw_data_writable_entries": 0,
+  "cpu_tests_exit_code": 0,
+  "gpu_compute_processes": [],
+  "created_checkpoints": [],
+  "s1_parent_available": false,
+  "template_can_resume_s1": false,
+  "training_started": false,
+  "shutdown_requested": true
+}

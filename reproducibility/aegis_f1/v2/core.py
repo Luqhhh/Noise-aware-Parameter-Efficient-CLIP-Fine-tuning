@@ -39,7 +39,8 @@ def check_checkpoint(payload, plan, stage):
     b = payload.get("binding", {})
     require(b.get("experiment_id") == plan["experiment_id"] and b.get("data_version") == plan["data_version"],
             "Checkpoint belongs to another experiment/phase")
-    manifests = [v for k, v in plan["inputs"].items() if k.endswith("/train_manifest.csv")]
+    manifests = [v for k, v in plan["inputs"].items()
+                 if k.replace("\\", "/").endswith("/train_manifest.csv")]
     require(manifests == [b.get("manifest_sha256")],
             "Checkpoint manifest identity mismatch")
     require(b.get("stage") == stage and b.get("strategy_revision") == plan["strategy_revision"] and
