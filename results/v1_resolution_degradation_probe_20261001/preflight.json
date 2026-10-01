@@ -1,0 +1,62 @@
+{
+  "config_sha256": "38beb00391cc8285e15e30543ae05969c206dac5d954fa40734928e9178895bf",
+  "cpu_forward_finite": true,
+  "cpu_images": 2,
+  "frozen_before_gpu_output": true,
+  "groups": {
+    "all": 14880,
+    "originally_small": 1848,
+    "reduced": 13022,
+    "tail75": 1003,
+    "unchanged": 1858
+  },
+  "groups_sha256": "0e5e8a0c5169f97eff44b93d809ae01ebaf5890418343096e2454f48e5a33c66",
+  "implementation_sha256": "51cf6633122eefed555f0405365022a70861dfd8bd533a45290e378559a5beb3",
+  "original_metrics": {
+    "lr512_swa": {
+      "classes": 750,
+      "correct": 11422,
+      "errors": 3458,
+      "macro": 0.7576305868924552,
+      "micro": 0.7676075268817204,
+      "rows": 14880
+    },
+    "native_parent": {
+      "classes": 750,
+      "correct": 11312,
+      "errors": 3568,
+      "macro": 0.7502871585775517,
+      "micro": 0.7602150537634409,
+      "rows": 14880
+    }
+  },
+  "small_image_transform_identity": true,
+  "source_files": {
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/baseline.npz": "af595985fd28eb1bfa4ee4477dffd206ccd62bd2e8e55de86e6ddb3373bd29ac",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.pt": "c103dc3e6039c9fe156a56dfcd196500975b5bd21354be6506447bb1ee636e2e",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.sha256.json": "8be06d426e4b40d369da7e4c940d228a5bb59206d264f755d95c26483e2f11fa",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/val_epoch04_ema_swa_2_4.npz": "a404e16f2d88d3331dc9caf3c26bda111714369bdcca69cda6e290a3478d8845",
+    "/home/lux1/noise/worktrees/v1_resolution_degradation_probe_20261001/results/lr512_dev_20261001/report.json": "cf5b9bcfaebd1163284fcb9347e8b4c724991592c9fcaa009bf99d0b297ea404"
+  },
+  "status": "prepared_verified_cpu",
+  "test_data_used": false,
+  "torch_version": "2.12.1+cu126",
+  "torchvision_version": "0.27.1+cu126",
+  "training_started": false,
+  "validation_rows": 14880,
+  "zero_update": {
+    "atol": 2e-05,
+    "class_order_preserved": true,
+    "eval_mode": true,
+    "fp32": true,
+    "head_preserved": true,
+    "image_size": 512,
+    "max_abs_logits_error": 0.0,
+    "merged_modules": 0,
+    "optimizer_updates": 0,
+    "passed": true,
+    "rtol": 2e-05,
+    "tokens": 257
+  }
+}
