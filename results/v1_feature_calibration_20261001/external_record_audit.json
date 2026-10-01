@@ -1,0 +1,642 @@
+{
+  "repo": "https://github.com/WRw5w/aic_new",
+  "checked_commit": "fdb42ee9add3c06650bcdf4c256df32a63b1f5d0",
+  "public_branches": [
+    "main"
+  ],
+  "commits": [
+    {
+      "sha": "fdb42ee9add3c06650bcdf4c256df32a63b1f5d0",
+      "date": "2026-09-26T08:27:49Z",
+      "subject": "Normalize provenance manifest line endings"
+    },
+    {
+      "sha": "53b81fda83c728d7b45d2ddcaf34269273f62ca5",
+      "date": "2026-09-26T08:27:33Z",
+      "subject": "Share latest AIC leaderboard MCP plugin with team setup guide"
+    },
+    {
+      "sha": "d4ebbae0d63ced82afc170d6154a5547c0d15847",
+      "date": "2026-08-29T09:23:30Z",
+      "subject": "Reconcile handoff docs with published assets"
+    },
+    {
+      "sha": "60931f0f90b05d6532e586ae0915cb3b1d26b649",
+      "date": "2026-08-29T09:15:36Z",
+      "subject": "Add complete takeover records and agent memories"
+    },
+    {
+      "sha": "4b7a20e50ac3303781984645d70673d9c2d43648",
+      "date": "2026-08-16T10:43:41Z",
+      "subject": "Initial AIC 2026 team handoff"
+    }
+  ],
+  "release_tags": [
+    "full-history-20260829",
+    "handoff-v1-20260816"
+  ],
+  "record_files_checked": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 2115,
+      "sha256": "2998f0667455387ad1284dd35ae334c8a65fd7e3a897d803c207d91d0fc85a7b"
+    },
+    {
+      "path": "CLAUDE.md",
+      "bytes": 2115,
+      "sha256": "2998f0667455387ad1284dd35ae334c8a65fd7e3a897d803c207d91d0fc85a7b"
+    },
+    {
+      "path": "MANIFEST.sha256.csv",
+      "bytes": 8305,
+      "sha256": "eebd6124434e669a37f675528fdcb619690e97fdb4ef9439821d455f19310f20"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2280,
+      "sha256": "b0824611fb794aa7231309461c838d44750ebe72e185967e3a1b6995077ca6f9"
+    },
+    {
+      "path": "agent_memories/README.md",
+      "bytes": 1066,
+      "sha256": "40af544fd8f48855af4f294980d19bbcceff2fa3687bf298350283f56f0d183d"
+    },
+    {
+      "path": "agent_memories/claude/MEMORY.md",
+      "bytes": 1187,
+      "sha256": "a1343dc8083b78b64459f5ab16370911f831a7e511f163b09f3cef0f42f07e98"
+    },
+    {
+      "path": "agent_memories/claude/aicomp-leaderboard-marathon.md",
+      "bytes": 6285,
+      "sha256": "259345b8680f74904c9f21d2d651ca812ac533aa00869aca0d129a06cefd1109"
+    },
+    {
+      "path": "agent_memories/claude/aicomp-submitter-runbook.md",
+      "bytes": 8645,
+      "sha256": "3ec72dff4e3992a942d96e000471f05593a7f28f8ea0060bf084487a75c316ef"
+    },
+    {
+      "path": "agent_memories/claude/github-code-management.md",
+      "bytes": 2528,
+      "sha256": "21f7ea37812ee21329cf5fb04a2ff0063294b3ebe742d4b4a437a0b4f11d5083"
+    },
+    {
+      "path": "agent_memories/claude/hourly-self-alarm-verify-execution.md",
+      "bytes": 1601,
+      "sha256": "ea696fb271877117af294642a344999ddf6c42b3e887ce6b72f5bae1730675dc"
+    },
+    {
+      "path": "agent_memories/claude/reach-82-divmix-campaign.md",
+      "bytes": 28652,
+      "sha256": "280ec0a24b0788b84eccc3cd1a62f77596bdce08bf1538183b953d93448ac429"
+    },
+    {
+      "path": "agent_memories/claude/remote-server-ops-jupyter-api.md",
+      "bytes": 2022,
+      "sha256": "4ce334eaa4559e19e891749ac51d6561c0b115e499819262c64705b96930f1d7"
+    },
+    {
+      "path": "agent_memories/claude/xiangongyun-account-api.md",
+      "bytes": 2521,
+      "sha256": "71903eea01fbc805ba58621b16b3c94f86ec4a3cea6c11354c0d1ca0f07b5235"
+    },
+    {
+      "path": "agent_memories/claude_GLOBAL_CLAUDE.md",
+      "bytes": 943,
+      "sha256": "b79c1ce5e50daa691139a5b97637fe46d6252988061fbfee2bcff68ab5e04540"
+    },
+    {
+      "path": "agent_memories/codex/MEMORY.md",
+      "bytes": 73231,
+      "sha256": "928666d4986a24fe231334aa430597bc13eec898fc0df850738f619407825766"
+    },
+    {
+      "path": "agent_memories/codex/extensions/ad_hoc/instructions.md",
+      "bytes": 733,
+      "sha256": "d36a36083d92f9d44efbd95e0e4b6e81d7d149e812f2bca2009b6dd4b8aa93e7"
+    },
+    {
+      "path": "agent_memories/codex/memory_summary.md",
+      "bytes": 12202,
+      "sha256": "53b50024811884daad8f861c4f924159ceae26c75f2e27913be583cd1b7734b4"
+    },
+    {
+      "path": "agent_memories/codex/phase2_workspace_diff.md",
+      "bytes": 157481,
+      "sha256": "07ee97c9a3d7cb8263c4548062961f2ae49683ebd540f2346e11272a0a0ab6b3"
+    },
+    {
+      "path": "agent_memories/codex/raw_memories.md",
+      "bytes": 173792,
+      "sha256": "aa845864cf77812eeea0dfa4c70b3eea5c0dca9ae94f9432465cd7d00f79eab8"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-03T13-58-26-qNQa-auto_kaggle_aide_draft_strategy_lookup.md",
+      "bytes": 4492,
+      "sha256": "9973ce85a1964bb64bb74a5b92cb34a38eaf65c76621b3a9dfe3c57bde4df4b8"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-04T01-05-48-BH7X-jinyinsai_mcp_tooling_and_resume_summary.md",
+      "bytes": 9210,
+      "sha256": "91956d55c318456b831bbc1fe82b807dba402b094a29b61468203cb028527d72"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-04T07-55-04-rXuY-claude_code_codex_plugin_mcp_skills_caching.md",
+      "bytes": 7690,
+      "sha256": "79e561d2e207c325d97b7910971db91deb86d38e66320548e60b26ed59039815"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-04T08-41-54-tWPQ-aicomp_two_layer_heartbeat_requeue_sweep.md",
+      "bytes": 10149,
+      "sha256": "4250a075b082089ce7dc7b0987718cd4c1bd1d8bc3c35c2ffb44e54d640f53a1"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-04T08-52-16-Aw8a-claude_code_and_codex_memory_storage_and_cache_questions.md",
+      "bytes": 9296,
+      "sha256": "f7a3b228f32ae2ffb8cca8f700d78249a8700d0276c19ac346272ee8a01834f9"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-04T09-23-50-tov7-kaggle_notebook_dataset_download_house_price.md",
+      "bytes": 3642,
+      "sha256": "8116d4526c594ed2722b46840676f3a2931b94d41e52a0f9c3c23d459e95745d"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-04T12-24-14-V0Rr-transformer_complexity_kv_cache_and_memory_injection_qna.md",
+      "bytes": 7303,
+      "sha256": "552a1558e0fc55da3b447c2ccdd1266da4e36608ba32a780e100a77ffd67c832"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-04T13-11-16-sjxJ-trpc_agent_go_repo_overview_and_clone_size_time.md",
+      "bytes": 4610,
+      "sha256": "86b1957107362efef9fec008f9a433908f35417450a350cde82a7c2a95905e8e"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-05T02-50-03-JaFZ-claude_code_memory_layout_jinyinsai.md",
+      "bytes": 5555,
+      "sha256": "f0470c3b183994f2792664ae19cbdbc54276dd22b2a9cc42553f795f79595960"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-05T02-59-26-5Zws-mcp_file_location_codex_skill_path.md",
+      "bytes": 2832,
+      "sha256": "3de9b3dba329f3947ca4dfab7540ee1e824afecdadfd6c9d8a29ddcaa2ea5ee1"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-05T03-03-28-KbPz-codex_memory_mcp_and_rg_debugging_on_windows.md",
+      "bytes": 7945,
+      "sha256": "19db207cecb13e39adabbe2b0a4ab9896cd4c836184b9f51aad62148431edba4"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-05T05-06-16-B0NA-my_auto_kaggle_project_book_and_doc_ppt_capabilities.md",
+      "bytes": 7752,
+      "sha256": "4bca7c265aaa36e129ab5fb6fd80b88f8a6ecd0b7fd0d4f17dffa86b4c150cc9"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-05T13-44-09-ukOy-deepseek_mcp_remote_train_operator_design.md",
+      "bytes": 6920,
+      "sha256": "d0a138830fa73220aa1a6db9b1481cdc3e40a425a5fd8d98f7f5d3912c2dcbf3"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-05T14-16-19-1G3Z-cliproxyapi_windows_exe_download_and_startup.md",
+      "bytes": 5010,
+      "sha256": "18c8cd56508d1e7ba360250c1145330f849a3d5d01081afaf54e2ae540031e3f"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-05T14-38-52-czvf-deepseek_api_wiring_real_call_and_remote_training_planning.md",
+      "bytes": 8061,
+      "sha256": "ef12b4490938ce2ca392b48f3663fd9ddec4ca28cb25726e492e27096878025d"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-05T15-36-29-FEM6-jinyinsai_mcp_deepseek_tool_submit.md",
+      "bytes": 7458,
+      "sha256": "6a1c924e89144e678ef57ba34a1eed4a1fac7c124fec212d3984bfbfae9d3b3b"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-05T23-40-09-rCNX-wechat_article_glm_nvidia_access_extract_review.md",
+      "bytes": 5817,
+      "sha256": "caacad43b6dfde692be68a957edf83152b418ae5ee2e8c91b2c7e82452d82e8e"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-06T07-33-20-E109-autokaggle_migration_and_codex_memory_config.md",
+      "bytes": 7740,
+      "sha256": "3b6f0665cae85e0303e45fd010fc5eee1e0ba907731e89a1a11c14b65c10d0e1"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-06T08-15-41-S1IW-memory_vs_agentsmd_and_idle_summary_check.md",
+      "bytes": 4598,
+      "sha256": "bc71d483b6d237dd5bfa238441314b9afdbcb48f8ba895a6f254038e9c41f1ab"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-06T08-25-06-FUwX-claude_code_when_writes_claude.md",
+      "bytes": 2660,
+      "sha256": "bd0862d3b0f80910d6c80b140a52688ea6583b05e6ee8fd1c0f3f926bbbb1a5b"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-06T16-15-12-d2le-start_uu_remote_launch_and_verify_process.md",
+      "bytes": 3248,
+      "sha256": "76c5c372658902e568307d30b32d19f1afa01d0106f76293decc704729a9ed1a"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-11T00-02-16-7xMs-r416_process_level_readonly_recovery_mcp_metadata_blocker.md",
+      "bytes": 7623,
+      "sha256": "ebef2bf03869d5bd0911830b2fe5a8c2d401b0213c01474c3bbab01155969786"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-11T00-35-17-dy0q-system_alarm_test_heartbeat_no_mcp.md",
+      "bytes": 4246,
+      "sha256": "de3799a379eb7cd65490c07982216fa9da96c0529a2ebcc03edc23f9017fd746"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-11T11-21-00-cttg-cross_chat_local_article_send_limitation.md",
+      "bytes": 3352,
+      "sha256": "232185adf9f77e531da63bd971836b77b295e544b900f1c5158b9b4a3f820542"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-11T12-17-24-bAeD-predict_before_execute_windows_deploy_docker_pull_migration.md",
+      "bytes": 10859,
+      "sha256": "47caf15796375591a221f31b70b30918cac20a0a4550bcb47df17fc0cebe9e95"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-12T00-16-46-Hw6B-aide_implementation_and_pairwise_ranking_explanation.md",
+      "bytes": 3734,
+      "sha256": "18e273d2add09fd6fd02797d85e464fedf5e93741d688069523eab9313f71282"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-12T01-10-27-wcsZ-codex_event_driven_wake_bridge_vs_task_watcher.md",
+      "bytes": 12288,
+      "sha256": "9c9b5f4a5ab6abc97233868d1ed060d32152864ba952accc33a8e25de1b4022f"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-12T01-19-47-zAqv-toy_tabular_trusted_evaluator_and_lifecycle_experiment.md",
+      "bytes": 12137,
+      "sha256": "94be87aabe13e40283ba1e8c484a19e9b5fcf1594b3a6f14bcc446304032a9ce"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-12T01-30-12-Q02D-watcher_wakeup_probe_repair_and_rerun.md",
+      "bytes": 6722,
+      "sha256": "ec067af217b063a279d90a07c9f3d8e8e88cabeb175c87e9263a6ac30a585da6"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-12T02-00-10-p1lx-codex_desktop_restart_success_exact_command.md",
+      "bytes": 3813,
+      "sha256": "ffdc9bc53a201de5d4b7097b157ef283259f89076e91721182eee4292a945965"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-12T02-04-11-niLN-codex_desktop_restart_automation_cause_utc_mismatch.md",
+      "bytes": 8069,
+      "sha256": "db3555f41f99b04437ddc4a4e0a05f8093d78c111a6c94c28c173a109036ee24"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-12T03-14-25-nMRA-claude_code_aide_codex_loop_comparison_thread_delivery.md",
+      "bytes": 9902,
+      "sha256": "514b7e9f95c05f79a3fb47c8f85b7d66d84265a2ea5bfa5eb28691e7cfe3fbe2"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-12T04-00-23-O6L5-codex_desktop_restart_arm_force_single_shot.md",
+      "bytes": 3631,
+      "sha256": "693a91dcf946fdf46c059ed6aff3398dd2120d2d0a5acebafd777c39ac7d0fcb"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-12T04-16-27-cIcm-windows_storage_triage_mumu_bm3d_my_antigravity_deletions.md",
+      "bytes": 10476,
+      "sha256": "9dd3a1454287ecb7aac9e5963b4077d3e6d4971e1c88fe53ddff08af16539577"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-12T06-00-06-b7Ug-codex_desktop_restart_automation_success.md",
+      "bytes": 3823,
+      "sha256": "ec02240b6da99e8d278b462616fef5085b505f8ba94a36d03c3889cbf8d01375"
+    },
+    {
+      "path": "agent_memories/codex/rollout_summaries/2026-07-17T12-18-43-JACK-cs224r_hw1_lab_workflow_and_starting_strategy.md",
+      "bytes": 5530,
+      "sha256": "842d04bbf232fcf356dafcc8be0839fc124eede1dd911e0aca518c1924166141"
+    },
+    {
+      "path": "agent_memories/codex_AGENTS.md",
+      "bytes": 943,
+      "sha256": "b79c1ce5e50daa691139a5b97637fe46d6252988061fbfee2bcff68ab5e04540"
+    },
+    {
+      "path": "docs/AIC_RESEARCH_AND_HANDOFF_REPORT_ZH.md",
+      "bytes": 28863,
+      "sha256": "be0d109a947fde437b2f5c215c931025ead2d16b8936f9e33fc95e6d420bddae"
+    },
+    {
+      "path": "docs/ARTIFACTS.csv",
+      "bytes": 1867,
+      "sha256": "84047bab87de141e31312fa75c9964fbc5bd7e024f06d9a4fd50d66e2a96035a"
+    },
+    {
+      "path": "docs/AUTO_LEADERBOARD_RUNBOOK.md",
+      "bytes": 6842,
+      "sha256": "859ad7a72e68a40cbe67a50c4a779b16e52026e82727b96003dc9f2f4c82409b"
+    },
+    {
+      "path": "docs/FULL_TAKEOVER_HANDOFF_20260829.md",
+      "bytes": 5655,
+      "sha256": "6abdbbf4b6139579301fed67d05af399d267172416cc9cda38e1adac146e6441"
+    },
+    {
+      "path": "docs/REPRODUCE_CHAMPION.md",
+      "bytes": 3654,
+      "sha256": "ac5eb2989a1407f0444ef5556f804ad0418ba389db0d77d7b63b7f3ad00101ca"
+    },
+    {
+      "path": "docs/SCORECARD.csv",
+      "bytes": 1565,
+      "sha256": "75d6caef1a978668e65c8aebcfc320e069c444c0089224812f1e8b04a60a7fcd"
+    },
+    {
+      "path": "docs/START_HERE.md",
+      "bytes": 3959,
+      "sha256": "3dc9d32bab03f89f147c7b7d9d0f4d1387e1b02204024e3dc64d44e4bf9f2add"
+    },
+    {
+      "path": "handoff_tools/aic_full_history_20260829/EXCLUSIONS.md",
+      "bytes": 780,
+      "sha256": "314a133307d2e6a959ec84105c3b954f9364d34e8b10b0360cd0566e6e5901ae"
+    },
+    {
+      "path": "handoff_tools/aic_full_history_20260829/README.md",
+      "bytes": 842,
+      "sha256": "2f2f588f28dbe2c44cf20faf28b69778451d8a71a1f68c33baeac330b288daed"
+    },
+    {
+      "path": "leaderboard_control/docs/JINYINSAI_SUBMIT_AGENT_CONTRACT.md",
+      "bytes": 31936,
+      "sha256": "7cdcb831e6588641b577fb7a6942312eb766d9b20256758fcc0b00d0acd8475f"
+    },
+    {
+      "path": "leaderboard_control/docs/jinyinsai_mcp.md",
+      "bytes": 11965,
+      "sha256": "66ed8133d555de6f74f0f4d793aeed5e966d9a314a84263d69c26ebf631b4be0"
+    },
+    {
+      "path": "plugins/aic-leaderboard/.codex-plugin/plugin.json",
+      "bytes": 823,
+      "sha256": "41d9e67b5dd6196a5046d0e12e0cc9b935bb0d1f69ff98bb5eaf45b06678fea1"
+    },
+    {
+      "path": "plugins/aic-leaderboard/.mcp.json",
+      "bytes": 142,
+      "sha256": "6442ec6b9bd5dba456f1899323d111dc1e6ab2e7544ce60fc2c7e67901bca7a8"
+    },
+    {
+      "path": "plugins/aic-leaderboard/README.md",
+      "bytes": 4468,
+      "sha256": "7a03af697b2c0148b4d82a3cf56d276feda3db0b9975d695732f8907d16f574d"
+    },
+    {
+      "path": "plugins/aic-leaderboard/TEAM_SETUP.md",
+      "bytes": 4313,
+      "sha256": "aee9da12e359dd0af77ce0bf7c1672e14e463a795b36a050759b82305aacff3d"
+    },
+    {
+      "path": "plugins/aic-leaderboard/UPSTREAM.json",
+      "bytes": 2577,
+      "sha256": "a9a5fec2956d81755802009e5a47a555d09992d2463f96f42fa43356431a702b"
+    },
+    {
+      "path": "plugins/aic-leaderboard/package-lock.json",
+      "bytes": 1179,
+      "sha256": "4d8c15de3ced7c5ce816456f0d40d35c93b7e3541a995b4de8ef62841a3b99d8"
+    },
+    {
+      "path": "plugins/aic-leaderboard/package.json",
+      "bytes": 154,
+      "sha256": "d35d67513711d5013b76c0fa81c9e58f1282bf9af52df81710c1e9c39450418e"
+    },
+    {
+      "path": "plugins/aic-leaderboard/skills/aic-leaderboard/SKILL.md",
+      "bytes": 1451,
+      "sha256": "30fe37a01be7d7fb08944a6e371f5c2fb07aecaebe859b1fe16f19d1d9bf72c3"
+    },
+    {
+      "path": "project/docs/dataset_statistics_zh.md",
+      "bytes": 5446,
+      "sha256": "f235290e2358ffd43026500de14a2171080befc7756a45be73fba893007c4920"
+    },
+    {
+      "path": "project/docs/leaderboard_experiment_log_zh.md",
+      "bytes": 10521,
+      "sha256": "d7c8a8ce3da43b4099732566071eafb7ff92677c97acfea723864e7729ac8b66"
+    },
+    {
+      "path": "project/docs/submitter_incident_review_zh.md",
+      "bytes": 9599,
+      "sha256": "7e7caca6f51eca6b6297f6372e84bcce2e73a1adcce51a93d2533b7a36120cfe"
+    },
+    {
+      "path": "project/remote_posembed_exp/RESULTS.md",
+      "bytes": 4789,
+      "sha256": "0d98496a99f6d95b789a4e134a17978bba4990a4cd14e05bfd9304eff1018e41"
+    },
+    {
+      "path": "project/runs/aic_b448_aligned_formal_v2_20260713/collected/provenance.json",
+      "bytes": 637,
+      "sha256": "a5e369fd5ba7b3a245a1fb098dce9449c6849238b1756976edca588931f71874"
+    },
+    {
+      "path": "project/runs/aic_b448_aligned_formal_v2_20260713/collected/provenance.submit.json",
+      "bytes": 665,
+      "sha256": "5c8ff4652cda36fff26835c68c23995e3b7c7a16acae1b7808e31e45cf735855"
+    }
+  ],
+  "public_record_result": "No measured rematch/repechage result bound to the current 750-class 20260921 dataset was found. Public SCORECARD entries all say initial. Rematch text in handoff docs describes future plans.",
+  "memory_discrepancy_resolved": "reach-82-divmix-campaign.md line 70 conjectures a later stage; line 77 explicitly corrects this with 2026-06-30 user-confirmed preliminary stage and stable 500-class/24967-image data.",
+  "limits": "Public current branch, five public commits, 81 text records, release metadata examined. August historical 503MB archive was not downloaded; no access to unpublished/private later work.",
+  "linked_previous_repository": {
+    "url": "https://github.com/WRw5w/lihao",
+    "pushed_at": "2026-06-29T11:40:33Z",
+    "default_branch": "main",
+    "commit": "69fa10444812dd581219bb21657c83251a9568d3",
+    "tree_truncated": false,
+    "recent_commits": [
+      {
+        "sha": "69fa10444812dd581219bb21657c83251a9568d3",
+        "date": "2026-06-20T08:06:01Z",
+        "subject": "日志: 自动复盘(实为下午16点,cron晚触发)——榜首78.26领先+0.53; SWA点数规律验证(clmixsoup77.27); v10受阻于RAM; 当前瓶颈=codex+RAM,优先保分修codex"
+      },
+      {
+        "sha": "b97b5bdc09a0a91da2050f029028c40427e03b14",
+        "date": "2026-06-20T07:12:46Z",
+        "subject": "v10修复: num-workers 0 防RAM共享映射崩(error 1455 paging file too small); 16ep SWA ep07-16"
+      },
+      {
+        "sha": "a388a6489fcf2b151dcfbc2c2ab50769e90e8ce4",
+        "date": "2026-06-20T06:12:05Z",
+        "subject": "🏆新冠军 clmixsoup2=78.26 (超77.73+0.53): clmix长轨迹SWA; v10继续加大冲>78.26"
+      },
+      {
+        "sha": "e3e11b0b721aa24b49653040666063ab7d2fcb23",
+        "date": "2026-06-20T00:35:52Z",
+        "subject": "日志: clmix=77.13突破(cleanlab+mixup叠加,最强单模型) + 跨seed soup死(cl4soup70.65) + 战略锁定去噪+mixup+同轨迹soup线"
+      },
+      {
+        "sha": "8a7aee3fad303e7bd6c2997f66e34df5e0b32979",
+        "date": "2026-06-20T00:32:05Z",
+        "subject": "clmixsoup2: clmix 12ep长轨迹SWA(ep06-12) -> next_queue (冲77.73)"
+      }
+    ],
+    "matching_paths": [
+      "docs/打榜实验日志.md",
+      "exp_pipelines/RESULTS.md",
+      "submissions/pred_results.csv",
+      "submissions/pred_results.zip",
+      "submissions/pred_results_5sig_ep8_tta.csv",
+      "submissions/pred_results_5sig_ep8_tta.zip",
+      "submissions/pred_results_5sig_ep8_tta_balanced.csv",
+      "submissions/pred_results_5sig_ep8_tta_balanced.zip",
+      "submissions/pred_results_5sig_full_tta.csv",
+      "submissions/pred_results_5sig_full_tta.zip",
+      "submissions/pred_results_5sig_full_tta_balanced.csv",
+      "submissions/pred_results_5sig_full_tta_balanced.zip",
+      "submissions/pred_results_5sig_full_v2_tta.csv",
+      "submissions/pred_results_5sig_full_v2_tta.zip",
+      "submissions/pred_results_5sig_full_v2_tta_balanced.csv",
+      "submissions/pred_results_5sig_full_v2_tta_balanced.zip",
+      "submissions/pred_results_5sig_tta.csv",
+      "submissions/pred_results_5sig_tta.zip",
+      "submissions/pred_results_5sig_tta_balanced.csv",
+      "submissions/pred_results_5sig_tta_balanced.zip",
+      "submissions/pred_results_aug06_tta_balanced.csv",
+      "submissions/pred_results_aug06_tta_balanced.zip",
+      "submissions/pred_results_c448.csv",
+      "submissions/pred_results_c448.zip",
+      "submissions/pred_results_c448_dr_rank32_keep90.csv",
+      "submissions/pred_results_c448_dr_rank32_keep90.zip",
+      "submissions/pred_results_c448_dr_rank32_keep90_balanced.csv",
+      "submissions/pred_results_c448_dr_rank32_keep90_balanced.zip",
+      "submissions/pred_results_c448_dr_rank32_keep90_balanced_s05.csv",
+      "submissions/pred_results_c448_dr_rank32_keep90_balanced_s05.zip",
+      "submissions/pred_results_c448_dr_rank32_keep90_tta.csv",
+      "submissions/pred_results_c448_dr_rank32_keep90_tta.zip",
+      "submissions/pred_results_c448_dr_rank32_keep90_tta_balanced.csv",
+      "submissions/pred_results_c448_dr_rank32_keep90_tta_balanced.zip",
+      "submissions/pred_results_c448_drecall.csv",
+      "submissions/pred_results_c448_drecall.zip",
+      "submissions/pred_results_c448_gce.csv",
+      "submissions/pred_results_c448_gce.zip",
+      "submissions/pred_results_c448_gce_balanced.csv",
+      "submissions/pred_results_c448_gce_balanced.zip",
+      "submissions/pred_results_c448_gce_tta_balanced.csv",
+      "submissions/pred_results_c448_gce_tta_balanced.zip",
+      "submissions/pred_results_conservative_tta.csv",
+      "submissions/pred_results_conservative_tta.zip",
+      "submissions/pred_results_conservative_tta_balanced.csv",
+      "submissions/pred_results_conservative_tta_balanced.zip",
+      "submissions/pred_results_drecall_tta_balanced.csv",
+      "submissions/pred_results_drecall_tta_balanced.zip",
+      "submissions/pred_results_ema9995_tta_balanced.csv",
+      "submissions/pred_results_ema9995_tta_balanced.zip",
+      "submissions/pred_results_fet_512_tta_balanced.csv",
+      "submissions/pred_results_fet_512_tta_balanced.zip",
+      "submissions/pred_results_fet_c448_tta_balanced.csv",
+      "submissions/pred_results_fet_c448_tta_balanced.zip",
+      "submissions/pred_results_fet_elr8_tta_balanced.csv",
+      "submissions/pred_results_fet_elr8_tta_balanced.zip",
+      "submissions/pred_results_fet_elr_tta_balanced.csv",
+      "submissions/pred_results_fet_elr_tta_balanced.zip",
+      "submissions/pred_results_fet_iter1_tta_balanced.csv",
+      "submissions/pred_results_fet_iter1_tta_balanced.zip",
+      "submissions/pred_results_fet_iter2_tta_balanced.csv",
+      "submissions/pred_results_fet_iter2_tta_balanced.zip",
+      "submissions/pred_results_fet_soup_tta_balanced.csv",
+      "submissions/pred_results_fet_soup_tta_balanced.zip",
+      "submissions/pred_results_head.csv",
+      "submissions/pred_results_head.zip",
+      "submissions/pred_results_keep85_tta_balanced.csv",
+      "submissions/pred_results_keep85_tta_balanced.zip",
+      "submissions/pred_results_keep95_tta_balanced.csv",
+      "submissions/pred_results_keep95_tta_balanced.zip",
+      "submissions/pred_results_lora.csv",
+      "submissions/pred_results_lora.zip",
+      "submissions/pred_results_ortho_apl_tta_balanced.csv",
+      "submissions/pred_results_ortho_apl_tta_balanced.zip",
+      "submissions/pred_results_ortho_attnpool_tta_balanced.csv",
+      "submissions/pred_results_ortho_attnpool_tta_balanced.zip",
+      "submissions/pred_results_ortho_cb05_tta_balanced.csv",
+      "submissions/pred_results_ortho_cb05_tta_balanced.zip",
+      "submissions/pred_results_ortho_cl2soup_tta_balanced.csv",
+      "submissions/pred_results_ortho_cl2soup_tta_balanced.zip",
+      "submissions/pred_results_ortho_cl4soup_tta_balanced.csv",
+      "submissions/pred_results_ortho_cl4soup_tta_balanced.zip",
+      "submissions/pred_results_ortho_cleanlab_s2_tta_balanced.csv",
+      "submissions/pred_results_ortho_cleanlab_s2_tta_balanced.zip",
+      "submissions/pred_results_ortho_cleanlab_tta_balanced.csv",
+      "submissions/pred_results_ortho_cleanlab_tta_balanced.zip",
+      "submissions/pred_results_ortho_cleanlabknn_tta_balanced.csv",
+      "submissions/pred_results_ortho_cleanlabknn_tta_balanced.zip",
+      "submissions/pred_results_ortho_cleanlabsoup_tta_balanced.csv",
+      "submissions/pred_results_ortho_cleanlabsoup_tta_balanced.zip",
+      "submissions/pred_results_ortho_clmix_tta_balanced.csv",
+      "submissions/pred_results_ortho_clmix_tta_balanced.zip",
+      "submissions/pred_results_ortho_clmixsoup2_tta_balanced.csv",
+      "submissions/pred_results_ortho_clmixsoup2_tta_balanced.zip",
+      "submissions/pred_results_ortho_clmixsoup_tta_balanced.csv",
+      "submissions/pred_results_ortho_clmixsoup_tta_balanced.zip",
+      "submissions/pred_results_ortho_clrelabel_tta_balanced.csv",
+      "submissions/pred_results_ortho_clrelabel_tta_balanced.zip",
+      "submissions/pred_results_ortho_curriculum_tta_balanced.csv",
+      "submissions/pred_results_ortho_curriculum_tta_balanced.zip",
+      "submissions/pred_results_ortho_dora16_tta_balanced.csv",
+      "submissions/pred_results_ortho_dora16_tta_balanced.zip",
+      "submissions/pred_results_ortho_dora_tta_balanced.csv",
+      "submissions/pred_results_ortho_dora_tta_balanced.zip",
+      "submissions/pred_results_ortho_fuse4_tta_balanced.csv",
+      "submissions/pred_results_ortho_fuse4_tta_balanced.zip",
+      "submissions/pred_results_ortho_fuse6_tta_balanced.csv",
+      "submissions/pred_results_ortho_fuse6_tta_balanced.zip",
+      "submissions/pred_results_ortho_mixup02_tta_balanced.csv",
+      "submissions/pred_results_ortho_mixup02_tta_balanced.zip",
+      "submissions/pred_results_ortho_mixup04_tta_balanced.csv",
+      "submissions/pred_results_ortho_mixup04_tta_balanced.zip",
+      "submissions/pred_results_ortho_mmixup_tta_balanced.csv",
+      "submissions/pred_results_ortho_mmixup_tta_balanced.zip",
+      "submissions/pred_results_ortho_ot_tta_balanced.csv",
+      "submissions/pred_results_ortho_ot_tta_balanced.zip",
+      "submissions/pred_results_ortho_otknn_tta_balanced.csv",
+      "submissions/pred_results_ortho_otknn_tta_balanced.zip",
+      "submissions/pred_results_ortho_sce_tta_balanced.csv",
+      "submissions/pred_results_ortho_sce_tta_balanced.zip",
+      "submissions/pred_results_run60_ep60_tta.csv",
+      "submissions/pred_results_run60_ep60_tta.zip",
+      "submissions/pred_results_run60_ep60_tta_balanced.csv",
+      "submissions/pred_results_run60_ep60_tta_balanced.zip",
+      "submissions/pred_results_soup_greedy_tta.csv",
+      "submissions/pred_results_soup_greedy_tta.zip",
+      "submissions/pred_results_soup_greedy_tta_balanced.csv",
+      "submissions/pred_results_soup_greedy_tta_balanced.zip",
+      "submissions/pred_results_soup_sweep_tta.csv",
+      "submissions/pred_results_soup_sweep_tta.zip",
+      "submissions/pred_results_soup_sweep_tta_balanced_s0.25.csv",
+      "submissions/pred_results_soup_sweep_tta_balanced_s0.25.zip",
+      "submissions/pred_results_soup_sweep_tta_balanced_s0.5.csv",
+      "submissions/pred_results_soup_sweep_tta_balanced_s0.5.zip",
+      "submissions/pred_results_soup_sweep_tta_balanced_s0.75.csv",
+      "submissions/pred_results_soup_sweep_tta_balanced_s0.75.zip",
+      "submissions/pred_results_soup_uniform_tta.csv",
+      "submissions/pred_results_soup_uniform_tta.zip",
+      "submissions/pred_results_soup_uniform_tta_balanced.csv",
+      "submissions/pred_results_soup_uniform_tta_balanced.zip",
+      "submissions/pred_results_soup_v2_tta.csv",
+      "submissions/pred_results_soup_v2_tta.zip",
+      "submissions/pred_results_soup_v2_tta_balanced.csv",
+      "submissions/pred_results_soup_v2_tta_balanced.zip",
+      "submissions/pred_results_soup_v3_tta.csv",
+      "submissions/pred_results_soup_v3_tta.zip",
+      "submissions/pred_results_soup_v3_tta_balanced.csv",
+      "submissions/pred_results_soup_v3_tta_balanced.zip",
+      "submissions/pred_results_swa_champion_tta.csv",
+      "submissions/pred_results_swa_champion_tta.zip",
+      "submissions/pred_results_swa_champion_tta_balanced.csv",
+      "submissions/pred_results_swa_champion_tta_balanced.zip",
+      "submissions/pred_results_swa_run60_tta.csv",
+      "submissions/pred_results_swa_run60_tta.zip",
+      "submissions/pred_results_swa_run60_tta_balanced.csv",
+      "submissions/pred_results_swa_run60_tta_balanced.zip",
+      "submissions/upload_v2/pred_results.zip",
+      "tools/collect_pipeline_results.py"
+    ]
+  }
+}

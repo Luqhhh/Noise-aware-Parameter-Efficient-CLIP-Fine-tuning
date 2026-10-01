@@ -1,0 +1,63 @@
+{
+  "experiment_id": "V1_FEATURE_CALIBRATION_20261001",
+  "status": "completed_diagnostic",
+  "branch": "codex/v1_feature_calibration_20261001",
+  "worktree": "/home/lux1/noise-worktrees/v1_feature_calibration_20261001",
+  "base_commit": "7b3bd46",
+  "feature_delta_pp": {
+    "head": {
+      "macro": 1.6783052721446978,
+      "micro": 1.65994623655914,
+      "tail75_macro": 1.6376750700280163
+    },
+    "knn": {
+      "macro": 0.7839328669565604,
+      "micro": 0.7795698924731198,
+      "tail75_macro": 0.9472886590533525
+    }
+  },
+  "feature_head_pairing": {
+    "changed": 1316,
+    "corrections": 388,
+    "net_correct": 247,
+    "regressions": 141
+  },
+  "feature_knn_pairing": {
+    "changed": 2298,
+    "corrections": 568,
+    "net_correct": 116,
+    "regressions": 452
+  },
+  "calibration_vs_raw_delta_pp": {
+    "macro": 0.14332136358680136,
+    "micro": -0.2016400053770684,
+    "tail75_macro": 3.7100456621004585
+  },
+  "calibration_pairing": {
+    "changed": 865,
+    "corrections": 179,
+    "net_correct": -30,
+    "regressions": 209
+  },
+  "decision": "Positive frozen 768 feature signal supports one bounded LoRA paired validation; no complete student training authorized by this result, no platform gain claimed. Uniform-bias crossfit trades tail improvement for aggregate correct counts.",
+  "test_data_used": false,
+  "new_submission": false,
+  "platform_gain_known": false,
+  "code_sha256": {
+    "scripts/probe_v1_feature_calibration.py": "a90d2703b0476ba10c779845c770dc6a84aa0b874b1ad66f2349b5dcd113bad5",
+    "scripts/verify_v1_feature_calibration.py": "561cff9082f2800f8987c672066d962e7c91a50f1fe098bc3e0a0c90baffb920",
+    "tests/test_v1_feature_calibration_probe.py": "abc7c4064570a5ce98419ec1fc63a8e49228432a40184f4fab3fdf9dc3d0056d"
+  },
+  "artifact_sha256": {
+    "/home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/features768.pt": "00eefe153a7141f4016c112623dabe796d4fc2468e5a2f6797788085e3058a21",
+    "/home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/predictions.npz": "472fd3310a0379ab9b38c9fba39aacd309864c7236e4e39258671717cfb76dfa",
+    "/home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/head512.pt": "c505f5268e6884a9924f47d407bbb59e94c01b6b8e5ccf9ad979ddb41cafdd9e",
+    "/home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/features/head768.pt": "1a30c75550eaecc783f44ca4052d5bfc82d7527e329e79747617aa0ab3cabec6",
+    "/home/lux1/noise-worktrees/v1_feature_calibration_20261001/outputs/codex/v1_feature_calibration_20261001/calibration_r1/predictions.npz": "7bb2f57092c9d1ad6483835f9c2817b205e324ce1e90bcf651c869d775a0460f"
+  },
+  "commands": [
+    "PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 scripts/probe_v1_feature_calibration.py calibration --output outputs/codex/v1_feature_calibration_20261001/calibration_r1",
+    "PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 -u scripts/probe_v1_feature_calibration.py features --output outputs/codex/v1_feature_calibration_20261001/features --device cuda",
+    "PYTHONPATH=reproducibility/aegis_f1 OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 scripts/verify_v1_feature_calibration.py --root outputs/codex/v1_feature_calibration_20261001 --features"
+  ]
+}
