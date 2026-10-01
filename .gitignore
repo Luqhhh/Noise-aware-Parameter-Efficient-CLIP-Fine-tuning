@@ -129,3 +129,6 @@ outputs/search_20260923/
 
 # Private fixed cosine-margin training states, logits and submissions.
 /outputs/codex/v1_cosine_margin_probe_20261001/
+
+# Private task-trained neighbor indices, scores and frozen gallery membership.
+/outputs/codex/v1_task_neighbor_probe_20261002/
