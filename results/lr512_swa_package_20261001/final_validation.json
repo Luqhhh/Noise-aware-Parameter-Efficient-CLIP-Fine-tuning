@@ -1,0 +1,40 @@
+{
+  "experiment_id": "LR512_SWA_PACKAGE_20261001",
+  "status": "completed_verified_delivery",
+  "training_started": false,
+  "platform_score": null,
+  "checkpoint": "/home/lux1/noise-worktrees/lr512_swa_package_20261001/outputs/codex/lr512_swa_package_20261001/run/training/ema_swa.pt",
+  "checkpoint_sha256": "c103dc3e6039c9fe156a56dfcd196500975b5bd21354be6506447bb1ee636e2e",
+  "checkpoint_copy_byte_identical": true,
+  "original_plan_sha256": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+  "rows": 37444,
+  "zip_members": [
+    "pred_results.csv"
+  ],
+  "zip_csv_byte_identical": true,
+  "submission_checker_returncode": 0,
+  "submission_checker_log": "/home/lux1/noise-worktrees/lr512_swa_package_20261001/outputs/codex/lr512_swa_package_20261001/submission/submission_check.log",
+  "csv": "/home/lux1/noise-worktrees/lr512_swa_package_20261001/outputs/codex/lr512_swa_package_20261001/submission/pred_results.csv",
+  "csv_sha256": "46b66252f984acb76c4c08f798bd4e0a8ffa6ad0787f57df7abd7797761e68b7",
+  "zip": "/home/lux1/noise-worktrees/lr512_swa_package_20261001/outputs/codex/lr512_swa_package_20261001/submission/submission.zip",
+  "zip_sha256": "8d37d0ba8e1d816094b5032d4a3a7cd5180c618a0d53bf6bf94f68bbd2817efd",
+  "desktop_zip": "/mnt/c/Users/lqh22/Desktop/lr512_dev_ema_swa_2_4_submission.zip",
+  "desktop_zip_sha256": "8d37d0ba8e1d816094b5032d4a3a7cd5180c618a0d53bf6bf94f68bbd2817efd",
+  "inference_seconds": 591.9761543920031,
+  "decoder": {
+    "scales": [
+      512
+    ],
+    "flip": true,
+    "bias": null
+  },
+  "original_validation_reference": "results/lr512_dev_20261001/final_validation.json",
+  "original_validation": {
+    "macro": 0.7576305868924552,
+    "micro": 0.7676075268817204,
+    "corrections": 324,
+    "regressions": 214,
+    "net": 110
+  },
+  "new_validation_inference": false
+}

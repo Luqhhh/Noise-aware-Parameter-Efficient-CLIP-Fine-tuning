@@ -1,0 +1,11 @@
+{
+  "operation": "location_only_copy_for_independent_inference_progress",
+  "training_started": false,
+  "source_run": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run",
+  "source_report_sha256": "62287189bf8546ee421381a04f885edcebd956245e18b3c256e8be7ed02a3f9e",
+  "derived_report_sha256": "90f6fd2ef8e7b250a8e051503492d57a92dc8da198cf3a7a324219737ae03186",
+  "source_checkpoint_sha256": "c103dc3e6039c9fe156a56dfcd196500975b5bd21354be6506447bb1ee636e2e",
+  "checkpoint_byte_identical": true,
+  "source_sidecar_byte_identical": true,
+  "original_plan_sha256": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651"
+}
