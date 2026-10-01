@@ -1,0 +1,112 @@
+{
+  "status": "passed_independent_full_replay",
+  "experiment_id": "V1_DETAIL_AUG_PAIR_20261001",
+  "output": "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2",
+  "validation_predictions_replayed": 59520,
+  "test_predictions_replayed": 74888,
+  "metric_groups_checked": 20,
+  "paired_groups_checked": 20,
+  "source_and_artifact_sha256": {
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/baseline.npz": "af595985fd28eb1bfa4ee4477dffd206ccd62bd2e8e55de86e6ddb3373bd29ac",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.pt": "c103dc3e6039c9fe156a56dfcd196500975b5bd21354be6506447bb1ee636e2e",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.sha256.json": "8be06d426e4b40d369da7e4c940d228a5bb59206d264f755d95c26483e2f11fa",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/val_epoch04_ema_swa_2_4.npz": "a404e16f2d88d3331dc9caf3c26bda111714369bdcca69cda6e290a3478d8845",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/results/lr512_dev_20261001/report.json": "cf5b9bcfaebd1163284fcb9347e8b4c724991592c9fcaa009bf99d0b297ea404",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/model.py": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/submission.py": "2e76ad99a05f99488f46297f0991383915d0cd2a59d50ebc1bddd12e6ebbd905",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/v1_pipeline.py": "05e6784d7dff7ea8db89f85fc849c54db2661695ed63e7978d3dc01b9bbe5d31",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/v1_strategy.py": "d843196b921ff801fb1b1156beda011dd025d4f31c29d2c00c75d7b39afa231d",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/model.py": "92b8b4dfb73978feb4558e97d8122af61e7e801eab89c3a6b359e2f21e1c74b6",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/plan.py": "2e7a41063057ba1f3c8ce8e7a34022ea604078bbe4e314f8e683ba4c4a05a4ec",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/runtime.py": "d0515533fc4c6b029416cf7d7d6647c250f1f9d02535630c10ec7fa4ff8cdaa5",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v3/plan.py": "49a4e8fd7ac386da3dc69639e67fa4f21193f1ebae613d305d9b1e0b48f64040",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v3/report.py": "3f8dcb49074437d8ab3eceb55c4307c803f68b5dea3d513f5ee89ec3ef7e9f73",
+    "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/config.yaml": "385fb63fc4cb6d75e068d464e68dea121a42d0b7ee8f60d8558921ec978b9db8",
+    "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.pt": "01caedaa4996d25fa9dfc213d4b2376c147bb99ebdc23dacd93e6e1ff2d6fa20",
+    "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.sha256.json": "dde8be4540ce02985194feed2b5f4064e778e707b46e751c9e33f3f94c2165ff",
+    "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.pt": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2",
+    "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.sha256.json": "e58e91bc3512bf5a853dbdcc1e157fbbbead6e568b0e333f8869f9e1aed98124",
+    "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/model.py": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+    "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/submission.py": "2e76ad99a05f99488f46297f0991383915d0cd2a59d50ebc1bddd12e6ebbd905",
+    "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/v1_pipeline.py": "ce6075b2f01c726614844b3262fefd6ecefb28176522ec114c5461a162545dc5",
+    "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/v1_strategy.py": "d843196b921ff801fb1b1156beda011dd025d4f31c29d2c00c75d7b39afa231d",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/frozen_val_groups.csv": "5d5cd42169047478e7c32cdc3451ff37dd8f38c8ffa079992a7000786940793d",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/schedule.npz": "42cf04b89482d279c8b2a4fd251cecc58d590dfb546b50761aefaae05f231ff4",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/val_step0512.npz": "9da2e180bd993cc9e0d756713395422a6f9510e3d98310e6c09762ec6e110649",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/step_0512.pt": "beac2601704888518cea1f1db4c1f6987598d9a31131fc937ced5d16208c9cbe",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/step_0512.sha256.json": "574c6766b9db2cfbf90f21d346a8c7181a6a245dc4ddff3fd9259aa981e7ae3e",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/val_step1024.npz": "7b9d2a7a0c6aff64d4f7a23b0e0f5004768d2a178a16a415e54743febd10ba8d",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/selected.pt": "7ccf90560293dfdb4456e98f6c9a8f543a34a2960dc4bee9f369eaeaf1bdcaa1",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/selected.sha256.json": "746077ac6be159b0377a7123f59b9ec9460e43050a9ee684ae02d3d18de09d5f",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/submission/pred_results.csv": "1c1510e0370e24c5a192e0d58c9b24417660e919481f2295ebcb23b03a02cb4e",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/submission/submission.zip": "628240b92a7a46efa354196f0f3f7d463fabf4ea21497f2cceca45e6ecd48abc",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/test_predictions.npz": "890ad91c76bb80424cfe93a48b5dbc07c4eb4d66fae82cfd671cb4fa7c94ec3f",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/val_step0512.npz": "c40b847eff9d0188436032bdc2ad78065ca8e05d1409926d50c4c0924b894397",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/step_0512.pt": "ca817a731045cf8354e70539b086b2d7fe5d447ee81135f50abcd5eb2c359756",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/step_0512.sha256.json": "53aa03e6913381c9206f5bb6e8a107416cf5d578c6189a8423c3062ecaf037e8",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/val_step1024.npz": "f5c4d1ac6a1451bc786d701fee2fb267b048ad3a9522ffa6d5c46ca0fdc11f0d",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/selected.pt": "d2d305245b7f62bc79b271afc9f73848e4e026b7e1ab8db92c44f7f1bed35b7a",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/selected.sha256.json": "46493088cb6e8123f09d38c5d33da289a38d7e6017e1d058ae70ce8d3e58cbb9",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/submission/pred_results.csv": "a01785e849c531fc0ab3fe205ccaf97d498b24949fd3745e4415002c09daff5e",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/submission/submission.zip": "15a5dc9e1df719211aec3a3111f8ec2588ccee7b27360a3731b61c413025d8dd",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/test_predictions.npz": "cf740f38a521525ddf5fa0e8ca5c2566bdf29523930b5cd7e4a73cd67759ef12",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/preflight.json": "03bd97d5aadac1c13751130b1760eb15f8bf27867fa20b4f4c6b79139feb91ae",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/cost.json": "b35baec7560df71279137a718800b11eed308412d4a247af18da15f2af1c798e",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/report.json": "79d6e8e102114610138fa2627761b3d578a1be310c939b32d7b993a5b85b5684",
+    "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/status.json": "61931e43a90d49f79109cbdce5fc1571069cdead646728c2fd0804ca7cec900b"
+  },
+  "packages": {
+    "control": {
+      "rows": 37444,
+      "independent_checks": 9,
+      "logits_to_csv_identical": true,
+      "zip_csv_identical": true
+    },
+    "detail_aug": {
+      "rows": 37444,
+      "independent_checks": 9,
+      "logits_to_csv_identical": true,
+      "zip_csv_identical": true
+    }
+  },
+  "candidate_vs_control": {
+    "all": {
+      "rows": 14880,
+      "corrections": 128,
+      "regressions": 165,
+      "net": -37,
+      "changed": 717,
+      "both_wrong": 3369
+    },
+    "small": {
+      "rows": 1848,
+      "corrections": 35,
+      "regressions": 37,
+      "net": -2,
+      "changed": 177,
+      "both_wrong": 596
+    },
+    "other": {
+      "rows": 13032,
+      "corrections": 93,
+      "regressions": 128,
+      "net": -35,
+      "changed": 540,
+      "both_wrong": 2773
+    },
+    "tail75": {
+      "rows": 1003,
+      "corrections": 7,
+      "regressions": 16,
+      "net": -9,
+      "changed": 60,
+      "both_wrong": 330
+    }
+  },
+  "decision": "close_fixed_detail_augmentation_recipe",
+  "platform_gain_known": false,
+  "automatic_full": false
+}

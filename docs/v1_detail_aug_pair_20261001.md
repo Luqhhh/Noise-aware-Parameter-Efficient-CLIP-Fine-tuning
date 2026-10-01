@@ -55,11 +55,58 @@ env PYTHONPATH=/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aeg
 [既有9项校验](../results/v1_full_swa_platform_20261001/submission_check.log)及
 [包绑定核验](../results/v1_full_swa_platform_20261001/artifact_verification.json)仍是现役依据。
 
-## 当前状态
+## 实测结果与交付检查点
 
 实现及共享随机过程的3项测试已通过；CPU严格初始权重加载、内容隔离和冻结输入检查通过。
 协议在GPU结果前以`5669788`提交并推送。
 [成本检查](../results/v1_detail_aug_pair_20261001/cost.json)每臂8次真实更新均成功，稳定更新控制0.4784秒/步、
 候选0.3972秒/步；CUDA峰值分配分别0.8701/1.2227GiB，各有一次已恢复AMP重算，无跳过更新。
-正式训练已丢弃探测状态、重新从原父开始；尚未完成，没有新实测候选收益。
-独立核验入口为`scripts/verify_v1_detail_aug_pair.py`，交付时完整复算val配对并从test logits重建两包字节。
+正式训练已丢弃探测状态、重新从原父开始，各完成1,024次更新；各2个batch发生已恢复AMP重算，无跳过更新。
+两臂训练、4次全量验证、冷加载及两包正式测试推理总计3,104.19秒（51.74分钟），不含之前成本检查。
+控制/候选测试推理分别586.95/569.97秒。原标签结果见[完整报告](../results/v1_detail_aug_pair_20261001/report.json)。
+
+| 权重/点 | 全量micro | 全量macro | 相对初始父全量净修正 | 相对初始父小图净修正 |
+|---|---:|---:|---:|---:|
+| 初始LR512 EMA2–4 | 76.7608% | 75.7631% | 0 | 0 |
+| 控制512步raw | 76.1223% | 75.1148% | −95 | −28 |
+| 候选512步raw | 76.0820% | 75.0835% | −101 | −26 |
+| 控制1,024步raw（固定主结果） | 76.4987% | 75.4819% | −39 | −19 |
+| 候选1,024步raw（固定主结果） | 76.2500% | 75.2274% | −76 | −21 |
+
+| 候选末步相对控制末步 | 行数 | 修正 | 退化 | 净修正 |
+|---|---:|---:|---:|---:|
+| 全量 | 14,880 | 128 | 165 | **−37** |
+| 实际短边<224 | 1,848 | 35 | 37 | **−2** |
+| 其余 | 13,032 | 93 | 128 | −35 |
+| 冻结tail75 | 1,003 | 7 | 16 | −9 |
+
+实际小图micro控制65.8550%、候选65.7468%；macro控制67.5319%、候选67.7148%，略增0.1829pp。
+本固定配方没有交付全量或实际小图净修正，冻结复核门未通过，决策`close_fixed_detail_augmentation_recipe`。
+不推进此配方full/续训/强度扫描；这不排除其他细节鲁棒性方法，也不能把控制短续训的−39归因于增强。
+本段监督、单次seed、有限人口和raw导出均限制外推；没有平台分或干净真值收益声明。
+
+[独立核验](../results/v1_detail_aug_pair_20261001/independent_verification.json)通过：
+4×14,880=59,520条val logits→预测、20份群体指标、20份配对群体、2×37,444=74,888条test logits→CSV字节重放，
+全部源输入/新checkpoint sidecar/完整步数/冻结训练日程核对；每臂原运行另有64张冷加载预测一致。
+实现/共享随机过程及拒绝缓存错序、不一致和非有限logits的15项相关测试通过。
+校验器9项约束打印8条成功行（两字段解析无单独成功行）；独立重放另核对字段和精确CSV字节，避免仅按日志条数判断。
+
+两份完整可提交包均为各自单一末步checkpoint，固定512中心+flip、无bias，37,444行、9项约束及ZIP内外字节通过：
+
+- 控制：`/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/submission/{pred_results.csv,submission.zip}`。
+  ZIP SHA256 `628240b92a7a46efa354196f0f3f7d463fabf4ea21497f2cceca45e6ecd48abc`；
+  [校验日志](../results/v1_detail_aug_pair_20261001/control_submission_check.log)、[包manifest](../results/v1_detail_aug_pair_20261001/control_manifest.json)。
+- 候选：`/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/submission/{pred_results.csv,submission.zip}`。
+  ZIP SHA256 `15a5dc9e1df719211aec3a3111f8ec2588ccee7b27360a3731b61c413025d8dd`；
+  [校验日志](../results/v1_detail_aug_pair_20261001/detail_aug_submission_check.log)、[包manifest](../results/v1_detail_aug_pair_20261001/detail_aug_manifest.json)。
+
+独立重放原命令如下；重复核验须为`--result`指定新的路径，不覆盖既有记录。
+
+```bash
+env PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 scripts/verify_v1_detail_aug_pair.py --config configs/v1_detail_aug_pair_20261001.json --output outputs/codex/v1_detail_aug_pair_20261001/pair_r2 --result outputs/codex/v1_detail_aug_pair_20261001/pair_r2/independent_verification.json
+env PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 -m pytest reproducibility/aegis_f1/tests/test_v1_detail_aug_pair.py reproducibility/aegis_f1/tests/test_v1_detail_aug_verification.py reproducibility/aegis_f1/tests/test_v1_candidate_error_diagnostic.py reproducibility/aegis_f1/tests/test_v1_resolution_degradation_probe.py -q
+```
+
+收尾fetch发现B的448配对实现及正式启动已进入`origin/main`（`735b2eb`）；它保持4轮、448几何强增强，未重复本段512低细节干预。
+方案通过merge同步新main，保留B启动证据；main集成采用自动`git pull --rebase --autostash origin main`模式，合并后重新校验再推送。
+本检查点关闭本固定配方，保留两包以供复用；现役full v1 SWA和A/B/v2既定工作保持，不上传平台。
