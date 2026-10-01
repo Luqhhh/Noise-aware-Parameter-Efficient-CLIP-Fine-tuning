@@ -34,7 +34,55 @@ env PYTHONPATH=reproducibility/aegis_f1 OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2
 
 private逐图score/supported标记留在独立output，不入Git；聚合报告、独立复算、配置/代码/文档入Git。
 CPU源输入与重放问题可修复，但不得改冻结门、原头或为收益追加编码/训练。
-当前为实现准备；尚无诊断结果或新候选。本段完成后立即commit/push，main自动pull/合并/复核/push，停在检查点。
+协议在结果前以`0857ece`提交并推送；CPU源预检通过，4项支持规则与门禁测试通过。
+实现包括本段诊断、独立Torch/Counter复算脚本、配置及测试；主线学生训练代码未变。
+
+## 实测预算与决策
+
+CPU诊断4.31秒，28份输入摘要通过；两套原teacher全部29,760条预测重现。
+完整14,880张原标签micro/macro：LR512固定平均76.7608/75.7631%，
+原512 teacher59.8320/58.7772%，原768 teacher61.4919/60.4555%。
+这些是不同native解码的既有模型，不把跨路径差值归因于单独的预训练遗忘或512/768维度。
+
+| teacher对LR512的原标签比较 | 行数 | 修正 | 退化 | 净值 |
+|---|---:|---:|---:|---:|
+| 512，全部val | 14,880 | 319 | 2,838 | −2,519 |
+| 768，全部val（主路径） | 14,880 | 331 | 2,603 | −2,272 |
+| 512，冻结高置信支持组 | 1,141 | **0** | 1 | −1 |
+| 768，冻结高置信支持组 | 1,890 | **0** | 1 | −1 |
+| 768，四学生共同错误全组 | 2,875 | 195 | 0 | 195 |
+| 768，共同错误内高置信支持组 | 30 | **0** | 0 | 0 |
+
+原768 teacher能判对195/2,875=6.78%的共同错误，但这195张全部在冻结支持门之外。
+另外583张非共同学生错误中teacher判对136张，也均在门外。
+高置信支持组只发生2次预测变更：1次退化、1次wrong→wrong；没有新正确，不能用1,890张支持量冒充1,890张可恢复错误。
+512参照重复同一风险结论，没有据结果改选路径。
+
+主路径原小图组修正62/退化364，尾75类25/189；支持门内分别0/0、0/1。
+原标签可能错误，四候选共同失败不证明标签噪声；teacher正确也不构成干净真值。
+本段比较的是已有分类输出，支持组净−1不是蒸馏训练的实测效果，也不是可提交的组合模型分数。
+
+冻结投入门未通过，决策`close_fixed_confident_teacher_logit_transfer`。
+关闭这个固定0.7/0.2高置信teacher logit转移入口，不降阈值找收益、不自动训练或扩为feature-anchor实验。
+无条件teacher输出仍有大量退化风险；更广的表示保持、软分布转移或新来源证据尚未证实，不能从331个可修正样本直接推断可实现净收益。
+这不改变A的微调768学生配对、B的448强增强或v2任务，不替换现役。
+
+结果：[聚合报告](../results/v1_frozen_teacher_recovery_20261001/report.json)；
+[独立核验](../results/v1_frozen_teacher_recovery_20261001/independent_verification.json)用CPU Torch float64重新计算两套head概率，
+与NumPy最大confidence/margin误差分别≤7.22e−15/1.38e−14；29,760条预测及全部支持组成员一致。
+另用Python Counter/逐行条件独立复算20份群体指标与20份配对群体，通过；源摘要、行序、完整DEV人口均核对。
+private逐图文件：`/home/lux1/noise/worktrees/v1_frozen_teacher_recovery_20261001/outputs/codex/v1_frozen_teacher_recovery_20261001/diagnostic_r1/scores.npz`，
+SHA256`a60f3851a20046bb241d0a04074acd676ce0072b6f4ddd1e702a6fc6ebc33eb7`。
+其中只有两份原teacher预测、原学生预测、置信度/概率差与诊断标记；没有融合预测列或提交包。
+
+```bash
+env PYTHONPATH=reproducibility/aegis_f1 OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 scripts/verify_v1_frozen_teacher_recovery.py --config configs/v1_frozen_teacher_recovery_20261001.json --report outputs/codex/v1_frozen_teacher_recovery_20261001/diagnostic_r1/report.json --output outputs/codex/v1_frozen_teacher_recovery_20261001/diagnostic_r1/independent_verification.json
+env PYTHONPATH=reproducibility/aegis_f1 OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 -m pytest reproducibility/aegis_f1/tests/test_v1_frozen_teacher_recovery.py -q
+```
+
+重放请使用新的output/独立核验路径，脚本拒绝覆盖既有产物。本段仅为已核对诊断，没有新训练、GPU编码或平台分。
+已核对现役CSV/ZIP摘要与ZIP内外字节，引用下方既有9项校验；不为新包启动训练。
+收尾立即commit/push，main采用自动`git pull --rebase --autostash origin main`、合并、重新校验及push；在该检查点暂停。
 
 现役仍为用户报告full v1 SWA70.98600576861446%，未独立绑定平台提交ID。
 可提交包`/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip`，
