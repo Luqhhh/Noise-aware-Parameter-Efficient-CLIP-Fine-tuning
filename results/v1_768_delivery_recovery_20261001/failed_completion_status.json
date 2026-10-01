@@ -1,0 +1,28 @@
+{
+  "experiment_id": "V1_768_FULL_TEST_BIAS_20261001",
+  "status": "failed",
+  "started_at": "2026-10-01T04:20:35.567671+00:00",
+  "training_retry": false,
+  "heartbeat_at": "2026-10-01T08:28:21.677192+00:00",
+  "training_stage": "infer",
+  "training_progress": {
+    "elapsed_seconds": 14727.946200965998,
+    "epochs": 12,
+    "selected_checkpoint": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/training/selected.pt",
+    "status": "training_complete"
+  },
+  "stage": "independent_verification",
+  "command": [
+    "/usr/bin/python3",
+    "-u",
+    "scripts/verify_v1_768_full_delivery.py",
+    "--config",
+    "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/configs/v1_768_full_test_bias_experimental_20261001.yaml",
+    "--report",
+    "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/results/v1_768_full_test_bias_20261001/delivery_verification.json",
+    "--desktop-raw",
+    "/mnt/c/Users/lqh22/Desktop/v1_768_full_raw_submission.zip"
+  ],
+  "error": "Command '['/usr/bin/python3', '-u', 'scripts/verify_v1_768_full_delivery.py', '--config', '/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/configs/v1_768_full_test_bias_experimental_20261001.yaml', '--report', '/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/results/v1_768_full_test_bias_20261001/delivery_verification.json', '--desktop-raw', '/mnt/c/Users/lqh22/Desktop/v1_768_full_raw_submission.zip']' returned non-zero exit status 1.",
+  "failed_at": "2026-10-01T08:28:57.590373+00:00"
+}

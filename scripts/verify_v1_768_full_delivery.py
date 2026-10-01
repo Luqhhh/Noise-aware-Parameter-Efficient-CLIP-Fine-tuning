@@ -6,6 +6,7 @@ import csv
 import json
 import shutil
 import subprocess
+import sys
 import time
 import zipfile
 from pathlib import Path
@@ -38,6 +39,18 @@ def numpy_uniform_bias(matrix, iterations):
         if (iteration+1) % 50 == 0:
             print(f'independent NumPy bias {iteration+1}/{iterations}', flush=True)
     return bias
+
+
+def check_package(source_root, test_root, class_mapping, package):
+    """The real checker logs through logging.StreamHandler, usually stderr."""
+    checked = subprocess.run([sys.executable,str(source_root/'scripts/check_submission.py'),
+        '--test_dir',str(test_root),'--class-mapping',str(class_mapping),
+        '--csv',str(package/'pred_results.csv'),'--zip',str(package/'submission.zip')],
+        capture_output=True,text=True,check=True)
+    output = checked.stdout + checked.stderr
+    if 'All checks passed' not in output:
+        raise ValueError('Independent submission checker did not pass')
+    return output
 
 
 def main():
@@ -100,16 +113,12 @@ def main():
         metadata = json.loads((package/'manifest.json').read_text())
         if metadata['checkpoint_sha256'] != checkpoint_hash or metadata['test_usage'] != usage:
             raise ValueError('Package lineage misstates the selected checkpoint or test usage')
-        checked = subprocess.run(['python3',str(source_root/'scripts/check_submission.py'),
-            '--test_dir',str(context.test_root),'--class-mapping',context.reference['data']['class_mapping'],
-            '--csv',str(package/'pred_results.csv'),'--zip',str(package/'submission.zip')],
-            capture_output=True,text=True,check=True)
-        if 'All checks passed' not in checked.stdout:
-            raise ValueError('Independent submission checker did not pass')
+        checker_output = check_package(source_root, context.test_root,
+            context.reference['data']['class_mapping'], package)
         package_reports[directory] = dict(samples=len(observed),numpy_replay_matches=len(observed),
             csv=str(package/'pred_results.csv'),zip=str(package/'submission.zip'),
             csv_sha256=sha256_file(package/'pred_results.csv'),zip_sha256=sha256_file(package/'submission.zip'),
-            test_usage=usage,checker_output=checked.stdout)
+            test_usage=usage,checker_output=checker_output)
     independent = numpy_uniform_bias(matrix,decoder['bias_iterations'])
     error = float(np.max(np.abs(independent-bias)))
     if error > 1e-3:
@@ -125,8 +134,9 @@ def main():
     if sha256_file(desktop) != package_reports['submission']['zip_sha256']:
         raise ValueError('Delivered desktop ZIP differs')
     if args.desktop_raw:
-        with (output/'submission_raw/submission.zip').open('rb') as source,args.desktop_raw.open('xb') as destination:
-            shutil.copyfileobj(source,destination)
+        if not args.desktop_raw.exists():
+            with (output/'submission_raw/submission.zip').open('rb') as source,args.desktop_raw.open('xb') as destination:
+                shutil.copyfileobj(source,destination)
         if sha256_file(args.desktop_raw) != package_reports['submission_raw']['zip_sha256']:
             raise ValueError('Raw desktop ZIP differs')
     incumbent = source_root/'worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip'

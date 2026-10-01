@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/scripts/verify_v1_768_full_delivery.py", line 150, in <module>
+    main()
+  File "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/scripts/verify_v1_768_full_delivery.py", line 108, in main
+    raise ValueError('Independent submission checker did not pass')
+ValueError: Independent submission checker did not pass
