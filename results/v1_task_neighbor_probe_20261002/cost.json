@@ -1,0 +1,10 @@
+{
+  "dtype": "float64",
+  "gallery_rows": 130018,
+  "peak_allocated_cuda_bytes": 845915648,
+  "query_rows": 64,
+  "seconds": 0.7386916120012756,
+  "status": "passed_discarded_cost_outputs",
+  "training_updates": 0,
+  "wall_clock_time_limit": null
+}

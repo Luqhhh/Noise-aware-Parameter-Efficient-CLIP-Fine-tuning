@@ -1,0 +1,16 @@
+{
+  "status": "passed_verified_diagnostic",
+  "experiment_id": "V1_TASK_NEIGHBOR_PROBE_20261002",
+  "test_command": "env PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 python3 -m pytest reproducibility/aegis_f1/tests/test_v1_task_neighbors.py -q",
+  "tests_passed": 6,
+  "independent_status": "passed_independent_numpy64_counter_replay",
+  "config_sha256": "4229ef3d4d985ef76fbe2ad640bb1e8d9a5a1071422c0f39d8d600f09d032388",
+  "script_sha256": "74991245037abd6783bfe7cb47c0fb4f748e261c032b335e04c06cef188bb92f",
+  "verifier_sha256": "59fe2612f16892cb93093180db9853ce47dab4d69f5e80d8c82a41c8d58a614b",
+  "training_updates": 0,
+  "new_candidate": false,
+  "decision": "close_fixed_task_neighbor_entry",
+  "incumbent_reference": "results/v1_full_swa_platform_20261001/artifact_verification.json",
+  "incumbent_check_log": "results/v1_full_swa_platform_20261001/submission_check.log",
+  "incumbent_checks_passed": 9
+}

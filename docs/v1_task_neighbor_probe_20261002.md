@@ -1,6 +1,6 @@
 # V1_TASK_NEIGHBOR_PROBE_20261002：任务训练表征的邻居恢复预算
 
-状态：CPU准备已验证；以下检索、群体与投入门在新邻居输出前冻结。尚无GPU邻居结果。
+状态：已完成固定诊断与独立核验。以下检索、群体与投入门在新邻居输出前冻结。未训练或生成新提交候选。
 从`origin/main@732bd4c`新建`codex/v1_task_neighbor_probe_20261002`和独立worktree。
 已fetch并核对全部本地/远端分支及近期main，无相同任务训练768邻居诊断的既有结果或在途工作。
 A的head/LoRA配对、B的增强配对及v2固定续跑保持，不使用NPU/远端或子agent，不改共享依赖。
@@ -79,3 +79,50 @@ env PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPEN
 ZIP SHA256`1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e`，
 [既有9项检查](../results/v1_full_swa_platform_20261001/submission_check.log)、
 [包核验](../results/v1_full_swa_platform_20261001/artifact_verification.json)。
+
+## 实测、核验与关闭
+
+真实64 query成本检查0.738692秒，峰值CUDA allocated845,915,648字节；
+正式完整检索及诊断产出13.102330秒，其中全图库检索11.834108秒。
+不包括每次启动前的只读源摘要/CPU准备耗时；没有时长中止、重试或参数更新。
+
+| 群体 | 张数 | 原头micro | 邻居micro | 修正 | 退化 | 净 |
+|---|---:|---:|---:|---:|---:|---:|
+| all | 14880 | 76.5188% | 73.5820% | 475 | 912 | -437 |
+| common_candidate_wrong | 2875 | 0.0000% | 8.3826% | 241 | 0 | +241 |
+| tail75 | 1003 | 67.6969% | 62.1137% | 23 | 79 | -56 |
+| small | 1848 | 65.5844% | 61.7424% | 84 | 155 | -71 |
+| supported | 8836 | 94.3640% | 94.1376% | 33 | 53 | -20 |
+| unsupported | 6044 | 50.4302% | 43.5308% | 442 | 859 | -417 |
+| supported_disagreement | 114 | 46.4912% | 28.9474% | 33 | 53 | -20 |
+| common_wrong_supported | 435 | 0.0000% | 1.6092% | 7 | 0 | +7 |
+
+全量原头macro75.6027%，邻居72.5166%；k16未超过原头。
+固定多数支持共有8,836张，其中与原头不同仅114张；原头错61<200、修正33<200、净−20<150，
+33<1.5×53，共同错例支持修正7<100，五项预注册门全部失败。
+共同错例全组修正241，但其中234不在固定多数支持门内；不降票数、改变k或用回顾切片制造训练依据。
+原标签含噪、gallery经过父训练、监督口径不同，不能由这些数字证明标签噪声主导、所有邻域方法无效或平台效果。
+决定`close_fixed_task_neighbor_entry`：关闭本固定入口，不自动训练、换图库/权重或生成融合预测。
+
+6项相关测试通过；独立CPU核验用时5.505927秒：23份源摘要不变，
+14,880条原head预测、238,080个返回相似度、14,880条票数/组成员、20份指标和8份配对一致；
+64张seed42随机query的130,018完整图库重搜与GPU邻居身份/排序全部一致。
+核验范围明确为64张完整重搜及全部返回项，而非所有14,880张的独立完整图库重搜。
+
+- [实测报告](../results/v1_task_neighbor_probe_20261002/report.json)
+- [CPU冻结及源摘要](../results/v1_task_neighbor_probe_20261002/preflight.json)、[成本检查](../results/v1_task_neighbor_probe_20261002/cost.json)
+- [独立重算](../results/v1_task_neighbor_probe_20261002/independent_verification.json)
+
+私有逐图记录`/home/lux1/noise/worktrees/v1_task_neighbor_probe_20261002/outputs/codex/v1_task_neighbor_probe_20261002/probe_r1/neighbors.npz`；
+SHA256`852aa406ddb8a5cd757cddd27eaea7828c4a717ebd064afa872335b6c468e128`。
+本段没有新训练、test推理、提交包或平台分；现役包摘要及既有9项检查保持。
+
+独立核验精确命令（main集成复验用上述绝对输出路径及新的result路径）：
+
+```bash
+env PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 python3 scripts/verify_v1_task_neighbors.py --config configs/v1_task_neighbor_probe_20261002.json --output outputs/codex/v1_task_neighbor_probe_20261002/probe_r1 --result outputs/codex/v1_task_neighbor_probe_20261002/probe_r1/independent_verification.json
+```
+
+实现改动为固定诊断/独立核验两份脚本、JSON配置、6项测试、private ignore、本记录及当前执行入口；
+仅聚合结果入Git，图片、特征与逐图邻居不入Git。方案验证后立即推送，main自动pull/合并/复验/push；
+在检查点暂停，让协作者复用负面结论，A/B/v2既定任务和现役保持。
