@@ -1,0 +1,19 @@
+{
+  "status": "running_verified_resume",
+  "actual_pid": 14956,
+  "output": "D:\\codex_strong_aug448_20261001\\run_resume_20261001_2338",
+  "preserved_updates": 11166,
+  "resumed_epoch4_updates": 462,
+  "original_partial_epoch4_updates": 1260,
+  "replay_overlap_updates": 462,
+  "paired_draw_fields_exact": true,
+  "cuda_overlap_numeric_exact": false,
+  "epochs_per_arm": 4,
+  "related_tests_passed": 18,
+  "complete_candidate": false,
+  "platform_score": null,
+  "resume_manifest_sha256": "913e6357b3b62366a1647369f2cb10a9f51a16f9081f10ef46c04b22eb98e413",
+  "amp_scaler_and_retry_overlap_exact": true,
+  "cuda_gradient_norm_max_abs_difference": 0.02472543716430664,
+  "cuda_bitwise_reproduction_claimed": false
+}
