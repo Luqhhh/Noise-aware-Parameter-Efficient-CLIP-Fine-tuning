@@ -1,0 +1,8 @@
+TimersCalendar={ OnCalendar=*-*-* *:00,20,40:00 ; next_elapse=Thu 2026-10-01 16:20:00 CST }
+NextElapseUSecRealtime=Thu 2026-10-01 16:20:00 CST
+ActiveState=active
+UnitFileState=enabled
+Result=success
+ExecMainStatus=0
+ActiveState=inactive
+UnitFileState=disabled
