@@ -1,0 +1,116 @@
+{
+  "status": "passed",
+  "experiment_id": "V1_RESOLUTION_DEGRADATION_PROBE_20261001",
+  "rows": 14880,
+  "group_sizes": {
+    "all": 14880,
+    "reduced": 13022,
+    "unchanged": 1858,
+    "originally_small": 1848,
+    "tail75": 1003
+  },
+  "metrics_recounted": 20,
+  "paired_groups_recounted": 10,
+  "cold_native_matches": 128,
+  "all_reduced_predictions_replayed_from_logits": true,
+  "unchanged_predictions_preserved": true,
+  "frozen_group_rows_independently_verified": true,
+  "original_code_inputs_sha_verified": 18,
+  "mechanism_gate_independently_verified": true,
+  "report_sha256": "da78f521c14c5e325e60a6c94af010815c9e2456e3ecebd1473cfea663cd3980",
+  "verifier_sha256": "212edf1e74b66d9ae09490ae426098f767c855f66dced06ee5185b71aee983b8",
+  "candidate_vs_parent": {
+    "original": {
+      "all": {
+        "rows": 14880,
+        "corrections": 324,
+        "regressions": 214,
+        "net": 110,
+        "changed": 1267,
+        "both_wrong": 3244
+      },
+      "reduced": {
+        "rows": 13022,
+        "corrections": 253,
+        "regressions": 181,
+        "net": 72,
+        "changed": 1005,
+        "both_wrong": 2664
+      },
+      "unchanged": {
+        "rows": 1858,
+        "corrections": 71,
+        "regressions": 33,
+        "net": 38,
+        "changed": 262,
+        "both_wrong": 580
+      },
+      "originally_small": {
+        "rows": 1848,
+        "corrections": 71,
+        "regressions": 33,
+        "net": 38,
+        "changed": 262,
+        "both_wrong": 579
+      },
+      "tail75": {
+        "rows": 1003,
+        "corrections": 25,
+        "regressions": 11,
+        "net": 14,
+        "changed": 119,
+        "both_wrong": 322
+      }
+    },
+    "perturbed": {
+      "all": {
+        "rows": 14880,
+        "corrections": 372,
+        "regressions": 259,
+        "net": 113,
+        "changed": 1391,
+        "both_wrong": 3432
+      },
+      "reduced": {
+        "rows": 13022,
+        "corrections": 301,
+        "regressions": 226,
+        "net": 75,
+        "changed": 1129,
+        "both_wrong": 2852
+      },
+      "unchanged": {
+        "rows": 1858,
+        "corrections": 71,
+        "regressions": 33,
+        "net": 38,
+        "changed": 262,
+        "both_wrong": 580
+      },
+      "originally_small": {
+        "rows": 1848,
+        "corrections": 71,
+        "regressions": 33,
+        "net": 38,
+        "changed": 262,
+        "both_wrong": 579
+      },
+      "tail75": {
+        "rows": 1003,
+        "corrections": 28,
+        "regressions": 18,
+        "net": 10,
+        "changed": 117,
+        "both_wrong": 323
+      }
+    }
+  },
+  "change_in_lr512_advantage_after_detail_loss": 3,
+  "shared_regressions": 234,
+  "parent_only_regressions": 208,
+  "lr512_only_regressions": 213,
+  "shared_corrections": 96,
+  "new_training": false,
+  "new_candidate": false,
+  "platform_gain": null
+}

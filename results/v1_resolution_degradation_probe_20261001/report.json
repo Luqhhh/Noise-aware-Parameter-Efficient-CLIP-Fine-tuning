@@ -1,0 +1,300 @@
+{
+  "actual_small_image_causal_share_known": false,
+  "artifacts": {
+    "/home/lux1/noise/worktrees/v1_resolution_degradation_probe_20261001/outputs/codex/v1_resolution_degradation_probe_20261001/probe_r1/lr512_swa.npz": "38c9669b3d2e6088eac928c29a7bfa214e5337d12c7ba9aa8977f3e0da04c291",
+    "/home/lux1/noise/worktrees/v1_resolution_degradation_probe_20261001/outputs/codex/v1_resolution_degradation_probe_20261001/probe_r1/native_parent.npz": "14e75fc39fbacff900434afe9931254a9e0cc2f628963e87c615c2836c88db9d"
+  },
+  "automatic_training": false,
+  "classes": 750,
+  "config_sha256": "38beb00391cc8285e15e30543ae05969c206dac5d954fa40734928e9178895bf",
+  "decision": "supports_resolution_robustness_review",
+  "detail_loss_mechanism_gate": true,
+  "elapsed_seconds": 432.3379102720064,
+  "experiment_id": "V1_RESOLUTION_DEGRADATION_PROBE_20261001",
+  "implementation_sha256": "51cf6633122eefed555f0405365022a70861dfd8bd533a45290e378559a5beb3",
+  "native_parity": {
+    "lr512_swa": {
+      "matching_predictions": 64,
+      "rows": 64
+    },
+    "native_parent": {
+      "matching_predictions": 64,
+      "rows": 64
+    }
+  },
+  "new_candidate": false,
+  "original_labels_noisy": true,
+  "peak_allocated_cuda_bytes": 1321474560,
+  "platform_gain_known": false,
+  "preflight_sha256": "625dd4b98775f8a1f4b35473592a976cffc12b2ce90eabf13a4c655ada5651b0",
+  "results": {
+    "lr512_swa": {
+      "original": {
+        "all": {
+          "classes": 750,
+          "correct": 11422,
+          "errors": 3458,
+          "macro": 0.7576305868924552,
+          "micro": 0.7676075268817204,
+          "rows": 14880
+        },
+        "originally_small": {
+          "classes": 571,
+          "correct": 1236,
+          "errors": 612,
+          "macro": 0.6849869774125465,
+          "micro": 0.6688311688311688,
+          "rows": 1848
+        },
+        "reduced": {
+          "classes": 750,
+          "correct": 10177,
+          "errors": 2845,
+          "macro": 0.761550466516727,
+          "micro": 0.7815235754876363,
+          "rows": 13022
+        },
+        "tail75": {
+          "classes": 75,
+          "correct": 670,
+          "errors": 333,
+          "macro": 0.6038376906318081,
+          "micro": 0.6679960119641076,
+          "rows": 1003
+        },
+        "unchanged": {
+          "classes": 573,
+          "correct": 1245,
+          "errors": 613,
+          "macro": 0.6856405035724408,
+          "micro": 0.670075349838536,
+          "rows": 1858
+        }
+      },
+      "paired": {
+        "all": {
+          "both_wrong": 3244,
+          "changed": 1385,
+          "corrections": 214,
+          "net": -233,
+          "regressions": 447,
+          "rows": 14880
+        },
+        "originally_small": {
+          "both_wrong": 612,
+          "changed": 0,
+          "corrections": 0,
+          "net": 0,
+          "regressions": 0,
+          "rows": 1848
+        },
+        "reduced": {
+          "both_wrong": 2631,
+          "changed": 1385,
+          "corrections": 214,
+          "net": -233,
+          "regressions": 447,
+          "rows": 13022
+        },
+        "tail75": {
+          "both_wrong": 311,
+          "changed": 118,
+          "corrections": 22,
+          "net": -8,
+          "regressions": 30,
+          "rows": 1003
+        },
+        "unchanged": {
+          "both_wrong": 613,
+          "changed": 0,
+          "corrections": 0,
+          "net": 0,
+          "regressions": 0,
+          "rows": 1858
+        }
+      },
+      "perturbed": {
+        "all": {
+          "classes": 750,
+          "correct": 11189,
+          "errors": 3691,
+          "macro": 0.7421834761747429,
+          "micro": 0.7519489247311828,
+          "rows": 14880
+        },
+        "originally_small": {
+          "classes": 571,
+          "correct": 1236,
+          "errors": 612,
+          "macro": 0.6849869774125465,
+          "micro": 0.6688311688311688,
+          "rows": 1848
+        },
+        "reduced": {
+          "classes": 750,
+          "correct": 9944,
+          "errors": 3078,
+          "macro": 0.7455034224991393,
+          "micro": 0.7636307786822301,
+          "rows": 13022
+        },
+        "tail75": {
+          "classes": 75,
+          "correct": 662,
+          "errors": 341,
+          "macro": 0.589714596949891,
+          "micro": 0.6600199401794616,
+          "rows": 1003
+        },
+        "unchanged": {
+          "classes": 573,
+          "correct": 1245,
+          "errors": 613,
+          "macro": 0.6856405035724408,
+          "micro": 0.670075349838536,
+          "rows": 1858
+        }
+      }
+    },
+    "native_parent": {
+      "original": {
+        "all": {
+          "classes": 750,
+          "correct": 11312,
+          "errors": 3568,
+          "macro": 0.7502871585775517,
+          "micro": 0.7602150537634409,
+          "rows": 14880
+        },
+        "originally_small": {
+          "classes": 571,
+          "correct": 1198,
+          "errors": 650,
+          "macro": 0.6649698812570967,
+          "micro": 0.6482683982683982,
+          "rows": 1848
+        },
+        "reduced": {
+          "classes": 750,
+          "correct": 10105,
+          "errors": 2917,
+          "macro": 0.7556224563622315,
+          "micro": 0.7759944708954077,
+          "rows": 13022
+        },
+        "tail75": {
+          "classes": 75,
+          "correct": 656,
+          "errors": 347,
+          "macro": 0.5896764705882354,
+          "micro": 0.654037886340977,
+          "rows": 1003
+        },
+        "unchanged": {
+          "classes": 573,
+          "correct": 1207,
+          "errors": 651,
+          "macro": 0.6648449136669031,
+          "micro": 0.6496232508073198,
+          "rows": 1858
+        }
+      },
+      "paired": {
+        "all": {
+          "both_wrong": 3362,
+          "changed": 1326,
+          "corrections": 206,
+          "net": -236,
+          "regressions": 442,
+          "rows": 14880
+        },
+        "originally_small": {
+          "both_wrong": 650,
+          "changed": 0,
+          "corrections": 0,
+          "net": 0,
+          "regressions": 0,
+          "rows": 1848
+        },
+        "reduced": {
+          "both_wrong": 2711,
+          "changed": 1326,
+          "corrections": 206,
+          "net": -236,
+          "regressions": 442,
+          "rows": 13022
+        },
+        "tail75": {
+          "both_wrong": 324,
+          "changed": 118,
+          "corrections": 23,
+          "net": -4,
+          "regressions": 27,
+          "rows": 1003
+        },
+        "unchanged": {
+          "both_wrong": 651,
+          "changed": 0,
+          "corrections": 0,
+          "net": 0,
+          "regressions": 0,
+          "rows": 1858
+        }
+      },
+      "perturbed": {
+        "all": {
+          "classes": 750,
+          "correct": 11076,
+          "errors": 3804,
+          "macro": 0.7344632356991059,
+          "micro": 0.7443548387096774,
+          "rows": 14880
+        },
+        "originally_small": {
+          "classes": 571,
+          "correct": 1198,
+          "errors": 650,
+          "macro": 0.6649698812570967,
+          "micro": 0.6482683982683982,
+          "rows": 1848
+        },
+        "reduced": {
+          "classes": 750,
+          "correct": 9869,
+          "errors": 3153,
+          "macro": 0.7396599624515117,
+          "micro": 0.757871294731992,
+          "rows": 13022
+        },
+        "tail75": {
+          "classes": 75,
+          "correct": 652,
+          "errors": 351,
+          "macro": 0.5805904139433552,
+          "micro": 0.650049850448654,
+          "rows": 1003
+        },
+        "unchanged": {
+          "classes": 573,
+          "correct": 1207,
+          "errors": 651,
+          "macro": 0.6648449136669031,
+          "micro": 0.6496232508073198,
+          "rows": 1858
+        }
+      }
+    }
+  },
+  "source_files": {
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/baseline.npz": "af595985fd28eb1bfa4ee4477dffd206ccd62bd2e8e55de86e6ddb3373bd29ac",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.pt": "c103dc3e6039c9fe156a56dfcd196500975b5bd21354be6506447bb1ee636e2e",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.sha256.json": "8be06d426e4b40d369da7e4c940d228a5bb59206d264f755d95c26483e2f11fa",
+    "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/val_epoch04_ema_swa_2_4.npz": "a404e16f2d88d3331dc9caf3c26bda111714369bdcca69cda6e290a3478d8845",
+    "/home/lux1/noise/worktrees/v1_resolution_degradation_probe_20261001/results/lr512_dev_20261001/report.json": "cf5b9bcfaebd1163284fcb9347e8b4c724991592c9fcaa009bf99d0b297ea404"
+  },
+  "status": "completed_diagnostic",
+  "test_data_used": false,
+  "training_updates": 0,
+  "validation_rows": 14880
+}

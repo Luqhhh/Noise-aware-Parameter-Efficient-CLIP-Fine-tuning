@@ -1,5 +1,10 @@
 # V1_RESOLUTION_DEGRADATION_PROBE_20261001
 
+状态`completed_verified_diagnostic`。本机CUDA两模型固定降采样已完成，耗时432.34秒，
+128张native冷加载预测全部一致，26,044条降采样预测由保存logits独立重放一致。
+父模型净损失236张正确，LR512净损失233张；原512续训没有显示明显缓解这一敏感性。
+无新训练候选或平台成绩，现役full v1 SWA保持用户报告70.98600576861446%。
+
 ## GPU结果产生前冻结的协议
 
 问题来自[上一段独立误差预算](v1_candidate_error_budget_20261001.md)：LR512的3,458张错误中，
@@ -60,7 +65,58 @@ env PYTHONPATH=/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aeg
 
 prepare输出必须新建，run拒绝存在status.json的任务以避免自动重跑。
 预检记录见[preflight](../results/v1_resolution_degradation_probe_20261001/preflight.json)。
-当前此节仅记录准备，不声称新GPU结果或平台收益；终态将在独立复算后补入同一记录。
+上面是实际prepare/run命令及GPU输出前协议。聚合GPU结果见
+[report](../results/v1_resolution_degradation_probe_20261001/report.json)，独立核对命令：
+
+```bash
+python3 scripts/verify_v1_resolution_degradation.py \
+  --config configs/v1_resolution_degradation_probe_20261001.json \
+  --run-root outputs/codex/v1_resolution_degradation_probe_20261001/probe_r1 \
+  --output results/v1_resolution_degradation_probe_20261001/independent_verification.json
+```
+
+## 实测结果与决定
+
+完整14,880张原标签诊断，短边≤224的1,858张保持native原预测，其余接受固定干预。
+表中修正/退化均以同模型的native流程为基线，不代表训练效果。
+
+| 模型 | native micro/macro | 降采样后micro/macro | 修正/退化/净变化 | 被降采样组micro变化 |
+|---|---|---|---|---|
+| 原DEV父 | 76.0215% / 75.0287% | 74.4355% / 73.4463% | 206 / 442 / −236 | −1.8123pp |
+| LR512 EMA2–4 | 76.7608% / 75.7631% | 75.1949% / 74.2183% | 214 / 447 / −233 | −1.7893pp |
+
+父和LR512共同退化234张，父独有退化208张、LR独有退化213张；共同修正96张。
+尾75类父净−4，LR净−8；真实小图组按设计没有改变，不能把不变组说成此次修复收益。
+LR512相对native父的全量原优势修正324/退化214/净+110；干预后372/259/净+113。
+优势仅多3张、约0.0202pp，不能宣称512续训带来明显的细节损失鲁棒性。
+
+父442张退化、被降采样组下降1.8123pp，超过预先冻结的75张/0.5pp机制门，
+故`supports_resolution_robustness_review`。这证明本流程对这一次合成信息减少有原标签识别损失；
+它不说明真实小图的612张错误有多少由相同原因造成，也不证明降采样训练能恢复它们。
+原标签含噪、真实来源未知、图像的有效目标占比未知，平台恢复比例仍未知。
+
+本轮决定：不把原LR512小图净+38自动归因为分辨率鲁棒性，不以继续加分辨率或原配方续训
+作为该问题的修复依据。已有LR512包与A/B独立配对保持；若以后设计针对低细节的训练，
+需单独的固定训练干预、完整DEV对照及退化控制，并核对B增强路线重叠，不能由本诊断自动启动。
+不扫描更多降采样点、不把合成降采样变成提交解码。
+
+## 验证与产物
+
+新增3项转换测试与依赖的6项误差统计测试合计9项通过。
+独立stdlib集合/Counter复算20份原/干预群体指标和10份逐图配对群体，全部一致；
+13,022×2条降采样预测由保存FP32 logits重放，1,858×2条不变预测逐条相等；
+冻结分组14,880行按官方尺寸和tail类定义重新核对，18份原绑定输入SHA再次验证。
+原包/权重/旧sidecar均未改写，运行期间无梯度、0次训练更新。
+详细核验见[独立JSON](../results/v1_resolution_degradation_probe_20261001/independent_verification.json)。
+
+实测432.34秒，CUDA峰值allocated为1,321,474,560字节（1.2307GiB）；nvidia-smi进程列表在结束后为空。
+读取中出现EXIF/palette元信息警告，全部13,022张成功前向，无替代图像或跳样。
+逐图分组、NPZ/logits、progress/status位于独立目录
+`/home/lux1/noise/worktrees/v1_resolution_degradation_probe_20261001/outputs/codex/v1_resolution_degradation_probe_20261001/probe_r1/`，不入Git。
+入库改动为两份探针/复算脚本、固定JSON、3项转换测试、聚合结果、本执行记录、当前入口和private输出ignore。
+
+协议在GPU输出前以`2509cfe`提交并推送；最终结果提交后立即推送方案并在main复核集成。
+这是新机制证据，未产生新checkpoint或提交CSV/ZIP。
 
 ## 现役包与交付纪律
 
