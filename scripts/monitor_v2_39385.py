@@ -15,7 +15,7 @@ import subprocess
 import time
 
 
-def invoke(config, arguments, timeout=120):
+def invoke(config, arguments, timeout=75):
     result = None
     for attempt in range(3):
         try:
@@ -37,7 +37,7 @@ def run(config_path):
     command = 'cd ' + shlex.quote(config['remote_worktree']) + ' && ' + shlex.join([
         'env', 'PYTHONPATH=' + config['remote_worktree'] + '/reproducibility/aegis_f1',
         config['remote_python'], '-c',
-        'import json, sys; from v2.health import snapshot; print(json.dumps(snapshot(sys.argv[1])))',
+        'import json, sys; from v2.health import snapshot; value=snapshot(sys.argv[1]); value.pop("log_tail", None); print(json.dumps(value, separators=(",", ":")))',
         config['remote_plan']])
     try:
         report = json.loads(invoke(config, ['remote', command]))
