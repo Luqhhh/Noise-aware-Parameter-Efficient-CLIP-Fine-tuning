@@ -7,7 +7,6 @@
   "owner": null,
   "gpu_model": null,
   "epochs_per_arm": 4,
-  "max_compute_minutes": 300,
   "logical_batch_size": 32,
   "micro_batch_size": 8,
   "num_workers": 2,
@@ -52,12 +51,12 @@
   },
   "cost_probe": {
     "updates": 5,
-    "safety_margin": 0.2,
     "includes": [
       "full_holdout",
       "checkpoint_io",
       "both_submission_packages"
-    ]
+    ],
+    "decision": "record_memory_throughput_and_expected_cost_without_a_time_cutoff"
   },
   "review_gate": {
     "net_vs_control_min": 75,
@@ -93,5 +92,6 @@
     "results/v1_feature_calibration_20261001/feature_report.json",
     "results/v1_post768_close_20261001/closure_verification.json"
   ],
-  "frozen_target_groups": "results/three_machine_exploration_20261001/a_target_groups.json"
+  "frozen_target_groups": "results/three_machine_exploration_20261001/a_target_groups.json",
+  "wall_clock_time_limits": false
 }

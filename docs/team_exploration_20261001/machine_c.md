@@ -21,7 +21,7 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -m v1_continuation.runtime infer \
   --execute
 ```
 
-单checkpoint、固定512中心及flip、无bias，完全复用原LR512解码。CUDA空闲再执行；总预算90分钟，不抢占、不自动重试失败、不拟合测试分布或派生测试bias。
+单checkpoint、固定512中心及flip、无bias，完全复用原LR512解码。CUDA空闲再执行；不设时间上限，不抢占、不自动重试失败、不拟合测试分布或派生测试bias。
 
 ## 验证与结束
 

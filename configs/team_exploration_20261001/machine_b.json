@@ -7,7 +7,6 @@
   "owner": null,
   "gpu_model": null,
   "epochs_per_arm": 4,
-  "max_compute_minutes": 300,
   "logical_batch_size": 32,
   "micro_batch_size": 8,
   "num_workers": 2,
@@ -52,12 +51,12 @@
   },
   "cost_probe": {
     "updates": 5,
-    "safety_margin": 0.2,
     "includes": [
       "full_holdout",
       "checkpoint_io",
       "both_submission_packages"
-    ]
+    ],
+    "decision": "record_memory_throughput_and_expected_cost_without_a_time_cutoff"
   },
   "review_gate": {
     "net_vs_control_min": 75,
@@ -84,7 +83,6 @@
     "threshold": "training_group_excluded_max_cosine_10th_percentile",
     "gallery": "train_dev_only",
     "cache": "audited_official_224_projection_512",
-    "calculation_max_minutes": 20,
     "minimum_parent_target_errors": 75
   },
   "augmentations": {
@@ -117,5 +115,6 @@
   "evidence": [
     "results/wft448_full_platform_20261001/validation.json",
     "results/wft448_dev_20261001/report.json"
-  ]
+  ],
+  "wall_clock_time_limits": false
 }

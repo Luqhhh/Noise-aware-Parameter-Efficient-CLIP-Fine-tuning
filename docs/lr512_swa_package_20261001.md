@@ -32,6 +32,8 @@ timeout 5400 env PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_T
   --execute
 ```
 
+上面的timeout是本次已完成推理的历史命令。用户随后明确取消后续时间上限，不将它作为新任务的时长配置。
+
 原runtime会写run-root/inference_progress.json，因此先将原平均checkpoint和sidecar逐字节复制到独立run/training/；原report只在副本中迁移artifact路径，保留SHA值与原plan binding。原report与派生report摘要、checkpoint复制一致性见[复制来源](../results/lr512_swa_package_20261001/copy_provenance.json)。源已完成目录和原artifact均未改写。数值/资产验证使用原冻结实现，没有新增模型代码。
 
 方案提交推送后，main集成采用自动模式pull --rebase --autostash，再合并、核对文档链接与产物、push，在本出包检查点暂停。

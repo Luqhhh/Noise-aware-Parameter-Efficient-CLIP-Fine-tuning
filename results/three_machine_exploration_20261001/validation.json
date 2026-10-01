@@ -42,5 +42,10 @@
     "python3 scripts/export_team_exploration_assets.py export --output outputs/codex/three_machine_exploration_20261001/team_exploration_assets.zip",
     "python3 scripts/export_team_exploration_assets.py verify --bundle outputs/codex/three_machine_exploration_20261001/team_exploration_assets.zip",
     "git diff --check"
-  ]
+  ],
+  "revision": "User explicitly removed all new wall-clock limits",
+  "revision_base_commit": "87c5bfed3be4d65d2f5cb6423236778ef7f2522b",
+  "wall_clock_time_limits": false,
+  "fixed_epochs_per_arm": 4,
+  "cost_measurements_recorded_without_time_cutoff": true
 }
