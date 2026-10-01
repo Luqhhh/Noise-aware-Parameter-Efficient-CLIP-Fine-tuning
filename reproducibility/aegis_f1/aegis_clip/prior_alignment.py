@@ -1,11 +1,10 @@
 """Single-model logit calibration against an explicitly declared class prior.
 
-The class-bias fitting step (iterative proportional fitting) is deliberately
-separated from the application step.  Competition rules forbid optimising the
-class prior from the test prediction distribution, so the bias must be fitted
-once on the current-stage validation set and applied to the test set as a
-frozen, deterministic additive offset.  ``align_logits_to_prior`` keeps the
-legacy fit-and-apply-on-one-batch behavior for offline sweeps only.
+The class-bias fitting step (iterative proportional fitting) is separated from
+application. Ordinary inference fits on validation and freezes the bias. The
+explicit v1 test-uniform path uses the official balanced-test prior, following
+the user's 2026-10-01 relay of official permission; it does not learn a prior or
+update model weights. Existing defaults and callers remain unchanged.
 """
 
 from __future__ import annotations
@@ -23,6 +22,7 @@ def fit_prior_bias(
     max_iterations: int = 50,
     tolerance: float = 1.0e-6,
     damping: float = 0.5,
+    fixed_iterations: bool = False,
 ) -> tuple[torch.Tensor, dict[str, Any]]:
     """Fit one additive class-bias vector so the soft marginal approaches a prior.
 
@@ -65,7 +65,7 @@ def fit_prior_bias(
     for iterations in range(1, int(max_iterations) + 1):
         marginal = F.softmax(work + bias, dim=1).mean(dim=0)
         fitted_error = float((marginal - prior).abs().max())
-        if fitted_error <= float(tolerance):
+        if not fixed_iterations and fitted_error <= float(tolerance):
             break
         update = (prior.clamp_min(1.0e-12).log() - marginal.clamp_min(1.0e-12).log())
         bias = bias + float(damping) * update
@@ -77,6 +77,7 @@ def fit_prior_bias(
         "iterations": int(iterations),
         "tolerance": float(tolerance),
         "damping": float(damping),
+        "fixed_iterations": bool(fixed_iterations),
         "fitted_max_marginal_error": float(fitted_error),
         "initial_marginal_l1": float((initial_marginal - prior).abs().sum()),
         "final_marginal_l1": float((final_marginal - prior).abs().sum()),

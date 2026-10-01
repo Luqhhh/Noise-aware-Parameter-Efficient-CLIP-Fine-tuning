@@ -49,8 +49,21 @@ def load_recipe(path, source_root=None):
         raise ValueError("Invalid v1 OpenAI CLIP architecture")
     if config["source"]["partition"] not in ("train_dev", "full_train"):
         raise ValueError("Unsupported training partition")
-    if config["decode"]["bias_source"] != "val_dev":
-        raise ValueError("Bias must be fitted on the official training-side val_dev split")
+    feature_path = m.get("feature_path", "projection")
+    if feature_path not in ("projection", "pre_projection"):
+        raise ValueError("Unsupported visual feature path")
+    if feature_path == "pre_projection" and not config["source"].get("preprojection_cache"):
+        raise ValueError("Pre-projection training requires a separately bound feature cache")
+    if feature_path == "projection" and config["source"].get("preprojection_cache"):
+        raise ValueError("Pre-projection cache cannot initialize a projected head")
+    decoder = config["decode"]
+    if decoder["bias_source"] == "test_uniform_experimental":
+        if decoder.get("experimental_test_bias") is not True:
+            raise ValueError("Test bias requires the explicit experimental research switch")
+        if decoder.get("logit_reduction") != "sum":
+            raise ValueError("The external-comparison test bias uses summed view logits")
+    elif decoder["bias_source"] != "val_dev" or decoder.get("experimental_test_bias"):
+        raise ValueError("Bias must use val_dev or the explicit test-uniform research mode")
     if (not config["decode"]["scales"] or any(s < m["image_size"] for s in config["decode"]["scales"])
             or config["decode"]["bias_iterations"] < 1):
         raise ValueError("Invalid fixed decoder")
@@ -141,18 +154,54 @@ class StageContext:
                 "reproducibility/aegis_f1/aegis_clip/v1_pipeline.py",
                 "reproducibility/aegis_f1/aegis_clip/model.py",
                 "reproducibility/aegis_f1/aegis_clip/submission.py")}))
+        self.preprojection_cache = None
+        if config["model"].get("feature_path") == "pre_projection":
+            cache = config["source"]["preprojection_cache"]
+            self.preprojection_cache = Path(cache["tensor_path"]).expanduser().resolve()
+            protocol_path = Path(cache["protocol_path"]).expanduser().resolve()
+            if (sha256_file(self.preprojection_cache) != cache["tensor_sha256"]
+                    or sha256_file(protocol_path) != cache["protocol_sha256"]):
+                raise ValueError("Pre-projection cache or source protocol checksum mismatch")
+            protocol = json.loads(protocol_path.read_text())
+            identity = ("stage", "data_version", "dataset_manifest_sha256",
+                        "class_mapping_sha256", "official_checkpoint_sha256",
+                        "feature_manifest_sha256")
+            if (protocol.get("test_data_used") is not False
+                    or any(protocol["binding"].get(k) != self.binding[k] for k in identity)):
+                raise ValueError("Pre-projection cache belongs to another dataset or initialization")
+            self.binding.update(feature_path="pre_projection",
+                feature_tensor_sha256=cache["tensor_sha256"],
+                feature_protocol_sha256=cache["protocol_sha256"])
+        if config["decode"]["bias_source"] == "test_uniform_experimental":
+            self.binding["test_bias_implementation_sha256"] = sha256_file(
+                ROOT / "reproducibility/aegis_f1/aegis_clip/v1_test_bias.py")
+            self.binding["prior_alignment_implementation_sha256"] = sha256_file(
+                ROOT / "reproducibility/aegis_f1/aegis_clip/prior_alignment.py")
 
     def summary(self):
         return dict(status="implementation_ready", training_started=False, gpu_started=False,
             binding=self.binding, classes=len(self.classes), train_samples=len(self.train),
             val_samples=len(self.val), feature_source="audited current-stage 224 center cache",
+            feature_path=self.config["model"].get("feature_path", "projection"),
+            feature_dimension=768 if self.preprojection_cache else 512,
             strategy_name="v1", strategy_origin="team_original",
             local_score=None, platform_score=None,
-            rule_risk="same-trajectory SWA research only" if self.config["train"]["swa_enabled"] else None)
+            rule_risk="same-trajectory SWA research only" if self.config["train"]["swa_enabled"] else None,
+            test_bias_authorization=("user-relayed official confirmation 2026-10-01"
+                if self.config["decode"]["bias_source"] == "test_uniform_experimental" else None))
 
     def features(self):
-        tensor = torch.load(self.reference["features"]["tensor_path"], map_location="cpu", weights_only=True)
-        if tuple(tensor.shape) != (len(self.full), 512) or not torch.isfinite(tensor).all():
+        dimension = 512
+        if self.preprojection_cache:
+            cache = torch.load(self.preprojection_cache, map_location="cpu", weights_only=True)
+            if cache["image_paths"] != [r["image_path"] for r in self.full]:
+                raise ValueError("Pre-projection feature rows do not match current full_train")
+            if tuple(cache["projection"].shape) != (768, 512):
+                raise ValueError("Unexpected official cache projection")
+            tensor, dimension = cache["preprojection"], 768
+        else:
+            tensor = torch.load(self.reference["features"]["tensor_path"], map_location="cpu", weights_only=True)
+        if tuple(tensor.shape) != (len(self.full), dimension) or not torch.isfinite(tensor).all():
             raise ValueError("Unexpected feature tensor")
         index = {r["image_path"]: i for i, r in enumerate(self.full)}
         return tensor[[index[r["image_path"]] for r in self.train]].float()
@@ -468,6 +517,8 @@ def load_selected(context, checkpoint, device):
 
 
 def calibrate(context, checkpoint, device):
+    if context.config["decode"].get("bias_source", "val_dev") != "val_dev":
+        raise ValueError("Test-uniform research calibration is performed in its explicit inference path")
     model, _ = load_selected(context, checkpoint, device)
     rows = context.calibration
     logits = collect_tta(context, model, rows, device)
@@ -509,6 +560,9 @@ def validate_calibration(payload, context, checkpoint):
 
 
 def infer(context, checkpoint, device):
+    if context.config["decode"].get("bias_source") == "test_uniform_experimental":
+        from aegis_clip.v1_test_bias import infer_test_uniform
+        return infer_test_uniform(context, checkpoint, device)
     from aegis_clip.submission import create_submission
     calibration = load_artifact(Path(context.config["output"]["root"]) / "calibration.pt", context.binding)
     validate_calibration(calibration, context, checkpoint)

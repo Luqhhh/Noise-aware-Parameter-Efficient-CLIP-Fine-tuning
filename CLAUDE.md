@@ -102,7 +102,7 @@ python3 -m common.submission --raw <pred_raw.csv> --out_dir <目录>
 - 骨干固定 **CLIP ViT-B/32**，权重限 **OpenAI 官方**（代码内硬校验：`common/clip_utils.py` 的 `ALLOWED_MODEL_NAME` / `ALLOWED_PRETRAINED_SOURCE`）
 - **禁止跨阶段复用**：数据、checkpoint、特征缓存、伪标签、原型、拟合的 prior 均不可带入新阶段
   - ⚠️ **上一阶段的部分拟合产物仍在磁盘上且被 git 跟踪**（如 `outputs/phase/phase3/oof/` 的 `sample_quality.csv`、`fold_assignments.csv`、`outputs/phase4/purification/*`、`outputs/phase4/global_rejected_paths.txt`、`outputs/data/d3_strict/`）。它们按 500 类 / `train_dedup/` 路径键，**新阶段一律不得读取**。危险点在于路径存在，误引用不会干脆报 `FileNotFoundError`，而是静默接错数据或跑到一半才 `KeyError`，失败会伪装成「方法无效」。可迁移的只有代码与公式。
-- **测试集只读**：禁止测试图入训、无监督自适应、TTT/梯度更新、用测试集预测分布调参
+- **测试集只读**：禁止测试图入训、无监督自适应、TTT/梯度更新、用测试集预测分布反复调参。2026-10-01用户转述官方确认：允许利用测试集类别均衡先验进行固定bias校正，范围见[规则确认](docs/v1_test_prior_authorization_20261001.md)。
 - **禁止集成**：多模型、多 checkpoint 投票、多 seed 平均、骨干融合、多头融合、logits/概率加权组合均不允许。最终结果 = 单个训练好的 checkpoint + 单份确定性推理脚本 + 一份 `pred_results.csv`
 - 多尺度 + Flip TTA 已裁定合规（前提：单 checkpoint + 单确定性流程）
 - 提交格式：`文件名, 0001`（逗号 + 空格 + 4 位补零），ZIP 内只含 `pred_results.csv` 且与外部字节一致

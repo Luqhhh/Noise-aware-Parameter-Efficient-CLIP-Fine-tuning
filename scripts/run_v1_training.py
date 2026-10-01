@@ -53,7 +53,9 @@ def main():
             if recipe["train"]["swa_enabled"] else [],
         training_started=False, local_score=None, platform_score=None, automatic_retry=False)
     commands = []
-    for stage in ("targets", "train", "calibrate", "infer"):
+    stages = ("targets", "train", "infer") if recipe["decode"]["bias_source"] == "test_uniform_experimental" else (
+        "targets", "train", "calibrate", "infer")
+    for stage in stages:
         command = [sys.executable, "-u", "-m", "aegis_clip.cli.v1", stage,
                    "--config", str(config), "--device", "cuda", "--execute"]
         if stage in ("calibrate", "infer"):
