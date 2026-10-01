@@ -15,6 +15,7 @@ import math
 from pathlib import Path
 import random
 import subprocess
+import sys
 import time
 import zipfile
 
@@ -405,7 +406,7 @@ def infer(plan_path, authorization, output, checkpoint=None):
                 sums[indices.numpy()] += logits.float().softmax(1).cpu().numpy()
     predictions = sums.argmax(1)
     write_submission(output, files, predictions, plan["recipe"]["num_classes"])
-    subprocess.run(["python3", str(ROOT / "scripts/check_submission.py"), "--test_dir", str(root),
+    subprocess.run([sys.executable, str(ROOT / "scripts/check_submission.py"), "--test_dir", str(root),
         "--num-classes", "750", "--csv", str(Path(output)/"pred_results.csv"), "--zip", str(Path(output)/"submission.zip")], check=True)
     dump(Path(output) / "report.json", dict(status="package_ready", checkpoint=str(cp), checkpoint_sha256=sha(cp),
          weights=weight_policy, views=plan["recipe"]["views"], rows=len(files), elapsed_seconds=time.monotonic()-budget.start,
