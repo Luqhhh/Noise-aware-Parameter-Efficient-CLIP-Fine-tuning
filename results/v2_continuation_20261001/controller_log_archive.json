@@ -1,0 +1,6 @@
+{
+  "raw_sha256": "889133c8c8fc5ce422014ba7a7a524b3bf7dea4b608aea2f776d6e9f21aed01e",
+  "archived_sha256": "e468f43f2ef58c848ab73c7625b1b6e5ba262065a0fc09d117a287f3acecf1ba",
+  "normalization": "strip trailing whitespace only; original private log retained",
+  "original_private_log": "/home/lux1/noise/worktrees/v2_continuation_20261001/outputs/codex/v2_continuation_20261001/controller_start.raw.log"
+}

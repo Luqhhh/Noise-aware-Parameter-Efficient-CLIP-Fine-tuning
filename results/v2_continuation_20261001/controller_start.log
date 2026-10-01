@@ -1,15 +1,15 @@
 {"pid": 5764, "plan": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/plan.json", "plan_sha256": "596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e", "keep_server_running": true, "started_at_utc": "2026-10-01T07:56:56.012198+00:00", "training_completed": false, "platform_metrics": null, "status": "cost_probe", "stage": "s2_448", "updated_at_utc": "2026-10-01T07:56:56.079302+00:00", "probe_steps": 8}
-/root/miniconda3/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 4 bytes but only got 2. 
+/root/miniconda3/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 4 bytes but only got 2.
   warnings.warn(str(msg))
 /root/miniconda3/lib/python3.12/site-packages/PIL/Image.py:1137: UserWarning: Palette images with Transparency expressed in bytes should be converted to RGBA images
   warnings.warn(
-/root/miniconda3/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 4 bytes but only got 2. 
+/root/miniconda3/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 4 bytes but only got 2.
   warnings.warn(str(msg))
 /root/miniconda3/lib/python3.12/site-packages/PIL/Image.py:1137: UserWarning: Palette images with Transparency expressed in bytes should be converted to RGBA images
   warnings.warn(
 {"pid": 5764, "plan": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/plan.json", "plan_sha256": "596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e", "keep_server_running": true, "started_at_utc": "2026-10-01T07:56:56.012198+00:00", "training_completed": false, "platform_metrics": null, "status": "training", "stage": "s2_448", "updated_at_utc": "2026-10-01T08:05:49.361475+00:00", "probe_steps": 8, "estimated_stage_seconds": 41033.760617160704, "max_stage_seconds": 57448, "measured_peak_bytes": 2717040640}
-/root/miniconda3/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 4 bytes but only got 2. 
+/root/miniconda3/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 4 bytes but only got 2.
   warnings.warn(str(msg))
 {"stage": "s2_448", "epoch": 0, "updates": 200, "loss": 3.673620343208313, "elapsed": 529.7952294070274}
-/root/miniconda3/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 4 bytes but only got 2. 
+/root/miniconda3/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:949: UserWarning: Corrupt EXIF data.  Expecting to read 4 bytes but only got 2.
   warnings.warn(str(msg))
