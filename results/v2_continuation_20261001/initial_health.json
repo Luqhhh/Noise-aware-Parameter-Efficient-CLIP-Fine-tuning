@@ -1,0 +1,31 @@
+{
+  "recorded_at_utc": "2026-10-01T08:00:12.810692+00:00",
+  "health": "running",
+  "controller": {
+    "pid": 5764,
+    "plan": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/plan.json",
+    "plan_sha256": "596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e",
+    "keep_server_running": true,
+    "started_at_utc": "2026-10-01T07:56:56.012198+00:00",
+    "training_completed": false,
+    "platform_metrics": null,
+    "status": "cost_probe",
+    "stage": "s2_448",
+    "updated_at_utc": "2026-10-01T07:56:56.079302+00:00",
+    "probe_steps": 8
+  },
+  "controller_alive": true,
+  "real_training_progress": null,
+  "completed_stage_epochs": 0,
+  "last_epoch_metrics": null,
+  "log_age_seconds": 196.59881448745728,
+  "disk_free_bytes": 13718204416,
+  "gpu_query_exit_code": 0,
+  "gpu": "0, NVIDIA GeForce RTX 4090, 0, 3686, 24564",
+  "compute_processes": "5764, /root/autodl-tmp/noise/venv/bin/python, 3674",
+  "log_tail": [
+    "{\"pid\": 5764, \"plan\": \"/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/plan.json\", \"plan_sha256\": \"596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e\", \"keep_server_running\": true, \"started_at_utc\": \"2026-10-01T07:56:56.012198+00:00\", \"training_completed\": false, \"platform_metrics\": null, \"status\": \"cost_probe\", \"stage\": \"s2_448\", \"updated_at_utc\": \"2026-10-01T07:56:56.079302+00:00\", \"probe_steps\": 8}"
+  ],
+  "keep_server_running": true,
+  "local_recorded_at_utc": "2026-10-01T08:00:13.821959+00:00"
+}
