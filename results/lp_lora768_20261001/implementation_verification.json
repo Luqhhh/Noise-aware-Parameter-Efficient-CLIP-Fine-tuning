@@ -1,0 +1,18 @@
+{
+  "real_assets": {
+    "passed": 4,
+    "command": "LP_LORA768_LOCATIONS=.planning/2026-10-01-clairvoyanttt-lp-lora768/locations.json PYTHONPATH=reproducibility/aegis_f1:/home/clairvoyant/.venvs/innovation-cup-task2/lib/python3.12/site-packages /home/clairvoyant/.venvs/noise-clip/bin/python -m pytest reproducibility/aegis_f1/tests/test_lp_lora768_real.py -q"
+  },
+  "subagents_used": false,
+  "submission_packages_complete": false,
+  "source_replay_gate_passed": false,
+  "status": "implementation_verified_training_in_progress",
+  "full_suite": {
+    "passed": 762,
+    "skipped": 13,
+    "failed": 2,
+    "failures": "test_scope_protocol.py ScopePreflightError, historical removed assets",
+    "command": "PYTHONPATH=reproducibility/aegis_f1:/home/clairvoyant/.venvs/innovation-cup-task2/lib/python3.12/site-packages /home/clairvoyant/.venvs/noise-clip/bin/python -m pytest reproducibility/aegis_f1/tests -q"
+  },
+  "formal_epochs_complete": false
+}

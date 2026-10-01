@@ -1,0 +1,68 @@
+{
+  "diagnostics": [
+    {
+      "expected": 463,
+      "file_sha256_matches": true,
+      "full_batch32": 730,
+      "head1": 730,
+      "head8192": 730,
+      "head_fp64": 730,
+      "image_path": "train/0115/b3a31fb679bc4945a126860fbd55c97a.jpg",
+      "top": [
+        730,
+        463,
+        345
+      ],
+      "top_gap": 0.0015025138854980469,
+      "top_logits": [
+        4.442795753479004,
+        4.441293239593506,
+        3.8462233543395996
+      ],
+      "val_batch8": 730
+    },
+    {
+      "expected": 647,
+      "file_sha256_matches": true,
+      "full_batch32": 446,
+      "head1": 446,
+      "head8192": 446,
+      "head_fp64": 446,
+      "image_path": "train/0458/cae8a290cb334e5c8b9ad92834b1ca1b.jpg",
+      "top": [
+        446,
+        647,
+        59
+      ],
+      "top_gap": 0.0001010894775390625,
+      "top_logits": [
+        5.9917731285095215,
+        5.991672039031982,
+        4.980436325073242
+      ],
+      "val_batch8": 446
+    },
+    {
+      "expected": 484,
+      "file_sha256_matches": true,
+      "full_batch32": 545,
+      "head1": 545,
+      "head8192": 545,
+      "head_fp64": 545,
+      "image_path": "train/0545/d443d23cc4434b8499c8e797c86e4c45.jpg",
+      "top": [
+        545,
+        484,
+        75
+      ],
+      "top_gap": 0.009859085083007812,
+      "top_logits": [
+        5.266894817352295,
+        5.257035732269287,
+        3.9322052001953125
+      ],
+      "val_batch8": 545
+    }
+  ],
+  "torch_version": "2.13.0+cu130"
+}
