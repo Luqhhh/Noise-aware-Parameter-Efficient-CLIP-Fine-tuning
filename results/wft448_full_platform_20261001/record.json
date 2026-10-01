@@ -1,0 +1,78 @@
+{
+  "record_id": "WFT448_FULL_PLATFORM_20261001",
+  "experiment_id": "WFT448_FULL",
+  "recorded_at": "2026-10-01T03:04:52.633801+00:00",
+  "source": "user_report_contextually_associated_with_just_delivered_desktop_package",
+  "source_message": "70.43585087063347",
+  "association_basis": "User requested WFT448_FULL ZIP on desktop; assistant verified desktop copy; next user message supplied this score.",
+  "platform_score_percent": 70.43585087063347,
+  "platform_score_reported_text": "70.43585087063347",
+  "platform_submission_id": null,
+  "platform_submitted_at": null,
+  "platform_package_binding_verified": false,
+  "independent_platform_receipt_verified": false,
+  "base_origin_main_commit": "40722ca7d515b94cbe1cf5423df04a6518b38a27",
+  "feedback_branch": "codex/wft448_full_platform_20261001",
+  "feedback_worktree": "/home/lux1/noise/worktrees/wft448_full_platform_20261001",
+  "weights": "last_ema",
+  "delivery_result": "results/wft448_full_20261001/final_validation.json",
+  "config": "/home/lux1/noise/worktrees/wft448_full_20261001/configs/v1_continuation/wft448_full.yaml",
+  "checkpoint": "/home/lux1/noise/worktrees/wft448_full_20261001/outputs/codex/wft448_full_20261001/run/training/selected.pt",
+  "checkpoint_sha256": "9561fbb463d37c8ff576098fee04dc696aa71baa80f377c52fe40bb3bc8e9823",
+  "artifacts": {
+    "csv": {
+      "path": "/home/lux1/noise/worktrees/wft448_full_20261001/outputs/codex/wft448_full_20261001/submission/pred_results.csv",
+      "sha256": "ee7cbd79e045440a55281615f0005cfae29142bc2d2bedbcef246e41b1cc556f"
+    },
+    "zip": {
+      "path": "/home/lux1/noise/worktrees/wft448_full_20261001/outputs/codex/wft448_full_20261001/submission/submission.zip",
+      "sha256": "833dcd651f2d8698a552fa5ef3ff1d53d198ae328c4b56405a2a67de78434af0"
+    },
+    "desktop_zip": {
+      "path": "/mnt/c/Users/lqh22/Desktop/wft448_full_submission.zip",
+      "sha256": "833dcd651f2d8698a552fa5ef3ff1d53d198ae328c4b56405a2a67de78434af0"
+    }
+  },
+  "submission_rows": 37444,
+  "submission_checks_passed": 9,
+  "submission_check_source": "/home/lux1/noise/worktrees/wft448_full_20261001/outputs/codex/wft448_full_20261001/submission/submission_check.log",
+  "source_zip_desktop_zip_sha256_identical": true,
+  "zip_csv_bytes_identical": true,
+  "platform_comparison": {
+    "reference": "full_v1_swa",
+    "reference_score_percent": 70.98600576861446,
+    "delta_pp": -0.55015489798099,
+    "delta_pp_exact": "-0.55015489798099",
+    "candidate_correct_implied": 26374,
+    "reference_correct_implied": 26580,
+    "delta_correct_implied": -206,
+    "counts_are_derived_not_receipts": true,
+    "per_image_correctness_known": false
+  },
+  "target_75_percent": {
+    "required_correct": 28083,
+    "remaining_correct_implied": 1709,
+    "remaining_pp": 4.56414912936653
+  },
+  "development_evidence": {
+    "source": "results/wft448_dev_20261001/report.json",
+    "last_ema_micro_percent": 76.54569892473118,
+    "local_delta_micro_pp": 0.5846774193548399,
+    "local_net": 87,
+    "labels_are_original_noisy_labels": true
+  },
+  "decision": {
+    "status": "do_not_promote_current_wft448_full_last_ema",
+    "keep_incumbent": "full_v1_swa",
+    "incumbent_zip": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+    "incumbent_validation": "results/v1_full_swa_platform_20261001/artifact_verification.json",
+    "wft_other_exports_platform_score_unknown": true,
+    "cause_of_platform_regression_unknown": true,
+    "lr512_full": "evidence_requires_review_not_started",
+    "next_low_training_cost_candidate": "LR512_DEV fixed EMA2-4; checkpoint exists, inference package not generated"
+  },
+  "implementation_changed": false,
+  "new_training_started": false,
+  "new_inference_started": false,
+  "platform_uploaded_by_agent": false
+}

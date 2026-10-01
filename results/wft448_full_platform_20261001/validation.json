@@ -1,0 +1,16 @@
+{
+  "status": "verified",
+  "record_id": "WFT448_FULL_PLATFORM_20261001",
+  "score_percent": "70.43585087063347",
+  "delta_pp": "-0.55015489798099",
+  "correct_count_difference_implied": -206,
+  "source_desktop_zip_identical": true,
+  "checkpoint_hash_verified": true,
+  "incumbent_zip_verified": true,
+  "existing_submission_checks_passed": 9,
+  "docs_and_local_links_verified": true,
+  "independent_platform_receipt_verified": false,
+  "implementation_changed": false,
+  "new_training_started": false,
+  "new_inference_started": false
+}
