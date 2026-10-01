@@ -40,3 +40,31 @@ PYTHONPATH=reproducibility/aegis_f1 python3 -u scripts/finalize_v1_768_full.py \
 `/home/lux1/noise-worktrees/v1_768_delivery_recovery_20261001`。
 原有两包、原失败日志与状态见[诊断记录](../results/v1_768_delivery_recovery_20261001/failure_diagnosis.json)。
 现役包及已有正式校验见[当前交付入口](current_execution_plan.md#交付与历史入口)。
+
+## 已验证恢复与后续服务
+
+2026-10-01T08:57:47.490666+00:00 UTC 完成独立复核、归档与main推送；方案commit `4a6ddb267041e785110dd1715d45484ba226c800`，main `da40a391cb4e7fd48d1d131fcb09b7fcdd3fca43`。
+两份37,444行CSV/ZIP再次通过校验，NumPy全部预测一致，独立200次bias拟合最大误差6.7861328e-06，重拟合预测37,444/37,444一致。
+bias改变6,775条预测，类别预测数从0–169变为43–55，不代表准确率提升；新平台分待用户回填。
+
+桌面候选：`/mnt/c/Users/lqh22/Desktop/v1_768_full_test_bias_submission.zip`；无bias：`/mnt/c/Users/lqh22/Desktop/v1_768_full_raw_submission.zip`。
+包摘要、原训练记录与完整复核：[交付报告](../results/v1_768_full_test_bias_20261001/delivery_summary.json)。
+
+首次后续恢复服务因systemd缺少WSL `/usr/lib/wsl/lib` PATH，在资源查询前退出；原记录保留，没有启动GPU工作。
+显式补齐服务PATH后，以新服务 `noise-v1-post768-serial-recovery-env-20261001.service` 启动固定队列；核验状态 `running`，仍按60/90分钟预算及原顺序执行。
+[修正环境后的配置](../configs/v1_post768_serial_recovery_env_20261001.json)；[恢复及服务实测](../results/v1_768_delivery_recovery_20261001/recovery_validation.json)。
+
+运行目录仍为本方案worktree，精确启动：
+
+```bash
+systemd-run --user --unit=noise-v1-post768-serial-recovery-env-20261001 \
+  --property=WorkingDirectory=/home/lux1/noise-worktrees/v1_768_delivery_recovery_20261001 \
+  --property=Restart=no \
+  --setenv=PATH=/usr/lib/wsl/lib:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+  --setenv=PYTHONPATH=/home/lux1/noise-worktrees/v1_768_delivery_recovery_20261001/reproducibility/aegis_f1 \
+  --setenv=OMP_NUM_THREADS=2 --setenv=MKL_NUM_THREADS=2 --setenv=OPENBLAS_NUM_THREADS=2 \
+  /usr/bin/python3 -u scripts/run_v1_post768_queue.py \
+  --queue configs/v1_post768_serial_recovery_env_20261001.json --execute
+```
+
+实时controller：`/home/lux1/noise-worktrees/v1_768_delivery_recovery_20261001/outputs/codex/v1_768_delivery_recovery_20261001/controller_env/status.json`。

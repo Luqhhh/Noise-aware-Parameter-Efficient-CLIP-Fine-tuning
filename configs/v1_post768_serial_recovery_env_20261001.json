@@ -1,0 +1,39 @@
+{
+  "experiment_id": "V1_POST768_SERIAL_20261001",
+  "dependency_completion": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/completion_status.json",
+  "dependency_training": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/status.json",
+  "integration_root": "/home/lux1/noise",
+  "controller_output": "/home/lux1/noise-worktrees/v1_768_delivery_recovery_20261001/outputs/codex/v1_768_delivery_recovery_20261001/controller_env",
+  "jobs": [
+    {
+      "name": "v1_512_test_bias_control_20261001",
+      "route": "512_control",
+      "max_minutes": 60,
+      "experiment_id": "V1_512_TEST_BIAS_CONTROL_20261001",
+      "worktree": "/home/lux1/noise-worktrees/v1_512_test_bias_control_20261001",
+      "branch": "codex/v1_512_test_bias_control_20261001",
+      "prepared_commit": "0de95e43da3066eaf937c8b9cfba0c59d08be824",
+      "config": "/home/lux1/noise-worktrees/v1_512_test_bias_control_20261001/configs/v1_512_test_bias_control_20261001.yaml",
+      "config_sha256": "e991307de79c782e1f54375eb3d274e4bcede880b58e9679b21e2d6ab74bf953",
+      "prepared": "/home/lux1/noise-worktrees/v1_512_test_bias_control_20261001/results/v1_512_test_bias_control_20261001/preparation.json",
+      "prepared_sha256": "26b134fe0caf4f1d33b67cc0bddb0f9c85005952ceb1a8fae37220fee3805131",
+      "worker_sha256": "685dda8c5e6c2603e4f76ed0b126cbdd261b069b9ce331dd6bb8cb633d0d60dc",
+      "output": "/home/lux1/noise-worktrees/v1_512_test_bias_control_20261001/outputs/codex/v1_512_test_bias_control_20261001"
+    },
+    {
+      "name": "v1_crt768_dev_20261001",
+      "route": "crt768_dev",
+      "max_minutes": 90,
+      "experiment_id": "V1_CRT768_DEV_20261001",
+      "worktree": "/home/lux1/noise-worktrees/v1_crt768_dev_20261001",
+      "branch": "codex/v1_crt768_dev_20261001",
+      "prepared_commit": "e5ee73605bd0606428fccfe45e36778e57bfbc98",
+      "config": "/home/lux1/noise-worktrees/v1_crt768_dev_20261001/configs/v1_crt768_dev_20261001.yaml",
+      "config_sha256": "6a77ff0f4676bf85e7ff1e78e0ac922c50e5adcdda0620c8b4c229318673d680",
+      "prepared": "/home/lux1/noise-worktrees/v1_crt768_dev_20261001/results/v1_crt768_dev_20261001/preparation.json",
+      "prepared_sha256": "160559089d584bd1e4bde45992cdb1ebbb04c2a117b6afcb18c5651ca6d7f793",
+      "worker_sha256": "685dda8c5e6c2603e4f76ed0b126cbdd261b069b9ce331dd6bb8cb633d0d60dc",
+      "output": "/home/lux1/noise-worktrees/v1_crt768_dev_20261001/outputs/codex/v1_crt768_dev_20261001"
+    }
+  ]
+}

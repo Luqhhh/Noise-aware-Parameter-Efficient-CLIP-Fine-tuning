@@ -1,0 +1,46 @@
+{
+  "experiment_id": "V1_768_DELIVERY_RECOVERY_20261001",
+  "status": "full_delivery_verified_queue_active",
+  "full_completion": {
+    "experiment_id": "V1_768_FULL_TEST_BIAS_20261001",
+    "status": "completed",
+    "started_at": "2026-10-01T08:56:51.060830+00:00",
+    "training_retry": false,
+    "recovery": true,
+    "recovery_branch": "codex/v1_768_delivery_recovery_20261001",
+    "previous_failed_at": "2026-10-01T08:28:57.590373+00:00",
+    "stage": "verified_checkpoint",
+    "command": [
+      "git",
+      "push",
+      "origin",
+      "main"
+    ],
+    "proposal_commit": "4a6ddb267041e785110dd1715d45484ba226c800",
+    "main_commit": "da40a391cb4e7fd48d1d131fcb09b7fcdd3fca43",
+    "summary": "/home/lux1/noise-worktrees/v1_768_delivery_recovery_20261001/results/v1_768_full_test_bias_20261001/delivery_summary.json",
+    "verification": "/home/lux1/noise-worktrees/v1_768_delivery_recovery_20261001/results/v1_768_full_test_bias_20261001/delivery_verification.json",
+    "completed_at": "2026-10-01T08:57:47.490666+00:00"
+  },
+  "queue_snapshot": {
+    "experiment_id": "V1_POST768_SERIAL_20261001",
+    "status": "running",
+    "runner_pid": 164559,
+    "started_at": "2026-10-01T09:00:41.410327+00:00",
+    "jobs": [],
+    "automatic_retry": false,
+    "automatic_full_training": false,
+    "platform_upload": false,
+    "dependency": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/completion_status.json",
+    "queue_sha256": "10def234fd6d06e75e6d42184cabcf2a5078c3837514a6396147be521a341b88",
+    "current_experiment": "V1_512_TEST_BIAS_CONTROL_20261001",
+    "heartbeat_at": "2026-10-01T09:04:24.075072+00:00",
+    "child_pid": 164860,
+    "elapsed_seconds": 15.008353825003724,
+    "command": "/usr/bin/python3 -u scripts/run_v1_post768_job.py --config /home/lux1/noise-worktrees/v1_512_test_bias_control_20261001/configs/v1_512_test_bias_control_20261001.yaml --prepared /home/lux1/noise-worktrees/v1_512_test_bias_control_20261001/results/v1_512_test_bias_control_20261001/preparation.json --execute"
+  },
+  "queue_service": "noise-v1-post768-serial-recovery-env-20261001.service",
+  "service_path": "/usr/lib/wsl/lib:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+  "additional_training_or_inference_for_full": false,
+  "platform_score": null
+}
