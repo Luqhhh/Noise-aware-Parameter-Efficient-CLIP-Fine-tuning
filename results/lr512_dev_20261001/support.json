@@ -1,0 +1,168 @@
+{
+  "eligible": false,
+  "status": "evidence_requires_review",
+  "reasons": [
+    "late EMA lost gains seen at epoch2"
+  ],
+  "evidence": {
+    "last_ema": {
+      "all": {
+        "candidate": {
+          "macro": 0.755461258257504,
+          "micro": 0.7653897849462366
+        },
+        "classes_present": 750,
+        "corrections": 337,
+        "defined_classes": 750,
+        "delta_macro_pp": 0.5174099679952304,
+        "delta_micro_pp": 0.5174731182795655,
+        "net": 77,
+        "original": {
+          "macro": 0.7502871585775517,
+          "micro": 0.7602150537634409
+        },
+        "prediction_changes": 1400,
+        "regressions": 260,
+        "rows": 14880
+      },
+      "tail": {
+        "candidate": {
+          "macro": 0.6051234049175226,
+          "micro": 0.6689930209371885
+        },
+        "classes_present": 75,
+        "corrections": 29,
+        "defined_classes": 75,
+        "delta_macro_pp": 1.5446934329287232,
+        "delta_micro_pp": 1.495513459621145,
+        "net": 15,
+        "original": {
+          "macro": 0.5896764705882354,
+          "micro": 0.654037886340977
+        },
+        "prediction_changes": 139,
+        "regressions": 14,
+        "rows": 1003
+      },
+      "head": {
+        "candidate": {
+          "macro": 0.7500222222222223,
+          "micro": 0.7494517543859649
+        },
+        "classes_present": 75,
+        "corrections": 51,
+        "defined_classes": 75,
+        "delta_macro_pp": 1.037777777777782,
+        "delta_micro_pp": 1.041666666666663,
+        "net": 19,
+        "original": {
+          "macro": 0.7396444444444444,
+          "micro": 0.7390350877192983
+        },
+        "prediction_changes": 192,
+        "regressions": 32,
+        "rows": 1824
+      },
+      "few_support": {
+        "candidate": {
+          "macro": 0.0,
+          "micro": 0.0
+        },
+        "classes_present": 1,
+        "corrections": 0,
+        "defined_classes": 1,
+        "delta_macro_pp": 0.0,
+        "delta_micro_pp": 0.0,
+        "net": 0,
+        "original": {
+          "macro": 0.0,
+          "micro": 0.0
+        },
+        "prediction_changes": 0,
+        "regressions": 0,
+        "rows": 1
+      }
+    },
+    "ema_swa_2_4": {
+      "all": {
+        "candidate": {
+          "macro": 0.7576305868924552,
+          "micro": 0.7676075268817204
+        },
+        "classes_present": 750,
+        "corrections": 324,
+        "defined_classes": 750,
+        "delta_macro_pp": 0.7343428314903533,
+        "delta_micro_pp": 0.7392473118279508,
+        "net": 110,
+        "original": {
+          "macro": 0.7502871585775517,
+          "micro": 0.7602150537634409
+        },
+        "prediction_changes": 1267,
+        "regressions": 214,
+        "rows": 14880
+      },
+      "tail": {
+        "candidate": {
+          "macro": 0.6038376906318083,
+          "micro": 0.6679960119641076
+        },
+        "classes_present": 75,
+        "corrections": 25,
+        "defined_classes": 75,
+        "delta_macro_pp": 1.4161220043572897,
+        "delta_micro_pp": 1.395812562313059,
+        "net": 14,
+        "original": {
+          "macro": 0.5896764705882354,
+          "micro": 0.654037886340977
+        },
+        "prediction_changes": 119,
+        "regressions": 11,
+        "rows": 1003
+      },
+      "head": {
+        "candidate": {
+          "macro": 0.7505333333333333,
+          "micro": 0.75
+        },
+        "classes_present": 75,
+        "corrections": 46,
+        "defined_classes": 75,
+        "delta_macro_pp": 1.0888888888888837,
+        "delta_micro_pp": 1.0964912280701733,
+        "net": 20,
+        "original": {
+          "macro": 0.7396444444444444,
+          "micro": 0.7390350877192983
+        },
+        "prediction_changes": 177,
+        "regressions": 26,
+        "rows": 1824
+      },
+      "few_support": {
+        "candidate": {
+          "macro": 0.0,
+          "micro": 0.0
+        },
+        "classes_present": 1,
+        "corrections": 0,
+        "defined_classes": 1,
+        "delta_macro_pp": 0.0,
+        "delta_micro_pp": 0.0,
+        "net": 0,
+        "original": {
+          "macro": 0.0,
+          "micro": 0.0
+        },
+        "prediction_changes": 0,
+        "regressions": 0,
+        "rows": 1
+      }
+    }
+  },
+  "assessment": "",
+  "candidate_rejected": false,
+  "platform_gain_known": false
+}

@@ -11,6 +11,13 @@
 
 37,444行CSV/ZIP通过9项校验；FULL证据状态 `supports_fixed_full`，未声称平台提升。见[WFT448_DEV](wft448_dev_20261001.md)。
 
+## 已交付串行检查点：LR512_DEV
+
+- last_ema: macro/micro 75.5461% / 76.5390%; 修正337、退化260、净77。
+- ema_swa_2_4: macro/micro 75.7631% / 76.7608%; 修正324、退化214、净110。
+
+37,444行CSV/ZIP通过9项校验；FULL证据状态 `evidence_requires_review`，未声称平台提升。见[LR512_DEV](lr512_dev_20261001.md)。
+
 ## 最新授权本机串行执行：V1_CONTINUATIONS_SERIAL_20261001
 
 用户明确要求“在本机串行进行剩下几个不依赖v2的实验”。队列为WFT448_DEV → LR512_DEV，
