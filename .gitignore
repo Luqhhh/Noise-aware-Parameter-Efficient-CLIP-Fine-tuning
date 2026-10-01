@@ -113,3 +113,6 @@ outputs/search_20260923/
 
 # Private pixels/logits and per-image synthetic detail-loss diagnostics.
 /outputs/codex/v1_resolution_degradation_probe_20261001/
+
+# Private fixed low-detail training schedules, checkpoints and submissions.
+/outputs/codex/v1_detail_aug_pair_20261001/
