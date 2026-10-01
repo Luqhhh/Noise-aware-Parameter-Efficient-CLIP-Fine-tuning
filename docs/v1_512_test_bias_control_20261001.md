@@ -1,6 +1,6 @@
 # V1_512_TEST_BIAS_CONTROL_20261001
 
-状态：prepared_not_started；用户已授权后续串行队列，等待768 full完整交付及集成。
+状态：completed_verified_delivery；2026-10-01固定推理及两包交付完成，方案和main已推送。
 本方案是无训练的512均衡bias对照，独立分支 `codex/v1_512_test_bias_control_20261001`。
 
 固定配置：[YAML](../configs/v1_512_test_bias_control_20261001.yaml)；
@@ -19,10 +19,10 @@ PYTHONPATH=reproducibility/aegis_f1 python3 scripts/run_v1_post768_job.py \
   --prepared results/v1_512_test_bias_control_20261001/preparation.json --execute
 ```
 
-实际启动仅由[持久串行controller](v1_post768_serial_20261001.md)安排，避免与在途768 full重叠。
+实际执行由[持久串行controller](v1_post768_serial_20261001.md)安排，768 full归档后启动并完成。
 产物根：`/home/lux1/noise-worktrees/v1_512_test_bias_control_20261001/outputs/codex/v1_512_test_bias_control_20261001`。
 桌面前缀：`/mnt/c/Users/lqh22/Desktop/v1_512_test_bias_control_20261001_512_{raw,test_bias}_submission.zip`。
-未产生新候选；现役可提交包及已有校验见[当前入口](current_execution_plan.md#交付与历史入口)。
+候选两包及校验见下方交付记录；现役仍保留，平台分待回填。
 
 ## 已验证交付
 
