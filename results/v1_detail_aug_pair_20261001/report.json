@@ -1,0 +1,387 @@
+{
+  "arms": {
+    "control": {
+      "amp_retry_batches": 2,
+      "history": [
+        {
+          "metrics": {
+            "all": {
+              "classes": 750,
+              "correct": 11327,
+              "errors": 3553,
+              "macro": 0.7511480539775506,
+              "micro": 0.7612231182795699,
+              "rows": 14880
+            },
+            "other": {
+              "classes": 750,
+              "correct": 10119,
+              "errors": 2913,
+              "macro": 0.756390316038239,
+              "micro": 0.7764732965009208,
+              "rows": 13032
+            },
+            "small": {
+              "classes": 571,
+              "correct": 1208,
+              "errors": 640,
+              "macro": 0.6733449125305516,
+              "micro": 0.6536796536796536,
+              "rows": 1848
+            },
+            "tail75": {
+              "classes": 75,
+              "correct": 672,
+              "errors": 331,
+              "macro": 0.6050157533098709,
+              "micro": 0.6699900299102692,
+              "rows": 1003
+            }
+          },
+          "paired_to_parent": {
+            "all": {
+              "both_wrong": 3269,
+              "changed": 1039,
+              "corrections": 189,
+              "net": -95,
+              "regressions": 284,
+              "rows": 14880
+            },
+            "other": {
+              "both_wrong": 2688,
+              "changed": 824,
+              "corrections": 158,
+              "net": -67,
+              "regressions": 225,
+              "rows": 13032
+            },
+            "small": {
+              "both_wrong": 581,
+              "changed": 215,
+              "corrections": 31,
+              "net": -28,
+              "regressions": 59,
+              "rows": 1848
+            },
+            "tail75": {
+              "both_wrong": 318,
+              "changed": 84,
+              "corrections": 15,
+              "net": 2,
+              "regressions": 13,
+              "rows": 1003
+            }
+          },
+          "step": 512
+        },
+        {
+          "metrics": {
+            "all": {
+              "classes": 750,
+              "correct": 11383,
+              "errors": 3497,
+              "macro": 0.7548192449645645,
+              "micro": 0.764986559139785,
+              "rows": 14880
+            },
+            "other": {
+              "classes": 750,
+              "correct": 10166,
+              "errors": 2866,
+              "macro": 0.7599860349504273,
+              "micro": 0.7800798035604666,
+              "rows": 13032
+            },
+            "small": {
+              "classes": 571,
+              "correct": 1217,
+              "errors": 631,
+              "macro": 0.6753193099953171,
+              "micro": 0.6585497835497836,
+              "rows": 1848
+            },
+            "tail75": {
+              "classes": 75,
+              "correct": 666,
+              "errors": 337,
+              "macro": 0.5990269218798632,
+              "micro": 0.6640079760717846,
+              "rows": 1003
+            }
+          },
+          "paired_to_parent": {
+            "all": {
+              "both_wrong": 3286,
+              "changed": 892,
+              "corrections": 172,
+              "net": -39,
+              "regressions": 211,
+              "rows": 14880
+            },
+            "other": {
+              "both_wrong": 2700,
+              "changed": 700,
+              "corrections": 146,
+              "net": -20,
+              "regressions": 166,
+              "rows": 13032
+            },
+            "small": {
+              "both_wrong": 586,
+              "changed": 192,
+              "corrections": 26,
+              "net": -19,
+              "regressions": 45,
+              "rows": 1848
+            },
+            "tail75": {
+              "both_wrong": 320,
+              "changed": 82,
+              "corrections": 13,
+              "net": -4,
+              "regressions": 17,
+              "rows": 1003
+            }
+          },
+          "step": 1024
+        }
+      ],
+      "optimizer_updates": 1024,
+      "package": {
+        "checkpoint": "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/selected.pt",
+        "checkpoint_sha256": "7ccf90560293dfdb4456e98f6c9a8f543a34a2960dc4bee9f369eaeaf1bdcaa1",
+        "checks_passed": 9,
+        "cold_validation_matches": 64,
+        "csv": "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/submission/pred_results.csv",
+        "csv_sha256": "1c1510e0370e24c5a192e0d58c9b24417660e919481f2295ebcb23b03a02cb4e",
+        "rows": 37444,
+        "zip": "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/submission/submission.zip",
+        "zip_csv_identical": true,
+        "zip_sha256": "628240b92a7a46efa354196f0f3f7d463fabf4ea21497f2cceca45e6ecd48abc"
+      },
+      "status": "completed_packaged"
+    },
+    "detail_aug": {
+      "amp_retry_batches": 2,
+      "history": [
+        {
+          "metrics": {
+            "all": {
+              "classes": 750,
+              "correct": 11321,
+              "errors": 3559,
+              "macro": 0.7508351222925433,
+              "micro": 0.7608198924731183,
+              "rows": 14880
+            },
+            "other": {
+              "classes": 750,
+              "correct": 10111,
+              "errors": 2921,
+              "macro": 0.7554960189582332,
+              "micro": 0.7758594229588704,
+              "rows": 13032
+            },
+            "small": {
+              "classes": 571,
+              "correct": 1210,
+              "errors": 638,
+              "macro": 0.6724039290151373,
+              "micro": 0.6547619047619048,
+              "rows": 1848
+            },
+            "tail75": {
+              "classes": 75,
+              "correct": 671,
+              "errors": 332,
+              "macro": 0.602917211328976,
+              "micro": 0.6689930209371885,
+              "rows": 1003
+            }
+          },
+          "paired_to_parent": {
+            "all": {
+              "both_wrong": 3244,
+              "changed": 1183,
+              "corrections": 214,
+              "net": -101,
+              "regressions": 315,
+              "rows": 14880
+            },
+            "other": {
+              "both_wrong": 2669,
+              "changed": 932,
+              "corrections": 177,
+              "net": -75,
+              "regressions": 252,
+              "rows": 13032
+            },
+            "small": {
+              "both_wrong": 575,
+              "changed": 251,
+              "corrections": 37,
+              "net": -26,
+              "regressions": 63,
+              "rows": 1848
+            },
+            "tail75": {
+              "both_wrong": 308,
+              "changed": 117,
+              "corrections": 25,
+              "net": 1,
+              "regressions": 24,
+              "rows": 1003
+            }
+          },
+          "step": 512
+        },
+        {
+          "metrics": {
+            "all": {
+              "classes": 750,
+              "correct": 11346,
+              "errors": 3534,
+              "macro": 0.7522744457846934,
+              "micro": 0.7625,
+              "rows": 14880
+            },
+            "other": {
+              "classes": 750,
+              "correct": 10131,
+              "errors": 2901,
+              "macro": 0.7567462640978471,
+              "micro": 0.7773941068139963,
+              "rows": 13032
+            },
+            "small": {
+              "classes": 571,
+              "correct": 1215,
+              "errors": 633,
+              "macro": 0.6771478715874513,
+              "micro": 0.6574675324675324,
+              "rows": 1848
+            },
+            "tail75": {
+              "classes": 75,
+              "correct": 657,
+              "errors": 346,
+              "macro": 0.5906314970432618,
+              "micro": 0.6550348953140578,
+              "rows": 1003
+            }
+          },
+          "paired_to_parent": {
+            "all": {
+              "both_wrong": 3279,
+              "changed": 1008,
+              "corrections": 179,
+              "net": -76,
+              "regressions": 255,
+              "rows": 14880
+            },
+            "other": {
+              "both_wrong": 2697,
+              "changed": 795,
+              "corrections": 149,
+              "net": -55,
+              "regressions": 204,
+              "rows": 13032
+            },
+            "small": {
+              "both_wrong": 582,
+              "changed": 213,
+              "corrections": 30,
+              "net": -21,
+              "regressions": 51,
+              "rows": 1848
+            },
+            "tail75": {
+              "both_wrong": 319,
+              "changed": 104,
+              "corrections": 14,
+              "net": -13,
+              "regressions": 27,
+              "rows": 1003
+            }
+          },
+          "step": 1024
+        }
+      ],
+      "optimizer_updates": 1024,
+      "package": {
+        "checkpoint": "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/selected.pt",
+        "checkpoint_sha256": "d2d305245b7f62bc79b271afc9f73848e4e026b7e1ab8db92c44f7f1bed35b7a",
+        "checks_passed": 9,
+        "cold_validation_matches": 64,
+        "csv": "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/submission/pred_results.csv",
+        "csv_sha256": "a01785e849c531fc0ab3fe205ccaf97d498b24949fd3745e4415002c09daff5e",
+        "rows": 37444,
+        "zip": "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/detail_aug/submission/submission.zip",
+        "zip_csv_identical": true,
+        "zip_sha256": "15a5dc9e1df719211aec3a3111f8ec2588ccee7b27360a3731b61c413025d8dd"
+      },
+      "status": "completed_packaged"
+    }
+  },
+  "automatic_full": false,
+  "binding": {
+    "config_sha256": "24f90ef437f1071c11fc78f12df16be3f6a3afd01f827af30bec294260626782",
+    "data_version": "20260921",
+    "implementation_sha256": "25970b879a910a4db585c8d032296ee9b85312f487b7856c401c22d694ca4555",
+    "parent_sources": {
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/baseline.npz": "af595985fd28eb1bfa4ee4477dffd206ccd62bd2e8e55de86e6ddb3373bd29ac",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.pt": "c103dc3e6039c9fe156a56dfcd196500975b5bd21354be6506447bb1ee636e2e",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.sha256.json": "8be06d426e4b40d369da7e4c940d228a5bb59206d264f755d95c26483e2f11fa",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/val_epoch04_ema_swa_2_4.npz": "a404e16f2d88d3331dc9caf3c26bda111714369bdcca69cda6e290a3478d8845",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/results/lr512_dev_20261001/report.json": "cf5b9bcfaebd1163284fcb9347e8b4c724991592c9fcaa009bf99d0b297ea404"
+    },
+    "partition": "train_dev",
+    "schedule_sha256": "42cf04b89482d279c8b2a4fd251cecc58d590dfb546b50761aefaae05f231ff4",
+    "stage": "repechage"
+  },
+  "candidate_vs_control": {
+    "all": {
+      "both_wrong": 3369,
+      "changed": 717,
+      "corrections": 128,
+      "net": -37,
+      "regressions": 165,
+      "rows": 14880
+    },
+    "other": {
+      "both_wrong": 2773,
+      "changed": 540,
+      "corrections": 93,
+      "net": -35,
+      "regressions": 128,
+      "rows": 13032
+    },
+    "small": {
+      "both_wrong": 596,
+      "changed": 177,
+      "corrections": 35,
+      "net": -2,
+      "regressions": 37,
+      "rows": 1848
+    },
+    "tail75": {
+      "both_wrong": 330,
+      "changed": 60,
+      "corrections": 7,
+      "net": -9,
+      "regressions": 16,
+      "rows": 1003
+    }
+  },
+  "decision": "close_fixed_detail_augmentation_recipe",
+  "elapsed_seconds": 3104.194491777991,
+  "experiment_id": "V1_DETAIL_AUG_PAIR_20261001",
+  "original_labels_noisy": true,
+  "platform_gain_known": false,
+  "primary_checkpoint": "last_raw_step1024",
+  "status": "completed_packaged_pair",
+  "supports_review": false,
+  "training_population": "32768 frozen active train_dev rows, shared without replacement",
+  "validation_rows": 14880
+}
