@@ -1,0 +1,18 @@
+{
+  "recovery_every_successful_updates": 1000,
+  "parent_logits_same_as_first_run": true,
+  "complete_four_epochs": false,
+  "full_suite_passed": 768,
+  "status": "recovery_implementation_verified_formal_retry_in_progress",
+  "real_recovery_sampler_log_test_passed": 1,
+  "source_replay_exact": false,
+  "real_asset_tests_passed": 5,
+  "packages_complete": false,
+  "sample_augmentation_and_successful_log_prefix_exact": true,
+  "full_suite_skipped": 14,
+  "active_run": "20261001T222332_retry1",
+  "failed_run": "20261001T211600",
+  "recovery_at_epoch_boundaries": true,
+  "raw_optimizer_scheduler_scaler_ema_next_update_exact": true,
+  "full_suite_known_scope_failures": 2
+}

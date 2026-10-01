@@ -93,3 +93,52 @@ def test_real_control_cold_checkpoint_keeps_frozen_lora(tmp_path):
         torch.testing.assert_close(value, state[key], rtol=0, atol=0)
     predictions, _ = api.center_predictions(context, cold, context.val[:128], batch_size=8)
     np.testing.assert_array_equal(predictions, context.frozen["unbalanced768"][:128])
+
+
+def test_real_recovery_preserves_optimizer_scheduler_scaler_and_ema(tmp_path):
+    import importlib.util
+    assert importlib.util.find_spec('lp_lora768.recovery') is not None, 'Durable real-state recovery implementation required'
+    context=implementation().Context(Path(LOCATIONS))
+    from lp_lora768.recovery import save_recovery, load_recovery, restore_batch_prefix
+    from lp_lora768.paired import training_loader, optimizer_for, scheduler_for, update_once
+    from lp_lora768.inputs import initial_model, adapter_head_state
+    from aegis_clip.v1_strategy import WeightAverage
+    batches=list(__import__('itertools').islice(training_loader(context,1),2))
+    resumed_batch=next(iter(training_loader(context,1,start_batch=1)))
+    assert torch.equal(resumed_batch[0],batches[1][0]) and torch.equal(resumed_batch[1],batches[1][1])
+    for arm in context.protocol['arms']:
+        output=tmp_path/arm;output.mkdir()
+        model=initial_model(context,arm).train();optimizer=optimizer_for(model,context)
+        scheduler=scheduler_for(optimizer,3722);scaler=torch.amp.GradScaler('cuda')
+        live=lambda:{n:p.detach() for n,p in model.named_parameters() if n.startswith('head.') or 'lora_' in n}
+        ema=WeightAverage(live(),.999)
+        loss,_=update_once(context,model,optimizer,*batches[0],epoch=1,batch=1,scaler=scaler)
+        scheduler.step();ema.update(live())
+        average=WeightAverage(ema.state);average.update(ema.state)
+        import json
+        from lp_lora768.paired import batch_identity
+        first_record=json.dumps(dict(epoch=1,batch=1,**batch_identity(context,*batches[0],1,1)))+'\n'
+        (output/'paired_batches.jsonl').write_text(first_record)
+        save_recovery(context,arm,output,model,optimizer,scheduler,scaler,ema,average,
+            epoch=1,batch=1,updates=1,history=[],losses=[loss],elapsed_seconds=0.)
+        with (output/'paired_batches.jsonl').open('a') as f:f.write(json.dumps(dict(epoch=1,batch=2,**batch_identity(context,*batches[1],1,2)))+'\n')
+        expected_loss,_=update_once(context,model,optimizer,*batches[1],epoch=1,batch=2,scaler=scaler)
+        scheduler.step();ema.update(live())
+        expected=adapter_head_state(model);expected_ema={k:v.cpu().clone() for k,v in ema.state.items()}
+        expected_scale=scaler.state_dict();expected_scheduler=scheduler.state_dict()
+        del model,optimizer,scheduler,scaler,ema;torch.cuda.empty_cache()
+        cold=initial_model(context,arm).train();opt=optimizer_for(cold,context)
+        sched=scheduler_for(opt,3722);scale=torch.amp.GradScaler('cuda')
+        recovered=load_recovery(context,arm,output,cold,opt,sched,scale)
+        assert restore_batch_prefix(output,recovered)==1
+        assert (output/'paired_batches.jsonl').read_text()==first_record
+        assert len(list((output/'recovery').glob('discarded_batches_*.jsonl')))==1
+        assert recovered['updates']==1 and recovered['batch']==1 and recovered['epoch']==1
+        assert recovered['average'].count==1 and recovered['ema'].count==1
+        actual_loss,_=update_once(context,cold,opt,*batches[1],epoch=1,batch=2,scaler=scale)
+        sched.step();recovered['ema'].update({n:p.detach() for n,p in cold.named_parameters() if n.startswith('head.') or 'lora_' in n})
+        assert actual_loss==expected_loss
+        assert scale.state_dict()==expected_scale and sched.state_dict()==expected_scheduler
+        assert all(torch.equal(v,adapter_head_state(cold)[k]) for k,v in expected.items())
+        assert all(torch.equal(v,recovered['ema'].state[k].cpu()) for k,v in expected_ema.items())
+        del cold,opt,sched,scale,recovered;torch.cuda.empty_cache()

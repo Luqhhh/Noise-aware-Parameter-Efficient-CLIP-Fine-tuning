@@ -108,7 +108,7 @@ class Context:
             class_mapping_sha256=class_sha, official_checkpoint_sha256=official_sha,
             protocol_sha256=sha256_file(ROOT / "configs/team_exploration_20261001/machine_a.json"), groups_sha256=sha256_file(self.groups_path))
         code_hashes = {name: hashlib.sha256((Path(__file__).parent/name).read_text(encoding="utf-8-sig").encode()).hexdigest()
-                       for name in ("inputs.py", "paired.py", "metrics.py", "runtime.py", "__main__.py")}
+                       for name in ("inputs.py", "paired.py", "metrics.py", "runtime.py", "recovery.py", "__main__.py")}
         self.binding["implementation_sha256"] = hashlib.sha256(json.dumps(code_hashes, sort_keys=True).encode()).hexdigest()
         self.inputs_report = dict(status="verified", all_ordered_labels_and_paths_match=True,
             positive_weight_rows=len(self.active), train_rows=len(self.train), val_rows=len(self.val),

@@ -136,75 +136,104 @@ def probe(context, output):
     return report
 
 
-def fit_arm(context, arm, root, baseline):
-    output = root/arm
-    output.mkdir(exist_ok=False)
-    model = initial_model(context, arm)
-    frozen_before = visual_hash(model, frozen_only=True)
-    initial = adapter_head_state(model)
-    optimizer = optimizer_for(model, context)
-    steps = math.ceil(len(context.active)/32)
-    scheduler = scheduler_for(optimizer, steps)
-    scaler = torch.amp.GradScaler("cuda", enabled=True)
-    live = lambda: {n:p.detach() for n,p in model.named_parameters() if n.startswith("head.") or "lora_" in n}
-    ema = WeightAverage(live(), .999)
-    average = None
-    labels = context.frozen["labels"]
-    history, updates = [], 0
-    started = time.monotonic()
-    last_print = started
-    with (output/"paired_batches.jsonl").open("x") as records:
-        for epoch in range(1,5):
-            loader = training_loader(context, epoch)
+def fit_arm(context, arm, root, baseline, resume=False):
+    from .recovery import save_recovery,load_recovery,restore_batch_prefix
+    output=root/arm
+    if resume and (output/'training_report.json').exists():
+        result=read_json(output/'training_report.json')
+        if result['status']!='four_epochs_complete' or result['optimizer_updates']!=14888:
+            raise ValueError('Incomplete training report cannot be reused')
+        load_artifact(output/'ema_swa_2_4.pt',context.binding)
+        return result
+    existed=output.exists()
+    output.mkdir(exist_ok=resume)
+    model=initial_model(context,arm)
+    frozen_before=visual_hash(model,frozen_only=True)
+    initial=adapter_head_state(model)
+    optimizer=optimizer_for(model,context)
+    steps=math.ceil(len(context.active)/32)
+    scheduler=scheduler_for(optimizer,steps)
+    scaler=torch.amp.GradScaler('cuda',enabled=True)
+    live=lambda:{n:p.detach() for n,p in model.named_parameters() if n.startswith('head.') or 'lora_' in n}
+    ema=WeightAverage(live(),.999);average=None
+    labels=context.frozen['labels']
+    history,updates=[],0
+    started=time.monotonic();last_print=started;elapsed_base=0.
+    cursor_epoch,cursor_batch,cursor_losses=1,0,[]
+    actual_resume=False
+    if resume and existed and (output/'recovery/latest.json').exists():
+        state=load_recovery(context,arm,output,model,optimizer,scheduler,scaler)
+        cursor_epoch,cursor_batch=state['epoch'],state['batch']
+        updates,history,cursor_losses=state['updates'],state['history'],state['losses']
+        ema,average=state['ema'],state['average'];elapsed_base=state['elapsed_seconds']
+        if updates!=(cursor_epoch-1)*steps+cursor_batch:
+            raise ValueError('Recovery cursor does not match successful optimizer updates')
+        discarded=restore_batch_prefix(output,state)
+        actual_resume=True
+        with (output/'recovery/events.jsonl').open('a') as f:
+            f.write(json.dumps(dict(updates=updates,epoch=cursor_epoch,batch=cursor_batch,discarded_attempted_batches=discarded))+'\n')
+    elif resume and existed and any(output.iterdir()):
+        raise ValueError('No complete recovery state; use a fresh original-parent run')
+    else:
+        save_recovery(context,arm,output,model,optimizer,scheduler,scaler,ema,average,
+            epoch=1,batch=0,updates=0,history=[],losses=[],elapsed_seconds=0.)
+    with (output/'paired_batches.jsonl').open('a' if actual_resume else 'x') as records:
+        for epoch in range(cursor_epoch,5):
+            offset=cursor_batch if epoch==cursor_epoch else 0
+            loader=training_loader(context,epoch,start_batch=offset)
             model.train()
-            losses = []
-            for batch, (images, indices) in enumerate(loader,1):
-                identity = batch_identity(context, images, indices, epoch, batch)
-                records.write(json.dumps(dict(epoch=epoch,batch=batch,**identity))+"\n")
-                loss, numeric = update_once(context,model,optimizer,images,indices,epoch=epoch,batch=batch,scaler=scaler)
-                losses.append(loss)
-                scheduler.step();ema.update(live());updates+=1
-                if numeric["amp_retries"]:
-                    with (output/"amp_retries.jsonl").open("a") as handle:
-                        handle.write(json.dumps(dict(epoch=epoch,batch=batch,**numeric))+"\n")
+            losses=list(cursor_losses) if epoch==cursor_epoch else []
+            for batch,(images,indices) in enumerate(loader,offset+1):
+                identity=batch_identity(context,images,indices,epoch,batch)
+                records.write(json.dumps(dict(epoch=epoch,batch=batch,**identity))+'\n')
+                loss,numeric=update_once(context,model,optimizer,images,indices,epoch=epoch,batch=batch,scaler=scaler)
+                losses.append(loss);scheduler.step();ema.update(live());updates+=1
+                if numeric['amp_retries']:
+                    with (output/'amp_retries.jsonl').open('a') as f:
+                        f.write(json.dumps(dict(epoch=epoch,batch=batch,**numeric))+'\n')
+                if updates%1000==0:
+                    records.flush()
+                    save_recovery(context,arm,output,model,optimizer,scheduler,scaler,ema,average,
+                        epoch=epoch,batch=batch,updates=updates,history=history,losses=losses,
+                        elapsed_seconds=elapsed_base+time.monotonic()-started)
                 now=time.monotonic()
-                if batch==1 or batch==len(loader) or now-last_print>=30:
-                    status=dict(phase="training",arm=arm,epoch=epoch,epochs=4,batch=batch,batches=len(loader),
-                        updates=updates,loss=loss,seconds=now-started,cuda_peak_bytes=torch.cuda.max_memory_allocated())
-                    print(json.dumps(status),flush=True);atomic_json_dump(status,root/"progress.json");last_print=now
+                if batch==offset+1 or batch==steps or now-last_print>=30:
+                    status=dict(phase='training',arm=arm,epoch=epoch,epochs=4,batch=batch,batches=steps,
+                        updates=updates,loss=loss,seconds=elapsed_base+now-started,cuda_peak_bytes=torch.cuda.max_memory_allocated())
+                    print(json.dumps(status),flush=True);atomic_json_dump(status,root/'progress.json');last_print=now
             records.flush()
-            if visual_hash(model,frozen_only=True)!=frozen_before:
-                raise ValueError("Frozen visual weights changed in formal training")
+            if len(losses)!=steps:raise ValueError('Recovery omitted fixed logical updates')
+            if visual_hash(model,frozen_only=True)!=frozen_before:raise ValueError('Frozen visual weights changed')
             if epoch>=2:
                 if average is None:average=WeightAverage(ema.state)
                 average.update(ema.state)
             with using_complete_state(model,ema.state):
-                prediction,cost=center_predictions(context,model,context.val,output=output/f"val_epoch{epoch}_ema.npz")
+                prediction,cost=center_predictions(context,model,context.val,output=output/f'val_epoch{epoch}_ema.npz')
             score=metrics(labels,prediction,len(context.classes))
-            point=dict(epoch=epoch,updates=updates,loss=float(np.mean(losses)),ema=score,validation_cost=cost)
-            history.append(point);atomic_json_dump(history,output/"history.json")
-            export_checkpoint(context,arm,ema.state,output/f"ema_epoch{epoch}.pt",epoch=epoch,policy=f"ema_epoch{epoch}",updates=updates)
-            if score["micro"]-float(np.mean(baseline==labels)) < -.02:
-                raise ValueError("Frozen -2pp quality stop triggered")
-    if updates!=4*steps or average.count!=3:
-        raise ValueError("Four-epoch/EMA2-4 trajectory incomplete")
+            history.append(dict(epoch=epoch,updates=updates,loss=float(np.mean(losses)),ema=score,validation_cost=cost))
+            atomic_json_dump(history,output/'history.json')
+            export_checkpoint(context,arm,ema.state,output/f'ema_epoch{epoch}.pt',epoch=epoch,policy=f'ema_epoch{epoch}',updates=updates)
+            if score['micro']-float(np.mean(baseline==labels))<-.02:raise ValueError('Frozen -2pp quality stop triggered')
+            save_recovery(context,arm,output,model,optimizer,scheduler,scaler,ema,average,
+                epoch=epoch+1,batch=0,updates=updates,history=history,losses=[],
+                elapsed_seconds=elapsed_base+time.monotonic()-started)
+    if updates!=4*steps or average.count!=3:raise ValueError('Four-epoch/EMA2-4 trajectory incomplete')
     state=adapter_head_state(model)
-    if arm=="head_only" and any(not torch.equal(initial[k],state[k]) for k in initial if "lora_" in k):
-        raise ValueError("Formal control LoRA changed")
-    for policy,values in [("last_raw",state),("last_ema",ema.state),("ema_swa_2_4",average.state)]:
-        checkpoint=output/f"{policy}.pt"
-        export_checkpoint(context,arm,values,checkpoint,epoch=4,policy=policy,updates=updates)
+    if arm=='head_only' and any(not torch.equal(initial[k],state[k]) for k in initial if 'lora_' in k):
+        raise ValueError('Formal control LoRA changed')
+    for policy,values in [('last_raw',state),('last_ema',ema.state),('ema_swa_2_4',average.state)]:
+        export_checkpoint(context,arm,values,output/f'{policy}.pt',epoch=4,policy=policy,updates=updates)
     del model,optimizer,ema,average
-    torch.cuda.empty_cache()
-    evaluations={}
-    for policy in ("last_raw","last_ema","ema_swa_2_4"):
-        cold,payload=cold_load(context,arm,output/f"{policy}.pt")
-        pred,cost=center_predictions(context,cold,context.val,output=output/f"val_{policy}.npz")
+    torch.cuda.empty_cache();evaluations={}
+    for policy in ('last_raw','last_ema','ema_swa_2_4'):
+        cold,payload=cold_load(context,arm,output/f'{policy}.pt')
+        pred,cost=center_predictions(context,cold,context.val,output=output/f'val_{policy}.npz')
         evaluations[policy]=dict(metrics=metrics(labels,pred,len(context.classes)),paired_vs_local_parent=grouped_pair(context,labels,baseline,pred),cost=cost)
         del cold;torch.cuda.empty_cache()
-    result=dict(status="four_epochs_complete",arm=arm,epochs=4,optimizer_updates=updates,history=history,
-                evaluations=evaluations,seconds=time.monotonic()-started,primary="ema_swa_2_4",platform_score=None)
-    atomic_json_dump(result,output/"training_report.json")
+    result=dict(status='four_epochs_complete',arm=arm,epochs=4,optimizer_updates=updates,history=history,
+        evaluations=evaluations,seconds=elapsed_base+time.monotonic()-started,primary='ema_swa_2_4',
+        complete_state_recovery=actual_resume,recovery_every_updates=1000,platform_score=None)
+    atomic_json_dump(result,output/'training_report.json')
     return result
 
 
@@ -251,7 +280,7 @@ def infer_arm(context, arm, root):
     return result
 
 
-def complete(context, root, allow_local_parent_baseline=False):
+def complete(context, root, allow_local_parent_baseline=False, resume=False):
     root=Path(root)
     require_idle_cuda()
     replay=read_json(root/"parent_replay.json")
@@ -261,13 +290,20 @@ def complete(context, root, allow_local_parent_baseline=False):
     if sha256_file(root/"parent_center.npz") != replay["parent_prediction_sha256"]:
         raise ValueError("Recorded local parent predictions changed")
     baseline=np.load(root/"parent_center.npz")["predictions"]
-    atomic_json_dump(context.inputs_report, root/"current_inputs_verified.json")
+    if resume:
+        if read_json(root/'current_inputs_verified.json')['binding']!=context.binding:
+            raise ValueError('Resume implementation/input binding changed')
+    else:
+        atomic_json_dump(context.inputs_report,root/'current_inputs_verified.json')
     if not replay["exact_predictions_match"]:
         atomic_json_dump(dict(source_gate_passed=False,source_mismatch_count=replay["mismatch_count"],
             ruling="User 2026-10-01 prioritized actual local execution after being told about strict source replay differences; both arms share the recorded local parent baseline.",
             cross_machine_bit_exact_claim=False,train_recipe_changed=False),root/"local_baseline_ruling.json")
-    probe_report=probe(context,root)
-    reports={arm:fit_arm(context,arm,root,baseline) for arm in context.protocol["arms"]}
+    if resume and (root/'probe/report.json').exists():
+        probe_report=read_json(root/'probe/report.json')
+        if probe_report['status']!='passed':raise ValueError('Resume requires the verified cost probe')
+    else:probe_report=probe(context,root)
+    reports={arm:fit_arm(context,arm,root,baseline,resume=resume) for arm in context.protocol['arms']}
     first=(root/"head_only/paired_batches.jsonl").read_bytes()
     second=(root/"lora_and_head/paired_batches.jsonl").read_bytes()
     if first!=second:raise ValueError("Formal paired batches differ")
@@ -284,11 +320,24 @@ def complete(context, root, allow_local_parent_baseline=False):
         candidate_vs_control=vs_control,candidate_vs_parent=vs_parent,paired_batch_sha256=hashlib.sha256(first).hexdigest(),
         paired_batches_exact=True,numeric_review_gate=gate,decision="supports_review" if gate else "closed_fixed_recipe",
         frozen_groups=context.groups,platform_score=None,automatic_full_training=False)
-    with (root/"paired_validation.csv").open("x",newline="") as handle:
-        writer=csv.writer(handle);writer.writerow(["image_path","label","source_parent","local_parent","head_only","lora_and_head"])
-        writer.writerows((r["image_path"],int(y),int(src),int(p),int(a),int(b)) for r,y,src,p,a,b in zip(context.val,labels,context.frozen["unbalanced768"],baseline,predictions["head_only"],predictions["lora_and_head"]))
+    if resume and (root/'paired_validation.csv').exists():
+        saved=list(csv.DictReader((root/'paired_validation.csv').open()))
+        if len(saved)!=len(labels) or any(int(row[arm])!=predictions[arm][i] for i,row in enumerate(saved) for arm in context.protocol['arms']):
+            raise ValueError('Existing paired CSV differs from fixed primary predictions')
+    else:
+        with (root/"paired_validation.csv").open("x",newline="") as handle:
+            writer=csv.writer(handle);writer.writerow(["image_path","label","source_parent","local_parent","head_only","lora_and_head"])
+            writer.writerows((r["image_path"],int(y),int(src),int(p),int(a),int(b)) for r,y,src,p,a,b in zip(context.val,labels,context.frozen["unbalanced768"],baseline,predictions["head_only"],predictions["lora_and_head"]))
     atomic_json_dump(result,root/"paired_report.json")
-    result["packages"]={arm:infer_arm(context,arm,root) for arm in context.protocol["arms"]}
+    result['packages']={}
+    for arm in context.protocol['arms']:
+        report_path=root/arm/'submission/report.json'
+        if resume and report_path.exists():
+            package=read_json(report_path)
+            if package['status']!='package_verified' or package['checks']!=9 or any(sha256_file(Path(package[key]))!=package[key+'_sha256'] for key in ('csv','zip','checkpoint')):
+                raise ValueError('Existing verified submission package changed')
+            result['packages'][arm]=package
+        else:result['packages'][arm]=infer_arm(context,arm,root)
     result["status"]="completed_verified_delivery"
     atomic_json_dump(result,root/"final_report.json")
     return result
@@ -309,7 +358,7 @@ def replay_parent(context, root):
     expected=context.frozen['unbalanced768']
     mismatches=np.flatnonzero(predictions!=expected)
     report=dict(status='passed' if len(mismatches)==0 else 'failed',
-        exact_predictions_match=len(mismatches)==0,mismatch_count=len(mismatches),rows=len(predictions),
+        exact_predictions_match=len(mismatches)==0,mismatch_count=len(mismatches),
         mismatches=[dict(image_path=context.val[i]['image_path'],expected=int(expected[i]),actual=int(predictions[i])) for i in mismatches],
         **metrics(context.frozen['labels'],predictions,len(context.classes)),cost=cost,
         cuda_peak_bytes=torch.cuda.max_memory_allocated(),
