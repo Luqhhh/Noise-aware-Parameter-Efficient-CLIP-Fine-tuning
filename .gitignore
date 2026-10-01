@@ -117,3 +117,6 @@ outputs/search_20260923/
 
 # Private fixed low-detail training schedules, checkpoints and submissions.
 /outputs/codex/v1_detail_aug_pair_20261001/
+
+# Private teacher confidence and recovery diagnostics; aggregate report only in Git.
+/outputs/codex/v1_frozen_teacher_recovery_20261001/
