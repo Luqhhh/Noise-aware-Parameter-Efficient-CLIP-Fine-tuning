@@ -1,0 +1,20 @@
+{
+  "status": "completed_delivered",
+  "experiment_id": "LR512_DEV",
+  "source_report": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/report.json",
+  "source_report_sha256": "62287189bf8546ee421381a04f885edcebd956245e18b3c256e8be7ed02a3f9e",
+  "plan": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json",
+  "plan_sha256": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+  "checkpoint": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/selected.pt",
+  "checkpoint_sha256": "b3ec03a504d3fb89c4c26bb46ce172db5c8c83d0df36a02141f5b721eef595ce",
+  "csv": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/submission/pred_results.csv",
+  "zip": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/submission/submission.zip",
+  "csv_sha256": "63568fd697949a16b8c8e6e1bb1c18e726e030c528f015f68353b5bd8afb75cb",
+  "zip_sha256": "e777ba0bb22b3bfbe3144a26c0f8afe039bd818abb841e2e40cd0ce718cedc9b",
+  "rows": 37444,
+  "submission_checks_passed": 9,
+  "zip_csv_identical": true,
+  "paired_independently_recounted": true,
+  "scores_are_original_label_diagnostics": true,
+  "platform_score": null
+}
