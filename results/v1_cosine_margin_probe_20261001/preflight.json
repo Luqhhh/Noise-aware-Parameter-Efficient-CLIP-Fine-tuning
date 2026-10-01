@@ -1,0 +1,182 @@
+{
+  "binding": {
+    "config_sha256": "28d6371d6a2b73698ac550d9fb361432233d32229295625891561a8d5621f897",
+    "data_version": "20260921",
+    "implementation_sha256": "1c0f287abe44ac0892917b4df7129d6d847d59f14a50c7d4e84a08a889d06a01",
+    "loss_sha256": "0101f91759ac3af43084baf881f0899d6fb798576a4d95b51b549180e3c91206",
+    "parent_sources": {
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json": "68973498a7594b3ed76707ec24bcea7a0ba877a995a62ec5fb292839b2ee3651",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/baseline.npz": "af595985fd28eb1bfa4ee4477dffd206ccd62bd2e8e55de86e6ddb3373bd29ac",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.pt": "c103dc3e6039c9fe156a56dfcd196500975b5bd21354be6506447bb1ee636e2e",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/training/ema_swa.sha256.json": "8be06d426e4b40d369da7e4c940d228a5bb59206d264f755d95c26483e2f11fa",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/run/val_epoch04_ema_swa_2_4.npz": "a404e16f2d88d3331dc9caf3c26bda111714369bdcca69cda6e290a3478d8845",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/model.py": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/submission.py": "2e76ad99a05f99488f46297f0991383915d0cd2a59d50ebc1bddd12e6ebbd905",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/v1_pipeline.py": "05e6784d7dff7ea8db89f85fc849c54db2661695ed63e7978d3dc01b9bbe5d31",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/aegis_clip/v1_strategy.py": "d843196b921ff801fb1b1156beda011dd025d4f31c29d2c00c75d7b39afa231d",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/model.py": "92b8b4dfb73978feb4558e97d8122af61e7e801eab89c3a6b359e2f21e1c74b6",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/plan.py": "2e7a41063057ba1f3c8ce8e7a34022ea604078bbe4e314f8e683ba4c4a05a4ec",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v1_continuation/runtime.py": "d0515533fc4c6b029416cf7d7d6647c250f1f9d02535630c10ec7fa4ff8cdaa5",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v3/plan.py": "49a4e8fd7ac386da3dc69639e67fa4f21193f1ebae613d305d9b1e0b48f64040",
+      "/home/lux1/noise/worktrees/lr512_dev_20261001/reproducibility/aegis_f1/v3/report.py": "3f8dcb49074437d8ab3eceb55c4307c803f68b5dea3d513f5ee89ec3ef7e9f73",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/lr512_dev_20261001/report.json": "cf5b9bcfaebd1163284fcb9347e8b4c724991592c9fcaa009bf99d0b297ea404",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/v1_detail_aug_pair_20261001/independent_verification.json": "1676ba6a1e62aa2e69c373a4dc336b574ecd7bf12bcf4c19804b406cd7ddcb52",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/v1_detail_aug_pair_20261001/report.json": "79d6e8e102114610138fa2627761b3d578a1be310c939b32d7b993a5b85b5684",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/v1_full_swa_platform_20261001/artifact_verification.json": "7132effa696592401bbeff0d17815101045a3a46f1aeb0d5ebb6fe7ca88dd9f4",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/v1_full_swa_platform_20261001/submission_check.log": "edb24cf74b09c551bb82c223e25801a445cc7a4963d9a6294f022b09943c3c59",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/results/v1_reflection_consistency_probe_20261001/report.json": "8ed796ab75ba08c3a4223d6fc0653d4b5d1ad7cde694a907f7da5b1569f9f55a",
+      "/home/lux1/noise/worktrees/v1_cosine_margin_probe_20261001/scripts/train_v1_detail_aug_pair.py": "25970b879a910a4db585c8d032296ee9b85312f487b7856c401c22d694ca4555",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/configs/v1_detail_aug_pair_20261001.json": "24f90ef437f1071c11fc78f12df16be3f6a3afd01f827af30bec294260626782",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/selected.pt": "7ccf90560293dfdb4456e98f6c9a8f543a34a2960dc4bee9f369eaeaf1bdcaa1",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/submission/pred_results.csv": "1c1510e0370e24c5a192e0d58c9b24417660e919481f2295ebcb23b03a02cb4e",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/submission/submission.zip": "628240b92a7a46efa354196f0f3f7d463fabf4ea21497f2cceca45e6ecd48abc",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/control/val_step1024.npz": "7b9d2a7a0c6aff64d4f7a23b0e0f5004768d2a178a16a415e54743febd10ba8d",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/preflight.json": "03bd97d5aadac1c13751130b1760eb15f8bf27867fa20b4f4c6b79139feb91ae",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/report.json": "79d6e8e102114610138fa2627761b3d578a1be310c939b32d7b993a5b85b5684",
+      "/home/lux1/noise/worktrees/v1_detail_aug_pair_20261001/outputs/codex/v1_detail_aug_pair_20261001/pair_r2/schedule.npz": "42cf04b89482d279c8b2a4fd251cecc58d590dfb546b50761aefaae05f231ff4",
+      "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5",
+      "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+      "/home/lux1/noise/worktrees/v1_reflection_consistency_probe_20261001/outputs/codex/v1_reflection_consistency_probe_20261001/probe_r1/lr512_swa.npz": "1f877a07d3e68ae95278302cb61229db7bfc57cdd5d620e820edc37b5440c417",
+      "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/config.yaml": "385fb63fc4cb6d75e068d464e68dea121a42d0b7ee8f60d8558921ec978b9db8",
+      "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.pt": "01caedaa4996d25fa9dfc213d4b2376c147bb99ebdc23dacd93e6e1ff2d6fa20",
+      "/home/lux1/noise/worktrees/v1_swa_trial_20260930/outputs/codex/v1_swa_trial_20260930/candidate/selected.sha256.json": "dde8be4540ce02985194feed2b5f4064e778e707b46e751c9e33f3f94c2165ff",
+      "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.pt": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2",
+      "/home/lux1/noise/worktrees/v1_train_20260929/outputs/codex/v1_train_20260929/targets.sha256.json": "e58e91bc3512bf5a853dbdcc1e157fbbbead6e568b0e333f8869f9e1aed98124",
+      "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/model.py": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+      "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/submission.py": "2e76ad99a05f99488f46297f0991383915d0cd2a59d50ebc1bddd12e6ebbd905",
+      "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/v1_pipeline.py": "ce6075b2f01c726614844b3262fefd6ecefb28176522ec114c5461a162545dc5",
+      "/home/lux1/noise/worktrees/v1_train_20260929/reproducibility/aegis_f1/aegis_clip/v1_strategy.py": "d843196b921ff801fb1b1156beda011dd025d4f31c29d2c00c75d7b39afa231d"
+    },
+    "partition": "train_dev",
+    "schedule_sha256": "42cf04b89482d279c8b2a4fd251cecc58d590dfb546b50761aefaae05f231ff4",
+    "stage": "repechage"
+  },
+  "frozen_groups_sha256": "ef6e99fd4bd05522854532be6a6554a460c79ef6bd7237775b9cd90c14f77f82",
+  "original_targets_weights_and_sampler_unchanged": true,
+  "parent": {
+    "all": {
+      "classes": 750,
+      "correct": 11422,
+      "errors": 3458,
+      "macro": 0.7576305868924552,
+      "micro": 0.7676075268817204,
+      "rows": 14880
+    },
+    "common_candidate_wrong": {
+      "classes": 657,
+      "correct": 0,
+      "errors": 2875,
+      "macro": 0.0,
+      "micro": 0.0,
+      "rows": 2875
+    },
+    "low_gap": {
+      "classes": 707,
+      "correct": 1351,
+      "errors": 2369,
+      "macro": 0.3710788386530961,
+      "micro": 0.3631720430107527,
+      "rows": 3720
+    },
+    "other_gap": {
+      "classes": 748,
+      "correct": 10071,
+      "errors": 1089,
+      "macro": 0.8683383991815261,
+      "micro": 0.9024193548387097,
+      "rows": 11160
+    },
+    "small": {
+      "classes": 571,
+      "correct": 1236,
+      "errors": 612,
+      "macro": 0.6849869774125465,
+      "micro": 0.6688311688311688,
+      "rows": 1848
+    },
+    "tail75": {
+      "classes": 75,
+      "correct": 670,
+      "errors": 333,
+      "macro": 0.6038376906318081,
+      "micro": 0.6679960119641076,
+      "rows": 1003
+    }
+  },
+  "primary_checkpoint": "last_raw_step1024",
+  "reused_control": {
+    "all": {
+      "classes": 750,
+      "correct": 11383,
+      "errors": 3497,
+      "macro": 0.7548192449645645,
+      "micro": 0.764986559139785,
+      "rows": 14880
+    },
+    "common_candidate_wrong": {
+      "classes": 657,
+      "correct": 56,
+      "errors": 2819,
+      "macro": 0.019544780211581177,
+      "micro": 0.019478260869565216,
+      "rows": 2875
+    },
+    "low_gap": {
+      "classes": 707,
+      "correct": 1316,
+      "errors": 2404,
+      "macro": 0.36991928195959306,
+      "micro": 0.35376344086021505,
+      "rows": 3720
+    },
+    "other_gap": {
+      "classes": 748,
+      "correct": 10067,
+      "errors": 1093,
+      "macro": 0.8679162494838574,
+      "micro": 0.9020609318996415,
+      "rows": 11160
+    },
+    "small": {
+      "classes": 571,
+      "correct": 1217,
+      "errors": 631,
+      "macro": 0.6753193099953171,
+      "micro": 0.6585497835497836,
+      "rows": 1848
+    },
+    "tail75": {
+      "classes": 75,
+      "correct": 666,
+      "errors": 337,
+      "macro": 0.5990269218798632,
+      "micro": 0.6640079760717846,
+      "rows": 1003
+    }
+  },
+  "reused_control_checkpoint_sha256": "7ccf90560293dfdb4456e98f6c9a8f543a34a2960dc4bee9f369eaeaf1bdcaa1",
+  "source_first_batch_pixel_sha256": "10ded13e1e6b3c35663cff7edd2947d5e3ad1380a62e2364971cb2cf6f0c5595",
+  "source_plan": "/home/lux1/noise/worktrees/lr512_dev_20261001/outputs/codex/lr512_dev_20261001/prepared_r2/plan.json",
+  "status": "prepared_verified_cpu",
+  "target_group_rule": "lowest_quartile_native_top1_minus_top2_logit_gap;ties_image_path_ascending",
+  "training_rows": 32768,
+  "training_target_classes_absent": [
+    183
+  ],
+  "validation_is_independent": true,
+  "wall_clock_time_limit": null,
+  "zero_update": {
+    "atol": 2e-05,
+    "class_order_preserved": true,
+    "eval_mode": true,
+    "fp32": true,
+    "head_preserved": true,
+    "image_size": 512,
+    "max_abs_logits_error": 0.0,
+    "merged_modules": 0,
+    "optimizer_updates": 0,
+    "passed": true,
+    "rtol": 2e-05,
+    "tokens": 257
+  }
+}

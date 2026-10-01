@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "experiment_id": "V1_COSINE_MARGIN_PROBE_20261001",
+  "tests": {
+    "command": "env PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 python3 -m pytest reproducibility/aegis_f1/tests/test_v1_cosine_margin.py reproducibility/aegis_f1/tests/test_v1_detail_aug_pair.py -q",
+    "passed": 10
+  },
+  "frozen_training_hashes_unchanged": true,
+  "independent_replay": "passed_independent_full_replay",
+  "metric_groups_checked": 30,
+  "paired_groups_checked": 24,
+  "formal_cost_states_discarded": true,
+  "formal_optimizer_updates": 1024,
+  "submission_checks_passed": 9,
+  "platform_gain_known": false
+}

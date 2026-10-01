@@ -1,0 +1,20 @@
+{
+  "amp_retries": 1,
+  "common_augmentation_pixel_hash_matches": true,
+  "formal_initialization": "original LR512 EMA2-4; cost states discarded",
+  "peak_allocated_cuda_bytes": 934223872,
+  "real_updates": 8,
+  "seconds": [
+    1.9779921250010375,
+    0.4320062560000224,
+    0.49308868299704045,
+    0.5237373519921675,
+    0.5697654499963392,
+    0.4229261209984543,
+    0.46624596101173665,
+    0.3880674719985109
+  ],
+  "status": "passed_discarded_probe_weights",
+  "steady_seconds_per_update": 0.46175125100126024,
+  "wall_clock_time_limit": null
+}
