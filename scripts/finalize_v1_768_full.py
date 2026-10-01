@@ -47,7 +47,8 @@ def main():
         state.update(status='running',stage=stage,command=command)
         write_json(status_path,state)
         with (output/f'completion_{stage}.log').open('x') as log:
-            subprocess.run(command,cwd=working,env=environment,stdout=log,stderr=subprocess.STDOUT,check=True)
+            process_environment = dict(environment,PYTHONPATH=str(working/'reproducibility/aegis_f1'))
+            subprocess.run(command,cwd=working,env=process_environment,stdout=log,stderr=subprocess.STDOUT,check=True)
     try:
         while True:
             status = json.loads((output/'status.json').read_text())
@@ -55,6 +56,8 @@ def main():
                 raise RuntimeError('Training/delivery failed: '+status.get('error','unknown failure'))
             if status['status'] == 'completed':
                 break
+            if not Path(f'/proc/{status["runner_pid"]}').exists():
+                raise RuntimeError('Training runner exited without a delivered or failed status')
             state.update(heartbeat_at=datetime.now(timezone.utc).isoformat(),
                 training_stage=status.get('stage'),training_progress=status.get('training_progress'))
             write_json(status_path,state)
@@ -133,6 +136,7 @@ def main():
             'test_v1.py','test_v1_preprojection_test_bias.py','test_v1_export.py',
             'test_prior_alignment.py','test_calibration_binding.py')]
         run('main_tests',[sys.executable,'-m','pytest',*checks,'-q'],integration)
+        run('main_diff_check',['git','diff','--check'],integration)
         run('push_main',['git','push','origin','main'],integration)
         state.update(status='completed',stage='verified_checkpoint',
             main_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=integration,text=True).strip(),
