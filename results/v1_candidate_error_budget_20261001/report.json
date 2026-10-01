@@ -6784,9 +6784,9 @@
     "minimum_original_label_errors": 189,
     "interpretation": "Lower bound for a deterministic image-content classifier on these contradictory original labels; does not identify clean labels"
   },
-  "elapsed_seconds": 3.7256848599936347,
-  "script_sha256": "6a77932859cc29b8f8b60eabdc546536fad2e4a1cd7e31e8fc047b90a1b2e388",
-  "aligned_csv": "outputs/codex/v1_candidate_error_budget_20261001/diagnostic_r2/aligned_predictions.csv",
+  "elapsed_seconds": 3.6541971510014264,
+  "script_sha256": "18407998a778961531854ee7cd23344e793814169868e3274d3018ce8b45c65f",
+  "aligned_csv": "/home/lux1/noise/worktrees/v1_candidate_error_budget_20261001/outputs/codex/v1_candidate_error_budget_20261001/diagnostic_r3/aligned_predictions.csv",
   "aligned_csv_sha256": "d94a98acc2b2c6cbb9263547b38a7a678d8e664a3c382f1172784f4b45bcc718",
   "decision": "Use existing independent A/B pairs to test visual learning/generalization; no new full training, fusion, or parameter scan justified by error overlap alone",
   "incumbent_reference": "results/v1_full_swa_platform_20261001/artifact_verification.json",

@@ -69,13 +69,13 @@ LR512前10/50/100个无向错误类对分别覆盖115/340/510张，约3.33%/9.83
 方案分支`codex/v1_candidate_error_budget_20261001`，从`origin/main@8238dc3`建立，独立目录：
 `/home/lux1/noise/worktrees/v1_candidate_error_budget_20261001`。
 没有spawn子agent，不操作A/B机器或远端v2，不改变公共Python依赖。
-CPU完整诊断实测3.73秒；用户已取消后续墙钟上限，本段没有设置运行超时。
+CPU完整诊断实测约4秒；用户已取消后续墙钟上限，本段没有设置运行超时。
 
 ```bash
 env OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 \
   python3 scripts/diagnose_v1_candidate_errors.py \
   --config configs/v1_candidate_error_budget_20261001.json \
-  --output outputs/codex/v1_candidate_error_budget_20261001/diagnostic_r2
+  --output outputs/codex/v1_candidate_error_budget_20261001/diagnostic_r3
 
 python3 scripts/verify_v1_candidate_error_report.py \
   --report results/v1_candidate_error_budget_20261001/report.json \
