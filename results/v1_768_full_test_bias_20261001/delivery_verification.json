@@ -1,0 +1,69 @@
+{
+  "accuracy_gain_unknown": true,
+  "binding": {
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "data_version": "20260921",
+    "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+    "feature_path": "pre_projection",
+    "feature_protocol_sha256": "da9309242b13498a0553d353a28a4ffe6001439a1c43261743e7fe4e0da863fe",
+    "feature_tensor_sha256": "00eefe153a7141f4016c112623dabe796d4fc2468e5a2f6797788085e3058a21",
+    "implementation_sha256": "71570b5a71f103d1e7cf901d1f3cf88f8729a20a79ac0257b62a7d51be37c1d4",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "prior_alignment_implementation_sha256": "9b033970399eb97771552619385b5a46c811f711b78c543da82e794ec845b73a",
+    "recipe_sha256": "3af87d33ade6338d3dfa23df1f20871e669891fa20977dfe92e7676cf9b81407",
+    "stage": "repechage",
+    "test_bias_implementation_sha256": "3a1c868b80830cde29606886db46ecf5042eeaa23130edfe18e5049b2166eb72"
+  },
+  "checkpoint_sha256": "013b8e9c038d21e4dbb677f3cd52ac3ed9fb1bf7d2f74ae826056138275dacfe",
+  "desktop_raw_zip": "/mnt/c/Users/lqh22/Desktop/v1_768_full_raw_submission.zip",
+  "desktop_zip": "/mnt/c/Users/lqh22/Desktop/v1_768_full_test_bias_submission.zip",
+  "elapsed_seconds": 39.266006616991945,
+  "epochs": 12,
+  "experiment_id": "V1_768_FULL_TEST_BIAS_20261001",
+  "full_train_rows": 148695,
+  "incumbent_unchanged": true,
+  "incumbent_zip": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+  "independent_float64_bias_max_error": 6.786132781932963e-06,
+  "independent_refit_numerical_boundary_changes": 0,
+  "independent_refit_prediction_matches": 37444,
+  "packages": {
+    "submission": {
+      "checker_output": "Test set contains 37444 images\n\n============================================================\nChecking pred_results.csv...\n============================================================\n  ✅ File name: pred_results.csv\n  ✅ Line count: 37444 (matches test set)\n  ✅ All image names found in test set\n  ✅ No duplicate image names\n  ✅ All test images covered\n  ✅ All labels are 4-digit strings\n  ✅ All labels in range [0000, 0749]\n\n============================================================\nChecking submission.zip...\n============================================================\n  ✅ ZIP contains only pred_results.csv (no directory)\n\n============================================================\n🎉 All checks passed! Submission is ready.\n",
+      "csv": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission/pred_results.csv",
+      "csv_sha256": "3e9776cb262480eb251fd84334885bf0526274f0099d435684790d41480c88aa",
+      "numpy_replay_matches": 37444,
+      "samples": 37444,
+      "test_usage": "unlabelled_test_marginal_bias_fitting",
+      "zip": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission/submission.zip",
+      "zip_sha256": "0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca"
+    },
+    "submission_raw": {
+      "checker_output": "Test set contains 37444 images\n\n============================================================\nChecking pred_results.csv...\n============================================================\n  ✅ File name: pred_results.csv\n  ✅ Line count: 37444 (matches test set)\n  ✅ All image names found in test set\n  ✅ No duplicate image names\n  ✅ All test images covered\n  ✅ All labels are 4-digit strings\n  ✅ All labels in range [0000, 0749]\n\n============================================================\nChecking submission.zip...\n============================================================\n  ✅ ZIP contains only pred_results.csv (no directory)\n\n============================================================\n🎉 All checks passed! Submission is ready.\n",
+      "csv": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission_raw/pred_results.csv",
+      "csv_sha256": "6bbb5e81914adeb31bcc685bbb2b2d53802fb97b4d1a55f64f145ba95900f993",
+      "numpy_replay_matches": 37444,
+      "samples": 37444,
+      "test_usage": "inference_only",
+      "zip": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission_raw/submission.zip",
+      "zip_sha256": "c8d7e0a5fb74f78bbb86796c67bc419f66dfd47733ac6cbe9d26d03875bf462e"
+    }
+  },
+  "platform_score": null,
+  "raw_to_bias_prediction_changes": 6775,
+  "status": "verified",
+  "student_head_dimension": 768,
+  "swa_ema_epochs": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "teacher_dimension": 768,
+  "used_training_rows": 136631
+}

@@ -50,3 +50,18 @@ PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 \
 独立核验将重放全部两份CSV、核对ZIP逐字节、重新执行提交校验，并用NumPy FP64独立拟合固定200次bias；无新平台分。
 
 完成收尾服务noise-v1-768-full-finalize-20261001.service运行scripts/finalize_v1_768_full.py，监控现有训练，不启动/重试训练。成功交付后依次独立核验、复制无bias桌面包、归档结果、方案commit/push、main自动autostash pull/merge/75项检查/push。状态在独立输出completion_status.json，失败则记录确切阶段并停止，不把失败写成完成。
+
+## 已验证交付检查点
+
+固定12轮完整训练及两包交付完成，用时4.4678小时；训练使用136,631张样本、750类，单checkpoint为EMA4–12 SWA。full_train无独立验证准确率，不将训练loss或预测分布改进当作平台提升。
+
+独立重放两份全部37,444条预测和CSV/ZIP字节，两个包均重新通过提交校验。NumPy FP64独立200次拟合bias最大误差6.7861328e-06，重拟合预测一致37,444/37,444。bias改变6,775条预测；不代表准确率提升。
+
+选中checkpoint SHA `013b8e9c038d21e4dbb677f3cd52ac3ed9fb1bf7d2f74ae826056138275dacfe`。
+
+- submission: `/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission/submission.zip`；ZIP SHA `0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca`。
+- submission_raw: `/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission_raw/submission.zip`；ZIP SHA `c8d7e0a5fb74f78bbb86796c67bc419f66dfd47733ac6cbe9d26d03875bf462e`。
+
+桌面候选：`/mnt/c/Users/lqh22/Desktop/v1_768_full_test_bias_submission.zip`；无bias对照：`/mnt/c/Users/lqh22/Desktop/v1_768_full_raw_submission.zip`。
+
+现役70.98600576861446%包校验为未改变；新平台分待用户回填。结果见`results/v1_768_full_test_bias_20261001/delivery_summary.json`与`delivery_verification.json`。完成方案/主线推送后停在交付检查点，不派生新候选。
