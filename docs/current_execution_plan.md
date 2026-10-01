@@ -10,7 +10,8 @@ WFT448_FULL用户回填70.43585087063347%，低于现役；LR512_FULL保持待�
 用户提供s1完整ZIP；10轮/13,930次更新原checkpoint、冻结输入、配置、split、sidecar与CPU严格加载通过。
 导出plan和checkpoint记录的plan哈希不同，原字节与两个SHA均保留并明确记录；不改写checkpoint binding。
 后续固定s2_448 → s3_576 → full_576，micro16/worker2，先真实CUDA成本检查再正式训练；
-最终沿原full第5轮raw与四视图出包。小时监控入口已实现，正式启动/激活另记实测。
+最终沿原full第5轮raw与四视图出包。服务器96项回归通过，北京时间15:56:56已进入s2成本检查；
+服务器小时watcher与本机小时timer均已激活，首次监控成功。尚无新完整候选/提交包。
 新服务器保持开机，不抢占本机v1任务、不平台上传。见[续跑核验与执行协议](v2_continuation_20261001.md)。
 
 ## 已授权后续串行队列：V1_POST768_SERIAL_20261001
@@ -124,7 +125,7 @@ V12/V13与本队v2四段140项核心配置相等，但数据、划分、清洗�
 | 方案 | 已验证状态 | 当前决定与执行记录 |
 |---|---|---|
 | v1 / train_dev SWA / full SWA | 均已训练、出包及校验 | 保留full SWA现役包；[v1策略](v1.md)、[full执行](v1_full_swa_20260930.md) |
-| v2分辨率/LR阶梯 | 原s1完整产物已校验；后续固定续跑已获授权 | CUDA成本检查/正式启动待实测；[续跑协议](v2_continuation_20261001.md)、[v2策略](v2.md) |
+| v2分辨率/LR阶梯 | 原s1已核验；服务器持久续跑已进入s2成本检查 | 每小时监控已激活；[续跑实测与协议](v2_continuation_20261001.md)、[v2策略](v2.md) |
 | V2_FULL_LAST3_SWA | 已实现full_576 RAW3–5固定CPU平均导出 | 原第5轮raw默认提交不变；缺快照拒绝导出、不重训补齐；[工程记录](v1_continuations_20261001.md#v2_full_last3_swa) |
 | v3固定384、每臂2轮 | `completed_delivered`；平台分未知 | `no_support_for_ladder`，保持末轮EMA，不自动追加训练或改选raw；[最终交付](v3_final_delivery_20261001.md) |
 | WFT448_DEV / LR512_DEV | 各4轮完成并交付；独立配对和CSV/ZIP已校验 | WFT末轮EMA净+87；LR末轮+77、固定EMA2–4+110；详见置顶交付记录 |

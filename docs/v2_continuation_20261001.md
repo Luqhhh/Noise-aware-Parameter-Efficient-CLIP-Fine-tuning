@@ -3,7 +3,18 @@
 用户提供 `v2_s1_384_bundle_20261001_r3.zip`，授权准备完成后继续固定v2，以及每小时监控。
 最新要求是保持服务器开机。独立分支 `codex/v2_continuation_20261001`，
 本机目录 `/home/lux1/noise/worktrees/v2_continuation_20261001`。
-本记录先封存实现和CPU验证；GPU成本检查、正式启动与监控激活另记实测。
+本记录封存实现、CPU验证和真实启动；正式阶段训练尚在持续执行。
+
+## 实际启动检查点
+
+北京时间2026-10-01 15:56:56持久controller PID5764启动，进入s2_448成本检查。
+服务器代码commit `ca590906c786c6796ed2f54d3d9281cc44fbd2ae`，原s1已导入；
+新冻结plan SHA `596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e`。
+服务器96项回归通过（4.13秒），[原日志](../results/v2_continuation_20261001/server_tests.log)。
+服务器小时watcher PID5804、interval3600已启动；[启动记录](../results/v2_continuation_20261001/health_watcher.json)。
+本机timer已安装、enabled/active，首次服务 `Result=success` / `ExecMainStatus=0`，
+下一次北京时间16:00；[首次真实健康记录](../results/v2_continuation_20261001/initial_health.json)。
+仅在成本结果通过后自动正式训练；当前检查点没有新完整候选或新提交包。
 
 ## 原始s1核验
 
@@ -75,7 +86,7 @@ controller按s2_448 → s3_576 → full_576串行执行。每个DEV先8次真实
 通过后停本机timer，产物放同一执行目录的 `submission/`。不关机、不平台上传。
 所有认证配置只在私有输出目录，禁止入Git。
 
-CPU回归77项通过（3.69秒），含导入s1重跑阻断、训练参数迁移、manifest移植、
+CPU回归77项通过（3.69秒），另19项官方模型检查通过（1.42秒）；含导入s1重跑阻断、训练参数迁移、manifest移植、
 成本绑定、full无holdout预算及死进程/过期日志/真实更新识别；见
 [CPU记录](../results/v2_continuation_20261001/cpu_tests.json)。本机GPU留给已有v1任务。
 尚无本段可提交包，现役包和9项校验继续见[当前入口](current_execution_plan.md#交付与历史入口)。

@@ -36,7 +36,9 @@ def run(config_path):
     output.mkdir(parents=True, exist_ok=True)
     command = 'cd ' + shlex.quote(config['remote_worktree']) + ' && ' + shlex.join([
         'env', 'PYTHONPATH=' + config['remote_worktree'] + '/reproducibility/aegis_f1',
-        config['remote_python'], '-m', 'v2.health', '--plan', config['remote_plan']])
+        config['remote_python'], '-c',
+        'import json, sys; from v2.health import snapshot; print(json.dumps(snapshot(sys.argv[1])))',
+        config['remote_plan']])
     try:
         report = json.loads(invoke(config, ['remote', command]))
         if report['health'] == 'completed_delivered':
