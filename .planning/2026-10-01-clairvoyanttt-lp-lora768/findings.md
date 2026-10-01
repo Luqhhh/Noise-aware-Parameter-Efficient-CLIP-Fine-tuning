@@ -1,0 +1,4 @@
+# Findings
+2026-10-01: 26/26 handover files match manifest SHA256. Bundle parent sha ff7fdb81c3961ccd03501036e387df644e6fb6be3fc46055571b2787491a8b99. Official CLIP and class mapping match originals. Machine has RTX4060 Laptop 8GB, torch2.13.0+cu130 in /home/clairvoyant/.venvs/noise-clip; CUDA available.
+Local main 8f59dc7 from Sep26; two existing user changes preserved. Remote main discovered 58d353253862f2e5eb28e996be35017a51377795. Read machine A spec/protocol and three-machine assignment directly at that remote commit while fetch runs.
+Local dataset manifest a6aeb2618ddc08d62b3a9ca3f767be089a76652b325004bf21d039f7692a1380 differs from parent 484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0; local absolute roots differ, so inspect semantic identity using preserved bindings/location map, never rewrite parent sidecars.
