@@ -1,0 +1,945 @@
+{
+  "experiment_id": "PALM_REMATCH_REVIEW_20261001",
+  "checked_at": "2026-10-01T03:37:50.692083+00:00",
+  "project_base_commit": "7b3bd46",
+  "source_repository": "https://github.com/Palm0palM/aic-noisy-clip",
+  "source_commit": "fcc37813c8bea3f2761707a145b2955ce95c097e",
+  "source_remote_branches": [
+    "origin/HEAD -> origin/main",
+    "  origin/main"
+  ],
+  "source_review_scope": "solutions/clip-vitb32-full-finetune",
+  "configuration_comparison_scope": "selected core fields, not runtime or data equivalence",
+  "equal_configuration_fields": 140,
+  "stages": [
+    {
+      "stage": "s1_384",
+      "public_config": "solutions/clip-vitb32-full-finetune/configs/v12/s1_384.yaml",
+      "project_config": "configs/v2/stages/s1_384.yaml",
+      "compared_fields": 35,
+      "comparisons": [
+        {
+          "field": "data.image_size",
+          "public_value": 384,
+          "project_value": 384,
+          "equal": true
+        },
+        {
+          "field": "data.eval_size",
+          "public_value": 384,
+          "project_value": 384,
+          "equal": true
+        },
+        {
+          "field": "data.eval_resize_ratio",
+          "public_value": 1.14,
+          "project_value": 1.14,
+          "equal": true
+        },
+        {
+          "field": "data.batch_size",
+          "public_value": 96,
+          "project_value": 96,
+          "equal": true
+        },
+        {
+          "field": "data.val_batch_size",
+          "public_value": 128,
+          "project_value": 128,
+          "equal": true
+        },
+        {
+          "field": "model.head",
+          "public_value": "linear",
+          "project_value": "linear",
+          "equal": true
+        },
+        {
+          "field": "model.dropout",
+          "public_value": 0.0,
+          "project_value": 0.0,
+          "equal": true
+        },
+        {
+          "field": "model.freeze_first_blocks",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "model.train_last_blocks",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "augment.rrc_scale",
+          "public_value": [
+            0.35,
+            1.0
+          ],
+          "project_value": [
+            0.35,
+            1.0
+          ],
+          "equal": true
+        },
+        {
+          "field": "augment.color_jitter",
+          "public_value": 0.5,
+          "project_value": 0.5,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment",
+          "public_value": true,
+          "project_value": true,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment_ops",
+          "public_value": 2,
+          "project_value": 2,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment_magnitude",
+          "public_value": 7,
+          "project_value": 7,
+          "equal": true
+        },
+        {
+          "field": "augment.random_erase",
+          "public_value": 0.3,
+          "project_value": 0.3,
+          "equal": true
+        },
+        {
+          "field": "augment.mixup",
+          "public_value": 0.2,
+          "project_value": 0.2,
+          "equal": true
+        },
+        {
+          "field": "augment.cutmix",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "augment.mix_prob",
+          "public_value": 0.8,
+          "project_value": 0.8,
+          "equal": true
+        },
+        {
+          "field": "augment.label_smoothing",
+          "public_value": 0.15,
+          "project_value": 0.15,
+          "equal": true
+        },
+        {
+          "field": "sampler.scheme",
+          "public_value": "sqrt_inv",
+          "project_value": "sqrt_inv",
+          "equal": true
+        },
+        {
+          "field": "sampler.power",
+          "public_value": 0.5,
+          "project_value": 0.5,
+          "equal": true
+        },
+        {
+          "field": "train.epochs",
+          "public_value": 10,
+          "project_value": 10,
+          "equal": true
+        },
+        {
+          "field": "train.lr_backbone",
+          "public_value": 3e-05,
+          "project_value": 3e-05,
+          "equal": true
+        },
+        {
+          "field": "train.lr_head",
+          "public_value": 0.0005,
+          "project_value": 0.0005,
+          "equal": true
+        },
+        {
+          "field": "train.llrd_gamma",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "train.weight_decay",
+          "public_value": 0.15,
+          "project_value": 0.15,
+          "equal": true
+        },
+        {
+          "field": "train.warmup_epochs",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "train.min_lr_ratio",
+          "public_value": 0.02,
+          "project_value": 0.02,
+          "equal": true
+        },
+        {
+          "field": "train.grad_clip",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "train.ema_decay",
+          "public_value": 0.9995,
+          "project_value": 0.9995,
+          "equal": true
+        },
+        {
+          "field": "train.amp_dtype",
+          "public_value": "bfloat16",
+          "project_value": "bfloat16",
+          "equal": true
+        },
+        {
+          "field": "train.elr_lambda",
+          "public_value": 0.0,
+          "project_value": 0.0,
+          "equal": true
+        },
+        {
+          "field": "train.elr_momentum",
+          "public_value": 0.9,
+          "project_value": 0.9,
+          "equal": true
+        },
+        {
+          "field": "train.early_stop_patience",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "train.log_every",
+          "public_value": 200,
+          "project_value": 200,
+          "equal": true
+        }
+      ]
+    },
+    {
+      "stage": "s2_448",
+      "public_config": "solutions/clip-vitb32-full-finetune/configs/v12/s2_448.yaml",
+      "project_config": "configs/v2/stages/s2_448.yaml",
+      "compared_fields": 35,
+      "comparisons": [
+        {
+          "field": "data.image_size",
+          "public_value": 448,
+          "project_value": 448,
+          "equal": true
+        },
+        {
+          "field": "data.eval_size",
+          "public_value": 448,
+          "project_value": 448,
+          "equal": true
+        },
+        {
+          "field": "data.eval_resize_ratio",
+          "public_value": 1.14,
+          "project_value": 1.14,
+          "equal": true
+        },
+        {
+          "field": "data.batch_size",
+          "public_value": 96,
+          "project_value": 96,
+          "equal": true
+        },
+        {
+          "field": "data.val_batch_size",
+          "public_value": 128,
+          "project_value": 128,
+          "equal": true
+        },
+        {
+          "field": "model.head",
+          "public_value": "linear",
+          "project_value": "linear",
+          "equal": true
+        },
+        {
+          "field": "model.dropout",
+          "public_value": 0.0,
+          "project_value": 0.0,
+          "equal": true
+        },
+        {
+          "field": "model.freeze_first_blocks",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "model.train_last_blocks",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "augment.rrc_scale",
+          "public_value": [
+            0.35,
+            1.0
+          ],
+          "project_value": [
+            0.35,
+            1.0
+          ],
+          "equal": true
+        },
+        {
+          "field": "augment.color_jitter",
+          "public_value": 0.5,
+          "project_value": 0.5,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment",
+          "public_value": true,
+          "project_value": true,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment_ops",
+          "public_value": 2,
+          "project_value": 2,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment_magnitude",
+          "public_value": 7,
+          "project_value": 7,
+          "equal": true
+        },
+        {
+          "field": "augment.random_erase",
+          "public_value": 0.3,
+          "project_value": 0.3,
+          "equal": true
+        },
+        {
+          "field": "augment.mixup",
+          "public_value": 0.2,
+          "project_value": 0.2,
+          "equal": true
+        },
+        {
+          "field": "augment.cutmix",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "augment.mix_prob",
+          "public_value": 0.8,
+          "project_value": 0.8,
+          "equal": true
+        },
+        {
+          "field": "augment.label_smoothing",
+          "public_value": 0.15,
+          "project_value": 0.15,
+          "equal": true
+        },
+        {
+          "field": "sampler.scheme",
+          "public_value": "sqrt_inv",
+          "project_value": "sqrt_inv",
+          "equal": true
+        },
+        {
+          "field": "sampler.power",
+          "public_value": 0.5,
+          "project_value": 0.5,
+          "equal": true
+        },
+        {
+          "field": "train.epochs",
+          "public_value": 6,
+          "project_value": 6,
+          "equal": true
+        },
+        {
+          "field": "train.lr_backbone",
+          "public_value": 1.5e-05,
+          "project_value": 1.5e-05,
+          "equal": true
+        },
+        {
+          "field": "train.lr_head",
+          "public_value": 0.0003,
+          "project_value": 0.0003,
+          "equal": true
+        },
+        {
+          "field": "train.llrd_gamma",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "train.weight_decay",
+          "public_value": 0.15,
+          "project_value": 0.15,
+          "equal": true
+        },
+        {
+          "field": "train.warmup_epochs",
+          "public_value": 0.5,
+          "project_value": 0.5,
+          "equal": true
+        },
+        {
+          "field": "train.min_lr_ratio",
+          "public_value": 0.02,
+          "project_value": 0.02,
+          "equal": true
+        },
+        {
+          "field": "train.grad_clip",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "train.ema_decay",
+          "public_value": 0.9995,
+          "project_value": 0.9995,
+          "equal": true
+        },
+        {
+          "field": "train.amp_dtype",
+          "public_value": "bfloat16",
+          "project_value": "bfloat16",
+          "equal": true
+        },
+        {
+          "field": "train.elr_lambda",
+          "public_value": 0.0,
+          "project_value": 0.0,
+          "equal": true
+        },
+        {
+          "field": "train.elr_momentum",
+          "public_value": 0.9,
+          "project_value": 0.9,
+          "equal": true
+        },
+        {
+          "field": "train.early_stop_patience",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "train.log_every",
+          "public_value": 200,
+          "project_value": 200,
+          "equal": true
+        }
+      ]
+    },
+    {
+      "stage": "s3_576",
+      "public_config": "solutions/clip-vitb32-full-finetune/configs/v12/s3_576.yaml",
+      "project_config": "configs/v2/stages/s3_576.yaml",
+      "compared_fields": 35,
+      "comparisons": [
+        {
+          "field": "data.image_size",
+          "public_value": 576,
+          "project_value": 576,
+          "equal": true
+        },
+        {
+          "field": "data.eval_size",
+          "public_value": 576,
+          "project_value": 576,
+          "equal": true
+        },
+        {
+          "field": "data.eval_resize_ratio",
+          "public_value": 1.14,
+          "project_value": 1.14,
+          "equal": true
+        },
+        {
+          "field": "data.batch_size",
+          "public_value": 80,
+          "project_value": 80,
+          "equal": true
+        },
+        {
+          "field": "data.val_batch_size",
+          "public_value": 128,
+          "project_value": 128,
+          "equal": true
+        },
+        {
+          "field": "model.head",
+          "public_value": "linear",
+          "project_value": "linear",
+          "equal": true
+        },
+        {
+          "field": "model.dropout",
+          "public_value": 0.0,
+          "project_value": 0.0,
+          "equal": true
+        },
+        {
+          "field": "model.freeze_first_blocks",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "model.train_last_blocks",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "augment.rrc_scale",
+          "public_value": [
+            0.35,
+            1.0
+          ],
+          "project_value": [
+            0.35,
+            1.0
+          ],
+          "equal": true
+        },
+        {
+          "field": "augment.color_jitter",
+          "public_value": 0.5,
+          "project_value": 0.5,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment",
+          "public_value": true,
+          "project_value": true,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment_ops",
+          "public_value": 2,
+          "project_value": 2,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment_magnitude",
+          "public_value": 7,
+          "project_value": 7,
+          "equal": true
+        },
+        {
+          "field": "augment.random_erase",
+          "public_value": 0.3,
+          "project_value": 0.3,
+          "equal": true
+        },
+        {
+          "field": "augment.mixup",
+          "public_value": 0.2,
+          "project_value": 0.2,
+          "equal": true
+        },
+        {
+          "field": "augment.cutmix",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "augment.mix_prob",
+          "public_value": 0.8,
+          "project_value": 0.8,
+          "equal": true
+        },
+        {
+          "field": "augment.label_smoothing",
+          "public_value": 0.15,
+          "project_value": 0.15,
+          "equal": true
+        },
+        {
+          "field": "sampler.scheme",
+          "public_value": "sqrt_inv",
+          "project_value": "sqrt_inv",
+          "equal": true
+        },
+        {
+          "field": "sampler.power",
+          "public_value": 0.5,
+          "project_value": 0.5,
+          "equal": true
+        },
+        {
+          "field": "train.epochs",
+          "public_value": 4,
+          "project_value": 4,
+          "equal": true
+        },
+        {
+          "field": "train.lr_backbone",
+          "public_value": 8e-06,
+          "project_value": 8e-06,
+          "equal": true
+        },
+        {
+          "field": "train.lr_head",
+          "public_value": 0.0002,
+          "project_value": 0.0002,
+          "equal": true
+        },
+        {
+          "field": "train.llrd_gamma",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "train.weight_decay",
+          "public_value": 0.15,
+          "project_value": 0.15,
+          "equal": true
+        },
+        {
+          "field": "train.warmup_epochs",
+          "public_value": 0.4,
+          "project_value": 0.4,
+          "equal": true
+        },
+        {
+          "field": "train.min_lr_ratio",
+          "public_value": 0.02,
+          "project_value": 0.02,
+          "equal": true
+        },
+        {
+          "field": "train.grad_clip",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "train.ema_decay",
+          "public_value": 0.9995,
+          "project_value": 0.9995,
+          "equal": true
+        },
+        {
+          "field": "train.amp_dtype",
+          "public_value": "bfloat16",
+          "project_value": "bfloat16",
+          "equal": true
+        },
+        {
+          "field": "train.elr_lambda",
+          "public_value": 0.0,
+          "project_value": 0.0,
+          "equal": true
+        },
+        {
+          "field": "train.elr_momentum",
+          "public_value": 0.9,
+          "project_value": 0.9,
+          "equal": true
+        },
+        {
+          "field": "train.early_stop_patience",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "train.log_every",
+          "public_value": 200,
+          "project_value": 200,
+          "equal": true
+        }
+      ]
+    },
+    {
+      "stage": "full_576",
+      "public_config": "solutions/clip-vitb32-full-finetune/configs/v13_final.yaml",
+      "project_config": "configs/v2/stages/full_576.yaml",
+      "compared_fields": 35,
+      "comparisons": [
+        {
+          "field": "data.image_size",
+          "public_value": 576,
+          "project_value": 576,
+          "equal": true
+        },
+        {
+          "field": "data.eval_size",
+          "public_value": 576,
+          "project_value": 576,
+          "equal": true
+        },
+        {
+          "field": "data.eval_resize_ratio",
+          "public_value": 1.14,
+          "project_value": 1.14,
+          "equal": true
+        },
+        {
+          "field": "data.batch_size",
+          "public_value": 80,
+          "project_value": 80,
+          "equal": true
+        },
+        {
+          "field": "data.val_batch_size",
+          "public_value": 96,
+          "project_value": 96,
+          "equal": true
+        },
+        {
+          "field": "model.head",
+          "public_value": "linear",
+          "project_value": "linear",
+          "equal": true
+        },
+        {
+          "field": "model.dropout",
+          "public_value": 0.0,
+          "project_value": 0.0,
+          "equal": true
+        },
+        {
+          "field": "model.freeze_first_blocks",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "model.train_last_blocks",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "augment.rrc_scale",
+          "public_value": [
+            0.35,
+            1.0
+          ],
+          "project_value": [
+            0.35,
+            1.0
+          ],
+          "equal": true
+        },
+        {
+          "field": "augment.color_jitter",
+          "public_value": 0.5,
+          "project_value": 0.5,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment",
+          "public_value": true,
+          "project_value": true,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment_ops",
+          "public_value": 2,
+          "project_value": 2,
+          "equal": true
+        },
+        {
+          "field": "augment.rand_augment_magnitude",
+          "public_value": 7,
+          "project_value": 7,
+          "equal": true
+        },
+        {
+          "field": "augment.random_erase",
+          "public_value": 0.3,
+          "project_value": 0.3,
+          "equal": true
+        },
+        {
+          "field": "augment.mixup",
+          "public_value": 0.2,
+          "project_value": 0.2,
+          "equal": true
+        },
+        {
+          "field": "augment.cutmix",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "augment.mix_prob",
+          "public_value": 0.8,
+          "project_value": 0.8,
+          "equal": true
+        },
+        {
+          "field": "augment.label_smoothing",
+          "public_value": 0.15,
+          "project_value": 0.15,
+          "equal": true
+        },
+        {
+          "field": "sampler.scheme",
+          "public_value": "sqrt_inv",
+          "project_value": "sqrt_inv",
+          "equal": true
+        },
+        {
+          "field": "sampler.power",
+          "public_value": 0.5,
+          "project_value": 0.5,
+          "equal": true
+        },
+        {
+          "field": "train.epochs",
+          "public_value": 5,
+          "project_value": 5,
+          "equal": true
+        },
+        {
+          "field": "train.lr_backbone",
+          "public_value": 4e-06,
+          "project_value": 4e-06,
+          "equal": true
+        },
+        {
+          "field": "train.lr_head",
+          "public_value": 0.00012,
+          "project_value": 0.00012,
+          "equal": true
+        },
+        {
+          "field": "train.llrd_gamma",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "train.weight_decay",
+          "public_value": 0.15,
+          "project_value": 0.15,
+          "equal": true
+        },
+        {
+          "field": "train.warmup_epochs",
+          "public_value": 0.3,
+          "project_value": 0.3,
+          "equal": true
+        },
+        {
+          "field": "train.min_lr_ratio",
+          "public_value": 0.02,
+          "project_value": 0.02,
+          "equal": true
+        },
+        {
+          "field": "train.grad_clip",
+          "public_value": 1.0,
+          "project_value": 1.0,
+          "equal": true
+        },
+        {
+          "field": "train.ema_decay",
+          "public_value": 0.9995,
+          "project_value": 0.9995,
+          "equal": true
+        },
+        {
+          "field": "train.amp_dtype",
+          "public_value": "bfloat16",
+          "project_value": "bfloat16",
+          "equal": true
+        },
+        {
+          "field": "train.elr_lambda",
+          "public_value": 0.0,
+          "project_value": 0.0,
+          "equal": true
+        },
+        {
+          "field": "train.elr_momentum",
+          "public_value": 0.9,
+          "project_value": 0.9,
+          "equal": true
+        },
+        {
+          "field": "train.early_stop_patience",
+          "public_value": 0,
+          "project_value": 0,
+          "equal": true
+        },
+        {
+          "field": "train.log_every",
+          "public_value": 200,
+          "project_value": 200,
+          "equal": true
+        }
+      ]
+    }
+  ],
+  "static_source_signatures": {
+    "public_projected_feature": true,
+    "project_projected_512_linear_feature": true,
+    "public_probability_view_average": true,
+    "public_near_duplicate_uses_top1": true,
+    "public_conflicting_pair_counter_is_directed": true,
+    "public_split_stratifies_rows": true,
+    "public_full_still_evaluates_validation": true
+  },
+  "public_results_evidence": {
+    "readme_v13_self_report_percent": 76.589,
+    "latest_commit_six_view_self_report_percent": 76.7413,
+    "v14_holdout_delta_pp_comment": 2.08,
+    "v14_test_delta_pp_comment": -0.58,
+    "independent_evaluation_or_platform_receipt_available": false
+  },
+  "incumbent_reference": {
+    "reported_platform_percent": 70.98600576861446,
+    "csv": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/pred_results.csv",
+    "zip": "/home/lux1/noise/worktrees/v1_full_swa_20260930/outputs/codex/v1_full_swa_20260930/submission/submission.zip",
+    "csv_sha256": "caee8470d34203250db8de8370496c68de2ab44d1f504cfc531d4dfbf385afc5",
+    "zip_sha256": "1a2bc8472f9c813e24781e798c233aba284df84380b8e76ef144f584e830505e",
+    "rows": 37444,
+    "zip_csv_bytes_identical": true,
+    "prior_submission_checks_passed": 9,
+    "prior_submission_check": "results/v1_full_swa_platform_20261001/submission_check.log",
+    "nine_checks_rerun_in_this_review": false
+  },
+  "checked_local_links": 58,
+  "new_training_or_inference_started": false,
+  "public_training_code_executed": false,
+  "test_images_or_labels_read": false,
+  "verification_passed": true
+}
