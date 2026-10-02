@@ -1,0 +1,10 @@
+{
+  "epochs_per_arm": 4,
+  "independent_corrections_regressions_macro_recount": true,
+  "packages": 2,
+  "paired_draws_exact": true,
+  "parent_replay_rows": 14880,
+  "platform_score": null,
+  "status": "completed_verified",
+  "submission_checks_per_package": 9
+}

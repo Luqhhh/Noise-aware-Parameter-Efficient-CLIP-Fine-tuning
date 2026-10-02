@@ -1,0 +1,272 @@
+{
+  "active_train_rows": 119074,
+  "environment": {
+    "python": "3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]",
+    "torch": "2.6.0+cu126",
+    "torchvision": "0.21.0+cu126"
+  },
+  "group_compute": {
+    "dtype": "float32",
+    "gallery_chunk": 8192,
+    "query_chunk": 256,
+    "tf32": false
+  },
+  "group_quantile": {
+    "comparison": "strict_less_than",
+    "method": "numpy_linear",
+    "q": 0.1
+  },
+  "implementation_hashes": {
+    "reproducibility\\aegis_f1\\aegis_clip\\model.py": "4f361678dba8005f2c06b2338e203f8a46da423bef6c739a59c3c59810c9747b",
+    "reproducibility\\aegis_f1\\aegis_clip\\submission.py": "e5e182b86fb69cbe94a55afae95124ee2c9da8a6116cea718c5d6d1dee7b9207",
+    "reproducibility\\aegis_f1\\aegis_clip\\v1_pipeline.py": "933c02bceaafd72e3efb627e255ce89486cc5f3523635a92173e6303a7979a33",
+    "reproducibility\\aegis_f1\\aegis_clip\\v1_strategy.py": "7ad542cc557f8ef7e0f660af56f7527c1e02947336fa7682ece949b78a72e121",
+    "reproducibility\\aegis_f1\\strong_aug_pair\\__init__.py": "9e97207a9873470f0a3fb74f766a9eba195dba58102f995cc5f381d8a105478c",
+    "reproducibility\\aegis_f1\\strong_aug_pair\\core.py": "c2ab1c207cb241d30c41a68f8b24038dd09e085e7649bf6429d6e1a36044f620",
+    "reproducibility\\aegis_f1\\strong_aug_pair\\runtime.py": "679848c797d786d2dcbf117dcc894ff0302e72ae38d3f5291580030f8cd5b1bf",
+    "reproducibility\\aegis_f1\\strong_aug_pair\\source.py": "0890038101b7e6ad0f1fdfe1099dfc1ffffac31c07085d0af44209967b8338d4",
+    "reproducibility\\aegis_f1\\v1_continuation\\runtime.py": "5cffad52c4702bdac1ce0b4f3d9ba0e0cd7dbe60f550f031a7e63154148b44fb",
+    "scripts\\check_submission.py": "20d6f123c140de6c306b764cf3ac5e21bc48e41f28e8565306874bd4b404ae28",
+    "scripts\\run_strong_aug_pair.py": "23ee3534d1fbc5faef56c92c40a6587e8d7e70dcb4ab0f0ada959bd8e4d81671",
+    "scripts\\verify_strong_aug_pair.py": "60b653e329173f3a3319a3b3f118491df22808d006b90c7e92e6b5eabc17356a"
+  },
+  "locations": {
+    "handoff": "C:\\Users\\28639\\Documents\\New project 3\\research_73\\strong_aug448_20261001\\outputs\\codex\\strong_aug448_20261001\\handoff",
+    "official_checkpoint": "D:\\codex_b448_20260929\\weights\\ViT-B-32-hf.pt",
+    "stage": "D:\\codex_b448_20260929\\artifacts\\stages\\repechage\\20260921",
+    "test_root": "D:\\codex_b448_20260929\\source\\test",
+    "train_root": "D:\\codex_b448_20260929\\source\\train"
+  },
+  "logical_batches_per_epoch": 3722,
+  "original_artifacts_modified": false,
+  "other_large_group_rule": "complement_and_tail75_net_nonnegative_vs_control_and_parent",
+  "platform_score": null,
+  "protocol": {
+    "arms": [
+      "original_augmentation",
+      "strong_augmentation"
+    ],
+    "augmentations": {
+      "candidate": {
+        "color_jitter": {
+          "brightness": 0.5,
+          "contrast": 0.5,
+          "hue": 0.125,
+          "saturation": 0.5
+        },
+        "crop_min": 0.35,
+        "cutmix": false,
+        "horizontal_flip": true,
+        "randaugment": [
+          2,
+          7
+        ],
+        "random_erasing_probability": 0.3,
+        "random_erasing_value": "random"
+      },
+      "control": {
+        "crop_min": 0.8,
+        "horizontal_flip": true,
+        "randaugment": [
+          2,
+          7
+        ]
+      }
+    },
+    "branch_suffix": "strong_aug448_20261001",
+    "cost_probe": {
+      "decision": "record_memory_throughput_and_expected_cost_without_a_time_cutoff",
+      "includes": [
+        "full_holdout",
+        "checkpoint_io",
+        "both_submission_packages"
+      ],
+      "updates": 5
+    },
+    "data_version": "20260921",
+    "diagnostic_exports": [
+      "last_raw",
+      "last_ema"
+    ],
+    "ema_decay": 0.999,
+    "epochs_per_arm": 4,
+    "evidence": [
+      "results/wft448_full_platform_20261001/validation.json",
+      "results/wft448_dev_20261001/report.json"
+    ],
+    "experiment_id": "STRONG_AUG448_20261001",
+    "feature_dimension": 512,
+    "gpu_model": null,
+    "grad_clip": 1.0,
+    "head_lr": 0.00025,
+    "head_weight_decay": 0.01,
+    "image_size": 448,
+    "kind": "protocol_for_agent_implementation_not_runtime_config",
+    "label_smoothing": 0.1,
+    "logical_batch_size": 32,
+    "lora_lr": 5e-05,
+    "lora_weight_decay": 0.0,
+    "machine": "B",
+    "micro_batch_size": 8,
+    "mixup_alpha": 0.2,
+    "num_workers": 2,
+    "optimizer": "AdamW",
+    "owner": null,
+    "parent_asset": "assets/common/dev512/selected.pt",
+    "parent_has_seen_validation": false,
+    "partition": "train_dev",
+    "platform_upload": false,
+    "primary_export": "ema_swa_2_4",
+    "remote_execution": false,
+    "review_gate": {
+      "automatic_full_training": false,
+      "corrections_to_regressions_min": 1.25,
+      "net_vs_control_min": 75,
+      "net_vs_parent_min": 75,
+      "target_net_vs_control_min": 25
+    },
+    "scheduler": {
+      "anneal_strategy": "cos",
+      "name": "OneCycleLR",
+      "pct_start": 0.1
+    },
+    "schema": 1,
+    "seed": 42,
+    "spawn_subagents": false,
+    "status": "implementation_required_not_started",
+    "stop_if_micro_pp_vs_parent_below": -2,
+    "supervision": "unchanged_v1_train_dev_119074_active",
+    "target_group": {
+      "cache": "audited_official_224_projection_512",
+      "gallery": "train_dev_only",
+      "minimum_parent_target_errors": 75,
+      "name": "low_training_similarity_proxy",
+      "threshold": "training_group_excluded_max_cosine_10th_percentile"
+    },
+    "test_decoder": {
+      "bias": null,
+      "flip": true,
+      "reduction": "sum_logits",
+      "scales": [
+        448,
+        512,
+        576
+      ]
+    },
+    "validation": {
+      "bias": null,
+      "labels": "official_noisy_original",
+      "rows": 14880,
+      "views": "448_center"
+    },
+    "wall_clock_time_limits": false
+  },
+  "quality_stop_micro_pp": -2,
+  "randomness": "per_image_epoch_augmentation_scope_and_independent_per_batch_mixup",
+  "sampler": "per_epoch_uniform_permutation_of_unchanged_active_v1_population",
+  "source_binding": {
+    "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "data_version": "20260921",
+    "local_cache_is_independent_encoding": true,
+    "local_dataset_manifest_sha256": "ea93badcc371de9d94464b79bd9a29cba22d907b890211bfb2739be120f3d951",
+    "local_feature_manifest_sha256": "6a46838e805cd5efaceaa734b91633f7dddeb22187881a261c51b408f9c09183",
+    "local_feature_tensor_sha256": "c28554017af7852d7050d11aa66a97ec6e0e8e464796faa2ee92b2a44d2cdc1f",
+    "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "original_artifacts_modified": false,
+    "parent_binding": {
+      "class_mapping_sha256": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+      "data_version": "20260921",
+      "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+      "feature_manifest_sha256": "1202d9bb189ab9448fa942f047aa46de96610cde46eef38c5442b6ec9a984d8c",
+      "implementation_sha256": "f332fe1a1f7282f4a97f2504a354b104bb4092f619e96c4d85414c8081b59688",
+      "official_checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+      "recipe_sha256": "0c027ecb1a965b04d254c6a9a82a2c469ba9942e2f9ba9d8ccfe584c3d536722",
+      "stage": "repechage"
+    },
+    "parent_sha256": "01caedaa4996d25fa9dfc213d4b2376c147bb99ebdc23dacd93e6e1ff2d6fa20",
+    "stage": "repechage",
+    "targets_sha256": "7df09ad425164707cf1f2a55b9c24c45054d268cbd0be98bd6e8d3e29c4c60b2"
+  },
+  "status": "prepared_not_started",
+  "tail_classes": [
+    183,
+    46,
+    413,
+    19,
+    305,
+    671,
+    589,
+    114,
+    555,
+    330,
+    682,
+    145,
+    407,
+    723,
+    318,
+    58,
+    324,
+    498,
+    458,
+    431,
+    304,
+    706,
+    361,
+    418,
+    611,
+    627,
+    686,
+    97,
+    237,
+    272,
+    280,
+    341,
+    659,
+    284,
+    573,
+    597,
+    620,
+    679,
+    163,
+    317,
+    389,
+    400,
+    251,
+    370,
+    375,
+    379,
+    515,
+    581,
+    590,
+    628,
+    152,
+    225,
+    378,
+    410,
+    545,
+    677,
+    722,
+    724,
+    299,
+    352,
+    387,
+    415,
+    617,
+    621,
+    653,
+    256,
+    264,
+    335,
+    507,
+    529,
+    17,
+    81,
+    144,
+    274,
+    480
+  ],
+  "train_rows": 133815,
+  "training_started": false,
+  "val_rows": 14880,
+  "wall_clock_time_limits": false
+}

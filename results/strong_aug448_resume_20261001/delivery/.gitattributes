@@ -1,0 +1,2 @@
+# Preserve the recorded SHA256 of copied JSON, sidecars, and evidence logs.
+* -text whitespace=trailing-space,space-before-tab,cr-at-eol

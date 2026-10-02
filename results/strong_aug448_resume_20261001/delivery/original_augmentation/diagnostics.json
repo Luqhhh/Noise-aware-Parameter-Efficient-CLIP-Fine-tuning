@@ -1,0 +1,91 @@
+{
+  "last_ema": {
+    "all": {
+      "baseline": {
+        "correct": 11326,
+        "covered_classes": 750,
+        "macro": 0.7516452637561509,
+        "micro": 0.7611559139784946,
+        "rows": 14880
+      },
+      "candidate": {
+        "correct": 11374,
+        "covered_classes": 750,
+        "macro": 0.7550102029065793,
+        "micro": 0.7643817204301075,
+        "rows": 14880
+      },
+      "changed": 1299,
+      "corrections": 313,
+      "net": 48,
+      "regressions": 265
+    },
+    "complement": {
+      "baseline": {
+        "correct": 10436,
+        "covered_classes": 750,
+        "macro": 0.772215105552081,
+        "micro": 0.7824848166754143,
+        "rows": 13337
+      },
+      "candidate": {
+        "correct": 10489,
+        "covered_classes": 750,
+        "macro": 0.7761239368530941,
+        "micro": 0.786458723850941,
+        "rows": 13337
+      },
+      "changed": 1006,
+      "corrections": 266,
+      "net": 53,
+      "regressions": 213
+    },
+    "tail75": {
+      "baseline": {
+        "correct": 667,
+        "covered_classes": 75,
+        "macro": 0.6016353874883287,
+        "micro": 0.6650049850448654,
+        "rows": 1003
+      },
+      "candidate": {
+        "correct": 671,
+        "covered_classes": 75,
+        "macro": 0.6065084033613445,
+        "micro": 0.6689930209371885,
+        "rows": 1003
+      },
+      "changed": 117,
+      "corrections": 22,
+      "net": 4,
+      "regressions": 18
+    },
+    "target": {
+      "baseline": {
+        "correct": 890,
+        "covered_classes": 581,
+        "macro": 0.5778576892604431,
+        "micro": 0.5767984445884641,
+        "rows": 1543
+      },
+      "candidate": {
+        "correct": 885,
+        "covered_classes": 581,
+        "macro": 0.567299128486736,
+        "micro": 0.5735580038885288,
+        "rows": 1543
+      },
+      "changed": 293,
+      "corrections": 47,
+      "net": -5,
+      "regressions": 52
+    }
+  },
+  "last_raw": {
+    "correct": 11370,
+    "covered_classes": 750,
+    "macro": 0.7546554155319063,
+    "micro": 0.7641129032258065,
+    "rows": 14880
+  }
+}
