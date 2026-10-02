@@ -1,0 +1,25 @@
+{
+  "status": "formal_pair_started",
+  "source_output": "/home/lux1/noise/worktrees/v2_preprojection768_pair_20261002/outputs/codex/v2_preprojection768_pair_20261002/pair_costed",
+  "config": "configs/v2_preprojection768_pair_20261002_costed.json",
+  "config_sha256": "a929593571de278bb4130b60828e061a4fb209d9da7759381d48f30f3b38c0c9",
+  "initial_equivalence": {
+    "fp32_readout_vs_original_archive_changes": 50,
+    "max_abs_logit_difference": 1.9073486328125e-06,
+    "native_local_bf16_vs_archive_changes": 39,
+    "top1_changes": 0
+  },
+  "cost_gate_passed": true,
+  "remaining_estimate_seconds": 7938.512700142362,
+  "reserved_seconds": 9923.140875177953,
+  "resource_budget_seconds": 10550.0,
+  "first_attempt_consumed_seconds": 250,
+  "observed_progress": {
+    "elapsed_seconds": 331.4940269810004,
+    "loss": 1.8307241201400757,
+    "status": "train_control",
+    "step": 49,
+    "total_steps": 512
+  },
+  "results_not_yet_available": true
+}
