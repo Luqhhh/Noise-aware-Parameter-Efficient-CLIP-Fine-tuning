@@ -1,0 +1,93 @@
+{
+  "record_id": "V2_SIXVIEW_PLATFORM_20261003",
+  "verified_at": "2026-10-03T03:25:13+08:00",
+  "method": "sha256 of the exact Windows files plus the official scripts/check_submission.py 9-item check",
+  "class_mapping": "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+  "test_dir": "/home/lux1/noise/test",
+  "packages": [
+    {
+      "role": "reported platform candidate (bias, six views)",
+      "path": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission_bias_sixview/submission.zip",
+      "zip_sha256": "7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a",
+      "csv_sha256": "194c0a0a4da379e6f340e6b078ae48439d00978f3924feb03df9806ed67d2e90",
+      "zip_bytes": 806198,
+      "rows": 37444,
+      "check": "all_passed",
+      "platform_score_percent": 74.6688387992735
+    },
+    {
+      "role": "same-checkpoint raw control",
+      "path": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission_raw_sixview/submission.zip",
+      "zip_sha256": "4228a78a390e34744e42fb9a8ef861c6807d37b4e28dedc61bc3984c98353c6c",
+      "csv_sha256": "446165ca7d862431ab921d9de0a06fcd33e0d3011a59397a12831b2afa220f8e",
+      "zip_bytes": 805956,
+      "rows": 37444,
+      "check": "all_passed",
+      "platform_score_percent": null
+    },
+    {
+      "role": "same-checkpoint original four-view raw (server decode)",
+      "path": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission/submission.zip",
+      "zip_sha256": "e7152143952f7853c3cf6617bd320675fa8339aa24f4ff841d1cd627e462124e",
+      "csv_sha256": "26a8f406a12bb74218fa790217fab9351d2223a1adfb8cdb3fa4773e00a889b9",
+      "zip_bytes": 805939,
+      "rows": 37444,
+      "check": "all_passed",
+      "platform_score_percent": null
+    }
+  ],
+  "desktop_untested_candidates_sha256_matched_to_their_delivery_records": {
+    "v1_512_test_bias_control_20261001_512_test_bias_submission.zip": {
+      "sha256": "260fc98bff216236e2d1bb4b4d6423f10a779f14bd6e508e9bcf0c9a8ae11048",
+      "recorded_source_sha256_equal": true,
+      "record": "docs/v1_512_test_bias_control_20261001.md"
+    },
+    "v1_512_test_bias_control_20261001_512_raw_submission.zip": {
+      "sha256": "774e3d94837b72fa9449786bc610cb8c318ce7087fd5458d26ed2114dfdc7d9e",
+      "recorded_source_sha256_equal": true,
+      "record": "docs/v1_512_test_bias_control_20261001.md"
+    },
+    "v1_crt768_dev_20261001_balanced_test_bias_submission.zip": {
+      "sha256": "ac2bbddaa7adfb2c3744bd886d16ac8c9c3dba50cceb71c9518a584d31174ed6",
+      "recorded_source_sha256_equal": true,
+      "record": "docs/v1_crt768_dev_20261001.md"
+    },
+    "v1_crt768_dev_20261001_balanced_raw_submission.zip": {
+      "sha256": "e0b5505d5d1ef9e6d33cd608cae0c4fc7f0b7b4dcf207576229f0ce66b5e05f0",
+      "recorded_source_sha256_equal": true,
+      "record": "docs/v1_crt768_dev_20261001.md"
+    },
+    "v1_crt768_dev_20261001_unbalanced_test_bias_submission.zip": {
+      "sha256": "95969dc2854a56e00c19edf38877b800975a2e0d11eb520b3317e18d519a9791",
+      "recorded_source_sha256_equal": true,
+      "record": "docs/v1_crt768_dev_20261001.md"
+    },
+    "v1_crt768_dev_20261001_unbalanced_raw_submission.zip": {
+      "sha256": "3ae9e8f6cfc693c5c0705414303e9492c731da98d2bf9c5969b0c3505f46cf71",
+      "recorded_source_sha256_equal": true,
+      "record": "docs/v1_crt768_dev_20261001.md"
+    },
+    "v1_768_full_test_bias_submission.zip": {
+      "sha256": "0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca",
+      "recorded_source_sha256_equal": true,
+      "platform_score_percent": 74.41512658903963
+    },
+    "v1_768_full_raw_submission.zip": {
+      "sha256": "c8d7e0a5fb74f78bbb86796c67bc419f66dfd47733ac6cbe9d26d03875bf462e",
+      "recorded_source_sha256_equal": true,
+      "platform_score_percent": 71.53883132144003
+    },
+    "v2_full_epoch5_raw_submission.zip": {
+      "sha256": "e7152143952f7853c3cf6617bd320675fa8339aa24f4ff841d1cd627e462124e",
+      "note": "byte-identical to submission/submission.zip in the Downloads delivery root"
+    },
+    "lr512_dev_ema_swa_2_4_submission.zip": {
+      "sha256": "8d37d0ba8e1d816094b5032d4a3a7cd5180c618a0d53bf6bf94f68bbd2817efd",
+      "record": "docs/lr512_swa_package_20261001.md"
+    }
+  },
+  "check_logs": [
+    "results/v2_sixview_bias_20261002/submission_bias/submission_check.log",
+    "results/v2_sixview_pair_handoff_20261002/raw_check.log"
+  ]
+}
