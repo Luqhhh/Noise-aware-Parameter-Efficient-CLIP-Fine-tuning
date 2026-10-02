@@ -113,6 +113,7 @@ outputs/search_20260923/
 /outputs/codex/v1_candidate_error_budget_20261001/
 /outputs/codex/v2_dev_error_budget_20261002/
 /outputs/codex/v2_task_teacher_recovery_20261002/
+/outputs/codex/v2_preprojection768_pair_20261002/
 
 # Private pixels/logits and per-image synthetic detail-loss diagnostics.
 /outputs/codex/v1_resolution_degradation_probe_20261001/
