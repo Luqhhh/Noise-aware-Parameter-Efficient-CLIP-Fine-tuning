@@ -5,16 +5,21 @@
 此前“保持开机”已被2026-10-02的新指令覆盖；完成并核验下载之前仍保持运行。
 独立分支 `codex/v2_continuation_20261001`，
 本机目录 `/home/lux1/noise/worktrees/v2_continuation_20261001`。
-本记录封存实现、CPU验证和真实启动；正式阶段训练尚在持续执行。
+原固定训练和推理已完成；当前正在下载完整权重，服务器仍开机。
 
 ## 2026-10-02进度与收尾策略
 
-北京时间11:10实测full_576已完成8,200/9,290次更新（88.3%），处于第5轮；
-controller PID5764存活，健康状态running，磁盘余量5.95GB。尚未生成最终提交包。
+full_576完成5轮/9,290次更新，实测26,974.494630秒，父为S3所选EMA；
+北京时间11:55:52进入原四视图推理，12:21:09 controller记录completed_delivered。
+推理实测1,515.068964秒，原37,444行CSV/ZIP已在本机Linux目录通过SHA和9项检查；
+[full原状态](../results/v2_continuation_20261001/full_status.json)、
+[提交原报告](../results/v2_continuation_20261001/submission.report.json)、
+[本机检查](../results/v2_continuation_20261001/local_submission_check.log)。
 S2已完成6轮/8,358次更新，独立留出所选EMA micro76.955645%、macro76.101112%；
 S3已完成4轮/6,688次更新，所选EMA micro77.473118%、macro76.592670%。
 上述是14,880张独立DEV指标，full阶段没有独立留出；没有新平台分。
-full于04:26:12启动，预计训练及固定推理在12:00–15:00结束，下载另计；非保证截止时间。
+完整权重仍在下载，尚无Windows全量验证收据，不能声称下载或关机完成。
+13:14收到3路传输进度301,989,888/5,362,708,264 bytes；后续每20分钟检查。
 
 用户最新明确授权“完成后把权重和提交包下载到本地，然后关机”。
 收尾服务 `noise-v2-completion-20261002.service` 只由已完成、已核验CSV/ZIP的监控触发，
@@ -32,7 +37,23 @@ full于04:26:12启动，预计训练及固定推理在12:00–15:00结束，下�
 12项收尾测试通过，包括未完成/未授权/plan不匹配、缺少或损坏权重、提交校验失败的关机阻断，
 中断续传、最终SHA与续传身份检查，以及收据先于关机和关机幂等性；原始记录见
 [completion_tests.log](../results/v2_continuation_20261001/completion_tests.log)。
-这仅说明收尾实现已验证，不能据此声称当前训练、下载或关机已完成。
+这说明原收尾实现已验证；训练/推理完成依据上方真实状态，下载和关机仍待完成。
+
+12:31取回CSV时发现大输出超时。本机隧道连接显示PMTU9000/MSS8948，而小JSON可返回，
+原CSV大输出60秒无完整文件。私有SSH配置加入`-F /dev/null`及
+[ssh_tcp_mss_proxy.py](../scripts/ssh_tcp_mss_proxy.py)，仅本连接设置TCP_MAXSEG1024，
+保留原pinned地址、HostKeyAlias、StrictHostKeyChecking和密码认证；不修改全局网络设置。
+CSV完整1,610,092 bytes/SHA通过；同一权重4MiB片段13.071秒完成，重复片段前缀相同，
+见[真实传输验证](../results/v2_continuation_20261001/tcp_transport_validation.json)。
+大文件实际吞吐仍受链路影响，原60秒/32MiB限制不足。
+
+13:10发现独立`codex/v2_delivery_repair_20261002`的
+`noise-v2-delivery-parallel-20261002.service`已持有同一delivery.lock，使用3文件并行及更长块超时。
+核对其完整文件SHA、plan/提交身份和Windows9项检查均先于关机；不重复启动原服务。
+本人未启用的另一下载实现已撤回，只保留实际生效的SSH代理和收尾进度记录。
+原监控timer已在CSV/ZIP本地验证后停止；人工每20分钟继续检查实际持锁服务及下载进度。
+后续固定prior方案只使用完整本地交付，不改变本服务器原raw包、下载或关机流程，
+见[独立准备协议](v2_fixed_prior_20261002.md)。
 
 ## 实际启动检查点
 

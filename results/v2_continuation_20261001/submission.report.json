@@ -1,0 +1,17 @@
+{
+  "status": "package_ready",
+  "checkpoint": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/runs/full_576/last.pt",
+  "checkpoint_sha256": "3b9fcce3a4a2a113f2eb2ad3a2028c7f224fd1b11f1bdaadd6641ee1ccc85138",
+  "weights": "raw",
+  "views": [
+    "resize576",
+    "center",
+    "flip",
+    "resize806.4"
+  ],
+  "rows": 37444,
+  "elapsed_seconds": 1515.068964120932,
+  "csv_sha256": "26a8f406a12bb74218fa790217fab9351d2223a1adfb8cdb3fa4773e00a889b9",
+  "zip_sha256": "e7152143952f7853c3cf6617bd320675fa8339aa24f4ff841d1cd627e462124e",
+  "platform_metrics": null
+}

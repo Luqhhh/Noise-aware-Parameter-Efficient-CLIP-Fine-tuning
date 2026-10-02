@@ -1,0 +1,12 @@
+{
+  "status": "complete",
+  "updates": 9290,
+  "elapsed_seconds": 26974.494629798923,
+  "parent": {
+    "path": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/runs/s3_576/best.pt",
+    "sha256": "05f4c1ace5647ce9afa166f6af629389262a44da3570918c83bc53a916a6425f",
+    "weights": "ema"
+  },
+  "raw_last": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/runs/full_576/last.pt",
+  "platform_metrics": null
+}

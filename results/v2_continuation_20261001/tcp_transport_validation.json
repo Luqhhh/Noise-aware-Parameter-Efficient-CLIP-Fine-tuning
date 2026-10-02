@@ -1,0 +1,13 @@
+{
+  "ssh_tcp_maxseg": 1024,
+  "pinned_host_key_checking": true,
+  "csv_bytes": 1610092,
+  "csv_sha256": "26a8f406a12bb74218fa790217fab9351d2223a1adfb8cdb3fa4773e00a889b9",
+  "weight_probe_bytes": 4194304,
+  "weight_probe_seconds": 13.071,
+  "weight_probe_sha256": "23fa88448b98dda0f3060c8fe81c098dcd23f2a07bb1090856ca2c2e31a0aa48",
+  "repeat_prefixes_equal": true,
+  "global_network_settings_changed": false,
+  "full_weights_download_complete": false,
+  "shutdown_issued": false
+}
