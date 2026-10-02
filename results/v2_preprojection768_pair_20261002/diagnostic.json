@@ -1,0 +1,409 @@
+{
+  "comparisons": {
+    "candidate_vs_control": {
+      "a_target_classes": {
+        "both_wrong": 163,
+        "changed": 8,
+        "corrections": 4,
+        "net": 0,
+        "regressions": 4,
+        "rows": 417
+      },
+      "all": {
+        "both_wrong": 3336,
+        "changed": 143,
+        "corrections": 37,
+        "net": 4,
+        "regressions": 33,
+        "rows": 14880
+      },
+      "aspect_ratio_at_least2": {
+        "both_wrong": 101,
+        "changed": 3,
+        "corrections": 1,
+        "net": 1,
+        "regressions": 0,
+        "rows": 261
+      },
+      "common_five_errors": {
+        "both_wrong": 2353,
+        "changed": 63,
+        "corrections": 8,
+        "net": 4,
+        "regressions": 4,
+        "rows": 2411
+      },
+      "cross_label_duplicate": {
+        "both_wrong": 245,
+        "changed": 10,
+        "corrections": 2,
+        "net": -2,
+        "regressions": 4,
+        "rows": 367
+      },
+      "head75": {
+        "both_wrong": 438,
+        "changed": 17,
+        "corrections": 4,
+        "net": 0,
+        "regressions": 4,
+        "rows": 1824
+      },
+      "short_edge_below224": {
+        "both_wrong": 628,
+        "changed": 28,
+        "corrections": 9,
+        "net": 5,
+        "regressions": 4,
+        "rows": 1848
+      },
+      "tail75": {
+        "both_wrong": 305,
+        "changed": 13,
+        "corrections": 1,
+        "net": -3,
+        "regressions": 4,
+        "rows": 1003
+      }
+    },
+    "candidate_vs_parent": {
+      "a_target_classes": {
+        "both_wrong": 152,
+        "changed": 29,
+        "corrections": 9,
+        "net": -6,
+        "regressions": 15,
+        "rows": 417
+      },
+      "all": {
+        "both_wrong": 3171,
+        "changed": 820,
+        "corrections": 181,
+        "net": -17,
+        "regressions": 198,
+        "rows": 14880
+      },
+      "aspect_ratio_at_least2": {
+        "both_wrong": 97,
+        "changed": 23,
+        "corrections": 5,
+        "net": 1,
+        "regressions": 4,
+        "rows": 261
+      },
+      "common_five_errors": {
+        "both_wrong": 2355,
+        "changed": 387,
+        "corrections": 51,
+        "net": 49,
+        "regressions": 2,
+        "rows": 2411
+      },
+      "cross_label_duplicate": {
+        "both_wrong": 238,
+        "changed": 50,
+        "corrections": 12,
+        "net": 1,
+        "regressions": 11,
+        "rows": 367
+      },
+      "head75": {
+        "both_wrong": 417,
+        "changed": 117,
+        "corrections": 29,
+        "net": 4,
+        "regressions": 25,
+        "rows": 1824
+      },
+      "short_edge_below224": {
+        "both_wrong": 586,
+        "changed": 182,
+        "corrections": 39,
+        "net": -7,
+        "regressions": 46,
+        "rows": 1848
+      },
+      "tail75": {
+        "both_wrong": 292,
+        "changed": 81,
+        "corrections": 15,
+        "net": -2,
+        "regressions": 17,
+        "rows": 1003
+      }
+    },
+    "control_vs_parent": {
+      "a_target_classes": {
+        "both_wrong": 155,
+        "changed": 23,
+        "corrections": 6,
+        "net": -6,
+        "regressions": 12,
+        "rows": 417
+      },
+      "all": {
+        "both_wrong": 3190,
+        "changed": 757,
+        "corrections": 162,
+        "net": -21,
+        "regressions": 183,
+        "rows": 14880
+      },
+      "aspect_ratio_at_least2": {
+        "both_wrong": 98,
+        "changed": 20,
+        "corrections": 4,
+        "net": 0,
+        "regressions": 4,
+        "rows": 261
+      },
+      "common_five_errors": {
+        "both_wrong": 2358,
+        "changed": 360,
+        "corrections": 48,
+        "net": 45,
+        "regressions": 3,
+        "rows": 2411
+      },
+      "cross_label_duplicate": {
+        "both_wrong": 239,
+        "changed": 44,
+        "corrections": 11,
+        "net": 3,
+        "regressions": 8,
+        "rows": 367
+      },
+      "head75": {
+        "both_wrong": 418,
+        "changed": 112,
+        "corrections": 28,
+        "net": 4,
+        "regressions": 24,
+        "rows": 1824
+      },
+      "short_edge_below224": {
+        "both_wrong": 589,
+        "changed": 168,
+        "corrections": 36,
+        "net": -12,
+        "regressions": 48,
+        "rows": 1848
+      },
+      "tail75": {
+        "both_wrong": 293,
+        "changed": 70,
+        "corrections": 14,
+        "net": 1,
+        "regressions": 13,
+        "rows": 1003
+      }
+    }
+  },
+  "initial_equivalence": {
+    "fp32_readout_vs_original_archive_changes": 50,
+    "max_abs_logit_difference": 1.9073486328125e-06,
+    "native_local_bf16_vs_archive_changes": 39,
+    "top1_changes": 0
+  },
+  "metrics": {
+    "candidate": {
+      "a_target_classes": {
+        "classes": 20,
+        "correct": 250,
+        "errors": 167,
+        "macro": 0.5862971829568108,
+        "micro": 0.5995203836930456,
+        "rows": 417
+      },
+      "all": {
+        "classes": 750,
+        "correct": 11511,
+        "errors": 3369,
+        "macro": 0.7642677803152363,
+        "micro": 0.7735887096774193,
+        "rows": 14880
+      },
+      "aspect_ratio_at_least2": {
+        "classes": 195,
+        "correct": 160,
+        "errors": 101,
+        "macro": 0.6215384615384615,
+        "micro": 0.6130268199233716,
+        "rows": 261
+      },
+      "common_five_errors": {
+        "classes": 630,
+        "correct": 54,
+        "errors": 2357,
+        "macro": 0.025525281596710164,
+        "micro": 0.022397345499792616,
+        "rows": 2411
+      },
+      "cross_label_duplicate": {
+        "classes": 140,
+        "correct": 118,
+        "errors": 249,
+        "macro": 0.34027210884353737,
+        "micro": 0.3215258855585831,
+        "rows": 367
+      },
+      "head75": {
+        "classes": 75,
+        "correct": 1382,
+        "errors": 442,
+        "macro": 0.7578,
+        "micro": 0.7576754385964912,
+        "rows": 1824
+      },
+      "short_edge_below224": {
+        "classes": 571,
+        "correct": 1216,
+        "errors": 632,
+        "macro": 0.6704357230626934,
+        "micro": 0.658008658008658,
+        "rows": 1848
+      },
+      "tail75": {
+        "classes": 75,
+        "correct": 694,
+        "errors": 309,
+        "macro": 0.628521858315976,
+        "micro": 0.6919242273180458,
+        "rows": 1003
+      }
+    },
+    "control": {
+      "a_target_classes": {
+        "classes": 20,
+        "correct": 250,
+        "errors": 167,
+        "macro": 0.5852946663722003,
+        "micro": 0.5995203836930456,
+        "rows": 417
+      },
+      "all": {
+        "classes": 750,
+        "correct": 11507,
+        "errors": 3373,
+        "macro": 0.7641344517323411,
+        "micro": 0.7733198924731183,
+        "rows": 14880
+      },
+      "aspect_ratio_at_least2": {
+        "classes": 195,
+        "correct": 159,
+        "errors": 102,
+        "macro": 0.6164102564102564,
+        "micro": 0.6091954022988506,
+        "rows": 261
+      },
+      "common_five_errors": {
+        "classes": 630,
+        "correct": 50,
+        "errors": 2361,
+        "macro": 0.023912784746118076,
+        "micro": 0.02073828287017835,
+        "rows": 2411
+      },
+      "cross_label_duplicate": {
+        "classes": 140,
+        "correct": 120,
+        "errors": 247,
+        "macro": 0.34860544217687073,
+        "micro": 0.32697547683923706,
+        "rows": 367
+      },
+      "head75": {
+        "classes": 75,
+        "correct": 1382,
+        "errors": 442,
+        "macro": 0.7578,
+        "micro": 0.7576754385964912,
+        "rows": 1824
+      },
+      "short_edge_below224": {
+        "classes": 571,
+        "correct": 1211,
+        "errors": 637,
+        "macro": 0.6675147823571641,
+        "micro": 0.6553030303030303,
+        "rows": 1848
+      },
+      "tail75": {
+        "classes": 75,
+        "correct": 697,
+        "errors": 306,
+        "macro": 0.6318366731307907,
+        "micro": 0.6949152542372882,
+        "rows": 1003
+      }
+    },
+    "parent": {
+      "a_target_classes": {
+        "classes": 20,
+        "correct": 256,
+        "errors": 161,
+        "macro": 0.5975620858217776,
+        "micro": 0.6139088729016786,
+        "rows": 417
+      },
+      "all": {
+        "classes": 750,
+        "correct": 11528,
+        "errors": 3352,
+        "macro": 0.7659745258590688,
+        "micro": 0.774731182795699,
+        "rows": 14880
+      },
+      "aspect_ratio_at_least2": {
+        "classes": 195,
+        "correct": 159,
+        "errors": 102,
+        "macro": 0.6138461538461538,
+        "micro": 0.6091954022988506,
+        "rows": 261
+      },
+      "common_five_errors": {
+        "classes": 630,
+        "correct": 5,
+        "errors": 2406,
+        "macro": 0.0017006802721088435,
+        "micro": 0.002073828287017835,
+        "rows": 2411
+      },
+      "cross_label_duplicate": {
+        "classes": 140,
+        "correct": 117,
+        "errors": 250,
+        "macro": 0.3422959183673469,
+        "micro": 0.3188010899182561,
+        "rows": 367
+      },
+      "head75": {
+        "classes": 75,
+        "correct": 1378,
+        "errors": 446,
+        "macro": 0.755688888888889,
+        "micro": 0.7554824561403509,
+        "rows": 1824
+      },
+      "short_edge_below224": {
+        "classes": 571,
+        "correct": 1223,
+        "errors": 625,
+        "macro": 0.6710057018288192,
+        "micro": 0.6617965367965368,
+        "rows": 1848
+      },
+      "tail75": {
+        "classes": 75,
+        "correct": 696,
+        "errors": 307,
+        "macro": 0.633499066293184,
+        "micro": 0.6939182452642074,
+        "rows": 1003
+      }
+    }
+  },
+  "review_gate_passed": false
+}
