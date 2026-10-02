@@ -1,0 +1,28 @@
+{
+  "status": "implementation_verified_waiting_for_local_delivery",
+  "recorded_at_utc": "2026-10-02T04:55:38.000142+00:00",
+  "target_platform_percent": 80.0,
+  "current_user_reported_platform_percent": 74.41512658903963,
+  "minimum_additional_correct": 2092,
+  "tests_passed": 88,
+  "source_hashes": {
+    "configs/v2_fixed_prior_20261002.json": "da9d494aea71afc4a0f95d468c516ce68c4936133e07f2e2f5f7150cf14a7a7b",
+    "scripts/run_v2_fixed_prior.py": "b8e879c1f5bf86d77200aa441dc441f660c4f1e0e1e9879ba753cc5e3644537d",
+    "scripts/verify_v2_fixed_prior.py": "7d6d20313797bd878e96467027a4db21b37a2e25831f58fc5399a51c5ea51f04",
+    "tests/test_v2_fixed_prior.py": "12d9fd78e4e558e95adc46f95fdb5877a98d869c866c0b19ccb3efde443f3735"
+  },
+  "probe_current_stage_pixel_hashes_verified": 64,
+  "probe_training": false,
+  "probe_test_images_used": false,
+  "inference_code_matches_frozen_v2_source": true,
+  "full_checkpoint_locally_verified": false,
+  "new_candidate": false,
+  "platform_score": null,
+  "local_receipt_present": false,
+  "upstream_state_source": "read-only pre-existing local monitor snapshot, no remote connection in this segment",
+  "incumbent_zip": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission/submission.zip",
+  "incumbent_zip_sha256": "0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca",
+  "incumbent_validation": "results/v1_768_bias_platform_20261002/validation.json",
+  "cost_report_sha256": "1d6fd924a2ef7c6aa9649ce0ca12dcfdce7c383927d43ae43ac2015cef7d5871",
+  "tests_log_sha256": "53f1e51b70bb58195e69fdc97468503ede0f9406ab6b176d4dff6586d67be831"
+}

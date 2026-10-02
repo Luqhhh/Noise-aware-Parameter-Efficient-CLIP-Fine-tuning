@@ -1,0 +1,21 @@
+{
+  "checkpoint_sha256": "3643b9a10a8cf3b330db6537a4b1d9c4cc630a78649099fce9f81b7f1538b817",
+  "gpu": "NVIDIA GeForce RTX 4070 Laptop GPU",
+  "images": 64,
+  "no_candidate": true,
+  "note": "S1 weights measure the same V2 architecture only; no full-model validation or score",
+  "peak_allocated_bytes": 546075648,
+  "rough_full_inference_seconds": 2533.5855857764454,
+  "seconds": 4.33045287601999,
+  "source": "/home/lux1/noise/worktrees/v2_continuation_20261001/outputs/codex/v2_continuation_20261001/handoff/v2_s1_384_bundle_20261001/run/best.pt",
+  "status": "architecture_cost_probe_passed",
+  "test_images_used": false,
+  "torch": "2.12.1+cu126",
+  "training": false,
+  "views": [
+    "resize576",
+    "center",
+    "flip",
+    "resize806.4"
+  ]
+}
