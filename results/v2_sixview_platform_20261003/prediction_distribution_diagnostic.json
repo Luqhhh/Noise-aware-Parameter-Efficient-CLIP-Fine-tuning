@@ -1,0 +1,76 @@
+{
+  "record_id": "V2_SIXVIEW_PLATFORM_20261003_prediction_distribution",
+  "note": "read-only, no labels, no inference; only the delivered CSVs",
+  "packages": {
+    "v1_768_sixview_raw": {
+      "rows": 37444,
+      "classes_used": 745,
+      "argmax_min": 0,
+      "argmax_max": 169,
+      "argmax_std": 21.6466,
+      "expected_per_class": 49.9253,
+      "max_over_expected": 3.3851,
+      "chi2_vs_uniform": 7039.1
+    },
+    "v1_768_sixview_bias": {
+      "rows": 37444,
+      "classes_used": 750,
+      "argmax_min": 43,
+      "argmax_max": 55,
+      "argmax_std": 1.4104,
+      "expected_per_class": 49.9253,
+      "max_over_expected": 1.1016,
+      "chi2_vs_uniform": 29.9
+    },
+    "v1_512_sixview_raw": {
+      "rows": 37444,
+      "classes_used": 743,
+      "argmax_min": 0,
+      "argmax_max": 171,
+      "argmax_std": 22.1418,
+      "expected_per_class": 49.9253,
+      "max_over_expected": 3.4251,
+      "chi2_vs_uniform": 7364.9
+    },
+    "v1_512_sixview_bias": {
+      "rows": 37444,
+      "classes_used": 750,
+      "argmax_min": 44,
+      "argmax_max": 57,
+      "argmax_std": 1.417,
+      "expected_per_class": 49.9253,
+      "max_over_expected": 1.1417,
+      "chi2_vs_uniform": 30.2
+    },
+    "v2_sixview_raw": {
+      "rows": 37444,
+      "classes_used": 748,
+      "argmax_min": 0,
+      "argmax_max": 153,
+      "argmax_std": 17.4723,
+      "expected_per_class": 49.9253,
+      "max_over_expected": 3.0646,
+      "chi2_vs_uniform": 4586.1
+    },
+    "v2_sixview_bias": {
+      "rows": 37444,
+      "classes_used": 750,
+      "argmax_min": 4,
+      "argmax_max": 95,
+      "argmax_std": 10.0176,
+      "expected_per_class": 49.9253,
+      "max_over_expected": 1.9028,
+      "chi2_vs_uniform": 1507.5
+    }
+  },
+  "same_checkpoint_bias_flips": {
+    "v1_768_sixview_raw -> v1_768_sixview_bias": 6775,
+    "v1_512_sixview_raw -> v1_512_sixview_bias": 6838,
+    "v2_sixview_raw -> v2_sixview_bias": 3077
+  },
+  "cross_package_disagreement": {
+    "v1_768_sixview_raw vs v2_sixview_raw": 9452,
+    "v1_768_sixview_bias vs v2_sixview_bias": 9599,
+    "v1_512_sixview_raw vs v1_768_sixview_raw": 6625
+  }
+}
