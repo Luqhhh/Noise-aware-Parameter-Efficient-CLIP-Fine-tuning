@@ -122,6 +122,12 @@ with tarfile.open(archive.with_suffix('.tmp'), 'w:gz', dereference=True) as tar:
         if 'monitoring' in rel.parts or 'credentials' in rel.parts: continue
         if path.is_file() and path.suffix in ('.json','.csv','.yaml','.yml','.log','.npz','.py'):
             tar.add(path, arcname=str(rel), recursive=False)
+    # Class maps, original configurations and frozen source live outside prepared/.
+    for name, expected in sorted(plan['inputs'].items()):
+        path=pathlib.Path(name)
+        if path.suffix != '.pt':
+            assert sha(path)==expected, f'Frozen metadata changed: {name}'
+            tar.add(path, arcname='bound_inputs/'+path.as_posix().lstrip('/'), recursive=False)
 archive.with_suffix('.tmp').replace(archive)
 names=weights+['delivery_metadata.tar.gz','submission/pred_results.csv','submission/submission.zip','submission/report.json','submission_check.log']
 files=[]

@@ -5,6 +5,8 @@ import importlib.util
 import json
 from pathlib import Path
 import subprocess
+import sys
+import tarfile
 
 import pytest
 
@@ -125,3 +127,42 @@ def test_resume_identity_and_final_digest_are_enforced(tmp_path, monkeypatch):
     changed = copy.deepcopy(item)
     changed['remote'] = '/other.pt'
     with pytest.raises(ValueError, match='another artifact'): delivery.download({}, changed, output)
+
+
+def test_actual_inventory_blocks_partial_run_and_preserves_external_class_map(tmp_path):
+    root = tmp_path / 'prepared'
+    root.mkdir()
+    mapping = tmp_path / 'class_to_idx.json'
+    mapping.write_text('{"class":0}')
+    plan = dict(inputs={str(mapping): delivery.digest(mapping)}, stages={name: dict(total_updates=9)
+                for name in ('s2_448', 's3_576', 'full_576')})
+    (root / 'plan.json').write_text(json.dumps(plan))
+    plan_sha = delivery.digest(root / 'plan.json')
+    controller = dict(status='training', training_completed=False, plan_sha256=plan_sha)
+    (root / 'controller.json').write_text(json.dumps(controller))
+    (root / 'submission').mkdir()
+    for name in ('s2_448', 's3_576', 'full_576'):
+        stage = root / 'runs' / name
+        stage.mkdir(parents=True)
+        (stage / 'status.json').write_text(json.dumps(dict(status='complete', updates=9)))
+        weight = stage / ('last.pt' if name == 'full_576' else 'best.pt')
+        weight.write_bytes(b'weights')
+        weight.with_suffix('.binding.json').write_text(json.dumps(dict(sha256=delivery.digest(weight), binding=dict(complete=True))))
+    for n in (3, 4, 5): (root / f'runs/full_576/epoch_{n:02d}_raw.pt').write_bytes(b'raw')
+    for name in ('pred_results.csv', 'submission.zip'): (root / 'submission' / name).write_bytes(b'package')
+    (root / 'submission_check.log').write_text('passed')
+    report = dict(status='package_ready', rows=37444, weights='raw', checkpoint=str(root / 'runs/full_576/last.pt'),
+                  checkpoint_sha256=delivery.digest(root / 'runs/full_576/last.pt'))
+    (root / 'submission/report.json').write_text(json.dumps(report))
+    command = [sys.executable, '-c', delivery.INVENTORY, str(root / 'plan.json'), plan_sha]
+    assert subprocess.run(command, capture_output=True).returncode != 0
+    assert not (root / 'delivery_metadata.tar.gz').exists()
+    controller.update(status='completed_delivered', training_completed=True)
+    (root / 'controller.json').write_text(json.dumps(controller))
+    inventory = json.loads(subprocess.check_output(command))
+    assert len(inventory['files']) == 11
+    with tarfile.open(root / 'delivery_metadata.tar.gz') as archive:
+        member = 'bound_inputs/' + str(mapping).lstrip('/')
+        assert archive.extractfile(member).read() == mapping.read_bytes()
+    mapping.write_text('changed')
+    assert subprocess.run(command, capture_output=True).returncode != 0

@@ -21,7 +21,7 @@ full于04:26:12启动，预计训练及固定推理在12:00–15:00结束，下�
 使用 [deliver_v2_39385.py](../scripts/deliver_v2_39385.py)。私有配置绑定上述固定plan SHA，
 目标Windows目录为 `C:\Users\lqh22\Downloads\v2_continuation_20261001`。
 保存S2/S3 best、full last、full RAW第3/4/5轮快照、CSV/ZIP和报告；另保存配置、binding、
-状态、历史、holdout及日志的 `delivery_metadata.tar.gz`。预计权重约5.3GB。
+状态、历史、holdout、外部类别映射、原始配置、冻结代码及日志的 `delivery_metadata.tar.gz`。预计权重约5.3GB。
 32MiB完整块断点续传，不完整块重试，最终逐文件核对服务器SHA-256。
 实际提交的checkpoint SHA必须与full last一致；所有阶段complete、冻结plan匹配、
 本地正式9项检查通过并写入本地收据后，才再次检查controller完成且GPU无其他任务，
@@ -29,7 +29,7 @@ full于04:26:12启动，预计训练及固定推理在12:00–15:00结束，下�
 此收尾服务不改正在运行的冻结代码、plan、配置及推理政策。
 最终仍为第5轮raw单checkpoint、原四视图，无固定均衡先验bias，也未切换SWA。
 
-11项收尾测试通过，包括未完成/未授权/plan不匹配、缺少或损坏权重、提交校验失败的关机阻断，
+12项收尾测试通过，包括未完成/未授权/plan不匹配、缺少或损坏权重、提交校验失败的关机阻断，
 中断续传、最终SHA与续传身份检查，以及收据先于关机和关机幂等性；原始记录见
 [completion_tests.log](../results/v2_continuation_20261001/completion_tests.log)。
 这仅说明收尾实现已验证，不能据此声称当前训练、下载或关机已完成。

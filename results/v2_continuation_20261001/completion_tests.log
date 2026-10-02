@@ -18,3 +18,12 @@ FragmentPath=/home/lux1/.config/systemd/user/noise-v2-completion-20261002.servic
 
 Service linked and waiting for completed submission; no weight download or shutdown has occurred at this checkpoint.
 The running remote source commit and frozen training plan remain unchanged.
+
+Supplemental frozen external metadata preservation:
+python3 -m pytest tests/test_v2_completion_delivery.py -q
+12 passed in 0.33s
+Actual inventory script rejects an unfinished run before creating an archive,
+includes an external class map, and rejects a changed frozen input digest.
+
+python3 -m pytest tests/test_v2_completion_delivery.py tests/test_v2_continuation.py tests/test_v2.py tests/test_v2_swa.py -q
+67 passed in 4.64s
