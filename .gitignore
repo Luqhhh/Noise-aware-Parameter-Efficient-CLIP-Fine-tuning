@@ -111,6 +111,7 @@ outputs/search_20260923/
 
 # Private per-image candidate error diagnostics; aggregate evidence is in results/.
 /outputs/codex/v1_candidate_error_budget_20261001/
+/outputs/codex/v2_dev_error_budget_20261002/
 
 # Private pixels/logits and per-image synthetic detail-loss diagnostics.
 /outputs/codex/v1_resolution_degradation_probe_20261001/

@@ -1,0 +1,13 @@
+{
+  "recorded_at_utc": "2026-10-02T08:57:25.621927+00:00",
+  "user_platform_feedback": "Not yet tested; submission quota returns tomorrow (2026-10-03 Asia/Shanghai).",
+  "new_platform_score": null,
+  "local_monitor_actions_completed": [
+    "systemctl --user disable --now noise-v2-monitor-20261001.timer",
+    "systemctl --user stop noise-v2-monitor-20261001.service"
+  ],
+  "post_action_local_state": "Id=noise-v2-monitor-20261001.timer\nActiveState=inactive\nSubState=dead\nUnitFileState=disabled\n\nMainPID=0\nId=noise-v2-monitor-20261001.service\nActiveState=failed\nSubState=failed\nUnitFileState=static\n",
+  "remote_connected_or_probed": false,
+  "remote_shutdown_source": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/delivery_receipt.json",
+  "service_failed_flag": "Historical failure retained, MainPID=0."
+}

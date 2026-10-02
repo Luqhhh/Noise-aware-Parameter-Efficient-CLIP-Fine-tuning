@@ -1,0 +1,23 @@
+{
+  "experiment_id": "V2_DEV_ERROR_BUDGET_20261002",
+  "data_version": "20260921",
+  "new_training": false,
+  "test_predictions_used": false,
+  "stage_root": "/home/lux1/noise/artifacts/stages/repechage/20260921",
+  "dataset_manifest_sha256": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+  "delivery_root": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001",
+  "archive_sha256": "2949712470b42fa2fc3f429350d531c8c99490d2e0f5feaf924556b0349554a9",
+  "plan_sha256": "596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e",
+  "v1_report": "results/v1_candidate_error_budget_20261001/report.json",
+  "v1_report_sha256": "2a456105af7e7dc4b1f1e286924d6714d0767d4289cf942abfb014d6ae661b15",
+  "v1_candidates": ["lr512_swa", "head768", "balanced768", "wft448_ema"],
+  "selected": {
+    "s2_448": {"epoch": 5, "weights": "ema", "checkpoint_sha256": "3970d3cc3eee501aa015c401c6e1fd30a6bf0f725a56c0ce509395dea545f042"},
+    "s3_576": {"epoch": 3, "weights": "ema", "checkpoint_sha256": "05f4c1ace5647ce9afa166f6af629389262a44da3570918c83bc53a916a6425f"}
+  },
+  "groups": ["all", "tail75", "head75", "a_target_classes", "cross_label_duplicate", "short_edge_below224", "aspect_ratio_at_least2", "non_tail", "outside_a_target"],
+  "proxy_groups": ["tail75", "a_target_classes", "cross_label_duplicate", "short_edge_below224", "aspect_ratio_at_least2"],
+  "bootstrap": {"seed": 42, "resamples": 2000, "chunk": 50},
+  "cpu_run_limit_seconds": 600,
+  "decision": "Describe existing errors and stage evolution; await V2 platform feedback before choosing another intervention. No automatic training, decoder search, or ensemble."
+}

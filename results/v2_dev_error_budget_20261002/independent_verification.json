@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "rows": 14880,
+  "metrics_recounted": 90,
+  "paired_groups_recounted": 90,
+  "overlap_groups_recounted": 9,
+  "original_v2_predictions_rejoined": 89280,
+  "proxy_intersections_recounted": 36,
+  "confusion_pairs_recounted": 2619,
+  "sources_verified": 13,
+  "archive_members_verified": 14,
+  "report_sha256": "16a0414fee33e6b2e43e172576ea36596b8a683949fc8b05a0981cd56bd1a3b6",
+  "aligned_csv_sha256": "87dbbde36609cfcc9827a346e17aa02cc56065de3c6371f94ed9fd7792327a79",
+  "verifier_sha256": "dfe367e9c1e1466df1c6a976d9091c1e2355e8da8c05af7aeaa3026ff7ddd311",
+  "bootstrap_note": "Existing fixed group-bootstrap implementation; not independently resampled here",
+  "new_training": false,
+  "new_platform_score": null
+}

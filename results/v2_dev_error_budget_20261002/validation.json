@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "test_command": "OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 -m pytest tests/test_v2_dev_errors.py -q",
+  "test_result": "7 passed in 0.12s",
+  "python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]",
+  "platform": "Linux-5.15.167.4-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "numpy": "2.2.6",
+  "independent_verification": "results/v2_dev_error_budget_20261002/independent_verification.json",
+  "new_training": false,
+  "new_test_inference": false,
+  "new_submission": false,
+  "incumbent_submission_check": "results/v1_768_bias_platform_20261002/validation.json",
+  "v2_pending_submission_check": "results/v2_sixview_bias_20261002/submission_bias/submission_check.log",
+  "v2_pending_independent_verification": "results/v2_sixview_bias_20261002/independent_verification.json"
+}
