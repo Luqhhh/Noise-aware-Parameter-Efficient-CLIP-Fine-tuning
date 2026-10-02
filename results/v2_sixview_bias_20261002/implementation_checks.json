@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "command": "env PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python3 -m pytest tests/test_v2_fixed_prior.py tests/test_v2_sixview_bias.py tests/test_v2.py -q",
+  "passed": 61,
+  "seconds": 3.78,
+  "evidence": "Observed completion stdout of exec session 67274",
+  "new_six_view_tests": 8,
+  "note": "Earlier collection import corrected; CPU transform test uses single-process loader to avoid CPU-only fork deadlock. Production CUDA keeps two data workers."
+}

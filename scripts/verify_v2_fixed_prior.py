@@ -23,6 +23,9 @@ def verify(cfg, config_path, output):
     assert report["binding"] == binding
     assert binding["config_sha256"] == sha256_file(config_path)
     assert binding["plan_sha256"] == cfg["expected_plan_sha256"]
+    assert report["views"] == cfg["views"] and report["reduction"] == cfg["reduction"]
+    assert report["bias_iterations"] == cfg["bias_iterations"] == 200
+    assert report["bias_strength"] == cfg["bias_strength"] == 1.0
     assert sha256_file(output / "source_delivery_receipt.json") == binding["source_receipt_sha256"]
     for name, expected in binding["source_hashes"].items():
         assert sha256_file(Path(cfg["delivery_root"]) / name) == expected, name
@@ -67,6 +70,9 @@ def verify(cfg, config_path, output):
         assert meta["binding"] == binding and meta["model_parameter_updates"] is False
         assert meta["test_labels_used"] is False and meta["platform_score"] is None
         assert meta["weights"] == "full_epoch5_raw" and meta["views"] == cfg["views"]
+        profile = cfg.get("decoder_profile", "original_four_view")
+        assert meta["decoder_profile"] == profile
+        assert meta["input_sizes"] == ([448, 512, 576] if profile == "multiscale_flip_six" else [576])
         assert meta["test_statistical_fitting"] == (directory == "submission_bias")
         assert "All checks passed" in (package / "submission_check.log").read_text()
         packages[directory] = dict(csv_sha256=sha256_file(package / "pred_results.csv"),
@@ -80,10 +86,18 @@ def verify(cfg, config_path, output):
     ordered = np.sort(mismatched, axis=1)
     margin = float((ordered[:, -1]-ordered[:, -2]).max()) if len(ordered) else 0.0
     assert report["raw_remote_disagreement_margin_max"] == margin
-    assert len(mismatched) <= len(raw)*cfg["raw_replay_max_disagreement_fraction"]
-    assert margin <= cfg["raw_replay_max_probability_margin"] and report["raw_replay_passed"]
+    if cfg.get("decoder_profile", "original_four_view") == "original_four_view":
+        assert report["raw_comparison_is_same_decoder"] is True
+        assert len(mismatched) <= len(raw)*cfg["raw_replay_max_disagreement_fraction"]
+        assert margin <= cfg["raw_replay_max_probability_margin"] and report["raw_replay_passed"]
+    else:
+        assert cfg["decoder_profile"] == "multiscale_flip_six"
+        assert cfg["image_sizes"] == [448, 512, 576]
+        assert cfg["views"] == [f"scale{size}{suffix}" for size in (448, 512, 576) for suffix in ("", "_flip")]
+        assert report["raw_comparison_is_same_decoder"] is False and report["raw_replay_passed"] is None
     assert report["bias_changed_predictions"] == int((raw != corrected).sum())
     return dict(status="passed", rows=len(names), full_float64_decision_agreement=True,
+                decoder_profile=cfg.get("decoder_profile", "original_four_view"), views=cfg["views"],
                 bias_max_absolute_error=float(np.abs(bias-independent_bias).max()),
                 input_and_code_sha_verified=True, csv_zip_bytes_replayed=True,
                 raw_remote_disagreement=report["raw_remote_disagreement"],

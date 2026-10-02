@@ -1,7 +1,7 @@
-"""One local, read-only V2 probability-prior transfer after verified delivery.
+"""One local V2 probability-prior transfer after verified delivery.
 
-No remote connection, training, model selection, or upload. The original V2
-four-view probability reduction is preserved; its log is the calibration score.
+The original four-view and explicitly requested six-view profiles both use
+mean softmax probability, then its logarithm for one fixed prior fit.
 """
 from __future__ import annotations
 
@@ -30,6 +30,7 @@ from v2.training_utils import build_view
 
 ROOT = Path(__file__).resolve().parents[1]
 VIEWS = ["resize576", "center", "flip", "resize806.4"]
+SIX_VIEWS = [f"scale{size}{suffix}" for size in (448, 512, 576) for suffix in ("", "_flip")]
 FINAL = "runs/full_576/last.pt"
 
 
@@ -48,12 +49,17 @@ def digest_bytes(value):
 
 def load_config(path):
     cfg = read_json(path)
-    fixed = dict(data_version="20260921", views=VIEWS, image_size=576,
+    profile = cfg.get("decoder_profile", "original_four_view")
+    require(profile in ("original_four_view", "multiscale_flip_six"), "Unknown decoder profile")
+    fixed = dict(data_version="20260921", views=SIX_VIEWS if profile == "multiscale_flip_six" else VIEWS,
+                 image_size=576,
                  bias_iterations=200, bias_strength=1.0,
                  reduction="log_mean_view_softmax", probability_floor=1e-30,
                  raw_replay_max_disagreement_fraction=0.001, raw_replay_max_probability_margin=0.01,
                  test_prior="official_uniform", training=False,
                  parameter_search=False, platform_upload=False)
+    if profile == "multiscale_flip_six":
+        fixed["image_sizes"] = [448, 512, 576]
     require(all(cfg.get(k) == v for k, v in fixed.items()), "Fixed prior protocol changed")
     require(cfg["batch_size"] == 16 and cfg["num_workers"] == 2 and cfg["probe_rows"] == 64,
             "Fixed inference resources changed")
@@ -125,7 +131,9 @@ def verified_delivery(cfg):
         final_config = json.loads(config_bytes)
     manifest, files = local_data(cfg)
     recipe = plan["recipe"]
-    require(plan["data_version"] == cfg["data_version"] and recipe["views"] == cfg["views"]
+    # The downloaded source package remains the original four-view package.
+    # A user-selected new decoder never rewrites that frozen source identity.
+    require(plan["data_version"] == cfg["data_version"] and recipe["views"] == VIEWS
             and recipe["official_sha256"] == cfg["official_sha256"]
             and recipe["num_classes"] == manifest["num_classes"]
             and recipe["test_rows"] == manifest["test_samples"]
@@ -193,7 +201,7 @@ def collect_probabilities(model, root, files, cfg, output):
     sums = np.zeros((len(files), model.head.out_features), dtype=np.float32)
     started = time.monotonic()
     for view_index, view in enumerate(cfg["views"]):
-        data = DataLoader(InferenceDataset(root, files, build_view(view, cfg["image_size"])),
+        data = DataLoader(InferenceDataset(root, files, inference_view(cfg, view)),
                           batch_size=cfg["batch_size"], shuffle=False, num_workers=cfg["num_workers"],
                           pin_memory=True, persistent_workers=False, prefetch_factor=2)
         visited = np.zeros(len(files), dtype=bool)
@@ -215,6 +223,15 @@ def collect_probabilities(model, root, files, cfg, output):
     means = sums / len(cfg["views"])
     require(np.allclose(means.sum(1), 1, atol=2e-6, rtol=0), "View probability normalization failed")
     return means
+
+
+def inference_view(cfg, view):
+    if cfg.get("decoder_profile") == "multiscale_flip_six":
+        require(view in SIX_VIEWS, "Unknown fixed six-view transform")
+        size = int(view.removeprefix("scale").removesuffix("_flip"))
+        return build_view("flip" if view.endswith("_flip") else "center", size)
+    require(view in VIEWS, "Unknown original four-view transform")
+    return build_view(view, cfg["image_size"])
 
 
 def probability_scores(probabilities, floor=1e-30):
@@ -279,8 +296,15 @@ def run(cfg, config_path, output):
     torch.cuda.empty_cache()
     np.save(output / "mean_probabilities.npy", probabilities)
     replay = raw_replay(probabilities, inputs["original_predictions"], cfg)
+    same_decoder = cfg.get("decoder_profile", "original_four_view") == "original_four_view"
+    replay["raw_comparison_is_same_decoder"] = same_decoder
+    if not same_decoder:
+        # Six-view decisions can differ substantially from four-view decisions.
+        # This comparison is descriptive; numerical replay uses the same cache.
+        replay["raw_replay_passed"] = None
     atomic_json_dump(replay, output / "raw_replay.json")
-    require(replay["raw_replay_passed"], "Original raw replay outside frozen numerical tolerance; diagnose cache")
+    if same_decoder:
+        require(replay["raw_replay_passed"], "Original raw replay outside frozen numerical tolerance; diagnose cache")
     scores = probability_scores(probabilities, cfg["probability_floor"])
     bias = fit_test_uniform_bias(torch.from_numpy(scores).cuda(), iterations=cfg["bias_iterations"]).numpy()
     raw = probabilities.argmax(1)
@@ -299,12 +323,17 @@ def run(cfg, config_path, output):
         checked.check_returncode()
         atomic_json_dump(dict(binding=binding, checkpoint_sha256=inputs["source_hashes"][FINAL],
             views=cfg["views"], reduction=cfg["reduction"], iterations=cfg["bias_iterations"],
+            decoder_profile=cfg.get("decoder_profile", "original_four_view"),
+            input_sizes=[576] if same_decoder else [448, 512, 576],
             strength=cfg["bias_strength"], test_statistical_fitting=name == "submission_bias",
             model_parameter_updates=False, test_labels_used=False, weights="full_epoch5_raw",
             official_permission_source=cfg["official_permission_source"], platform_score=None,
             status="unpromoted_candidate_pending_independent_verification"), destination / "manifest.json")
     report = dict(status="packages_checked_pending_independent_verification", binding=binding,
         output=str(output.resolve()), rows=len(raw), classes=manifest["num_classes"],
+        decoder_profile=cfg.get("decoder_profile", "original_four_view"), views=cfg["views"],
+        input_sizes=[576] if same_decoder else [448, 512, 576], reduction=cfg["reduction"],
+        bias_iterations=cfg["bias_iterations"], bias_strength=cfg["bias_strength"],
         predictions_sha256=sha256_file(output / "predictions.npz"),
         **replay,
         bias_changed_predictions=int((raw != calibrated).sum()), zero_probabilities=int((probabilities == 0).sum()),
