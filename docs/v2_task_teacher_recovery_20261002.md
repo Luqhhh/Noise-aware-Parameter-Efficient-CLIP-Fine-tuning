@@ -74,4 +74,52 @@ SHA `0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca`，
 修复后的单次上限704秒，两次总上限899.3752秒，不再自动追加其他重放。
 修正提交推送后使用新的`diagnostic_native16/`目录，不能覆盖首次失败或据失败缓存放宽门。
 
-最终命令、实测及核验待填，不把工程修正当机制证据。
+### 最终状态：重放门未通过，转移收益未知
+
+修正`c268e40`先推送，11项规则/批量/拒绝full模型测试通过，再按真实batch16执行。
+176.7396秒完成全部14,880张；两次本机logits逐元素完全一致，均与原归档有39张top1差异
+（0.2621%，上限为14张）。因此误读batch是已修复的实现错误，但**不是剩余差异的已证实原因**。
+最大变化样本前二概率差0.0099351，支持组内变化0；虽然这两门通过，数量门仍失败。
+本机原标签正确11,526，micro/macro77.4597%/76.5800%；原归档11,528，77.4731%/76.5927%。
+这些分数只说明重放偏差，不能用来宣称新的模型、收益或平台排序。
+
+CPU Torch float64从保存logits独立重算全部14,880条预测及支持成员，与NumPy一致；
+confidence/margin最大误差均1.7764e-15。18份源摘要、原初版Git内容、四份归档源码一致：
+V2模型、runtime、training_utils和Aegis位置编码实现。两次原图文件摘要全部通过，
+没有从概率门、标签或样本筛选解释/修饰这39张差异。
+原远端只保存top1，没有逐张logits；剩余差异可能涉及运行环境，但本段未证明原因，
+不连接或重启服务器，不改dtype/后端/容差再扫描。
+
+**决定：`close_audit_native_replay_mismatch_transfer_unknown`。**
+未执行支持组修正/退化推进门，不能称teacher有效或无效；不启动转移训练。
+首次195.3752秒＋修正176.7396秒＝372.1148秒（6.20分钟），在累计900秒预算内。
+本段无新提交包或平台分；既有v2六视图raw/bias平台待测与现役768基准继续按前述交付记录处理。
+
+### 确切命令及产物
+
+以下前向命令是已关闭运行的复现记录，不构成再次执行许可；诊断目录已有产物，禁止覆盖。
+
+```bash
+cd /home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002
+PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 \
+  python3 -m pytest tests/test_v2_task_teacher.py reproducibility/aegis_f1/tests/test_v1_frozen_teacher_recovery.py -q
+PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 \
+  python3 -u scripts/probe_v2_task_teacher.py \
+  --config configs/v2_task_teacher_recovery_20261002.json \
+  --output outputs/codex/v2_task_teacher_recovery_20261002/diagnostic_native16
+PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 \
+  python3 scripts/verify_v2_task_teacher.py \
+  --directory outputs/codex/v2_task_teacher_recovery_20261002/diagnostic_native16 \
+  --output results/v2_task_teacher_recovery_20261002/independent_verification.json
+```
+
+初次batch128使用相同入口、初版配置，输出`diagnostic/`；两个私有目录都保留`failure.json`、
+`scores.npz`和`cost.json`。主目录最后`progress.json`为异常前的进度快照，终态以`failure.json`和
+已退出进程为准，不能据进度文件自动重启。
+实现为[诊断入口](../scripts/probe_v2_task_teacher.py)、[独立失败复算](../scripts/verify_v2_task_teacher.py)、
+[测试](../tests/test_v2_task_teacher.py)、固定配置、私有输出ignore和本段文档，正式训练/推理代码未修改。
+证据见[首轮及源码定位](../results/v2_task_teacher_recovery_20261002/first_attempt.json)、
+[原生批量失败](../results/v2_task_teacher_recovery_20261002/native_failure.json)、
+[独立复算](../results/v2_task_teacher_recovery_20261002/independent_verification.json)和
+[验证汇总](../results/v2_task_teacher_recovery_20261002/validation.json)。
+没有放宽0.7/0.2、14张容差或推进门，没有导出融合预测。

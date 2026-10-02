@@ -1,0 +1,18 @@
+{
+  "experiment_id": "V2_TASK_TEACHER_RECOVERY_20261002",
+  "status": "failed_diagnostic_independently_verified",
+  "recorded_at_utc": "2026-10-02T09:39:54.200415+00:00",
+  "test_command": "PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 python3 -m pytest tests/test_v2_task_teacher.py reproducibility/aegis_f1/tests/test_v1_frozen_teacher_recovery.py -q",
+  "tests": "11 passed in 2.22s",
+  "native_replay_gate_passed": false,
+  "transfer_gate_evaluated": false,
+  "cumulative_diagnostic_seconds": 372.1148237110001,
+  "new_training": false,
+  "new_test_inference": false,
+  "new_candidate": false,
+  "new_platform_score": null,
+  "incumbent_validation": "results/v1_768_bias_platform_20261002/validation.json",
+  "pending_v2_pair_validation": "results/v2_sixview_pair_handoff_20261002/validation.json",
+  "independent_verification_sha256": "5b6b185c17a319200953c648d0623f03d32f4d4883e27f965b6ce8a27b373936",
+  "decision": "close_audit_native_replay_mismatch_transfer_unknown"
+}

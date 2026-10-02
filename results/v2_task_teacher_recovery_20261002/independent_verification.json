@@ -1,0 +1,62 @@
+{
+  "status": "verified_failed_native_replay",
+  "experiment_id": "V2_TASK_TEACHER_RECOVERY_20261002",
+  "teacher_predictions_replayed": 14880,
+  "support_memberships_replayed": 14880,
+  "numerical_max_errors": {
+    "confidence": 1.7763568394002505e-15,
+    "margin": 1.7763568394002505e-15
+  },
+  "source_files_checked": 18,
+  "archive_source_sha": {
+    "v2/model.py": "c26ce108e11c21f0c6372d075007c26c8254727be1c201179f99a90fadaaf871",
+    "v2/runtime.py": "58af4aa557515c1b2a79954eaf3b7473aff184171d9dd83dc7642b9431e739e6",
+    "v2/training_utils.py": "792b88125e91dfe65070f69ec0e3087bb2bc2da2d4141a5ca6aa0c60e695e610",
+    "aegis_clip/model.py": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7"
+  },
+  "native_replay": {
+    "rows": 14880,
+    "top1_changes": 39,
+    "changed_probability_margin_max": 0.009935135151385277,
+    "supported_top1_changes": 0,
+    "exact_top1_replay": false
+  },
+  "native_gate_components": {
+    "top1_count": false,
+    "changed_margin": true,
+    "no_supported_change": true
+  },
+  "native_gate_passed": false,
+  "initial_and_corrected_logits_identical": true,
+  "local_original_label_metrics": {
+    "rows": 14880,
+    "correct": 11526,
+    "errors": 3354,
+    "classes": 750,
+    "micro": 0.7745967741935483,
+    "macro": 0.7657995910893781
+  },
+  "archived_original_label_metrics": {
+    "rows": 14880,
+    "correct": 11528,
+    "errors": 3352,
+    "classes": 750,
+    "micro": 0.774731182795699,
+    "macro": 0.7659266991647928
+  },
+  "first_attempt_seconds": 195.37517440500005,
+  "corrected_attempt_seconds": 176.73964930600005,
+  "cumulative_diagnostic_seconds": 372.1148237110001,
+  "score_file": "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/outputs/codex/v2_task_teacher_recovery_20261002/diagnostic_native16/scores.npz",
+  "score_sha256": "e8b7e6c760d120f52d3b9ddae935acf6870f16cf0eab206cebab0323eaf5c9d0",
+  "failure_sha256": "81ea7bb8ff27b5e123123f89c8f31b3cc0038ab26486dc7a4dfedeccf12fb981",
+  "verifier_sha256": "aaf2586d49df15aef122e468c5cc9fc7a8542395162ca732ddddbb8ca29547e1",
+  "counter_implementation_sha256": "0380772072bef7fa62915692202af4a6e5d10fa7582c2fda40cebf4d1593fd64",
+  "transfer_gate_evaluated": false,
+  "decision": "close_audit_native_replay_mismatch_transfer_unknown",
+  "remaining_mismatch_cause": "unknown; matching batch does not explain it; no remote logits available here",
+  "new_candidate": false,
+  "new_training": false,
+  "test_data_used": false,
+  "platform_gain_known": false
+}

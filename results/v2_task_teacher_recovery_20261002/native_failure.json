@@ -1,0 +1,29 @@
+{
+  "status": "failed_closed",
+  "error_type": "ValueError",
+  "error": "Too many native top1 replay changes",
+  "elapsed_seconds": 176.73964930600005,
+  "new_training": false,
+  "new_candidate": false,
+  "automatic_restart": false,
+  "sources": {
+    "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/configs/v2_task_teacher_recovery_20261002.json": "8478920ef3abd353d6818758eb458b617ac0d1f1e402c824943c761e5535c602",
+    "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/scripts/probe_v2_task_teacher.py": "27b56cdda3b6cd5a854f579f8c9cecc958bf10e6fcb13b45f1fd96b6c594033b",
+    "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/scripts/diagnose_v1_candidate_errors.py": "18407998a778961531854ee7cd23344e793814169868e3274d3018ce8b45c65f",
+    "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/scripts/diagnose_v1_frozen_teacher_recovery.py": "52ba0257b7051b050abf2c1a98abc15fb4abfd21f53b140056872f12c3225339",
+    "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/scripts/run_v2_fixed_prior.py": "2b7b31ba839c1648afe359e94be26793c5d1fb0300f8bd70c529d40cc6ba8508",
+    "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/reproducibility/aegis_f1/v2/model.py": "c26ce108e11c21f0c6372d075007c26c8254727be1c201179f99a90fadaaf871",
+    "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/reproducibility/aegis_f1/v2/runtime.py": "58af4aa557515c1b2a79954eaf3b7473aff184171d9dd83dc7642b9431e739e6",
+    "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/reproducibility/aegis_f1/v2/training_utils.py": "792b88125e91dfe65070f69ec0e3087bb2bc2da2d4141a5ca6aa0c60e695e610",
+    "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/reproducibility/aegis_f1/aegis_clip/model.py": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+    "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/configs/v1_frozen_teacher_recovery_20261001.json": "3dda17ccdc8d295d06e449ae392f27e94dd088d34dd94eee2606abe6dc3b535b",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/train_dev.csv": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/val_dev.csv": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/results/v2_dev_error_budget_20261002/report.json": "16a0414fee33e6b2e43e172576ea36596b8a683949fc8b05a0981cd56bd1a3b6",
+    "/home/lux1/noise/worktrees/v2_dev_error_budget_20261002/outputs/codex/v2_dev_error_budget_20261002/diagnostic/aligned_predictions.csv": "87dbbde36609cfcc9827a346e17aa02cc56065de3c6371f94ed9fd7792327a79",
+    "/home/lux1/.cache/clip/ViT-B-32.pt": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/runs/s3_576/best.pt": "05f4c1ace5647ce9afa166f6af629389262a44da3570918c83bc53a916a6425f"
+  }
+}

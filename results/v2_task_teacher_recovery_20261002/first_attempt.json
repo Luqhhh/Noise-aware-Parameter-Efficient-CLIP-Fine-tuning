@@ -1,0 +1,32 @@
+{
+  "status": "first_attempt_failed_native_replay_gate",
+  "failure_path": "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/outputs/codex/v2_task_teacher_recovery_20261002/diagnostic/failure.json",
+  "failure_sha256": "d279b32cc21297bb3508d5e0f8ab2c8e4b462c82b1466deb9fcb7735973a49e2",
+  "original_protocol_commit": "a92207a",
+  "original_implementation_commit": "5765be9",
+  "original_config_sha256": "dd513836361fce9ce6738775fb9be88e556838ca4128ca950167860f33a81621",
+  "original_implementation_sha256": "62cd2e00fdbbaa78fc5e8a56d91e07b4191d6d8564263c217001b6a4bb723bd4",
+  "source_commit_bytes_verified": true,
+  "scores_path": "/home/lux1/noise/worktrees/v2_task_teacher_recovery_20261002/outputs/codex/v2_task_teacher_recovery_20261002/diagnostic/scores.npz",
+  "scores_sha256": "e8b7e6c760d120f52d3b9ddae935acf6870f16cf0eab206cebab0323eaf5c9d0",
+  "diagnostic_seconds": 195.37517440500005,
+  "replay": {
+    "top1_changes": 39,
+    "supported_top1_changes": 0,
+    "changed_probability_margin_max": 0.009935135151385277,
+    "new_correct": 11526,
+    "original_correct": 11528
+  },
+  "root_cause_evidence": {
+    "archive_member": "bound_inputs/root/autodl-tmp/noise/worktrees/codex/v2_continuation_20261001/reproducibility/aegis_f1/v2/runtime.py",
+    "runtime_sha256": "58af4aa557515c1b2a79954eaf3b7473aff184171d9dd83dc7642b9431e739e6",
+    "native_loader_call": "val_loader = loader(val_ds, cfg, cfg[\"local_replay\"][\"micro_batch_size\"])",
+    "mistaken_field": "data.val_batch_size=128 (unused by the runtime loader)",
+    "executed_field": "local_replay.micro_batch_size=16"
+  },
+  "support_gate_evaluated": false,
+  "correction_commit": "c268e40",
+  "corrected_operation_budget_seconds": 704,
+  "cumulative_budget_seconds": 900,
+  "thresholds_relaxed": false
+}

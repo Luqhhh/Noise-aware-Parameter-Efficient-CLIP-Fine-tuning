@@ -1,0 +1,10 @@
+{
+  "first_batch_seconds": 1.1623772289999579,
+  "warmed_batch_seconds": [
+    0.09599388800006636,
+    0.08785689299975274
+  ],
+  "projected_remaining_seconds": 88.98633417606152,
+  "elapsed_seconds": 21.500223978000122,
+  "reused_in_full_forward": true
+}
