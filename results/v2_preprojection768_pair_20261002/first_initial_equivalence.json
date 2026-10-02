@@ -1,0 +1,6 @@
+{
+  "fp32_readout_vs_original_archive_changes": 50,
+  "max_abs_logit_difference": 1.9073486328125e-06,
+  "native_local_bf16_vs_archive_changes": 39,
+  "top1_changes": 0
+}

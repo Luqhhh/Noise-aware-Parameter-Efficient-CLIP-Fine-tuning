@@ -1,0 +1,25 @@
+{
+  "automatic_restart": false,
+  "elapsed_seconds": 249.853633232,
+  "error": "Bounded pair and delivery cost gate failed",
+  "error_type": "ValueError",
+  "sources": {
+    "/home/lux1/.cache/clip/ViT-B-32.pt": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json": "6f6fdc3eef8e526d3cde89da6d98690603e26ee8cae5de7e7e90c743bf3a551c",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/dataset_manifest.json": "484b0958564a41753471842f9822fbf9139a4ca6a8a95891d6566e876f8e4dd0",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/test_manifest.csv": "73ceb05efca959a5db7422d5eacd96d997ed9f4ff4687b31ec3a66c0f91ed5a4",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/train_dev.csv": "615d510481e9df610371e84cbdeeb0058cc9a176989786a8ccf4eb30235b92c6",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/val_dev.csv": "d91106df365b62f9bf56eff51474c222925301546642fa427f6778258cb833ab",
+    "/home/lux1/noise/worktrees/v2_dev_error_budget_20261002/outputs/codex/v2_dev_error_budget_20261002/diagnostic/aligned_predictions.csv": "87dbbde36609cfcc9827a346e17aa02cc56065de3c6371f94ed9fd7792327a79",
+    "/home/lux1/noise/worktrees/v2_preprojection768_pair_20261002/configs/v2_preprojection768_pair_20261002.json": "da72be63f36bbfd7f84a8b0e5b571b4d289a05421ffbcefb18a9f2d019a9a0e2",
+    "/home/lux1/noise/worktrees/v2_preprojection768_pair_20261002/reproducibility/aegis_f1/v2/core.py": "1c6ef90407847d2179627d2f1db110922749f4cfd8f60c978b7ac7ee70973133",
+    "/home/lux1/noise/worktrees/v2_preprojection768_pair_20261002/reproducibility/aegis_f1/v2/model.py": "c26ce108e11c21f0c6372d075007c26c8254727be1c201179f99a90fadaaf871",
+    "/home/lux1/noise/worktrees/v2_preprojection768_pair_20261002/reproducibility/aegis_f1/v2/preprojection.py": "b06cb92dbf3cfcd46a47d22a2d41e50f8b8fb8a539797e5162ab4b2b4479d693",
+    "/home/lux1/noise/worktrees/v2_preprojection768_pair_20261002/reproducibility/aegis_f1/v2/training_utils.py": "792b88125e91dfe65070f69ec0e3087bb2bc2da2d4141a5ca6aa0c60e695e610",
+    "/home/lux1/noise/worktrees/v2_preprojection768_pair_20261002/results/v2_dev_error_budget_20261002/report.json": "16a0414fee33e6b2e43e172576ea36596b8a683949fc8b05a0981cd56bd1a3b6",
+    "/home/lux1/noise/worktrees/v2_preprojection768_pair_20261002/scripts/run_v2_fixed_prior.py": "2b7b31ba839c1648afe359e94be26793c5d1fb0300f8bd70c529d40cc6ba8508",
+    "/home/lux1/noise/worktrees/v2_preprojection768_pair_20261002/scripts/train_v2_preprojection_pair.py": "165153cb9bba6c648f11a544485a93be9c05cf516f39442d25f42d4b5c82b4e3",
+    "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/runs/s3_576/best.pt": "05f4c1ace5647ce9afa166f6af629389262a44da3570918c83bc53a916a6425f"
+  },
+  "status": "failed_closed"
+}

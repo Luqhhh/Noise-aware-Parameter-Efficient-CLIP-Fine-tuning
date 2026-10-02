@@ -1,0 +1,13 @@
+{
+  "status": "failed_gate_independently_verified",
+  "failure": "Bounded pair and delivery cost gate failed",
+  "initial_equivalence": {
+    "fp32_readout_vs_original_archive_changes": 50,
+    "max_abs_logit_difference": 1.9073486328125e-06,
+    "native_local_bf16_vs_archive_changes": 39,
+    "top1_changes": 0
+  },
+  "formal_training_started": false,
+  "source_count": 16,
+  "elapsed_seconds": 6.558695042000181
+}
