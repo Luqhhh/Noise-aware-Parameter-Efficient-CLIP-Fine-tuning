@@ -53,7 +53,12 @@ python3 -u scripts/run_v2_fixed_prior.py \
 真实不对称图像验证三个实际尺寸及逐像素翻转配对；模拟输出区分概率平均与logits求和，
 合成完整交付验证新解码相对原包变化不阻断同缓存独立float64复算。
 此前测试导入问题已修正；CPU模拟的多进程fork阻塞改为单进程测试加载，正式CUDA仍为2个worker。
-这些检查不是测试集候选或平台分，正式候选尚未交付。核验后Windows目标为
+这些检查不是测试集候选或平台分。14:31:03 CST实际启动后台服务
+`noise-v2-fixed-prior-delivery-20261002.service`，PID323230；该通用交付服务名在旧任务停止后复用，
+实际工作目录、配置和输出均为本六视图方案，不写旧四视图candidate。
+已完成完整本地回执、源码及checkpoint血缘与37,444张测试图逐张SHA校验，进入`scale448`推理；
+[实际启动binding](../results/v2_sixview_bias_20261002/launch.json)。每20分钟监控，完成后立即交付。
+正式候选尚未完成。核验后Windows目标为
 `C:\Users\lqh22\Downloads\v2_continuation_20261001\submission_bias_sixview\submission.zip`，
 原始无bias四视图包保留在`submission\submission.zip`。
 
