@@ -38,6 +38,11 @@ Windows包为`C:\Users\lqh22\Downloads\v2_continuation_20261001\submission_bias_
 ZIP SHA `7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a`。
 平台分未知；本段交付后暂停，等待用户平台反馈，不自动继续训练或解码搜索，现役最高保持。
 2026-10-02用户确认尚未测试，明天（2026-10-03）恢复提交额度；今日不重复催要平台分。
+六视图无bias对照现已补交付到同一Windows根目录的`submission_raw_sixview\submission.zip`，
+ZIP SHA `4228a78a390e34744e42fb9a8ef861c6807d37b4e28dedc61bc3984c98353c6c`。
+它与`submission_bias_sixview`来自同一checkpoint/六视图/缓存，只相差固定bias；
+两包各37,444行、Windows正式9项及字节检查通过，原`submission/`仍为四视图，不能充当纯bias对照。
+本次只复制已有核验产物，没有训练、推理或新预测；[配对补交付及命令](v2_sixview_pair_handoff_20261002.md)。
 协议、门禁、预处理和命令见[V2_SIXVIEW_BIAS_20261002](v2_sixview_bias_20261002.md)，
 原实现与停止历史见[V2_FIXED_PRIOR_20261002](v2_fixed_prior_20261002.md)、
 [四视图停止记录](v2_fixed_prior_delivery_20261002.md)。

@@ -1,0 +1,29 @@
+{
+  "experiment_id": "V2_SIXVIEW_PAIR_HANDOFF_20261002",
+  "status": "passed",
+  "recorded_at_utc": "2026-10-02T09:08:17.214816+00:00",
+  "copy_script_sha256": "a73a6b51973df014fb279f405f4a2faf6f3c2f210961ff3bbca657eb5972b6d8",
+  "receipt_sha256": "adb66862527e5f837c7f1811ad409380f127559b912f10007cbdaf68cb72a188",
+  "copied_raw_files": 8,
+  "original_full_prediction_replay": "results/v2_sixview_bias_20261002/independent_verification.json",
+  "checks": {
+    "raw": {
+      "path": "results/v2_sixview_pair_handoff_20261002/raw_check.log",
+      "exit_code": 0,
+      "sha256": "edb24cf74b09c551bb82c223e25801a445cc7a4963d9a6294f022b09943c3c59",
+      "rows": 37444,
+      "checks_passed": 9
+    },
+    "bias": {
+      "path": "results/v2_sixview_pair_handoff_20261002/bias_check.log",
+      "exit_code": 0,
+      "sha256": "edb24cf74b09c551bb82c223e25801a445cc7a4963d9a6294f022b09943c3c59",
+      "rows": 37444,
+      "checks_passed": 9
+    }
+  },
+  "pair_diff_rows_recounted": 3077,
+  "new_predictions": false,
+  "new_platform_score": null,
+  "new_unit_tests": "None: this is an existing-artifact copy; real destination checks cover the change."
+}

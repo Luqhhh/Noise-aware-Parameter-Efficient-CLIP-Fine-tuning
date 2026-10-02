@@ -80,6 +80,9 @@ python3 -u scripts/run_v2_fixed_prior.py \
 806,198 bytes；原始无bias四视图包保留在`submission\submission.zip`。
 在本worktree执行`python3 results/v2_sixview_bias_20261002/copy_to_windows.py`可核对/补拷同一固定产物；
 不同现存目标文件会拒绝覆盖。两个检查日志在本结果目录`submission_{raw,bias}/submission_check.log`。
+后续[配对补交付](v2_sixview_pair_handoff_20261002.md)已将同缓存六视图raw原样复制到
+Windows同根目录`submission_raw_sixview/submission.zip`，两包正式检查通过；
+需要评估纯bias贡献时使用这个六视图raw，原四视图包作为历史产物保留。
 本段交付后暂停，不自动追加解码、bias强度或训练搜索；用户自行提交并回填平台结果。
 
 ## 规则范围
