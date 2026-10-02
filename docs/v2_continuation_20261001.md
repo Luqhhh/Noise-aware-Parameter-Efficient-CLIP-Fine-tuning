@@ -1,9 +1,38 @@
 # V2_CONTINUATION_20261001
 
 用户提供 `v2_s1_384_bundle_20261001_r3.zip`，授权准备完成后继续固定v2。
-最新要求是每20分钟监控，保持服务器开机。独立分支 `codex/v2_continuation_20261001`，
+最新要求是每20分钟监控；全部完成后下载权重和提交包，核验成功后关闭服务器。
+此前“保持开机”已被2026-10-02的新指令覆盖；完成并核验下载之前仍保持运行。
+独立分支 `codex/v2_continuation_20261001`，
 本机目录 `/home/lux1/noise/worktrees/v2_continuation_20261001`。
 本记录封存实现、CPU验证和真实启动；正式阶段训练尚在持续执行。
+
+## 2026-10-02进度与收尾策略
+
+北京时间11:10实测full_576已完成8,200/9,290次更新（88.3%），处于第5轮；
+controller PID5764存活，健康状态running，磁盘余量5.95GB。尚未生成最终提交包。
+S2已完成6轮/8,358次更新，独立留出所选EMA micro76.955645%、macro76.101112%；
+S3已完成4轮/6,688次更新，所选EMA micro77.473118%、macro76.592670%。
+上述是14,880张独立DEV指标，full阶段没有独立留出；没有新平台分。
+full于04:26:12启动，预计训练及固定推理在12:00–15:00结束，下载另计；非保证截止时间。
+
+用户最新明确授权“完成后把权重和提交包下载到本地，然后关机”。
+收尾服务 `noise-v2-completion-20261002.service` 只由已完成、已核验CSV/ZIP的监控触发，
+使用 [deliver_v2_39385.py](../scripts/deliver_v2_39385.py)。私有配置绑定上述固定plan SHA，
+目标Windows目录为 `C:\Users\lqh22\Downloads\v2_continuation_20261001`。
+保存S2/S3 best、full last、full RAW第3/4/5轮快照、CSV/ZIP和报告；另保存配置、binding、
+状态、历史、holdout及日志的 `delivery_metadata.tar.gz`。预计权重约5.3GB。
+32MiB完整块断点续传，不完整块重试，最终逐文件核对服务器SHA-256。
+实际提交的checkpoint SHA必须与full last一致；所有阶段complete、冻结plan匹配、
+本地正式9项检查通过并写入本地收据后，才再次检查controller完成且GPU无其他任务，
+执行 `sync && /usr/bin/shutdown`，随后3次SSH不可达检查。失败不提前关机、不自动重训。
+此收尾服务不改正在运行的冻结代码、plan、配置及推理政策。
+最终仍为第5轮raw单checkpoint、原四视图，无固定均衡先验bias，也未切换SWA。
+
+11项收尾测试通过，包括未完成/未授权/plan不匹配、缺少或损坏权重、提交校验失败的关机阻断，
+中断续传、最终SHA与续传身份检查，以及收据先于关机和关机幂等性；原始记录见
+[completion_tests.log](../results/v2_continuation_20261001/completion_tests.log)。
+这仅说明收尾实现已验证，不能据此声称当前训练、下载或关机已完成。
 
 ## 实际启动检查点
 
@@ -102,7 +131,8 @@ controller按s2_448 → s3_576 → full_576串行执行。每个DEV先8次真实
 
 服务器 `python -u -m v2.health --watch --interval 1200 --plan ...` 持久进程每20分钟记录，
 独立flock防重复；读取真实updates/loss/epoch、进程命令、GPU、磁盘、日志新鲜度和失败状态。
-报告在workspace的 `monitoring/latest.json` 与各次JSON，完成后停止监控进程，保持服务器开机。
+报告在workspace的 `monitoring/latest.json` 与各次JSON，完成后停止服务器监控进程；
+关机顺序以本页2026-10-02最新收尾策略为准。
 本机systemd用户timer `noise-v2-monitor-20261001.timer` 同时每20分钟SSH读取，
 连接失败重试3次；异常写 `ALERT.json`，不会自动重跑未完成训练。
 本机timer依赖本机Linux运行；服务器监控独立于本机。原小时timer不再运行。
@@ -111,7 +141,8 @@ controller按s2_448 → s3_576 → full_576串行执行。每个DEV先8次真实
 
 本机报告目录：`outputs/codex/v2_continuation_20261001/monitoring/`。
 最终自动取回CSV/ZIP/report/服务器检查记录，核对SHA，执行本机9项正式检查；
-通过后停本机timer，产物放同一执行目录的 `submission/`。不关机、不平台上传。
+通过后触发权重下载与验证服务，再停本机timer，小包放同一执行目录的 `submission/`；
+完整下载交付Windows下载目录，全部核验后按最新授权关机。平台上传由用户决定。
 所有认证配置只在私有输出目录，禁止入Git。
 
 CPU回归77项通过（3.69秒），另19项官方模型检查通过（1.42秒）；含导入s1重跑阻断、训练参数迁移、manifest移植、

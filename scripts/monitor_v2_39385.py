@@ -60,6 +60,9 @@ def run(config_path):
             (delivery / 'local_submission_check.log').write_text(check.stdout + check.stderr)
             report['local_verified_delivery'] = str(delivery)
             report['local_submission_check_passed'] = True
+            if config.get('completion_service'):
+                subprocess.run(['systemctl', '--user', 'start', '--no-block', config['completion_service']], check=True)
+                report['completion_service'] = config['completion_service']
             subprocess.run(['systemctl', '--user', 'stop', config['timer_unit']], check=True)
     except Exception as error:
         report = dict(health='monitor_or_delivery_needs_diagnosis', error=str(error), keep_server_running=True)

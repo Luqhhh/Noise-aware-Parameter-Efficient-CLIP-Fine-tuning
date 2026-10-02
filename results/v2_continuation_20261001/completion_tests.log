@@ -1,0 +1,20 @@
+2026-10-02, local CPU, CUDA_VISIBLE_DEVICES empty for the delivery service.
+
+Command:
+python3 -m pytest tests/test_v2_completion_delivery.py -q
+Result:
+11 passed in 0.11s
+
+Regression command:
+python3 -m pytest tests/test_v2_completion_delivery.py tests/test_v2_continuation.py tests/test_v2.py tests/test_v2_swa.py -q
+Result:
+66 passed in 4.56s
+
+systemctl --user show noise-v2-completion-20261002.service -p LoadState -p ActiveState -p FragmentPath -p TimeoutStartUSec
+TimeoutStartUSec=2h
+LoadState=loaded
+ActiveState=inactive
+FragmentPath=/home/lux1/.config/systemd/user/noise-v2-completion-20261002.service
+
+Service linked and waiting for completed submission; no weight download or shutdown has occurred at this checkpoint.
+The running remote source commit and frozen training plan remain unchanged.
