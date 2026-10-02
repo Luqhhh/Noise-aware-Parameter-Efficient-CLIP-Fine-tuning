@@ -1,0 +1,27 @@
+{
+  "recorded_at_utc": "2026-10-02T04:52:32.160561+00:00",
+  "local_recorded_at_utc": "2026-10-02T04:52:49.947707+00:00",
+  "health": "completed_delivered",
+  "controller": {
+    "pid": 5764,
+    "plan": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/plan.json",
+    "plan_sha256": "596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e",
+    "keep_server_running": true,
+    "started_at_utc": "2026-10-01T07:56:56.012198+00:00",
+    "training_completed": true,
+    "platform_metrics": null,
+    "status": "completed_delivered",
+    "stage": "full_576",
+    "updated_at_utc": "2026-10-02T04:21:09.970705+00:00",
+    "probe_steps": 8,
+    "estimated_stage_seconds": 58175.01076461631,
+    "max_stage_seconds": 81446,
+    "measured_peak_bytes": 3073688576,
+    "submission": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/submission",
+    "zip_sha256": "e7152143952f7853c3cf6617bd320675fa8339aa24f4ff841d1cd627e462124e",
+    "csv_sha256": "26a8f406a12bb74218fa790217fab9351d2223a1adfb8cdb3fa4773e00a889b9",
+    "rows": 37444
+  },
+  "controller_alive": false,
+  "completed_stage_epochs": 5
+}

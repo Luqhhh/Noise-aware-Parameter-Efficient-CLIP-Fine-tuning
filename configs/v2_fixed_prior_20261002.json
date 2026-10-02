@@ -16,6 +16,8 @@
   "bias_strength": 1.0,
   "reduction": "log_mean_view_softmax",
   "probability_floor": 1e-30,
+  "raw_replay_max_disagreement_fraction": 0.001,
+  "raw_replay_max_probability_margin": 0.01,
   "test_prior": "official_uniform",
   "official_permission_source": "docs/v1_test_prior_authorization_20261001.md",
   "training": false,
