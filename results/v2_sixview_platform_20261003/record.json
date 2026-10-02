@@ -1,54 +1,84 @@
 {
   "record_id": "V2_SIXVIEW_PLATFORM_20261003",
   "experiment_id": "V2_SIXVIEW_BIAS_20261002",
-  "recorded_at": "2026-10-02T19:25:13+00:00",
+  "recorded_at": "2026-10-02T20:05:00+00:00",
   "source": "explicit_user_report",
-  "source_message": "74.6688387992735 这是bias+six \"C:\\Users\\lqh22\\Downloads\\v2_continuation_20261001\\submission_bias_sixview\\submission.zip\" \"C:\\Users\\lqh22\\Downloads\\v2_continuation_20261001\" 还有没有值得平台测试的包",
-  "platform_score_reported_text": "74.6688387992735",
-  "platform_score_percent": 74.6688387992735,
+  "source_messages": [
+    "74.6688387992735 这是bias+six \"C:\\Users\\lqh22\\Downloads\\v2_continuation_20261001\\submission_bias_sixview\\submission.zip\" \"C:\\Users\\lqh22\\Downloads\\v2_continuation_20261001\" 还有没有值得平台测试的包",
+    "72.96229035359471\t v2 六视图 raw（同 checkpoint 对照）"
+  ],
   "platform_submission_id": null,
   "platform_submitted_at": null,
   "independent_platform_receipt_verified": false,
-  "package_binding": {
-    "user_supplied_windows_path": "C:\\Users\\lqh22\\Downloads\\v2_continuation_20261001\\submission_bias_sixview\\submission.zip",
-    "wsl_path": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission_bias_sixview/submission.zip",
-    "zip_sha256": "7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a",
-    "zip_bytes": 806198,
-    "csv_sha256": "194c0a0a4da379e6f340e6b078ae48439d00978f3924feb03df9806ed67d2e90",
-    "delivered_artifact_sha256": "7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a",
-    "sha256_matches_delivered_artifact": true,
-    "rows": 37444,
-    "official_submission_check": "9/9 passed on the exact Windows file, re-run 2026-10-03 CST",
-    "evidence": "results/v2_sixview_bias_20261002/windows_copy_receipt.json"
-  },
-  "previous_best": {
-    "record": "results/v1_768_bias_platform_20261002/record.json",
-    "experiment_id": "V1_768_FULL_TEST_BIAS_20261001",
-    "platform_score_percent": 74.41512658903963,
-    "delta_pp_exact": "0.25371221023387",
-    "note": "different checkpoint and different lineage (v1 768 full SWA4-12), not a same-checkpoint pair"
-  },
-  "same_checkpoint_control": {
-    "package": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission_raw_sixview/submission.zip",
-    "zip_sha256": "4228a78a390e34744e42fb9a8ef861c6807d37b4e28dedc61bc3984c98353c6c",
-    "relationship": "identical checkpoint, views, cache and 37444 rows; only the fixed uniform prior bias differs (3077 changed predictions)",
-    "platform_score_percent": null,
-    "status": "delivered_verified_untested"
-  },
-  "derived_platform_arithmetic": {
+  "reported_packages": [
+    {
+      "role": "six-view + fixed uniform bias (reported best)",
+      "platform_score_reported_text": "74.6688387992735",
+      "platform_score_percent": 74.6688387992735,
+      "windows_path": "C:\\Users\\lqh22\\Downloads\\v2_continuation_20261001\\submission_bias_sixview\\submission.zip",
+      "wsl_path": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission_bias_sixview/submission.zip",
+      "zip_sha256": "7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a",
+      "zip_bytes": 806198,
+      "csv_sha256": "194c0a0a4da379e6f340e6b078ae48439d00978f3924feb03df9806ed67d2e90",
+      "sha256_matches_delivered_artifact": true,
+      "rows": 37444,
+      "official_submission_check": "9/9 passed on the exact Windows file, re-run 2026-10-03 CST",
+      "evidence": "results/v2_sixview_bias_20261002/windows_copy_receipt.json"
+    },
+    {
+      "role": "same-checkpoint six-view raw control",
+      "platform_score_reported_text": "72.96229035359471",
+      "platform_score_percent": 72.96229035359471,
+      "windows_path": "C:\\Users\\lqh22\\Downloads\\v2_continuation_20261001\\submission_raw_sixview\\submission.zip",
+      "wsl_path": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission_raw_sixview/submission.zip",
+      "zip_sha256": "4228a78a390e34744e42fb9a8ef861c6807d37b4e28dedc61bc3984c98353c6c",
+      "zip_bytes": 805956,
+      "csv_sha256": "446165ca7d862431ab921d9de0a06fcd33e0d3011a59397a12831b2afa220f8e",
+      "sha256_matches_delivered_artifact": true,
+      "rows": 37444,
+      "official_submission_check": "9/9 passed on the exact Windows file, re-run 2026-10-03 CST",
+      "evidence": "results/v2_sixview_pair_handoff_20261002/pair_receipt.json",
+      "relationship": "identical checkpoint, views, cache and rows as the bias package; only the fixed uniform prior bias differs (3077 changed predictions)"
+    }
+  ],
+  "paired_arithmetic_all_four_reported_scores": {
     "total_test_images": 37444,
-    "correct_images_this_report": 27959,
-    "correct_images_previous_best": 27864,
-    "delta_correct_images": 95,
+    "v2_sixview_raw": {"percent": 72.96229035359471, "correct_images": 27320},
+    "v2_sixview_bias": {"percent": 74.6688387992735, "correct_images": 27959},
+    "v1_768_sixview_raw": {"percent": 71.53883132144003, "correct_images": 26787},
+    "v1_768_sixview_bias": {"percent": 74.41512658903963, "correct_images": 27864},
+    "fixed_bias_gain": {
+      "v2_same_checkpoint_pair_pp": "1.70654844567879",
+      "v2_same_checkpoint_pair_images": 639,
+      "v1_same_checkpoint_pair_pp": "2.87629526759960",
+      "v1_same_checkpoint_pair_images": 1077,
+      "difference_pp": "-1.16974682192081"
+    },
+    "raw_delta_v2_minus_v1_pp": "1.42345903215468",
+    "raw_delta_v2_minus_v1_images": 533,
+    "bias_delta_v2_minus_v1_pp": "0.25371221023387",
+    "bias_delta_v2_minus_v1_images": 95,
+    "corrected_over_raw_pass_through": 0.178224911221682,
     "target_80_percent_correct_images": 29956,
-    "remaining_correct_images_to_80_percent": 1997,
-    "remaining_pp_to_80_percent": 5.3311612007265
+    "remaining_correct_images_to_80_percent_from_v2_bias": 1997,
+    "remaining_pp_to_80_percent_from_v2_bias": 5.3311612007265
   },
-  "decision": "await_more_platform_evidence_before_new_training",
+  "interpretation": {
+    "established": "The v2 checkpoint is genuinely better before correction (+1.42pp / +533 images raw), but the fixed uniform-prior bias repairs much less on it (+1.71pp / +639) than on the v1 768 checkpoint (+2.88pp / +1077), so after correction the two models are only +0.25pp / +95 images apart.",
+    "hypothesis": "The fixed uniform-prior correction partly absorbs model-quality differences; the corrected score compresses toward roughly 74.4-74.7 for this model family.",
+    "confound_not_resolved": "The two lineages do not share the same multi-view reduction: v1 sums six-view logits (equivalent to a geometric mean of per-view probabilities) while v2 uses log(mean of six-view probabilities), and the fixed 200-iteration damping-1 bias acts in that score space. The gain difference therefore mixes model and decode and cannot be attributed to either alone.",
+    "consequence_for_80_percent": "If a similar pass-through held, closing the remaining 1997 corrected errors by raw-accuracy gains alone would need an implausible raw jump; the remaining errors are content/confusion errors, not prior shift."
+  },
+  "next_slot_recommendation": [
+    "512 full SWA six-view + fixed bias (Desktop/noise/v1_512_test_bias_control_20261001_512_test_bias_submission.zip): third checkpoint under the same v1 decode protocol, giving a third (raw, bias) point to test whether the bias gain is decode-driven or model-driven",
+    "512 full SWA six-view raw (same prefix _512_raw_submission.zip): completes that pair if a second slot is available",
+    "v2 original four-view raw (Downloads/v2_continuation_20261001/submission/submission.zip): isolates the six-view decode at the best checkpoint; any follow-up four-view+bias package would need a new GPU inference because no four-view probability cache exists",
+    "deprioritized: v2 full_576 EMA and RAW3-5 averaging, because the compression pattern above predicts little corrected-score gain per unit of raw gain; they are not withdrawn, only no longer the best use of a slot"
+  ],
   "unknowns": [
-    "no per-image ground truth; only the aggregate delta is known, it cannot be split into corrections and regressions",
-    "platform submission id and the actually uploaded bytes are not independently verified, only the user-supplied path and its on-disk SHA",
-    "the v2 six-view raw score is unknown, so the pure contribution of the fixed bias on this lineage is not measured",
+    "no per-image ground truth; only aggregate deltas are known, they cannot be split into corrections and regressions",
+    "platform submission id and the actually uploaded bytes are not independently verified, only the user-supplied paths and their on-disk SHAs",
+    "the bias gain difference between the two lineages is confounded with the multi-view reduction (logit sum vs log-mean-probability)",
     "the full_576 stage has no independent holdout (val_dev is inside full training), so local metrics cannot rank raw vs EMA exports"
   ],
   "actions_not_taken": [

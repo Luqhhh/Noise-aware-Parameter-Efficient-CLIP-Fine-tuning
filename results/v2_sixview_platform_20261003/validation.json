@@ -23,7 +23,7 @@
       "zip_bytes": 805956,
       "rows": 37444,
       "check": "all_passed",
-      "platform_score_percent": null
+      "platform_score_percent": 72.96229035359471
     },
     {
       "role": "same-checkpoint original four-view raw (server decode)",
