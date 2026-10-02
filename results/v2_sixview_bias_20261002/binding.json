@@ -1,0 +1,25 @@
+{
+  "config_sha256": "1d9c98a5706ceac5b1480feb3b98acf69cfe4237e9d7843b07c081479ee383f5",
+  "experiment_id": "V2_SIXVIEW_BIAS_20261002",
+  "local_test_pixels_checked": 37444,
+  "plan_sha256": "596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e",
+  "source_code": {
+    "reproducibility/aegis_f1/aegis_clip/model.py": "ebf39785b25c7df1553bccc830417b65e91b0eb56069aacc542e7c197b3145c7",
+    "reproducibility/aegis_f1/aegis_clip/prior_alignment.py": "9b033970399eb97771552619385b5a46c811f711b78c543da82e794ec845b73a",
+    "reproducibility/aegis_f1/aegis_clip/v1_test_bias.py": "3a1c868b80830cde29606886db46ecf5042eeaa23130edfe18e5049b2166eb72",
+    "reproducibility/aegis_f1/v2/model.py": "c26ce108e11c21f0c6372d075007c26c8254727be1c201179f99a90fadaaf871",
+    "reproducibility/aegis_f1/v2/runtime.py": "58af4aa557515c1b2a79954eaf3b7473aff184171d9dd83dc7642b9431e739e6",
+    "reproducibility/aegis_f1/v2/training_utils.py": "792b88125e91dfe65070f69ec0e3087bb2bc2da2d4141a5ca6aa0c60e695e610",
+    "scripts/run_v2_fixed_prior.py": "2b7b31ba839c1648afe359e94be26793c5d1fb0300f8bd70c529d40cc6ba8508",
+    "scripts/verify_v1_768_full_delivery.py": "036a59854ff93e078d0750baf6fe532ced47d252ab3f29e970c712d6822e9cd8",
+    "scripts/verify_v2_fixed_prior.py": "a13b595277e59bea3b776d8d42f25950c4f8c587812368e3604765553bdf40ca"
+  },
+  "source_hashes": {
+    "delivery_metadata.tar.gz": "2949712470b42fa2fc3f429350d531c8c99490d2e0f5feaf924556b0349554a9",
+    "runs/full_576/last.pt": "3b9fcce3a4a2a113f2eb2ad3a2028c7f224fd1b11f1bdaadd6641ee1ccc85138",
+    "submission/pred_results.csv": "26a8f406a12bb74218fa790217fab9351d2223a1adfb8cdb3fa4773e00a889b9",
+    "submission/report.json": "2f7a8722eca5b99dabe2cd0ba06a410264d0de163c3206c0c38b03c34c77ec76",
+    "submission/submission.zip": "e7152143952f7853c3cf6617bd320675fa8339aa24f4ff841d1cd627e462124e"
+  },
+  "source_receipt_sha256": "0d30185460084018f2915f0903725aada8f9ceae098f836c6b627d17ec6aae14"
+}

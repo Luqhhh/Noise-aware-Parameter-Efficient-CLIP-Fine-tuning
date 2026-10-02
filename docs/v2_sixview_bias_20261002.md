@@ -57,10 +57,30 @@ python3 -u scripts/run_v2_fixed_prior.py \
 `noise-v2-fixed-prior-delivery-20261002.service`，PID323230；该通用交付服务名在旧任务停止后复用，
 实际工作目录、配置和输出均为本六视图方案，不写旧四视图candidate。
 已完成完整本地回执、源码及checkpoint血缘与37,444张测试图逐张SHA校验，进入`scale448`推理；
-[实际启动binding](../results/v2_sixview_bias_20261002/launch.json)。每20分钟监控，完成后立即交付。
-正式候选尚未完成。核验后Windows目标为
+[实际启动binding](../results/v2_sixview_bias_20261002/launch.json)。运行期间按20分钟检查，正式候选已完成。
+六视图及固定校正/双包检查实测1,236.336271秒，随后独立复算46.446627秒。
+服务Result=success/ExecMainStatus=0并退出；
+[真实结果](../results/v2_sixview_bias_20261002/report.json)、
+[独立复算](../results/v2_sixview_bias_20261002/independent_verification.json)。
+37,444行两包均通过9项检查，独立float64拟合后逐张校正预测全量一致，bias最大差4.776505e-7；
+全部输入/代码摘要及CSV/ZIP字节复算一致，概率零值为0。
+六视图raw相对原四视图raw改变2,760张；bias相对同缓存六视图raw改变3,077张。
+两者分别是解码变化与先验校正变化，不是已证明的净正确修正；平台分仍未知。
+
+| 包 | CSV SHA256 | ZIP SHA256 |
+|---|---|---|
+| 六视图raw | `446165ca7d862431ab921d9de0a06fcd33e0d3011a59397a12831b2afa220f8e` | `4228a78a390e34744e42fb9a8ef861c6807d37b4e28dedc61bc3984c98353c6c` |
+| 六视图bias | `194c0a0a4da379e6f340e6b078ae48439d00978f3924feb03df9806ed67d2e90` | `7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a` |
+
+本机两包位于本段worktree的`outputs/codex/v2_sixview_bias_20261002/candidate/submission_{raw,bias}`。
+用户需要的bias包、CSV、manifest、源回执和校验记录已复制到Windows，逐文件SHA再次一致；
+[Windows复制回执](../results/v2_sixview_bias_20261002/windows_copy_receipt.json)、
+[原样复制脚本](../results/v2_sixview_bias_20261002/copy_to_windows.py)。实际Windows文件为
 `C:\Users\lqh22\Downloads\v2_continuation_20261001\submission_bias_sixview\submission.zip`，
-原始无bias四视图包保留在`submission\submission.zip`。
+806,198 bytes；原始无bias四视图包保留在`submission\submission.zip`。
+在本worktree执行`python3 results/v2_sixview_bias_20261002/copy_to_windows.py`可核对/补拷同一固定产物；
+不同现存目标文件会拒绝覆盖。两个检查日志在本结果目录`submission_{raw,bias}/submission_check.log`。
+本段交付后暂停，不自动追加解码、bias强度或训练搜索；用户自行提交并回填平台结果。
 
 ## 规则范围
 

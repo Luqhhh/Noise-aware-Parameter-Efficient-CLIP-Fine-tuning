@@ -1,0 +1,47 @@
+{
+  "status": "verified_bias_package_copied",
+  "source": "/home/lux1/noise/worktrees/v2_sixview_bias_20261002/outputs/codex/v2_sixview_bias_20261002/candidate",
+  "target": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission_bias_sixview",
+  "rows": 37444,
+  "files": {
+    "submission.zip": {
+      "bytes": 806198,
+      "sha256": "7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a"
+    },
+    "pred_results.csv": {
+      "bytes": 1610092,
+      "sha256": "194c0a0a4da379e6f340e6b078ae48439d00978f3924feb03df9806ed67d2e90"
+    },
+    "submission_check.log": {
+      "bytes": 750,
+      "sha256": "edb24cf74b09c551bb82c223e25801a445cc7a4963d9a6294f022b09943c3c59"
+    },
+    "manifest.json": {
+      "bytes": 2719,
+      "sha256": "d0989c1acf5da7e6e744a4408fe4be034c652860474f23b93ed73c82079e34ad"
+    },
+    "report.json": {
+      "bytes": 3242,
+      "sha256": "9f0fcbda47619d109e66079614d73aa4a9cbe3e075f8604d6be38c0968aa724f"
+    },
+    "independent_verification.json": {
+      "bytes": 994,
+      "sha256": "018ba57f3b406f5b2bcfc4ae1adbfebe18376cefe09a52a662ee300339b773a8"
+    },
+    "binding.json": {
+      "bytes": 1953,
+      "sha256": "d24aff01b1fb2d41f3fda585509adb483d24b71c3dd4d97b79b5a22c4078e656"
+    },
+    "raw_replay.json": {
+      "bytes": 169,
+      "sha256": "76c0368916d3dbbee54fe79c3e40267fe8a5254166eb18a56d2581e8651576f4"
+    },
+    "source_delivery_receipt.json": {
+      "bytes": 4158,
+      "sha256": "0d30185460084018f2915f0903725aada8f9ceae098f836c6b627d17ec6aae14"
+    }
+  },
+  "csv_zip_verified": true,
+  "official_submission_check_passed": true,
+  "independent_verification_passed": true
+}

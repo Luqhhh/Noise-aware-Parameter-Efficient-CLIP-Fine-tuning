@@ -1,0 +1,33 @@
+{
+  "bias_changed_predictions": 3077,
+  "bias_max_absolute_error": 4.776504964887351e-07,
+  "csv_zip_bytes_replayed": true,
+  "decoder_profile": "multiscale_flip_six",
+  "elapsed_seconds": 46.44662668401725,
+  "full_float64_decision_agreement": true,
+  "input_and_code_sha_verified": true,
+  "packages": {
+    "submission_bias": {
+      "csv_sha256": "194c0a0a4da379e6f340e6b078ae48439d00978f3924feb03df9806ed67d2e90",
+      "rows": 37444,
+      "zip_sha256": "7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a"
+    },
+    "submission_raw": {
+      "csv_sha256": "446165ca7d862431ab921d9de0a06fcd33e0d3011a59397a12831b2afa220f8e",
+      "rows": 37444,
+      "zip_sha256": "4228a78a390e34744e42fb9a8ef861c6807d37b4e28dedc61bc3984c98353c6c"
+    }
+  },
+  "platform_score": null,
+  "raw_remote_disagreement": 2760,
+  "rows": 37444,
+  "status": "passed",
+  "views": [
+    "scale448",
+    "scale448_flip",
+    "scale512",
+    "scale512_flip",
+    "scale576",
+    "scale576_flip"
+  ]
+}
