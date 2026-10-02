@@ -1,0 +1,42 @@
+{
+  "status": "completed_verified",
+  "completed_at": "2026-10-02T05:47:22.433687+00:00",
+  "files_deleted": 31,
+  "logical_bytes_deleted": 27489177581,
+  "allocated_bytes_released": 22289846272,
+  "free_bytes_before": 746352750592,
+  "free_bytes_after": 768642498560,
+  "protected_sha256_unchanged": 48561,
+  "retained_large_metadata_unchanged": 291,
+  "active_preflight": {
+    "relevant_processes_inspected": 10,
+    "conflicts": []
+  },
+  "plan_sha256": "b94dcbfa803c2e4f0ffce4646502f6f7d45c7bb91c23c634f537073719371646",
+  "best": {
+    "platform_score_percent": 74.41512658903963,
+    "views": 6,
+    "scales": [
+      448,
+      512,
+      576
+    ],
+    "flip": true,
+    "zip_sha256": "0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca"
+  },
+  "categories": {
+    "closed_l05_epoch_snapshot": 10,
+    "superseded_p75_e2_snapshot": 2,
+    "completed_cost_probe_checkpoint": 3,
+    "superseded_p75_e5_snapshot": 2,
+    "duplicate_obsolete_e4_handoff": 4,
+    "unused_completed_wft_intermediate": 8,
+    "superseded_v3_e1_resume": 2
+  },
+  "ledger": "/home/lux1/noise/outputs/cleanup/20261002/deleted.jsonl",
+  "hardlink_removals_release_no_data_blocks": 5,
+  "submission_validation": "results/v1_768_bias_platform_20261002/validation.json",
+  "v2_download_directory_preserved": true,
+  "raw_images_preserved": true,
+  "historical_replay_limit": "Deleted intermediate checkpoint replay is unavailable; retained endpoints, predictions, logs and fixed averaging inputs remain."
+}

@@ -1,0 +1,32 @@
+{
+  "segment": "STORAGE_CLEANUP_20261002",
+  "branch": "codex/storage_cleanup_20261002",
+  "worktree": "/home/lux1/noise/worktrees/storage_cleanup_20261002",
+  "integration_directory": "/home/lux1/noise",
+  "integration_mode": "git pull --rebase --autostash origin main",
+  "commands": [
+    "python3 results/storage_cleanup_20261002/cleanup.py plan",
+    "python3 /home/lux1/noise/worktrees/storage_cleanup_20261002/results/storage_cleanup_20261002/cleanup.py apply --plan-sha256 b94dcbfa803c2e4f0ffce4646502f6f7d45c7bb91c23c634f537073719371646",
+    "python3 results/storage_cleanup_20261002/cleanup.py verify",
+    "git diff --check --cached"
+  ],
+  "implementation_changes": "Explicit-path cleanup and local verification script; current execution entry and audit records. No model or inference implementation change.",
+  "measured_result": "31 removed paths; 22289846272 allocated bytes released; 48561 protected path hashes unchanged; 291 retained large-file metadata records checked.",
+  "model_score": "Existing user-reported 74.41512658903963 percent, not a new experiment result.",
+  "best_decode": {
+    "scales": [448, 512, 576],
+    "horizontal_flip": true,
+    "views": 6,
+    "logit_reduction": "sum",
+    "fixed_test_uniform_bias_iterations": 200,
+    "bias_strength": 1.0
+  },
+  "best_config": "configs/v1_768_full_test_bias_experimental_20261001.yaml",
+  "best_submission": "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission/submission.zip",
+  "best_submission_check": "results/storage_cleanup_20261002/submission_check.log",
+  "best_original_validation": "results/v1_768_bias_platform_20261002/validation.json",
+  "replay_limit": "Removed intermediate checkpoints are unavailable for cold replay. Final selected/best/last weights, averaging inputs, predictions and logs are retained; canonical E4 hard-linked recovery files are retained.",
+  "training_started": false,
+  "gpu_inference_started": false,
+  "platform_uploaded": false
+}

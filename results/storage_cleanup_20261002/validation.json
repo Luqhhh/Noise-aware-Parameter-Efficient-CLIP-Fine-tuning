@@ -1,0 +1,22 @@
+{
+  "status": "verified",
+  "deleted_absent": 31,
+  "retained_large": 291,
+  "best_checkpoint_sha256": "013b8e9c038d21e4dbb677f3cd52ac3ed9fb1bf7d2f74ae826056138275dacfe",
+  "views": 6,
+  "best_submission_sha256": "0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca",
+  "submission_check_command": [
+    "python3",
+    "/home/lux1/noise/scripts/check_submission.py",
+    "--test_dir",
+    "/home/lux1/noise/test",
+    "--class-mapping",
+    "/home/lux1/noise/artifacts/stages/repechage/20260921/class_to_idx.json",
+    "--csv",
+    "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission/pred_results.csv",
+    "--zip",
+    "/home/lux1/noise-worktrees/v1_768_full_test_bias_20261001/outputs/codex/v1_768_full_test_bias_20261001/submission/submission.zip"
+  ],
+  "submission_checker_passed": true,
+  "complete_before_after_hash_audit": "/home/lux1/noise/outputs/cleanup/20261002/protected.json"
+}
