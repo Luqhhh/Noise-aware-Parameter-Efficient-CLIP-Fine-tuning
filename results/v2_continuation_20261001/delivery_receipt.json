@@ -1,0 +1,99 @@
+{
+  "status": "shutdown_endpoint_offline",
+  "local_delivery": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001",
+  "shutdown_issued": true,
+  "total_bytes": 5362708264,
+  "recorded_at_utc": "2026-10-02T05:57:56.491224+00:00",
+  "current_file": "runs/full_576/epoch_05_raw.pt",
+  "current_file_bytes": 352989355,
+  "downloaded_bytes": 5362708264,
+  "per_file_bytes": {
+    "runs/s2_448/best.pt": 1411949972,
+    "runs/s3_576/best.pt": 1411949460,
+    "runs/full_576/last.pt": 1411949268,
+    "runs/full_576/epoch_03_raw.pt": 352989355,
+    "runs/full_576/epoch_04_raw.pt": 352989355,
+    "runs/full_576/epoch_05_raw.pt": 352989355,
+    "delivery_metadata.tar.gz": 65474134,
+    "submission/pred_results.csv": 1610092,
+    "submission/submission.zip": 805939,
+    "submission/report.json": 584,
+    "submission_check.log": 750
+  },
+  "download_workers": 3,
+  "files": [
+    {
+      "relative": "runs/s2_448/best.pt",
+      "remote": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/runs/s2_448/best.pt",
+      "bytes": 1411949972,
+      "sha256": "3970d3cc3eee501aa015c401c6e1fd30a6bf0f725a56c0ce509395dea545f042"
+    },
+    {
+      "relative": "runs/s3_576/best.pt",
+      "remote": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/runs/s3_576/best.pt",
+      "bytes": 1411949460,
+      "sha256": "05f4c1ace5647ce9afa166f6af629389262a44da3570918c83bc53a916a6425f"
+    },
+    {
+      "relative": "runs/full_576/last.pt",
+      "remote": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/runs/full_576/last.pt",
+      "bytes": 1411949268,
+      "sha256": "3b9fcce3a4a2a113f2eb2ad3a2028c7f224fd1b11f1bdaadd6641ee1ccc85138"
+    },
+    {
+      "relative": "runs/full_576/epoch_03_raw.pt",
+      "remote": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/runs/full_576/epoch_03_raw.pt",
+      "bytes": 352989355,
+      "sha256": "926a1b9fc53f0f5454fbce825b80e822ea125f6c260cd61cafb5214a2ba9cee2"
+    },
+    {
+      "relative": "runs/full_576/epoch_04_raw.pt",
+      "remote": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/runs/full_576/epoch_04_raw.pt",
+      "bytes": 352989355,
+      "sha256": "ddaa14b582bb2fd462a026d8753ac7c9d4247f63eb3f7ba10b44b2cf37b8ca5a"
+    },
+    {
+      "relative": "runs/full_576/epoch_05_raw.pt",
+      "remote": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/runs/full_576/epoch_05_raw.pt",
+      "bytes": 352989355,
+      "sha256": "d37ebd5cd8e373ec38417f2c2c29fb8478cc85099759b59ff2d04c495cfcdbd7"
+    },
+    {
+      "relative": "delivery_metadata.tar.gz",
+      "remote": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/delivery_metadata.tar.gz",
+      "bytes": 65474134,
+      "sha256": "2949712470b42fa2fc3f429350d531c8c99490d2e0f5feaf924556b0349554a9"
+    },
+    {
+      "relative": "submission/pred_results.csv",
+      "remote": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/submission/pred_results.csv",
+      "bytes": 1610092,
+      "sha256": "26a8f406a12bb74218fa790217fab9351d2223a1adfb8cdb3fa4773e00a889b9"
+    },
+    {
+      "relative": "submission/submission.zip",
+      "remote": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/submission/submission.zip",
+      "bytes": 805939,
+      "sha256": "e7152143952f7853c3cf6617bd320675fa8339aa24f4ff841d1cd627e462124e"
+    },
+    {
+      "relative": "submission/report.json",
+      "remote": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/submission/report.json",
+      "bytes": 584,
+      "sha256": "2f7a8722eca5b99dabe2cd0ba06a410264d0de163c3206c0c38b03c34c77ec76"
+    },
+    {
+      "relative": "submission_check.log",
+      "remote": "/root/autodl-tmp/noise/runs/codex/v2_continuation_20261001/prepared/submission_check.log",
+      "bytes": 750,
+      "sha256": "edb24cf74b09c551bb82c223e25801a445cc7a4963d9a6294f022b09943c3c59"
+    }
+  ],
+  "plan_sha256": "596454f233830c3dde0fb2cdfa5252de4b0207c58e6717d72fb4331d2ee3428e",
+  "submission_check_passed": true,
+  "post_shutdown_ssh_checks": [
+    "unreachable",
+    "unreachable",
+    "unreachable"
+  ]
+}

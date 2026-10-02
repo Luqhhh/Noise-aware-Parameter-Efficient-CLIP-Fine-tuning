@@ -5,7 +5,7 @@
 此前“保持开机”已被2026-10-02的新指令覆盖；完成并核验下载之前仍保持运行。
 独立分支 `codex/v2_continuation_20261001`，
 本机目录 `/home/lux1/noise/worktrees/v2_continuation_20261001`。
-原固定训练和推理已完成；当前正在下载完整权重，服务器仍开机。
+原固定训练、推理及完整本地交付已完成；2026-10-02 13:57核验下载后执行关机，三次SSH均离线。
 
 ## 2026-10-02进度与收尾策略
 
@@ -18,11 +18,19 @@ full_576完成5轮/9,290次更新，实测26,974.494630秒，父为S3所选EMA�
 S2已完成6轮/8,358次更新，独立留出所选EMA micro76.955645%、macro76.101112%；
 S3已完成4轮/6,688次更新，所选EMA micro77.473118%、macro76.592670%。
 上述是14,880张独立DEV指标，full阶段没有独立留出；没有新平台分。
-完整权重仍在下载，尚无Windows全量验证收据，不能声称下载或关机完成。
-13:14收到3路传输进度301,989,888/5,362,708,264 bytes；后续每20分钟检查。
+13:57:12 CST完成全部11个文件、5,362,708,264 bytes下载及逐文件SHA核验，
+Windows正式9项检查通过；13:57:14发出关机，13:57:56收据记录三次SSH不可达。
+实际收尾服务正常退出（Result=success/ExecMainStatus=0）；
+[最终本地交付与关机回执](../results/v2_continuation_20261001/delivery_receipt.json)、
+[Windows提交检查](../results/v2_continuation_20261001/windows_submission_check.log)。
+文件保存在`C:\Users\lqh22\Downloads\v2_continuation_20261001`：
+`runs/s2_448/best.pt`、`runs/s3_576/best.pt`、`runs/full_576/last.pt`，
+以及full的`epoch_03_raw.pt`、`epoch_04_raw.pt`、`epoch_05_raw.pt`和完整metadata。
+原提交为`submission/submission.zip`；CSV、ZIP和最终checkpoint摘要见原报告及回执。
+13:14的301,989,888 bytes、13:31的20%、13:51的86.5%均为已完成传输的历史监控点。
 
 用户最新明确授权“完成后把权重和提交包下载到本地，然后关机”。
-收尾服务 `noise-v2-completion-20261002.service` 只由已完成、已核验CSV/ZIP的监控触发，
+最初收尾服务 `noise-v2-completion-20261002.service` 只由已完成、已核验CSV/ZIP的监控触发，
 使用 [deliver_v2_39385.py](../scripts/deliver_v2_39385.py)。私有配置绑定上述固定plan SHA，
 目标Windows目录为 `C:\Users\lqh22\Downloads\v2_continuation_20261001`。
 保存S2/S3 best、full last、full RAW第3/4/5轮快照、CSV/ZIP和报告；另保存配置、binding、
@@ -37,7 +45,7 @@ S3已完成4轮/6,688次更新，所选EMA micro77.473118%、macro76.592670%。
 12项收尾测试通过，包括未完成/未授权/plan不匹配、缺少或损坏权重、提交校验失败的关机阻断，
 中断续传、最终SHA与续传身份检查，以及收据先于关机和关机幂等性；原始记录见
 [completion_tests.log](../results/v2_continuation_20261001/completion_tests.log)。
-这说明原收尾实现已验证；训练/推理完成依据上方真实状态，下载和关机仍待完成。
+这说明原收尾实现已验证；最终下载及关机依据上方实际执行服务和完整本地回执。
 
 12:31取回CSV时发现大输出超时。本机隧道连接显示PMTU9000/MSS8948，而小JSON可返回，
 原CSV大输出60秒无完整文件。私有SSH配置加入`-F /dev/null`及
@@ -51,9 +59,10 @@ CSV完整1,610,092 bytes/SHA通过；同一权重4MiB片段13.071秒完成，重
 `noise-v2-delivery-parallel-20261002.service`已持有同一delivery.lock，使用3文件并行及更长块超时。
 核对其完整文件SHA、plan/提交身份和Windows9项检查均先于关机；不重复启动原服务。
 本人未启用的另一下载实现已撤回，只保留实际生效的SSH代理和收尾进度记录。
-原监控timer已在CSV/ZIP本地验证后停止；人工每20分钟继续检查实际持锁服务及下载进度。
+原监控timer已在CSV/ZIP本地验证后停止；人工每20分钟检查持锁服务直至完成。
+最终实际执行的是上述3文件并行修复服务，下载、9项核验和关机均已成功，未重复发出关机。
 后续固定prior方案只使用完整本地交付，不改变本服务器原raw包、下载或关机流程，
-见[独立准备协议](v2_fixed_prior_20261002.md)。
+见[独立准备协议](v2_fixed_prior_20261002.md)和[用户授权的本机执行](v2_fixed_prior_delivery_20261002.md)。
 
 ## 实际启动检查点
 
