@@ -21,8 +21,9 @@ WFT448_FULL用户回填70.43585087063347%，低于现役；LR512_FULL保持待�
 ② v2原四视图raw（分离六视图解码）、③ 512 full六视图bias、④ 512 full六视图raw、
 ⑤ CRT768普通/均衡头各raw与bias；无bias的DEV系包（A、B、lr512_dev、v3、detail_aug、cosine_margin、
 preprojection四包）不建议占用名额。
-另有两条零训练候选：v2 full_576 **EMA**单checkpoint、已实现且快照齐全的**RAW3–5平均**，均沿用同一六视图+固定bias；
-full段无独立留出，raw/EMA/SWA只能由平台判定，启动需另行授权与可用GPU。
+另有两条零训练候选：v2 full_576 **EMA**单checkpoint、**RAW3–5平均**（实现已入库，但preflight绑定远端绝对路径，
+本机不能直接执行），均沿用同一六视图+固定bias；两者都需要新的有界实现+核验段与授权，
+且full段无独立留出，raw/EMA/SWA只能由平台判定。
 不据本次反馈扫描bias强度/温度/解码，不自动恢复A/B/v3或连接已关机远端。
 见[反馈绑定、包排序与核验命令](v2_sixview_platform_20261003.md)及
 [record.json](../results/v2_sixview_platform_20261003/record.json)。

@@ -56,12 +56,17 @@ v3两臂、`v1_detail_aug_pair`、`v1_cosine_margin_probe` 与 `v2_preprojection
 （154个张量、`ema_decay=0.9995`、`ema_updates=9290`），因此有两条**零训练**候选：
 
 1. **v2 full_576 EMA + 同六视图 + 固定bias**：只换单checkpoint权重来源，与现最高包同解码；
-2. **V2_FULL_LAST3_SWA**：`epoch_03/04/05_raw.pt`三份raw快照与binding sidecar已在Windows下载目录齐全，
-   已有冻结的CPU平均导出实现（[swa.py](../reproducibility/aegis_f1/v2/swa.py)），再跑同一解码。
+2. **V2_FULL_LAST3_SWA**：三份raw快照`epoch_03/04/05_raw.pt`已在Windows下载目录，
+   对应binding sidecar在`delivery_metadata.tar.gz`内，冻结的CPU平均导出实现见
+   [swa.py](../reproducibility/aegis_f1/v2/swa.py)。
 
-成本约为一次六视图推理（本机GPU实测1,236.34秒，约21分钟）加出包校验，无训练。
+两条都**不是现成命令**：六视图推理入口按SHA绑定`runs/full_576/last.pt`，而`swa.py`的preflight
+校验plan绑定的绝对输入路径（原服务器`/root/autodl-tmp/...`），这些路径本机不存在。
+因此需要一个新的有界实现+核验段（导出新单checkpoint、登记新binding、跑同一解码与出包校验），
+成本约为一次六视图推理（本机GPU实测1,236.34秒，约21分钟）加实现与校验，无训练。
 **限制必须写明**：full段没有独立留出（val_dev在full训练内），本地无法排序raw/EMA/SWA，
-只能由平台判定；这属于“机制有先验、结果未知”的低成本候选，不是已证实的提分。
+只能由平台判定；这属于“机制有先验、结果未知”的低成本候选，不是已证实的提分，
+也不因为GPU空闲或本次反馈自动启动。
 
 ## 未做与资源边界
 
