@@ -27,3 +27,19 @@ def test_replay_rejects_each_frozen_violation(maximum, margin, support, error):
 def test_full_checkpoint_cannot_enter_independent_teacher_diagnostic():
     with pytest.raises(ValueError, match='teacher stage'):
         check_teacher(dict(binding=dict(stage='full_576')), dict(teacher_stage='s3_576'), 750)
+
+
+@pytest.mark.parametrize('batch,accepted', [(16, True), (128, False)])
+def test_native_batch_uses_executed_micro_batch_not_unused_val_field(batch, accepted):
+    cfg = dict(teacher_stage='s3_576', plan_sha256='plan', teacher_epoch_zero_based=3,
+               teacher_weights='ema', image_size=576, resize_ratio=1.14, batch_size=batch)
+    payload = dict(binding=dict(stage='s3_576', data_version='20260921', complete=True, plan_sha256='plan'),
+        epoch=3, metrics=dict(chosen='ema', validation_is_independent=True),
+        history=[dict(validation_is_independent=True)], num_classes=750,
+        config=dict(data=dict(eval_size=576, eval_resize_ratio=1.14, val_batch_size=128),
+                    local_replay=dict(final_stage=False, micro_batch_size=16)))
+    if accepted:
+        check_teacher(payload, cfg, 750)
+    else:
+        with pytest.raises(ValueError, match='recipe changed'):
+            check_teacher(payload, cfg, 750)

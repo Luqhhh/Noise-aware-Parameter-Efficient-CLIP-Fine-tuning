@@ -55,7 +55,8 @@ def check_teacher(payload, cfg, classes):
     require(payload['config']['local_replay']['final_stage'] is False and payload['num_classes'] == classes and
             data['eval_size'] == cfg['image_size'] == 576 and
             data['eval_resize_ratio'] == cfg['resize_ratio'] == 1.14 and
-            data['val_batch_size'] == cfg['batch_size'] == 128, 'Native evaluation recipe changed')
+            payload['config']['local_replay']['micro_batch_size'] == cfg['batch_size'] == 16,
+            'Native evaluation recipe changed')
 
 
 def dump(path, value):
@@ -69,6 +70,8 @@ def run(config_path, output):
     inherited = read_json(ROOT / 'configs/v1_frozen_teacher_recovery_20261001.json')
     require(cfg['support_rule'] == inherited['support_rule'] and cfg['feasibility_gate'] == inherited['feasibility_gate'],
             'Fixed support rule or investment gate changed')
+    require(cfg['operation_budget_seconds'] + cfg['consumed_seconds_before_native_correction'] <=
+            cfg['total_diagnostic_budget_seconds'] == 900, 'Cumulative diagnostic budget exceeded')
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=False)
     budget = Budget(cfg['operation_budget_seconds'])
