@@ -63,14 +63,16 @@ CSV与ZIP内字节一致，逐文件SHA及同六视图身份一致，逐行重�
 
 ## 下一步判定
 
-用户已确认今天没有提交额度，明天才可测；本段不上传平台，也不重复催要分数。
-六视图bias是既定待测候选；若用户愿意使用另一额度作机制对照，使用这里的六视图raw。
-收到分数后先绑定具体ZIP：比较bias与现役74.4151%，以及同六视图bias−raw；
+六视图bias已于2026-10-03回填 **74.6688387992735%**（当时最高），提交文件SHA与本目录产物一致；
+本段的六视图raw仍是该分数的同checkpoint对照，尚未测。
+收到raw分数后先绑定具体ZIP：比较同六视图bias−raw，以及raw与v1 768 raw 71.5388%的关系；
 只有实际分数能够改变平台排序。超过80%还需核对实际上传包身份，才能认定目标完成。
-差值只能给总体净变化，平台没有逐图真值时不能拆成修正/退化；raw/bias得分均保持未知。
+差值只能给总体净变化，平台没有逐图真值时不能拆成修正/退化；raw分仍未知。
 不据这次配对扫描bias强度，不因GPU空闲、DEV小涨或缺少现役独立DEV分自动启动新训练。
 
-现役包：`C:\Users\lqh22\Desktop\noise\v1_768_full_test_bias_submission.zip`，
-SHA `0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca`；
-校验见[现役平台包复核](../results/v1_768_bias_platform_20261002/validation.json)。
+现阶段最高包是本次bias包`submission_bias_sixview\submission.zip`（74.6688387992735%）；
+此前最高为`C:\Users\lqh22\Desktop\noise\v1_768_full_test_bias_submission.zip`，
+SHA `0f83a2458199d524d3c70f19744fc7043497a531ba968d740ab6f15ebfaf4fca`，
+校验见[平台包复核](../results/v1_768_bias_platform_20261002/validation.json)；
+待测包排序见[平台反馈记录](v2_sixview_platform_20261003.md)。
 本段完成推送/集成后停在交付检查点，目标保持未达成。

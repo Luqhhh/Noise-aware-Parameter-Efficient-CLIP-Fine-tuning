@@ -1,0 +1,59 @@
+{
+  "record_id": "V2_SIXVIEW_PLATFORM_20261003",
+  "experiment_id": "V2_SIXVIEW_BIAS_20261002",
+  "recorded_at": "2026-10-02T19:25:13+00:00",
+  "source": "explicit_user_report",
+  "source_message": "74.6688387992735 这是bias+six \"C:\\Users\\lqh22\\Downloads\\v2_continuation_20261001\\submission_bias_sixview\\submission.zip\" \"C:\\Users\\lqh22\\Downloads\\v2_continuation_20261001\" 还有没有值得平台测试的包",
+  "platform_score_reported_text": "74.6688387992735",
+  "platform_score_percent": 74.6688387992735,
+  "platform_submission_id": null,
+  "platform_submitted_at": null,
+  "independent_platform_receipt_verified": false,
+  "package_binding": {
+    "user_supplied_windows_path": "C:\\Users\\lqh22\\Downloads\\v2_continuation_20261001\\submission_bias_sixview\\submission.zip",
+    "wsl_path": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission_bias_sixview/submission.zip",
+    "zip_sha256": "7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a",
+    "zip_bytes": 806198,
+    "csv_sha256": "194c0a0a4da379e6f340e6b078ae48439d00978f3924feb03df9806ed67d2e90",
+    "delivered_artifact_sha256": "7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a",
+    "sha256_matches_delivered_artifact": true,
+    "rows": 37444,
+    "official_submission_check": "9/9 passed on the exact Windows file, re-run 2026-10-03 CST",
+    "evidence": "results/v2_sixview_bias_20261002/windows_copy_receipt.json"
+  },
+  "previous_best": {
+    "record": "results/v1_768_bias_platform_20261002/record.json",
+    "experiment_id": "V1_768_FULL_TEST_BIAS_20261001",
+    "platform_score_percent": 74.41512658903963,
+    "delta_pp_exact": "0.25371221023387",
+    "note": "different checkpoint and different lineage (v1 768 full SWA4-12), not a same-checkpoint pair"
+  },
+  "same_checkpoint_control": {
+    "package": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission_raw_sixview/submission.zip",
+    "zip_sha256": "4228a78a390e34744e42fb9a8ef861c6807d37b4e28dedc61bc3984c98353c6c",
+    "relationship": "identical checkpoint, views, cache and 37444 rows; only the fixed uniform prior bias differs (3077 changed predictions)",
+    "platform_score_percent": null,
+    "status": "delivered_verified_untested"
+  },
+  "derived_platform_arithmetic": {
+    "total_test_images": 37444,
+    "correct_images_this_report": 27959,
+    "correct_images_previous_best": 27864,
+    "delta_correct_images": 95,
+    "target_80_percent_correct_images": 29956,
+    "remaining_correct_images_to_80_percent": 1997,
+    "remaining_pp_to_80_percent": 5.3311612007265
+  },
+  "decision": "await_more_platform_evidence_before_new_training",
+  "unknowns": [
+    "no per-image ground truth; only the aggregate delta is known, it cannot be split into corrections and regressions",
+    "platform submission id and the actually uploaded bytes are not independently verified, only the user-supplied path and its on-disk SHA",
+    "the v2 six-view raw score is unknown, so the pure contribution of the fixed bias on this lineage is not measured",
+    "the full_576 stage has no independent holdout (val_dev is inside full training), so local metrics cannot rank raw vs EMA exports"
+  ],
+  "actions_not_taken": [
+    "no training, no new inference, no bias strength or decode search",
+    "no platform upload from this segment",
+    "no automatic continuation of v2 training or of the closed A/B/v3 candidates"
+  ]
+}
