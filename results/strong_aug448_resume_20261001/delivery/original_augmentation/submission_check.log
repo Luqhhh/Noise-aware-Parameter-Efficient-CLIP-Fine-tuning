@@ -1,0 +1,20 @@
+Test set contains 37444 images
+
+============================================================
+Checking pred_results.csv...
+============================================================
+  ✅ File name: pred_results.csv
+  ✅ Line count: 37444 (matches test set)
+  ✅ All image names found in test set
+  ✅ No duplicate image names
+  ✅ All test images covered
+  ✅ All labels are 4-digit strings
+  ✅ All labels in range [0000, 0749]
+
+============================================================
+Checking submission.zip...
+============================================================
+  ✅ ZIP contains only pred_results.csv (no directory)
+
+============================================================
+🎉 All checks passed! Submission is ready.

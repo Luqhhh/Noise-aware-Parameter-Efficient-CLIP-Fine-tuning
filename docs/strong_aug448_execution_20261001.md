@@ -5,10 +5,16 @@
 - Origin Skill: academic-research-suite / experiment-agent
 - Origin Mode: run
 - Origin Date: 2026-10-01
-- Verification Status: UNVERIFIED（正式两臂尚在运行；工程与预检已核验）
+- Verification Status: 两臂四轮与出包已独立核验；本页保留初次工程/预检记录
 - Version Label: strong_aug448_execution_v1
 
-## 最新恢复状态
+## 最新交付状态
+
+机器B两臂固定四轮和两包于2026-10-02 04:05完成独立核验。
+中心主评估强−弱净−51、目标净−7，原固定配方关闭；六视图辅助配对净+41。
+完整指标、包路径与校验见[最终交付](strong_aug448_delivery_20261002.md)。
+
+## 恢复历史
 
 本文件保留初次执行记录。后续弱增强第1–3轮完整完成，第4轮写draws时磁盘满中止；
 用户已明确「继续」。现从完整epoch3在D盘恢复第4轮，再接强增强四轮，

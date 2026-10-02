@@ -5,10 +5,17 @@
 - Origin Skill: academic-research-suite / experiment-agent
 - Origin Mode: run
 - Origin Date: 2026-10-01
-- Verification Status: 工程/迁移已核验；正式两臂结果尚未完成
+- Verification Status: 工程/迁移已核验；两臂四轮与出包独立核验已完成，详见交付记录
 - Version Label: strong_aug448_resume_v1
 
-## 恢复范围和已测结果
+## 最新完成状态
+
+本页保留恢复时的记录。两臂各四轮及两份CSV/ZIP于2026-10-02 04:05完成独立核验；
+中心主评估强−弱净−51、目标净−7，原固定配方关闭。六视图辅助配对净+41，
+完整指标、预注册门、包路径与校验见[最终交付记录](strong_aug448_delivery_20261002.md)。
+后文「尚未完成」描述恢复启动时的历史状态，不代表当前仍在训练。
+
+## 恢复范围和启动时结果
 
 用户在获知磁盘中止及弱增强三轮结果后明确要求「继续」。任务仍为
 [machine_b](team_exploration_20261001/machine_b.md)的弱增强与固定强增强配对，
