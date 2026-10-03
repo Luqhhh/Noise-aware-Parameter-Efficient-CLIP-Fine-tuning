@@ -268,24 +268,27 @@ def test_prepared_recipe_is_strategy_only_not_author_data_or_cleanup():
 
 
 @pytest.mark.parametrize('ema_enabled',[False,True])
-def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_path, monkeypatch,ema_enabled):
+@pytest.mark.parametrize('preprojection_768',[False,True])
+def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_path, monkeypatch,ema_enabled,preprojection_768):
     """Exercise real save/seal/load/initialize flow using ten synthetic images."""
     import csv
     from PIL import Image
     import v2.runtime as rt
     from v2.plan import dump, sha, stage_plan
+    from v2.architecture import architecture_spec
 
     class TinyClassifier(torch.nn.Module):
         def __init__(self, recipe):
             super().__init__()
-            self.visual = torch.nn.Conv2d(3, 4, 3)
-            self.head = torch.nn.Linear(4, 2)
+            dimension = recipe.get('feature_dim', 4)
+            self.visual = torch.nn.Conv2d(3, dimension, 3)
+            self.head = torch.nn.Linear(dimension, 2)
         def forward(self, x):
             return self.head(self.visual(x).mean((2,3)))
 
     stages=('s1_384','s2_448','full_576')
     monkeypatch.setattr(rt,'STAGES',stages)
-    monkeypatch.setattr(rt,'V2Classifier',TinyClassifier)
+    monkeypatch.setattr(rt,'build_classifier',TinyClassifier)
     monkeypatch.setattr(rt,'device_after_authorization',lambda:torch.device('cpu'))
     monkeypatch.setattr(rt,'amp',nullcontext)
     monkeypatch.setattr(torch.cuda,'get_rng_state_all',lambda:[])
@@ -307,14 +310,19 @@ def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_
                           parent_policy='best_chosen_on_holdout' if ema_enabled else 'best_raw_on_holdout',
                           final_weights='raw',ema_enabled=ema_enabled,ema_decay=.9995),
               inputs={str(manifest):sha(manifest)},stages={})
+    if preprojection_768:
+        plan['recipe']['feature_dim']=768
+        plan['architecture']=architecture_spec(plan['recipe'])
     for i,name in enumerate(stages):
         cfg=dict(data=dict(train_dir=str(images),manifest='train_manifest.csv',split='split.json',image_size=32,
                  eval_size=32,eval_resize_ratio=1.14,batch_size=4,decode_cap=0,num_workers=0,prefetch_factor=2,expected_train_images=10),
                  augment=dict(rrc_scale=[.35,1.],color_jitter=.5,rand_augment=True,rand_augment_ops=2,rand_augment_magnitude=7,
                               random_erase=.3,mixup=.2,cutmix=1.,mix_prob=.8,label_smoothing=.15),
-                 train=dict(epochs=2 if i==0 else 1,seed=13,lr_backbone=3e-5,lr_head=5e-4,llrd_gamma=1.,
+                 train=dict(epochs=2 if i==0 else 5 if i==2 else 1,seed=13,lr_backbone=3e-5,lr_head=5e-4,llrd_gamma=1.,
                             weight_decay=.15,warmup_epochs=.5,min_lr_ratio=.02,ema_enabled=ema_enabled,ema_decay=.9995,grad_clip=1.,log_every=200),
                  local_replay=dict(final_stage=i==2,micro_batch_size=2))
+        if preprojection_768:
+            cfg['model']=dict(architecture=plan['architecture'])
         config=tmp_path/(name+'.json');dump(config,cfg)
         spec=stage_plan(cfg,10 if i==2 else 8,0 if i==2 else 2,None)
         spec.update(config=config.name,config_sha256=sha(config));plan['stages'][name]=spec
@@ -354,6 +362,10 @@ def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_
         assert payload['ema_enabled'] is ema_enabled
         assert ('ema' in payload) is ema_enabled
         assert payload['ema_updates']==(payload['global_step'] if ema_enabled else 0)
+        if preprojection_768:
+            assert payload['architecture']==plan['architecture']==payload['binding']['architecture']
+            assert payload['model']['head.weight'].shape==(2,768)
+            assert 'visual.proj' not in payload['model']
         if name!='full_576':
             assert payload['metrics']['chosen']==('ema' if ema_enabled else 'raw')
             raw_state=evaluation_states[-2 if ema_enabled else -1]
@@ -369,4 +381,9 @@ def test_cpu_synthetic_stage_chain_resets_and_final_never_evaluates_holdout(tmp_
     assert final['metrics']['chosen']=='raw' and final['metrics']['val'] is None
     assert final['binding']['parent']['path'].replace('\\','/').endswith('s2_448/best.pt')
     assert final['binding']['parent']['weights']==('ema' if ema_enabled else 'raw')
+    if preprojection_768:
+        from v2.core import check_checkpoint_architecture
+        for epoch in (3,4,5):
+            snapshot=tmp_path/'runs/full_576'/f'epoch_{epoch:02d}_raw.pt'
+            check_checkpoint_architecture(torch.load(snapshot,weights_only=False),plan)
     assert not torch.cuda.is_initialized()

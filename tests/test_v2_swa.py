@@ -9,7 +9,7 @@ from v2.runtime import save_checkpoint
 from v2.swa import checked_snapshot, export
 
 
-def examples(tmp_path,epoch=3):
+def examples(tmp_path,epoch=3,feature_dim=None):
     binding=dict(stage='full_576',plan_sha256='one-plan',parent={'weights':'raw','sha256':'parent'},
                  complete=False,completed_epochs=epoch)
     cfg=dict(train=dict(epochs=5))
@@ -19,6 +19,15 @@ def examples(tmp_path,epoch=3):
     plan=dict(stages={'full_576':dict(steps_per_epoch=2)})
     payload=dict(binding=binding,config=cfg,epoch=epoch-1,global_step=epoch*2,num_classes=750,
                  image_size=576,model=state,weight_source='raw')
+    if feature_dim is not None:
+        from v2.architecture import architecture_spec
+        plan['recipe']=dict(feature_dim=feature_dim,num_classes=750)
+        plan['architecture']=architecture_spec(plan['recipe'])
+        cfg['model']=dict(architecture=plan['architecture'])
+        state.update({'head.weight':torch.zeros(750,feature_dim),'head.bias':torch.zeros(750)})
+        for item in (last,payload):
+            item['architecture']=plan['architecture']
+            item['binding']['architecture']=plan['architecture']
     path=tmp_path/f'epoch_{epoch:02d}_raw.pt';save_checkpoint(path,payload)
     return path,plan,last,payload
 
@@ -51,13 +60,14 @@ def test_export_missing_snapshots_refuses_without_creating_output(tmp_path,monke
     assert not output.exists()
 
 
-def test_export_averages_only_three_raw_snapshots(tmp_path,monkeypatch):
+@pytest.mark.parametrize('feature_dim',[None,768])
+def test_export_averages_only_three_raw_snapshots(tmp_path,monkeypatch,feature_dim):
     import v2.swa as module
     import v2.runtime as runtime
     source=tmp_path/'prepared/runs/full_576';source.mkdir(parents=True)
     for epoch in (3,4,5):
-        path,plan,last,payload=examples(source,epoch)
-        payload['model']={'weight':torch.tensor([float(epoch),float(2*epoch)])}
+        path,plan,last,payload=examples(source,epoch,feature_dim)
+        payload['model']['weight']=torch.tensor([float(epoch),float(2*epoch)])
         save_checkpoint(path,payload)
     save_checkpoint(source/'last.pt',last)
     plan_path=tmp_path/'prepared/plan.json';plan_path.write_text('{}')
@@ -67,5 +77,9 @@ def test_export_averages_only_three_raw_snapshots(tmp_path,monkeypatch):
     payload=torch.load(path,weights_only=False)
     torch.testing.assert_close(payload['model']['weight'],torch.tensor([4.,8.]))
     assert payload['average_epochs']==[3,4,5] and payload['weight_source']=='raw'
+    if feature_dim is not None:
+        assert payload['architecture']==plan['architecture']
+        restored=module.read_export(path,plan,plan_path.parent)
+        assert restored['model']['head.weight'].shape==(750,768)
     with pytest.raises(ValueError,match='overwrite'):
         export(plan_path,tmp_path/'export')

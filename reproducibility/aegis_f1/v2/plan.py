@@ -11,6 +11,7 @@ from collections import Counter
 from pathlib import Path
 
 import yaml
+from .architecture import architecture_spec, check_plan_architecture
 
 ROOT = Path(__file__).resolve().parents[3]
 STAGE_CONFIGS = ROOT / "configs/v2/stages"
@@ -132,12 +133,15 @@ def verify_prepared(plan_path):
     plan_path = Path(plan_path)
     p = json_read(plan_path)
     check_weight_policy(p["recipe"])
+    check_plan_architecture(p)
     for name, digest in p["inputs"].items():
         require(sha(name) == digest, f"Frozen input changed: {name}")
     for name, entry in p["stages"].items():
         config = plan_path.parent / entry["config"]
         require(sha(config) == entry["config_sha256"], f"Stage config changed: {name}")
-        check_stage_weight_policy(json_read(config), p["recipe"])
+        cfg = json_read(config)
+        check_stage_weight_policy(cfg, p["recipe"])
+        check_plan_architecture(p, cfg)
     return p
 
 
@@ -146,6 +150,7 @@ def prepare(recipe_path, output):
     require(not output.exists(), "Refusing to overwrite a prepared experiment")
     recipe = json_read(recipe_path)
     check_weight_policy(recipe)
+    architecture = architecture_spec(recipe)
     require(recipe["execution_authorized"] is False and recipe["num_classes"] == 750 and
             recipe["data_version"] == "20260921", "Unexpected recipe authorization or phase")
     art = Path(recipe["stage_artifacts"])
@@ -203,6 +208,8 @@ def prepare(recipe_path, output):
                 runtime_dependencies={k: importlib.util.find_spec(k) is not None for k in ("torch", "torchvision", "clip")},
                 strategy_only=True, strategy_name=recipe["strategy_name"], strategy_origin=recipe["strategy_origin"],
                 implementation_notes=recipe["implementation_notes"], local_metrics=None, platform_metrics=None)
+    if "feature_dim" in recipe:
+        plan["architecture"] = architecture
     for i, name in enumerate(STAGES):
         template = STAGE_CONFIGS / (name + ".yaml")
         cfg = yaml.safe_load(template.read_text())
@@ -212,6 +219,8 @@ def prepare(recipe_path, output):
                             manifest="train_manifest.csv", split="split.json", expected_train_images=len(records),
                             num_workers=recipe["num_workers"], prefetch_factor=recipe["prefetch_factor"])
         cfg["model"] = dict(backbone="ViT-B/32", official_checkpoint=recipe["official_checkpoint"], head="linear", dropout=0.0, freeze_first_blocks=0, train_last_blocks=0)
+        if "feature_dim" in recipe:
+            cfg["model"]["architecture"] = architecture
         cfg["train"]["output_dir"] = "runs/" + name
         cfg["train"]["seed"] = recipe["seed"]  # runtime reads train.seed
         cfg["train"]["ema_enabled"] = recipe["ema_enabled"]

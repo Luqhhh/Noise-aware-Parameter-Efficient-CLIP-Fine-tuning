@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 from aegis_clip.v1_strategy import WeightAverage, using_weights
 
 from .core import build_view, check_checkpoint, logical_backward, training_utils, sample_weights
-from .model import V2Classifier
+from .preprojection import build_classifier
 from .plan import (ROOT, STAGES, authorize, check_stage_weight_policy, dump, json_read, require, sha,
                    verify_prepared)
 
@@ -151,7 +151,7 @@ def initialize_model(plan, workspace, stage, device):
     parent_path = None if index == 0 else workspace / "runs" / STAGES[index - 1] / "best.pt"
     payload = None if parent_path is None else read_checkpoint(parent_path, plan, STAGES[index - 1])
     # Fresh s1 official model; subsequent stages load ALL tensors strictly.
-    model = V2Classifier(plan["recipe"])
+    model = build_classifier(plan["recipe"])
     if payload is not None:
         model.load_state_dict(choose_parent(payload), strict=True)
     return model.to(device), dict(path="official_openai" if parent_path is None else str(parent_path),
@@ -204,6 +204,8 @@ def train(plan_path, authorization, stage, probe_steps=0):
                    official_sha256=plan["recipe"]["official_sha256"], manifest_sha256=sha(workspace / "train_manifest.csv"),
                    workspace=str(workspace), stage=stage, stage_config_sha256=plan["stages"][stage]["config_sha256"],
                    plan_sha256=sha(plan_path), parent=parent, complete=False, completed_epochs=0)
+    if "architecture" in plan:
+        binding["architecture"] = dict(plan["architecture"])
     history, best_score, updates, seconds = [], -math.inf, 0, []
     weighted_samples_observed = 0
     nd_probe_trace = []
@@ -218,6 +220,8 @@ def train(plan_path, authorization, stage, probe_steps=0):
                     num_classes=plan["recipe"]["num_classes"], image_size=cfg["data"]["image_size"],
                     ema_enabled=ema is not None, ema_decay=ema.decay if ema is not None else None,
                     ema_updates=ema.count if ema is not None else 0)
+        if "architecture" in plan:
+            snapshot["architecture"] = dict(plan["architecture"])
         if ema is not None:
             snapshot["ema"] = {k: v.detach().cpu().clone() for k, v in ema.state.items()}
         return snapshot
@@ -329,6 +333,8 @@ def train(plan_path, authorization, stage, probe_steps=0):
                 archive = {key: snapshot[key] for key in ("model", "binding", "config", "epoch", "global_step",
                                                            "num_classes", "image_size")}
                 archive["weight_source"] = "raw"
+                if "architecture" in snapshot:
+                    archive["architecture"] = dict(snapshot["architecture"])
                 save_checkpoint(destination / f"epoch_{epoch+1:02d}_raw.pt", archive)
             if not final and score > best_score:
                 best_score = score
@@ -391,7 +397,7 @@ def infer(plan_path, authorization, output, checkpoint=None):
     actual = sorted(p.name for p in root.iterdir() if p.is_file())
     require(actual == files, "Missing or extra test images")
     device = device_after_authorization()
-    model = V2Classifier(plan["recipe"]).to(device)
+    model = build_classifier(plan["recipe"]).to(device)
     model.load_state_dict(payload["model"], strict=True); model.eval()
     TestDataset = InferenceDataset
     sums = np.zeros((len(files), plan["recipe"]["num_classes"]), np.float32)
@@ -408,9 +414,12 @@ def infer(plan_path, authorization, output, checkpoint=None):
     write_submission(output, files, predictions, plan["recipe"]["num_classes"])
     subprocess.run([sys.executable, str(ROOT / "scripts/check_submission.py"), "--test_dir", str(root),
         "--num-classes", "750", "--csv", str(Path(output)/"pred_results.csv"), "--zip", str(Path(output)/"submission.zip")], check=True)
-    dump(Path(output) / "report.json", dict(status="package_ready", checkpoint=str(cp), checkpoint_sha256=sha(cp),
+    report = dict(status="package_ready", checkpoint=str(cp), checkpoint_sha256=sha(cp),
          weights=weight_policy, views=plan["recipe"]["views"], rows=len(files), elapsed_seconds=time.monotonic()-budget.start,
-         csv_sha256=sha(Path(output)/"pred_results.csv"), zip_sha256=sha(Path(output)/"submission.zip"), platform_metrics=None))
+         csv_sha256=sha(Path(output)/"pred_results.csv"), zip_sha256=sha(Path(output)/"submission.zip"), platform_metrics=None)
+    if "architecture" in plan:
+        report["architecture"] = dict(plan["architecture"])
+    dump(Path(output) / "report.json", report)
 
 
 def main():

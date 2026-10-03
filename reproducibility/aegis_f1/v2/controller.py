@@ -1,4 +1,4 @@
-"""Explicit remaining V2 stages, bounded cost checks and verified final package."""
+"""Explicit V2 continuation or full 768 route, bounded cost checks and final package."""
 from __future__ import annotations
 
 import argparse
@@ -13,7 +13,7 @@ import sys
 import time
 import traceback
 
-from .plan import ROOT, cost_estimate, dump, json_read, require, sha, verify_prepared
+from .plan import ROOT, STAGES, cost_estimate, dump, json_read, require, sha, verify_prepared
 from .runtime import infer, read_checkpoint, train
 
 
@@ -32,15 +32,23 @@ def auth_from_cost(plan_path, stage, cost):
                 user_instruction='Provided S1 bundle and explicitly requested remaining V2 continuation and hourly health monitoring; keep server running.')
 
 
-def run(plan_path):
+def run(plan_path, from_official=False):
     plan_path = Path(plan_path).resolve()
     workspace = plan_path.parent
     lock = (workspace / 'controller.lock').open('a')
     fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     plan = verify_prepared(plan_path)
-    require('s1_384' in plan.get('imported_stages', {}), 'This controller requires the validated completed S1 import')
-    read_checkpoint(workspace / 'runs/s1_384/best.pt', plan, 's1_384')
-    state = dict(pid=os.getpid(), plan=str(plan_path), plan_sha256=sha(plan_path), keep_server_running=True,
+    if from_official:
+        require(plan['recipe'].get('feature_dim') == 768 and not plan.get('imported_stages')
+                and plan['recipe']['initial_parent'] == 'official_openai',
+                'Full 768 route starts at official initialization without imported task weights')
+        stages = STAGES
+    else:
+        require('s1_384' in plan.get('imported_stages', {}), 'This controller requires the validated completed S1 import')
+        read_checkpoint(workspace / 'runs/s1_384/best.pt', plan, 's1_384')
+        stages = STAGES[1:]
+    state = dict(pid=os.getpid(), plan=str(plan_path), plan_sha256=sha(plan_path), keep_server_running=not from_official,
+                 from_official=from_official, architecture=plan.get('architecture'),
                  started_at_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
                  training_completed=False, platform_metrics=None)
 
@@ -62,7 +70,7 @@ def run(plan_path):
             time.sleep(60)
 
     try:
-        for stage in ('s2_448', 's3_576', 'full_576'):
+        for stage in stages:
             destination = workspace / 'runs' / stage
             if destination.exists():
                 previous = json_read(destination / 'status.json') if (destination / 'status.json').exists() else {}
@@ -85,6 +93,8 @@ def run(plan_path):
             cost = json_read(cost_path)
             require(cost['status'] == 'cost_probe_only' and cost['no_candidate'] is True, 'Invalid cost result')
             authorization = auth_from_cost(plan_path, stage, cost)
+            if from_official:
+                authorization['user_instruction'] = 'Explicit local full V2 768 execution via --from-official; start from official CLIP.'
             auth_path = workspace / 'authorization' / (stage + '.train.json')
             dump(auth_path, authorization)
             status('training', stage, estimated_stage_seconds=authorization['estimated_seconds'],
@@ -126,8 +136,9 @@ def run(plan_path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--plan', required=True)
+    parser.add_argument('--from-official', action='store_true', help='Explicitly execute all four stages of the fresh 768 route')
     args = parser.parse_args()
-    run(args.plan)
+    run(args.plan, args.from_official)
 
 
 if __name__ == '__main__':
