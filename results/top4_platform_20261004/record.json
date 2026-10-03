@@ -1,0 +1,138 @@
+{
+  "record_id": "TOP4_PLATFORM_20261004",
+  "data_version": "20260921",
+  "recorded_at": "2026-10-03T16:14:37.612564+00:00",
+  "source": "explicit_user_report",
+  "source_message": "1.74.89317380621728 2.73.99049246875335",
+  "numbering_source": "/home/lux1/noise/outputs/deliveries/top4_20261003/receipt.json",
+  "numbering_source_sha256": "a37abcfdc74402962b47bcbcc634c11ffa808ad0f8847a57c8d8a629c50f9d95",
+  "platform_submission_id": null,
+  "independent_platform_receipt_verified": false,
+  "uploaded_bytes_independently_verified": false,
+  "reported_packages": [
+    {
+      "number": 1,
+      "name": "01_v2_full_sixview_logit_sum_bias.zip",
+      "description": "v2 full 第5轮 raw，六视图 logits 求和＋固定均匀 bias",
+      "desktop_path": "/mnt/c/Users/lqh22/Desktop/noise_top4_20261003/01_v2_full_sixview_logit_sum_bias.zip",
+      "source_zip": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission_bias_sixview_logit_sum/submission.zip",
+      "zip_sha256": "51e372c390f65702ef15af82b7de5a6cc7a382cfaf6f54b7c44be418517aec49",
+      "csv_sha256": "ad330e60e415bb27b9b1f8d70034dcbb13fddff6dea02c91bc5f389455c6f9f2",
+      "zip_bytes": 806296,
+      "rows": 37444,
+      "score_reported_text": "74.89317380621728",
+      "score_percent": 74.89317380621728,
+      "implied_correct_count": 28043,
+      "nine_checks_passed": true,
+      "check_command": [
+        "/usr/bin/python3",
+        "/home/lux1/noise/worktrees/top4_platform_20261004/scripts/check_submission.py",
+        "--test_dir",
+        "/home/lux1/noise/test",
+        "--num-classes",
+        "750",
+        "--csv",
+        "/home/lux1/noise/outputs/deliveries/top4_20261003/verification/01_v2_full_sixview_logit_sum_bias/pred_results.csv",
+        "--zip",
+        "/mnt/c/Users/lqh22/Desktop/noise_top4_20261003/01_v2_full_sixview_logit_sum_bias.zip"
+      ],
+      "check_log": "results/top4_platform_20261004/01_submission_check.log",
+      "decision": "promote_to_incumbent"
+    },
+    {
+      "number": 2,
+      "name": "02_v1_512_full_sixview_logit_sum_bias.zip",
+      "description": "v1 512 full SWA，六视图 logits 求和＋固定均匀 bias",
+      "desktop_path": "/mnt/c/Users/lqh22/Desktop/noise_top4_20261003/02_v1_512_full_sixview_logit_sum_bias.zip",
+      "source_zip": "/mnt/c/Users/lqh22/Desktop/noise/v1_512_test_bias_control_20261001_512_test_bias_submission.zip",
+      "zip_sha256": "260fc98bff216236e2d1bb4b4d6423f10a779f14bd6e508e9bcf0c9a8ae11048",
+      "csv_sha256": "028a17888fc8e9017d1cf2e2629d8d995ff33ce6d23501b6a55e80b9d34e59cd",
+      "zip_bytes": 816230,
+      "rows": 37444,
+      "score_reported_text": "73.99049246875335",
+      "score_percent": 73.99049246875335,
+      "implied_correct_count": 27705,
+      "nine_checks_passed": true,
+      "check_command": [
+        "/usr/bin/python3",
+        "/home/lux1/noise/worktrees/top4_platform_20261004/scripts/check_submission.py",
+        "--test_dir",
+        "/home/lux1/noise/test",
+        "--num-classes",
+        "750",
+        "--csv",
+        "/home/lux1/noise/outputs/deliveries/top4_20261003/verification/02_v1_512_full_sixview_logit_sum_bias/pred_results.csv",
+        "--zip",
+        "/mnt/c/Users/lqh22/Desktop/noise_top4_20261003/02_v1_512_full_sixview_logit_sum_bias.zip"
+      ],
+      "check_log": "results/top4_platform_20261004/02_submission_check.log",
+      "decision": "not_promoted"
+    }
+  ],
+  "previous_incumbent": {
+    "score_reported_text": "74.6688387992735",
+    "implied_correct_count": 27959,
+    "zip_sha256": "7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a",
+    "record": "results/v2_sixview_platform_20261003/record.json"
+  },
+  "comparisons": {
+    "new_v2_minus_previous_v2": {
+      "delta_pp": "0.22433500694378",
+      "net_correct_implied": 84,
+      "same_checkpoint": true,
+      "same_six_views": true,
+      "change": "six-view logit sum instead of log(mean softmax); uniform bias refitted under unchanged 200-iteration strength-1 protocol"
+    },
+    "new_v2_minus_v1_512_bias": {
+      "delta_pp": "0.90268133746393",
+      "net_correct_implied": 338
+    },
+    "new_v2_minus_v1_768_bias": {
+      "delta_pp": "0.47804721717765",
+      "net_correct_implied": 179
+    },
+    "v1_512_bias_minus_v1_768_bias": {
+      "delta_pp": "-0.42463412028628",
+      "net_correct_implied": -159
+    }
+  },
+  "targets": {
+    "75": {
+      "minimum_correct": 28083,
+      "remaining_correct": 40,
+      "remaining_pp": "0.10682619378272"
+    },
+    "80": {
+      "minimum_correct": 29956,
+      "remaining_correct": 1913,
+      "remaining_pp": "5.10682619378272"
+    }
+  },
+  "next_pending": [
+    {
+      "number": 3,
+      "name": "03_v2_full_sixview_logit_sum_raw.zip",
+      "desktop_path": "/mnt/c/Users/lqh22/Desktop/noise_top4_20261003/03_v2_full_sixview_logit_sum_raw.zip",
+      "zip_sha256": "290ce80216c2b19006b581d5671aabe834924749883b36f75c439ee34cdd2a33",
+      "score_percent": null
+    },
+    {
+      "number": 4,
+      "name": "04_v1_512_full_sixview_logit_sum_raw.zip",
+      "desktop_path": "/mnt/c/Users/lqh22/Desktop/noise_top4_20261003/04_v1_512_full_sixview_logit_sum_raw.zip",
+      "zip_sha256": "774e3d94837b72fa9449786bc610cb8c318ce7087fd5458d26ed2114dfdc7d9e",
+      "score_percent": null
+    }
+  ],
+  "interpretation": [
+    "The fixed logit-sum plus refitted bias decoder improves the same v2 checkpoint by 84 net correct on the user-reported aggregate.",
+    "Logit-sum raw package 03 is still unscored; do not subtract old probability-mean raw to claim a pure bias gain.",
+    "Package 04 is still unscored; v1 512 raw-to-bias improvement remains unknown.",
+    "The earlier 74.4-74.7 compression hypothesis is not a ceiling; corrected candidates now range from 73.99049 to 74.89317.",
+    "Aggregate scores do not identify which changed predictions are corrections or regressions."
+  ],
+  "implementation_changed": false,
+  "new_training_started": false,
+  "new_inference_started": false,
+  "platform_uploaded_by_agent": false
+}
