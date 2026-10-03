@@ -1,5 +1,8 @@
 # V1_512_TEST_BIAS_CONTROL_20261001
 
+2026-10-04平台回填：桌面02号bias包 **73.99049246875335%**，不晋级；同模型raw仍待测。
+见[反馈绑定与对比](top4_platform_20261004.md)。下文保留原交付记录。
+
 状态：completed_verified_delivery；2026-10-01固定推理及两包交付完成，方案和main已推送。
 本方案是无训练的512均衡bias对照，独立分支 `codex/v1_512_test_bias_control_20261001`。
 

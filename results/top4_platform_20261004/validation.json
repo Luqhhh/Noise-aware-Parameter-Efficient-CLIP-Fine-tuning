@@ -1,0 +1,28 @@
+{
+  "status": "verified",
+  "record_id": "TOP4_PLATFORM_20261004",
+  "packages": [
+    {
+      "number": 1,
+      "zip_sha256": "51e372c390f65702ef15af82b7de5a6cc7a382cfaf6f54b7c44be418517aec49",
+      "rows": 37444,
+      "source_and_desktop_identical": true,
+      "nine_checks_passed": true
+    },
+    {
+      "number": 2,
+      "zip_sha256": "260fc98bff216236e2d1bb4b4d6423f10a779f14bd6e508e9bcf0c9a8ae11048",
+      "rows": 37444,
+      "source_and_desktop_identical": true,
+      "nine_checks_passed": true
+    }
+  ],
+  "comparisons_recomputed": true,
+  "new_incumbent_percent": "74.89317380621728",
+  "net_gain_correct_implied": 84,
+  "remaining_to_75_correct_implied": 40,
+  "remaining_to_80_correct_implied": 1913,
+  "independent_platform_receipt_verified": false,
+  "new_training_started": false,
+  "new_inference_started": false
+}
