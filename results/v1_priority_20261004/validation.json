@@ -1,0 +1,78 @@
+{
+  "status": "verified",
+  "experiment_id": "V1_PRIORITY_20261004",
+  "optimization_line": "v1",
+  "preferred_v1_route": "768",
+  "incumbent_unchanged": true,
+  "promotion_rule": "strictly_greater_platform_score",
+  "scores_percent": {
+    "v2": "74.89317380621728",
+    "v1_768": "74.41512658903963",
+    "v1_512": "73.99049246875335"
+  },
+  "implied_correct": {
+    "v2": 28043,
+    "v1_768": 27864,
+    "v1_512": 27705
+  },
+  "v1_768_net_needed_to_strictly_exceed": 180,
+  "targets": {
+    "75": {
+      "required_correct": 28083,
+      "from_v2": 40,
+      "from_v1_768": 219
+    },
+    "80": {
+      "required_correct": 29956,
+      "from_v2": 1913,
+      "from_v1_768": 2092
+    }
+  },
+  "incumbent_package_checks": {
+    "status": "verified",
+    "record_id": "TOP4_PLATFORM_20261004",
+    "packages": [
+      {
+        "number": 1,
+        "zip_sha256": "51e372c390f65702ef15af82b7de5a6cc7a382cfaf6f54b7c44be418517aec49",
+        "rows": 37444,
+        "source_and_desktop_identical": true,
+        "nine_checks_passed": true
+      },
+      {
+        "number": 2,
+        "zip_sha256": "260fc98bff216236e2d1bb4b4d6423f10a779f14bd6e508e9bcf0c9a8ae11048",
+        "rows": 37444,
+        "source_and_desktop_identical": true,
+        "nine_checks_passed": true
+      }
+    ],
+    "comparisons_recomputed": true,
+    "new_incumbent_percent": "74.89317380621728",
+    "net_gain_correct_implied": 84,
+    "remaining_to_75_correct_implied": 40,
+    "remaining_to_80_correct_implied": 1913,
+    "independent_platform_receipt_verified": false,
+    "new_training_started": false,
+    "new_inference_started": false
+  },
+  "external_csv_matches": true,
+  "source_sha256": {
+    "results/top4_platform_20261004/record.json": "a27f0aa1dcb0f8239adcff44aacafb43715be24b7831ef480db08f85df01f613",
+    "results/v1_768_bias_platform_20261002/record.json": "f4f1307a0dd10fe7185047ac4b3f7056d81781fa52657398b1f3995a6e393b50",
+    "results/v1_crt768_dev_20261001/delivery_report.json": "ec5db9730cf1142b9dc015c07af3ef993c44e446a7bcb9eab140326f5eb3478a",
+    "results/v1_768_full_test_bias_20261001/target_report.json": "d596bc92dfd8f6773881878b9bcaf73d9657e94cffa0041cc22e134d57d56dac",
+    "results/v1_feature_calibration_20261001/feature_report.json": "7bacffaebf84504d0535f3b910503434a3d65d36e39e76d091d37504ca2dba09"
+  },
+  "document_links_checked": [
+    "docs/current_execution_plan.md",
+    "docs/v1.md",
+    "docs/p75_error_budget_policy_20260929.md",
+    "docs/v2_preprojection768_full_20261003.md",
+    "docs/v1_priority_20261004.md"
+  ],
+  "new_training_started": false,
+  "new_inference_started": false,
+  "new_candidate_completed": false,
+  "platform_score_independently_verified": false
+}
