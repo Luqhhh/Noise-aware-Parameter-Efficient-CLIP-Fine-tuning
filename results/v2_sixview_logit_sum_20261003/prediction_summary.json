@@ -1,0 +1,23 @@
+{
+  "rows": 37444,
+  "classes": 750,
+  "sum_raw": {
+    "min": 0,
+    "max": 154,
+    "chi2_uniform": 4645.894242068155
+  },
+  "sum_bias": {
+    "min": 44,
+    "max": 56,
+    "chi2_uniform": 33.20596090161308
+  },
+  "incumbent_probability_mean_bias": {
+    "min": 4,
+    "max": 95,
+    "chi2_uniform": 1507.527614571093
+  },
+  "sum_bias_vs_incumbent_bias_changed": 3656,
+  "bias_vs_sum_raw_changed": 5804,
+  "accuracy_gain": null,
+  "note": "Descriptive unlabeled counts only. No parameter or decoder tuning from these outputs."
+}

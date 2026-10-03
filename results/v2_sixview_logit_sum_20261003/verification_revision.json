@@ -1,0 +1,14 @@
+{
+  "status": "verified_without_repeating_inference",
+  "reason": "Auxiliary GPU-float32 probability control differed from float64 reconstruction at 10/28083000 entries by at most 2.604900100067198e-7, slightly exceeding an inappropriate absolute 2e-7 tolerance. Replaced that control comparison by the C+V+2 sequential float32 reduction error bound; original-code snapshots remain SHA-bound.",
+  "original_verifier_sha256": "a82985d10103ae6eb8ce6ef3c2830d588b4e4efa402f74fa90bfdc7b7b736841",
+  "corrected_verifier_sha256": "5281eb95d42b9365392ccbbbeb7c1044ac9f83243f512fa5831317da27a9271b",
+  "original_bound_source_root": "/home/lux1/noise/worktrees/v2_sixview_logit_sum_20261003/outputs/codex/v2_sixview_logit_sum_20261003/candidate/verification_source_snapshot",
+  "native_control_exact": true,
+  "native_raw_changes": 0,
+  "bias_absolute_tolerance_unchanged": 2e-05,
+  "full_candidate_float64_decision_agreement": true,
+  "inference_and_candidate_bytes_changed": false,
+  "platform_promotion_gate_changed": false,
+  "source_snapshot_sha_verified": true
+}

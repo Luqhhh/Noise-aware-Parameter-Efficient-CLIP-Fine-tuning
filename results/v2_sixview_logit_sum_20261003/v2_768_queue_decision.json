@@ -1,0 +1,34 @@
+{
+  "decision": "do_not_queue_v2_preprojection768_training",
+  "interpretation": "preprojection_768_dimensional_features_not_768_pixel_input",
+  "source_branch": "origin/codex/v2_preprojection768_pair_20261002",
+  "source_commit": "61ecddb",
+  "source_file": "results/v2_preprojection768_pair_20261002/diagnostic.json",
+  "candidate_vs_control": {
+    "both_wrong": 3336,
+    "changed": 143,
+    "corrections": 37,
+    "net": 4,
+    "regressions": 33,
+    "rows": 14880
+  },
+  "candidate_vs_parent": {
+    "both_wrong": 3171,
+    "changed": 820,
+    "corrections": 181,
+    "net": -17,
+    "regressions": 198,
+    "rows": 14880
+  },
+  "common_five_errors_vs_control": {
+    "both_wrong": 2353,
+    "changed": 63,
+    "corrections": 8,
+    "net": 4,
+    "regressions": 4,
+    "rows": 2411
+  },
+  "review_gate_passed": false,
+  "scope": "512-update continuation; does not disprove full training from official initialization",
+  "reason": "No observed budget supports repeating or expanding this failed fixed short continuation."
+}

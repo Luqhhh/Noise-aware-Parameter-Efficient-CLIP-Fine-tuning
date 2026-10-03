@@ -135,3 +135,6 @@ outputs/search_20260923/
 # Private task-trained neighbor indices, scores and frozen gallery membership.
 /outputs/codex/v1_task_neighbor_probe_20261002/
 /outputs/codex/v2_fixed_prior_20261002/
+
+# Private per-view logits and submission artifacts for the fixed decoder.
+/outputs/codex/v2_sixview_logit_sum_20261003/

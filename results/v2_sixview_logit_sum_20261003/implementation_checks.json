@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "command": "PYTHONPATH=reproducibility/aegis_f1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 python3 -m pytest tests/test_v2_fixed_prior.py tests/test_v2_sixview_bias.py tests/test_v2_sixview_logit_sum.py -q",
+  "passed": 33,
+  "seconds": 2.76,
+  "scope": [
+    "fixed protocol",
+    "real input sizes and flip pixels",
+    "sum differs from probability mean",
+    "source lineage",
+    "independent bias and whole synthetic delivery",
+    "independent sum rejects averaging"
+  ],
+  "training": false,
+  "candidate_generated": false,
+  "numerical_edge_case": "Independent float64 verification explicitly reproduces IEEE float32 addition rounding, then requires exact sums and decisions."
+}
