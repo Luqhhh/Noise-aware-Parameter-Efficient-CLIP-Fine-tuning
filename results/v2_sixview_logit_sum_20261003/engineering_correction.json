@@ -1,0 +1,9 @@
+{
+  "status": "interrupted_for_verifier_rounding_fix",
+  "pid": 9766,
+  "exit_code": 130,
+  "completed_candidate": false,
+  "reason": "Float32 summation was incorrectly required to exactly equal an unrounded float64 sum; corrected independent IEEE rounding replay before full candidate output.",
+  "decoder_changed": false,
+  "training": false
+}

@@ -1,0 +1,35 @@
+{
+  "bias_max_absolute_error": 5.488569534861654e-06,
+  "csv_zip_bytes_replayed": true,
+  "elapsed_seconds": 48.019551344999854,
+  "full_float64_decision_agreement": true,
+  "mean_probability_control_replayed": true,
+  "original_bound_source_root": "/home/lux1/noise/worktrees/v2_sixview_logit_sum_20261003/outputs/codex/v2_sixview_logit_sum_20261003/candidate/verification_source_snapshot",
+  "packages": {
+    "submission_bias": {
+      "csv_sha256": "ad330e60e415bb27b9b1f8d70034dcbb13fddff6dea02c91bc5f389455c6f9f2",
+      "rows": 37444,
+      "zip_sha256": "51e372c390f65702ef15af82b7de5a6cc7a382cfaf6f54b7c44be418517aec49"
+    },
+    "submission_raw": {
+      "csv_sha256": "c1d6b81b5dfb05ada99f4ac12496df1f660e17ebdc8947c54b90f5e17e2758e3",
+      "rows": 37444,
+      "zip_sha256": "290ce80216c2b19006b581d5671aabe834924749883b36f75c439ee34cdd2a33"
+    }
+  },
+  "platform_score": null,
+  "probability_rounding": {
+    "max_absolute_error": 2.604900100067198e-07,
+    "operation_count": 758,
+    "relative_bound": 9.03688051039353e-05
+  },
+  "rows": 37444,
+  "source_and_cache_sha_verified": true,
+  "status": "passed",
+  "sum_rounding": {
+    "float32_rounding_entries": 852,
+    "max_rounding_error": 2.980232238769531e-07
+  },
+  "verification_source_sha256": "5281eb95d42b9365392ccbbbeb7c1044ac9f83243f512fa5831317da27a9271b",
+  "view_logits_sum_replayed": true
+}
