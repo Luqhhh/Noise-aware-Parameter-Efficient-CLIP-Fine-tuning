@@ -1,0 +1,76 @@
+{
+  "experiment_id": "V2_PREPROJECTION768_FULL_20261003",
+  "status": "implementation_cpu_validated_no_real_training",
+  "recorded_at_utc": "2026-10-03T15:12:28.737666+00:00",
+  "branch": "codex/v2_preprojection768_full_20261003",
+  "base_commit": "e6765072e2878bdf9aa6667e6424e50d01e3bdf8",
+  "reused_model_source_commit": "61ecddb972b4cff5431a870624fcea900fca3cec",
+  "tests": {
+    "targeted": {
+      "tests": 148,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 148,
+      "seconds": 5.729,
+      "failures_detail": [],
+      "junit_path": "/home/lux1/noise/worktrees/v2_preprojection768_full_20261003/outputs/codex/v2_preprojection768_full_20261003/targeted_tests.xml",
+      "junit_sha256": "29f2b7d898c9019e8eb568a66f052ef01595a81d47eb328d6d0736dd6dca7e2c"
+    },
+    "aegis": {
+      "tests": 814,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 15,
+      "passed": 797,
+      "seconds": 16.827,
+      "failures_detail": [
+        {
+          "test": "tests.test_scope_protocol::test_scope_asset_gate_verifies_every_frozen_asset",
+          "message": "aegis_clip.scope_protocol.ScopePreflightError: checkpoint is missing: /home/lux1/noise/worktrees/v2_preprojection768_full_20261003/reproducibility/aegis_f1/artifacts/external/scope_k2/fullft_dual_pa090/best.pt"
+        },
+        {
+          "test": "tests.test_scope_protocol::test_scope_asset_gate_fails_closed_on_digest_mismatch",
+          "message": "AssertionError: Regex pattern did not match.\n  Expected regex: 'checkpoint SHA-256 mismatch'\n  Actual message: 'checkpoint is missing: /home/lux1/noise/worktrees/v2_preprojection768_full_20261003/reproducibility/aegis_f1/artifacts/external/scope_k2/fullft_dual_pa090/best.pt'"
+        }
+      ],
+      "junit_path": "/home/lux1/noise/worktrees/v2_preprojection768_full_20261003/outputs/codex/v2_preprojection768_full_20261003/aegis_tests.xml",
+      "junit_sha256": "b585a00688bb417ee3e90a6b42d897b1fbbe323945f3540d43ab5adefcb01940"
+    }
+  },
+  "source_sha256": {
+    "configs/v2_preprojection768_full_20261003.json": "70b74dd7a2f25e6a2230a1086ad20625ffddd709e82c42601978d31745afd0d7",
+    "scripts/check_v2_cpu.py": "a32fcfa258b075f53388e9d59a24d680d1b242dd2fc0261868b1c3dc2d01608d",
+    "tests/test_v2.py": "e42f8cb599142327129a78cdcebd9d291d370fded41296e08e575cc73de22f59",
+    "tests/test_v2_768_full.py": "1a97fc88bf10bbee9254b066f68b6b1352e7e1f35d7aa5600324ef6bd4542ef0",
+    "tests/test_v2_swa.py": "9dc224543a0e4f18c3358b0988fc92d6ea478ccd29096b68af6ab4ebbfa64e11",
+    "tests/test_ndcw.py": "ee9efa973ed5a9f1267ecb73f754f0ad9f1a2160d47be35f40483b8a0aa6e6fe",
+    "reproducibility/aegis_f1/v2/__init__.py": "36a87efe5633db8db24539a9298d9e1570596c0d5dace4d32a9d7e53d55888d9",
+    "reproducibility/aegis_f1/v2/architecture.py": "f6da260ca05dbfe4fe0a69f1d85146a988bbacb9bde0ded2fddb3284d653fe1b",
+    "reproducibility/aegis_f1/v2/controller.py": "825ed13d83ed497c640b2f4aa2350ea2795e2d109723f4e403b197508fc45011",
+    "reproducibility/aegis_f1/v2/core.py": "d5f7c2a39f37744bb7bb633ee4f4db6b97c1f32b06b31a10c70f880f5276a25c",
+    "reproducibility/aegis_f1/v2/health.py": "b1585354a7baf66822ae0d78a1b2cbd4e3ed097a4f06d2fcd0aafad8c5fb4c28",
+    "reproducibility/aegis_f1/v2/import_parent.py": "aea48682aeb3419da6eeb76b39b0538233ba7ae9d96f4c04fce55fce5df09470",
+    "reproducibility/aegis_f1/v2/model.py": "c26ce108e11c21f0c6372d075007c26c8254727be1c201179f99a90fadaaf871",
+    "reproducibility/aegis_f1/v2/plan.py": "4e4a60f89dbb59fb5ff392312e82773b27b2766a02ed9b9f02202ac1380bf0c7",
+    "reproducibility/aegis_f1/v2/preprojection.py": "5b7b02306e350312e0544e75503121501e82c8aa5d487058956618a467224cf9",
+    "reproducibility/aegis_f1/v2/runtime.py": "7e8d24e6ad12f516bd9cdf4300f07463ef4aa366e749fdfbab2a7a8adf693081",
+    "reproducibility/aegis_f1/v2/swa.py": "282915412337d2d95133253e00acdc4aa8c8e39eb2b146b4e5f7b4b05716af7f",
+    "reproducibility/aegis_f1/v2/training_utils.py": "792b88125e91dfe65070f69ec0e3087bb2bc2da2d4141a5ca6aa0c60e695e610"
+  },
+  "prepared_plan_sha256": "4be63bf6c770e34fc2d5ec892a3837cf3f78f8f32a488afbe434a52a1a732756",
+  "gpu_started": false,
+  "real_training_started": false,
+  "queued": false,
+  "new_candidate_package": null,
+  "local_metrics": null,
+  "platform_metrics": null,
+  "inference_validation": "Two synthetic images only; real CSV/ZIP checker passed, no test-set inference",
+  "incumbent": {
+    "path": "/mnt/c/Users/lqh22/Downloads/v2_continuation_20261001/submission_bias_sixview/submission.zip",
+    "zip_sha256": "7164b26d9662a8c0e78c9c0636393efe0927739cb84df8dc88ed33e35f47659a",
+    "sha_rechecked": true,
+    "reported_platform_percent": 74.6688387992735,
+    "submission_check_source": "results/v2_sixview_platform_20261003/record.json"
+  }
+}

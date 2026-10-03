@@ -8,6 +8,7 @@ import torch
 
 from aegis_clip.v1_strategy import WeightAverage
 from .plan import dump, json_read, require, sha, verify_prepared
+from .core import check_checkpoint_architecture
 
 
 def checked_snapshot(path, plan, last, epoch):
@@ -23,6 +24,8 @@ def checked_snapshot(path, plan, last, epoch):
             "Wrong fixed epoch/raw source")
     require(payload["config"] == last["config"] and payload["num_classes"] == last["num_classes"]
             and payload["image_size"] == last["image_size"] == 576, "Snapshot model/recipe differs")
+    if "architecture" in last:
+        check_checkpoint_architecture(payload, plan)
     state = payload["model"]
     reference = last["model"]
     require(state.keys() == reference.keys() and all(value.shape == reference[name].shape and
@@ -53,6 +56,8 @@ def export(plan_path, output):
         records.append(dict(epoch=epoch, path=str(path), sha256=sha(path)))
     output.mkdir(parents=True)
     payload = {k: last[k] for k in ("binding", "config", "epoch", "global_step", "num_classes", "image_size")}
+    if "architecture" in last:
+        payload["architecture"] = dict(last["architecture"])
     payload.update(model=average.state, metrics=dict(chosen="raw"),
         experiment_id="V2_FULL_LAST3_SWA", weight_source="raw", average_epochs=[3, 4, 5],
         sources=records, original_last=str(source / "last.pt"), original_last_sha256=sha(source / "last.pt"))
@@ -72,6 +77,8 @@ def read_export(path, plan, workspace):
     last_path = workspace / "runs/full_576/last.pt"
     last = read_checkpoint(last_path, plan, "full_576")
     require(payload["binding"] == sidecar["binding"] == last["binding"], "SWA/current final trajectory differs")
+    if "architecture" in last:
+        check_checkpoint_architecture(payload, plan)
     require(payload.get("experiment_id") == "V2_FULL_LAST3_SWA" and payload.get("weight_source") == "raw"
             and payload.get("average_epochs") == [3, 4, 5] and payload.get("epoch") == 4
             and payload.get("original_last") == str(last_path) and payload.get("original_last_sha256") == sha(last_path),

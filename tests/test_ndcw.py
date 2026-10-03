@@ -289,7 +289,7 @@ def test_v2_real_runtime_sidecar_all_ones_parity_and_actual_effect(tmp_path,monk
             super().__init__();self.visual=torch.nn.Conv2d(3,4,3);self.head=torch.nn.Linear(4,2)
         def forward(self,x):
             return self.head(self.visual(x).mean((2,3)))
-    monkeypatch.setattr(rt,'V2Classifier',Tiny)
+    monkeypatch.setattr(rt,'build_classifier',Tiny)
     monkeypatch.setattr(rt,'device_after_authorization',lambda:torch.device('cpu'))
     monkeypatch.setattr(rt,'amp',nullcontext)
     monkeypatch.setattr(torch.cuda,'get_rng_state_all',lambda:[])
